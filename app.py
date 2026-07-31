@@ -365,6 +365,12 @@ def _metrics_referrer_domain():
     return domain
 
 
+def _metrics_is_bot() -> bool:
+    """UA inspected only, never stored."""
+    ua = (request.user_agent.string or "").lower()
+    return any(token in ua for token in _METRICS_BOT_UA)
+
+
 @app.after_request
 def _record_site_metrics(response):
     try:
@@ -374,6 +380,10 @@ def _record_site_metrics(response):
             return response
         if response.mimetype != "text/html":
             return response
+        # HTMX fragments (board filters, search, player-detail panels) are
+        # interactions inside one pageview, not pageviews (review F1).
+        if request.headers.get("HX-Request") == "true":
+            return response
         rule = request.url_rule
         if (
             rule is None
@@ -382,9 +392,8 @@ def _record_site_metrics(response):
             or rule.rule.startswith("/health")
         ):
             return response
-        ua = (request.user_agent.string or "").lower()
-        if any(token in ua for token in _METRICS_BOT_UA):
-            return response
+        if _metrics_is_bot():
+            return response   # UA inspected only; never stored
         vid = request.cookies.get(_METRICS_COOKIE)
         is_new = not (vid and _METRICS_VID_RE.match(vid))
         if is_new:
@@ -8293,6 +8302,17 @@ def _build_trade_page_context(args):
 @app.route("/trade")
 def trade():
     context = _build_trade_page_context(request.args)
+    # Trade-analyzer usage metric: ONLY a produced verdict counts (verdict
+    # requires both sides resolved to >=1 player) — form tweaks and one-sided
+    # adds are not "trade analyzer used" (review F5).
+    try:
+        if site_metrics.enabled and context.get("verdict") and not _metrics_is_bot():
+            vid = request.cookies.get(_METRICS_COOKIE)
+            if not (vid and _METRICS_VID_RE.match(vid)):
+                vid = None
+            site_metrics.record_click(metric="trade_analyzer", vid=vid)
+    except Exception:
+        pass   # metrics must never break a page
     # og:image unfurls the share card ONLY when the trade actually resolved to a
     # verdict; a bare /trade (no players) keeps the default site card.
     if context.get("verdict") and (context["give_param"] or context["get_param"]):

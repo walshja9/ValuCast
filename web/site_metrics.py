@@ -82,7 +82,10 @@ class SiteMetricsStore:
         return self.db_path is not None
 
     def _connect(self) -> sqlite3.Connection:
-        con = sqlite3.connect(self.db_path, timeout=5)
+        # Near-zero busy timeout (review F3): the recorder runs synchronously
+        # inside after_request, so a locked database must DROP the event, not
+        # hold the response. Lost analytics beat delayed pages.
+        con = sqlite3.connect(self.db_path, timeout=0.05)
         con.execute("PRAGMA journal_mode=WAL")
         return con
 
@@ -188,10 +191,19 @@ class SiteMetricsStore:
                     "SELECT COUNT(DISTINCT vid) FROM events"
                     " WHERE kind='pageview' AND ts >= ? AND vid IS NOT NULL"
                 )[0][0]
+                # Returning (review F2): a visitor whose EARLIEST stored
+                # pageview predates the window and who appeared inside it — a
+                # same-window revisit five seconds later is not a return. The
+                # is_new cookie flag is recorded but deliberately not trusted
+                # here.
                 returning = q(
-                    "SELECT COUNT(DISTINCT vid) FROM events"
-                    " WHERE kind='pageview' AND ts >= ? AND vid IS NOT NULL"
-                    " AND is_new = 0"
+                    "SELECT COUNT(*) FROM ("
+                    " SELECT vid FROM events"
+                    " WHERE kind='pageview' AND vid IS NOT NULL"
+                    " GROUP BY vid"
+                    " HAVING MAX(ts) >= ? AND MIN(ts) < ?"
+                    ")",
+                    args=(cutoff,),
                 )[0][0]
                 referrers = q(
                     "SELECT referrer_domain, COUNT(*) AS n FROM events"

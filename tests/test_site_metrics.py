@@ -50,14 +50,20 @@ def test_pageviews_aggregate_by_route(tmp_path):
 
 
 def test_unique_and_returning_visitors(tmp_path):
+    # Review F2: "returning" = the visitor's EARLIEST stored pageview predates
+    # the reporting window. A second view five seconds later is the same
+    # visit, not a return.
     store = _store(tmp_path)
     store.record_pageview(route="/", vid="a" * 32, is_new_visitor=True)
     store.record_pageview(route="/", vid="a" * 32, is_new_visitor=False)
     store.record_pageview(route="/", vid="b" * 32, is_new_visitor=True)
+    # vid c first appeared long before the window and came back inside it.
+    store.record_pageview(route="/", vid="c" * 32, is_new_visitor=True,
+                          ts="2020-01-01T00:00:00Z")
+    store.record_pageview(route="/", vid="c" * 32, is_new_visitor=False)
     s = store.summary(days=7)
-    assert s["visitors"]["unique"] == 2
-    # "Returning" = a visitor whose cookie predates the visit — only vid a.
-    assert s["visitors"]["returning"] == 1
+    assert s["visitors"]["unique"] == 3
+    assert s["visitors"]["returning"] == 1   # only c predates the window
 
 
 def test_referrer_utm_and_x_classification(tmp_path):
@@ -106,6 +112,26 @@ def test_schema_stores_no_ip_or_user_agent_and_summary_leaks_no_vid(tmp_path):
     assert "a" * 32 not in json.dumps(store.summary(days=7))
 
 
+def test_locked_database_never_delays_a_page(tmp_path):
+    # Review F3: the recorder runs synchronously inside after_request, so a
+    # locked database must drop the event near-instantly — lost analytics are
+    # preferable to a delayed page.
+    store = _store(tmp_path)
+    store.record_pageview(route="/", vid="a" * 32, is_new_visitor=True)
+    import sqlite3
+    import time
+    blocker = sqlite3.connect(store.db_path)
+    try:
+        blocker.execute("BEGIN EXCLUSIVE")
+        start = time.monotonic()
+        store.record_pageview(route="/", vid="b" * 32, is_new_visitor=True)
+        elapsed = time.monotonic() - start
+    finally:
+        blocker.rollback()
+        blocker.close()
+    assert elapsed < 1.0
+
+
 def test_prune_drops_only_expired_events(tmp_path):
     store = _store(tmp_path)
     store.record_pageview(route="/", vid="a" * 32, is_new_visitor=True,
@@ -146,24 +172,45 @@ def test_html_pageview_sets_anonymous_cookie_and_records(metrics_client):
     assert s["visitors"]["returning"] == 0
 
 
-def test_second_visit_with_cookie_counts_returning(metrics_client):
+def test_same_window_revisit_is_not_returning(metrics_client):
+    # Review F2 reversal: two views moments apart are one visitor, zero
+    # returns. Backdating the earliest event before the window is what makes
+    # the visitor "returning".
     client, store = metrics_client
     client.get("/methodology")
     client.get("/methodology")   # test client persists the cookie jar
     s = store.summary(days=1)
     assert s["pageviews"]["total"] == 2
     assert s["visitors"]["unique"] == 1
-    assert s["visitors"]["returning"] == 1
+    assert s["visitors"]["returning"] == 0
+    import sqlite3
+    with sqlite3.connect(store.db_path) as con:
+        con.execute(
+            "UPDATE events SET ts='2020-01-01T00:00:00Z'"
+            " WHERE id=(SELECT MIN(id) FROM events)"
+        )
+    assert store.summary(days=1)["visitors"]["returning"] == 1
 
 
-def test_pageview_stores_route_pattern_not_raw_path(metrics_client):
+def test_htmx_fragment_requests_are_not_pageviews(metrics_client):
+    # Review F1 reversal: board filtering/search/detail fragments arrive with
+    # HX-Request and must NOT inflate pageviews.
     client, store = metrics_client
     row = app_module.store.get_all()[0]
     resp = client.get(f"/player/{row.id}", headers={"HX-Request": "true"})
     assert resp.status_code == 200
+    resp = client.get("/methodology", headers={"HX-Request": "true"})
+    assert resp.status_code == 200
+    assert store.summary(days=1)["pageviews"]["total"] == 0
+
+
+def test_pageview_stores_route_pattern_not_raw_path(metrics_client):
+    client, store = metrics_client
+    resp = client.get("/board/2019-01-01")   # full page even for unknown dates
+    assert resp.status_code == 200
     routes = [r["route"] for r in store.summary(days=1)["pageviews"]["by_route"]]
-    assert "/player/<player_id>" in routes
-    assert all(str(row.id) not in r for r in routes)
+    assert "/board/<date>" in routes
+    assert all("2019-01-01" not in r for r in routes)
 
 
 def test_static_health_bots_and_404s_not_recorded(metrics_client):
@@ -236,6 +283,51 @@ def test_metrics_js_served_and_included_in_base(metrics_client):
     resp = client.get("/static/metrics.js")
     assert resp.status_code == 200
     assert b"data-metric" in resp.data
+
+
+def test_metrics_js_recognizes_share_surfaces_centrally(metrics_client):
+    # Review F4: internal share-card / player-card / share-PNG links are
+    # recognized centrally in metrics.js, not only via per-template tags.
+    client, _ = metrics_client
+    js = client.get("/static/metrics.js").data
+    for marker in (b"share-card", b"player-card", b"/share/"):
+        assert marker in js
+
+
+def test_buys_export_button_is_tagged():
+    # Review F4: the Buys graphic is generated client-side (html2canvas), so
+    # the export button itself must carry the share_card tag.
+    text = (Path(__file__).resolve().parents[1] / "templates" / "buys.html"
+            ).read_text(encoding="utf-8")
+    assert 'id="buys-export-btn"' in text
+    assert 'data-metric="share_card"' in text
+
+
+def test_trade_template_controls_are_untagged():
+    # Review F5: no per-control trade tags — form tweaks and one-sided adds
+    # are not "trade analyzer used". The server records the event only when a
+    # verdict is produced.
+    text = (Path(__file__).resolve().parents[1] / "templates" / "trade.html"
+            ).read_text(encoding="utf-8")
+    assert "data-metric" not in text
+
+
+def test_trade_verdict_records_trade_analyzer(metrics_client):
+    client, store = metrics_client
+    from app import dd_store
+    rows = dd_store.get_all()
+    resp = client.get(f"/trade?give={rows[0].id}&get={rows[1].id}")
+    assert resp.status_code == 200
+    assert store.summary(days=1)["clicks"].get("trade_analyzer") == 1
+
+
+def test_trade_without_verdict_records_no_usage(metrics_client):
+    client, store = metrics_client
+    from app import dd_store
+    rows = dd_store.get_all()
+    assert client.get("/trade").status_code == 200
+    assert client.get(f"/trade?give={rows[0].id}").status_code == 200
+    assert store.summary(days=1)["clicks"] == {}
 
 
 def test_disabled_store_sets_no_cookie(tmp_path, monkeypatch):

@@ -75,7 +75,7 @@
             </select>
         </label>
         <div class="trade-settings-actions">
-            <button class="export-btn" data-metric="trade_analyzer" type="submit">Apply league context</button>
+            <button class="export-btn" type="submit">Apply league context</button>
             {% if league_context.enabled %}
             <a class="export-btn secondary-action" href="{{ legacy_trade_url }}">Use standard board</a>
             {% endif %}
@@ -169,9 +169,6 @@
             var item = document.createElement('button');
             item.type = 'button';
             item.className = 'trade-search-result';
-            // Adding a player IS the "trade analyzer used" moment; the metrics
-            // beacon (static/metrics.js) picks this attribute up on click.
-            item.dataset.metric = 'trade_analyzer';
             var rank = p.player_type === 'prospect'
                 ? (p.prospect_rank ? 'P#' + p.prospect_rank : 'prospect')
                 : '';
