@@ -1085,6 +1085,51 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
     border-top: 1px solid var(--c-border);
     margin-top: 2rem;
 }
+.footer-install {
+    min-height: 44px;
+    margin-top: .55rem;
+    padding: .45rem .8rem;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--c-text);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+.footer-install:hover { border-color: var(--c-signal); }
+.footer-install:focus-visible {
+    outline: 2px solid var(--c-blue-strong);
+    outline-offset: 2px;
+}
+.install-app-dialog {
+    width: min(420px, calc(100vw - 32px));
+    padding: 1.1rem;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--c-text);
+    box-shadow: var(--shadow-soft);
+}
+.install-app-dialog::backdrop { background: rgba(0, 0, 0, .72); }
+.install-app-dialog h2 { margin: 0 0 .55rem; font-size: 1.15rem; }
+.install-app-dialog p { margin: 0; color: var(--c-muted); line-height: 1.55; }
+.install-app-dialog-actions { margin-top: 1rem; text-align: right; }
+.install-app-dialog-actions button {
+    min-height: 44px;
+    padding: .45rem .8rem;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--c-text);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+}
+.install-app-dialog-actions button:focus-visible {
+    outline: 2px solid var(--c-blue-strong);
+    outline-offset: 2px;
+}
 .footer-how {
     max-width: 600px;
     margin: 0 auto 0.5rem;
