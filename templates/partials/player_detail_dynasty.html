@@ -68,9 +68,9 @@
             {% endif %}
             <div class="profile-card-badges">
             {% if row.is_prospect %}
-                <a class="player-share-link" href="/prospects/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
+                <a class="player-share-link" data-metric="share_card" href="/prospects/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
             {% else %}
-                <a class="player-share-link" href="/dynasty/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
+                <a class="player-share-link" data-metric="share_card" href="/dynasty/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
             {% endif %}
             </div>
         </div>
