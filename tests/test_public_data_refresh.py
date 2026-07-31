@@ -382,8 +382,11 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "scripts/backfill_projection_identities.py" in build_commands
     # 7/1: league adapters joined the nightly chain (the artifact had frozen at a
     # June manual build) — step ordered after the shadow pipeline, artifact committed.
-    assert "scripts/build_prospect_league_adapters.py" in build_commands
+    assert build_commands.count("scripts/build_prospect_league_adapters.py") == 1
     assert "data/models/valucast_prospect_league_adapters.json" in workflow
+    assert workflow.count(
+        "data/prediction_archive/valucast_prospect_league_adapters"
+    ) == 1
     # 7/2: scheduled fallbacks skip when today's refresh already published.
     assert "needs: preflight" in workflow
     assert "needs.preflight.outputs.proceed == 'true'" in workflow
