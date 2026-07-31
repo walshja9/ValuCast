@@ -218,7 +218,10 @@ def _segment_stats(records: list[dict]) -> dict:
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Hash of the LF-normalized content — the canonical Git blob, not the
+    platform checkout. A Windows autocrlf checkout reads CRLF bytes and would
+    record a hash no Linux rebuild can match (review F1)."""
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def _identity_key(row: dict) -> str | None:

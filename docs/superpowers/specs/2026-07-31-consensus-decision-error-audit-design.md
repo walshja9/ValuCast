@@ -77,6 +77,13 @@ The following dimensions are fixed before any result is inspected:
 Availability is mapped without interpretation: `available` remains available;
 thin/current-limited states map to limited; injury, inactive, stale, or absent
 states map to unavailable; everything else maps to other/missing.
+Clarification (review F2, 2026-07-31): rehab/return-family statuses map to
+**limited**, not unavailable — they describe a managed, present workload
+rather than absence. This states the implemented behavior; no logic changed.
+
+Provenance hashes (scorecard and archive manifest) are computed over
+LF-normalized bytes — the canonical Git blob content — so the recorded values
+are identical across Windows (autocrlf) and Linux checkouts (review F1).
 
 ## Statistics and guardrails
 

@@ -342,9 +342,33 @@ def test_script_entry_point_can_import_repo_modules():
     assert result.returncode == 0, result.stderr
 
 
+def test_provenance_hash_is_line_ending_neutral(tmp_path):
+    # Review F1: the recorded hash must name the canonical LF content, so a
+    # Windows (CRLF) checkout and a Linux checkout record the same provenance.
+    from scripts.audit_consensus_decisions import _sha256
+
+    lf = tmp_path / "lf.json"
+    crlf = tmp_path / "crlf.json"
+    lf.write_bytes(b'{"a": 1}\n{"b": 2}\n')
+    crlf.write_bytes(b'{"a": 1}\r\n{"b": 2}\r\n')
+    assert _sha256(lf) == _sha256(crlf)
+
+
 def test_committed_audit_artifact_rebuilds_exactly():
+    # The exact rebuild is only defined against the artifact's recorded
+    # inputs. The scorecard refreshes daily, so once its hash moves past the
+    # recorded provenance this test SKIPS instead of failing every future
+    # merge-ref CI run (review F1); an archive changing while the scorecard
+    # hash still matches is genuine provenance drift and still fails.
+    from scripts.audit_consensus_decisions import DEFAULT_SCORECARD_PATH, _sha256
+
     path = ROOT / "data" / "validation" / "valucast_consensus_decision_error_audit.json"
     committed = json.loads(path.read_text(encoding="utf-8"))
+    if _sha256(DEFAULT_SCORECARD_PATH) != committed["source_hashes"]["scorecard_sha256"]:
+        pytest.skip(
+            "scorecard has refreshed past the committed audit artifact; "
+            "exact rebuild is only defined against its recorded inputs"
+        )
     rebuilt = build_audit(generated_at=committed["generated_at"])
 
     assert committed["quality"]["joined_decided_count"] == 151
