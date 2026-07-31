@@ -136,6 +136,59 @@ def test_artifact_context_falls_back_from_pitcher_to_starter_role_tracker(monkey
     assert context["role_profile"]["projected_role"] == "rotation_starter"
 
 
+def test_artifact_context_hides_clamped_opportunity_judgment(monkeypatch):
+    def fake_load_artifact(path):
+        if str(path).endswith("valucast_playing_time_role_tracker.json"):
+            return {
+                "profiles": [
+                    {
+                        "identity_key": "701398_hitter",
+                        "mlbam_id": "701398",
+                        "pool": "hitter",
+                        "projected_role": "bench_or_depth",
+                        "projected_volume": 0.0,
+                        "projected_volume_unit": "PA",
+                        "role_basis": "thin projected plate appearances",
+                        "role_context_status": "blocked",
+                        "role_context_blockers": ["remaining_opportunity_clamped"],
+                        "remaining_opportunity_clamped": True,
+                        "availability_status": "active_mlb_roster",
+                    }
+                ]
+            }
+        return {}
+
+    monkeypatch.setattr(app_module, "_load_artifact", fake_load_artifact)
+
+    context = app_module._artifact_context_for_row(
+        SimpleNamespace(mlbam_id="701398", role="hitter")
+    )
+
+    profile = context["role_profile"]
+    assert profile["projected_role_label"] == "Not rated"
+    assert profile["projected_volume"] is None
+    assert profile["availability_status_label"] == "Active Mlb Roster"
+    assert profile["role_basis"] == (
+        "ROS opportunity unavailable because current playing time exceeded "
+        "the projection baseline"
+    )
+    read = app_module._dynasty_card_read(
+        SimpleNamespace(
+            name="Sal Stewart",
+            dna="",
+            dynasty_rank=11,
+            dynasty_value=73.5,
+            positions=("1B",),
+            stat_line=None,
+            role="hitter",
+        ),
+        context,
+    )
+    assert "depth role" not in read
+    assert "0 PA" not in read
+    assert "active MLB roster" in read
+
+
 def test_redraft_context_joins_dynasty_age_for_matched_player():
     player_id = _first_redraft_player_id_with_dynasty_match()
 

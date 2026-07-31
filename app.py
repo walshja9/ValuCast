@@ -4083,6 +4083,8 @@ def _enum_key(value):
 
 
 def _projected_role_phrase(role_profile):
+    if role_profile.get("role_context_status") == "blocked":
+        return None
     raw_key = _enum_key(role_profile.get("projected_role"))
     if raw_key in _PROJECTED_ROLE_PHRASES:
         return _PROJECTED_ROLE_PHRASES[raw_key]
@@ -6062,9 +6064,24 @@ def _artifact_context_for_row(row) -> dict:
     role_profile = _role_tracker_profile_for_row(role_profiles, row)
     if role_profile:
         role_profile = dict(role_profile)
-        role_profile["projected_role_label"] = _format_context_label(
-            role_profile.get("projected_role")
-        )
+        if role_profile.get("role_context_status") == "blocked":
+            role_profile["projected_role_label"] = "Not rated"
+            role_profile["projected_volume"] = None
+            if "remaining_opportunity_clamped" in (
+                role_profile.get("role_context_blockers") or []
+            ):
+                role_profile["role_basis"] = (
+                    "ROS opportunity unavailable because current playing time "
+                    "exceeded the projection baseline"
+                )
+            else:
+                role_profile["role_basis"] = (
+                    "Opportunity not rated because source data failed validation"
+                )
+        else:
+            role_profile["projected_role_label"] = _format_context_label(
+                role_profile.get("projected_role")
+            )
         role_profile["availability_status_label"] = _format_context_label(
             role_profile.get("availability_status")
         )
