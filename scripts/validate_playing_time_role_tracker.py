@@ -98,6 +98,12 @@ def validate_playing_time_role_tracker(
                 problems.append(f"profile {index} ready profile has blockers")
             elif status == "blocked" and not blockers:
                 problems.append(f"profile {index} blocked profile has no blockers")
+            if row.get("remaining_opportunity_clamped") is True and (
+                status != "blocked" or "remaining_opportunity_clamped" not in blockers
+            ):
+                problems.append(
+                    f"profile {index} clamped opportunity must be blocked"
+                )
             if row.get("usage") != "role_context_not_live_rank_or_value":
                 problems.append(f"profile {index} invalid usage")
             role_v2 = row.get("role_v2")

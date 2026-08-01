@@ -243,6 +243,39 @@ def test_projected_starts_with_zero_innings_blocks_role_context():
     assert "projected_starts_without_innings" in profile["role_context_blockers"]
 
 
+def test_clamped_remaining_opportunity_blocks_role_context():
+    hitter = _hitter()
+    hitter["stats"]["PA"] = 0.0
+    hitter["metadata"]["remaining_opportunity_clamped"] = True
+
+    payload = build_playing_time_role_tracker(
+        projections=[hitter],
+        generated_at="2026-07-31T12:00:00+00:00",
+    )
+
+    profile = payload["profiles"][0]
+    assert profile["remaining_opportunity_clamped"] is True
+    assert profile["role_context_status"] == "blocked"
+    assert profile["role_context_blockers"] == ["remaining_opportunity_clamped"]
+
+
+def test_validator_rejects_clamped_opportunity_marked_ready(tmp_path):
+    payload = build_playing_time_role_tracker(
+        projections=[_hitter()],
+        generated_at="2026-07-31T12:00:00+00:00",
+    )
+    profile = payload["profiles"][0]
+    profile["remaining_opportunity_clamped"] = True
+    profile["role_context_status"] = "ready"
+    profile["role_context_blockers"] = []
+    path = tmp_path / "role.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    _, problems = validate_playing_time_role_tracker(path)
+
+    assert any("clamped opportunity must be blocked" in problem for problem in problems)
+
+
 def test_invalid_probability_and_negative_volume_block_role_context():
     payload = build_playing_time_role_tracker(
         projections=[_role_row(ip=-1.0, gs=-1.0, p_sp=1.2)],

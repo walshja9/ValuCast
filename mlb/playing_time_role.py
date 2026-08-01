@@ -163,22 +163,24 @@ def _role_profile(row: dict, pace: float = 1.0) -> tuple[str, float, str, str]:
 
 def _role_contract_fields(row: dict) -> dict:
     pool = str(row.get("pool") or "").lower()
+    metadata = row.get("metadata") or {}
+    blockers = []
+    if metadata.get("remaining_opportunity_clamped") is True:
+        blockers.append("remaining_opportunity_clamped")
     if pool == "hitter":
         return {
             "source_pool": pool,
             "starter_probability": None,
             "projected_starts_ros": None,
             "projected_innings_ros": None,
-            "role_context_status": "ready",
-            "role_context_blockers": [],
+            "role_context_status": "blocked" if blockers else "ready",
+            "role_context_blockers": blockers,
         }
     stats = row.get("stats") or {}
-    metadata = row.get("metadata") or {}
     raw_probability = metadata.get("p_sp")
     probability = _opt_float(raw_probability)
     starts = _clean_float(stats.get("GS"))
     innings = _clean_float(stats.get("IP"))
-    blockers = []
     if raw_probability not in (None, "") and (
         probability is None or not 0.0 <= probability <= 1.0
     ):
@@ -263,6 +265,9 @@ def _row_profile(
         "projected_volume": volume,
         "projected_volume_unit": unit,
         "role_basis": basis,
+        "remaining_opportunity_clamped": (
+            (row.get("metadata") or {}).get("remaining_opportunity_clamped") is True
+        ),
         **contract,
         "active_mlb_roster": active is True,
         "availability_status": availability_status,
