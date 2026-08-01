@@ -115,6 +115,56 @@ def test_display_filters_do_not_hide_a_followed_player():
     assert filtered == baseline
 
 
+def test_watch_context_args_keep_settings_and_remove_only_display_narrowing():
+    args = MultiDict([
+        ("mode", "prospects"),
+        ("cats", "OPS"),
+        ("cats", "SB"),
+        ("teams", "16"),
+        ("pool", "hitter"),
+        ("position", "SS"),
+        ("search", "Made"),
+        ("callups", "undebuted"),
+        ("display", "values"),
+        ("watch", "682634_hitter"),
+    ])
+
+    clean = app_module._watch_context_args(args)
+
+    assert clean.get("mode") == "prospects"
+    assert clean.getlist("cats") == ["OPS", "SB"]
+    assert clean.get("teams") == "16"
+    assert set(clean.keys()).isdisjoint({"pool", "position", "search", "callups", "display", "watch"})
+
+
+def test_same_prospect_identity_resolves_on_dynasty_and_prospect_boards():
+    dynasty_ctx = app_module._build_dynasty_context(MultiDict([("mode", "dd_dynasty")]))
+    prospect_ctx = app_module._build_dynasty_context(MultiDict([("mode", "prospects")]))
+    app_module._apply_prospect_board_context(
+        prospect_ctx, MultiDict([("mode", "prospects")])
+    )
+    prospect_by_key = {
+        app_module._row_identity_key(row): row
+        for row in prospect_ctx["dd_rows"]
+        if app_module._row_identity_key(row)
+    }
+    row = next(
+        row for row in dynasty_ctx["dd_rows"]
+        if app_module._row_identity_key(row) in prospect_by_key
+    )
+    key = app_module._row_identity_key(row)
+    client = app_module.app.test_client()
+
+    for mode in ("dd_dynasty", "prospects"):
+        body = client.get(
+            "/my-players",
+            query_string=[("mode", mode), ("watch", key)],
+            headers={"HX-Request": "true"},
+        ).get_data(as_text=True)
+        assert html.escape(row.name) in body
+        assert "Not available on this board" not in body
+
+
 def test_hitter_and_pitcher_roles_do_not_collapse_in_partial():
     response = app_module.app.test_client().get(
         "/my-players",
@@ -180,3 +230,22 @@ def test_base_loads_watchlist_controller_and_controller_contract_is_fail_soft():
         assert f'params.delete("{name}")' in controller
     assert 'params.append("watch", key)' in controller
     assert 'fetch("/metrics/event"' not in controller
+
+
+def test_my_players_css_has_accessible_responsive_states():
+    css = (Path(__file__).parent.parent / "static" / "style.css").read_text(
+        encoding="utf-8"
+    )
+
+    for selector in (
+        ".my-players",
+        ".my-player-row",
+        ".my-player-numbers",
+        ".is-unavailable",
+        ".watch-toggle",
+        ".watch-toggle:focus-visible",
+    ):
+        assert selector in css
+    assert "min-width: 44px" in css
+    assert "min-height: 44px" in css
+    assert "overflow-wrap: anywhere" in css

@@ -4954,3 +4954,62 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
         text-transform: uppercase;
     }
 }
+
+/* My Players: browser-local progressive enhancement above the active board. */
+.my-players {
+    margin: 0 0 1rem;
+    min-width: 0;
+}
+.my-players[hidden] { display: none; }
+.my-players-card { padding: 1rem; }
+.my-players-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .65rem;
+}
+.my-players-heading h2 { margin: 0; font-size: 1.05rem; }
+.my-players-heading span { color: var(--c-muted); font-size: .78rem; }
+.my-players-list { list-style: none; margin: 0; padding: 0; }
+.my-player-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 44px;
+    align-items: center;
+    gap: .75rem;
+    min-width: 0;
+    padding: .55rem 0;
+    border-top: 1px solid var(--border);
+}
+.my-player-identity { min-width: 0; overflow-wrap: anywhere; }
+.my-player-identity > span { display: block; color: var(--c-muted); font-size: .76rem; }
+.my-player-identity a { color: var(--c-text); }
+.my-player-numbers { display: flex; gap: .8rem; color: var(--c-green); font-variant-numeric: tabular-nums; }
+.my-player-numbers span { min-width: 3.3rem; text-align: right; }
+.my-player-numbers small { display: block; color: var(--c-muted); font-size: .62rem; text-transform: uppercase; }
+.my-player-row.is-unavailable .my-player-identity,
+.my-player-row.is-unavailable .my-player-identity a { color: var(--c-muted); }
+.watch-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: .55rem;
+    background: transparent;
+    color: var(--c-green);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.watch-toggle:hover { border-color: var(--c-green); background: rgba(52, 226, 196, .08); }
+.watch-toggle:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: 2px; }
+.rankings-table .watch-toggle { margin-left: .25rem; }
+
+@media (max-width: 640px) {
+    .my-players-heading { align-items: flex-start; flex-direction: column; gap: .2rem; }
+    .my-player-row { grid-template-columns: minmax(0, 1fr) 44px; }
+    .my-player-numbers { grid-column: 1 / -1; grid-row: 2; justify-content: flex-start; }
+    .my-player-numbers span { text-align: left; }
+    .my-player-row > .watch-toggle { grid-column: 2; grid-row: 1; }
+}

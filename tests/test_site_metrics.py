@@ -2,7 +2,7 @@
 
 Scope is the contract (owner decision, 2026-07-30): pageviews by ROUTE
 PATTERN, anonymous unique/returning visitors via the first-party vc_vid
-cookie, referrer domain + UTM fields, X-visit classification, and the three
+cookie, referrer domain + UTM fields, X-visit classification, and the five
 named click events — nothing else. NO raw IP, NO stored user agent, NO
 fingerprinting; the public summary endpoint serves aggregates only. These
 tests lock both what is collected and what is refused.
@@ -254,6 +254,36 @@ def test_click_event_endpoint_ignores_unknown_metric(metrics_client):
     resp = client.post("/metrics/event", json={"metric": "evil_probe_xyz"})
     assert resp.status_code == 204   # no oracle for probing the allowlist
     assert store.summary(days=1)["clicks"] == {}
+
+
+def test_watch_events_are_aggregate_only_and_discard_targets(metrics_client):
+    client, store = metrics_client
+    for metric in ("watch_player", "unwatch_player"):
+        response = client.post(
+            "/metrics/event",
+            json={"metric": metric, "target": "682634_hitter"},
+        )
+        assert response.status_code == 204
+
+    assert store.summary(days=1)["clicks"] == {
+        "watch_player": 1,
+        "unwatch_player": 1,
+    }
+    import sqlite3
+    with sqlite3.connect(store.db_path) as con:
+        targets = con.execute(
+            "SELECT target_domain FROM events WHERE metric IN (?, ?)",
+            ("watch_player", "unwatch_player"),
+        ).fetchall()
+    assert targets == [(None,), (None,)]
+
+
+def test_my_players_fragment_does_not_inflate_pageviews(metrics_client):
+    client, store = metrics_client
+    response = client.get("/my-players", headers={"HX-Request": "true"})
+
+    assert response.status_code == 200
+    assert store.summary(days=1)["pageviews"]["total"] == 0
 
 
 def test_summary_endpoint_serves_aggregates_only(metrics_client):

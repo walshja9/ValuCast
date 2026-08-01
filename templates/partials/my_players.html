@@ -22,7 +22,7 @@
                 {% if row.value_label %}<span><small>Value</small>{{ row.value_label }}</span>{% endif %}
             </div>
             {% endif %}
-            <button type="button" class="watch-toggle" data-watch-key="{{ row.key }}"
+            <button type="button" class="watch-toggle" data-watch-key="{{ row.key }}" data-watch-name="{{ row.name or 'unavailable player' }}"
                     data-metric="unwatch_player" aria-pressed="true"
                     aria-label="Unfollow {{ row.name or 'unavailable player' }} from My Players">★<span class="sr-only"> Unfollow</span></button>
         </li>

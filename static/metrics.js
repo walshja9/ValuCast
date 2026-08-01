@@ -1,5 +1,5 @@
-/* First-party click metrics (owner scope, 2026-07-30): share-card,
-   trade-analyzer, and outbound-link clicks only. Same-origin beacon, so the
+/* First-party click metrics (owner scope, expanded 2026-08-01): share-card,
+   trade-analyzer, outbound-link, watch, and unwatch clicks only. Same-origin beacon, so the
    site's CSP is untouched. No identifiers are read or sent from here — the
    server manages the anonymous vc_vid cookie; this file never touches it. */
 (function () {

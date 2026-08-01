@@ -3,8 +3,8 @@
 Narrow by design — NOT an analytics platform. Tracks ONLY what the owner
 authorized: pageviews by ROUTE PATTERN (never raw paths), anonymous
 unique/returning visitors via the random first-party vc_vid cookie, referrer
-domain + UTM fields, X-visit classification, and three named click events
-(share_card, trade_analyzer, outbound). NO raw IP, NO stored user agent, NO
+domain + UTM fields, X-visit classification, and five named click events
+(share_card, trade_analyzer, outbound, watch_player, unwatch_player). NO raw IP, NO stored user agent, NO
 fingerprinting — the schema has no column that could hold them, and the
 public summary is aggregates only.
 

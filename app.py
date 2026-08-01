@@ -353,7 +353,7 @@ def _security_headers(response):
 # --- First-party site metrics (owner-scoped, 2026-07-30) ---------------------
 # Narrow by design: pageviews by route pattern, anonymous unique/returning
 # visitors (random first-party vc_vid cookie), referrer domain + UTM, X-visit
-# classification, and three named click events. No raw IP, no stored user
+# classification, and five named click events. No raw IP, no stored user
 # agent, no fingerprinting; the CSP is untouched (same-origin script + beacon).
 # Disabled entirely (no cookie, no writes) unless VALUCAST_ANALYTICS_DB points
 # at the persistent disk — without durable storage "returning visitor" would
@@ -362,7 +362,9 @@ site_metrics = SiteMetricsStore(os.environ.get("VALUCAST_ANALYTICS_DB"))
 
 _METRICS_COOKIE = "vc_vid"
 _METRICS_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
-_METRICS_CLICK_ALLOWED = frozenset({"share_card", "trade_analyzer", "outbound"})
+_METRICS_CLICK_ALLOWED = frozenset({
+    "share_card", "trade_analyzer", "outbound", "watch_player", "unwatch_player",
+})
 _METRICS_VID_RE = re.compile(r"^[0-9a-f]{32}$")
 # UA substrings that mark automated traffic; the UA is inspected, never stored.
 _METRICS_BOT_UA = (
@@ -450,7 +452,7 @@ def _record_site_metrics(response):
 
 @app.route("/metrics/event", methods=["POST"])
 def metrics_event():
-    """Beacon target for the three named click events. Always 204 — the
+    """Beacon target for the five named click events. Always 204 — the
     endpoint is not an oracle for probing the allowlist, and a metrics
     failure must never surface client-side."""
     try:
@@ -460,7 +462,7 @@ def metrics_event():
             if metric in _METRICS_CLICK_ALLOWED:
                 target = payload.get("target")
                 target_domain = None
-                if isinstance(target, str) and target:
+                if metric not in {"watch_player", "unwatch_player"} and isinstance(target, str) and target:
                     target_domain = (
                         target.lower().split("/")[0].split(":")[0] or None
                     )
@@ -5026,9 +5028,16 @@ def _watch_identity_for_player(player) -> str | None:
     return _identity_key(_mlbam_id(player), _watch_role_for_pool(player.pool))
 
 
+def _watch_identity_for_row(row) -> str | None:
+    role = str(getattr(row, "role", "") or "").lower()
+    if role not in {"hitter", "pitcher"}:
+        return None
+    return _identity_key(getattr(row, "mlbam_id", None), role)
+
+
 app.jinja_env.globals.update(
     watch_identity_for_player=_watch_identity_for_player,
-    watch_identity_key=_identity_key,
+    watch_identity_for_row=_watch_identity_for_row,
 )
 
 
