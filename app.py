@@ -100,6 +100,22 @@ AHEAD_OF_THE_CURVE_HOLD = False
 # times. Flip back to True (and redeploy) to re-hold the page/nav/share-card;
 # the daily build computes the artifact either way.
 RECEIPTS_HOLD = False
+_WATCH_KEY_RE = re.compile(r"^[1-9]\d{0,9}_(?:hitter|pitcher)$")
+
+
+def _parse_watch_keys(values, limit: int = 50) -> list[str]:
+    accepted = []
+    seen = set()
+    for value in values:
+        if not isinstance(value, str) or not _WATCH_KEY_RE.fullmatch(value):
+            continue
+        if value in seen:
+            continue
+        seen.add(value)
+        accepted.append(value)
+        if len(accepted) >= limit:
+            break
+    return accepted
 
 
 def _env_flag_held(name: str) -> bool:
@@ -4993,6 +5009,133 @@ def _build_context(args):
     }
 
 
+_WATCH_DISPLAY_FILTERS = frozenset({"pool", "position", "search", "callups", "display"})
+
+
+def _watch_role_for_pool(pool) -> str:
+    return "pitcher" if pool in _PITCHER_POOLS else "hitter"
+
+
+def _watch_context_args(args):
+    """Keep valuation/league settings while removing board-only narrowing."""
+    from werkzeug.datastructures import MultiDict
+
+    return MultiDict(
+        (key, value)
+        for key in args.keys()
+        if key not in _WATCH_DISPLAY_FILTERS and key != "watch"
+        for value in args.getlist(key)
+    )
+
+
+def _my_players_fallbacks(active_store) -> dict[str, dict]:
+    fallbacks: dict[str, dict] = {}
+    for row in dd_store.get_all():
+        key = _row_identity_key(row)
+        if not key:
+            continue
+        mode = "prospects" if row.is_prospect else "dd_dynasty"
+        fallbacks.setdefault(key, {
+            "name": row.name,
+            "alternate_url": "/?" + urlencode({"mode": mode, "search": row.name}),
+        })
+    for player in active_store.get_all():
+        key = _identity_key(_mlbam_id(player), _watch_role_for_pool(player.pool))
+        if not key:
+            continue
+        fallbacks.setdefault(key, {
+            "name": player.name,
+            "alternate_url": "/?" + urlencode({"search": player.name}),
+        })
+    return fallbacks
+
+
+def _my_players_context(args, watch_keys) -> dict:
+    clean_args = _watch_context_args(args)
+    mode = clean_args.get("mode", "categories")
+    display_rows: dict[str, tuple[int, dict]] = {}
+
+    if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
+        ctx = _build_dynasty_context(clean_args)
+        if mode == "prospects":
+            _apply_prospect_board_context(ctx, clean_args)
+        active_store = store
+        active_preset = ctx.get("active_preset")
+        reranked = bool(
+            (mode == "prospects" and (ctx.get("custom_cats_active") or ctx.get("callups")))
+            or (mode == "dd_dynasty" and (active_preset or ctx.get("rank_by") == "now"))
+        )
+        for index, row in enumerate(ctx.get("dd_rows") or [], 1):
+            key = _row_identity_key(row)
+            if not key:
+                continue
+            rank = index if reranked else (
+                row.prospect_rank if mode == "prospects" else (
+                    ctx.get("preset_rank_by_id", {}).get(row.id) or row.dynasty_rank
+                )
+            )
+            value = row.value_for(active_preset) if active_preset else row.dynasty_value
+            display_rows[key] = (index, {
+                "key": key,
+                "resolved": True,
+                "name": row.name,
+                "rank_label": f"#{rank}" if rank is not None else None,
+                "value_label": f"{value:.1f}" if value is not None else None,
+                "team": row.team or "FA",
+                "positions": ", ".join(row.positions) if row.positions else "—",
+                "status_label": row.availability_status_label or _format_context_label(row.status),
+                "movement_label": _value_momentum_label(row) or None,
+                "detail_url": f"/player/{quote(str(row.id), safe='')}?mode={mode}",
+                "alternate_url": None,
+            })
+    else:
+        ctx = _build_context(clean_args)
+        active_store = ctx["active_store"]
+        for index, result in enumerate(ctx.get("results") or [], 1):
+            player = result.player
+            key = _identity_key(_mlbam_id(player), _watch_role_for_pool(player.pool))
+            if not key:
+                continue
+            rank = ctx.get("overall_ranks", {}).get(player.id)
+            display_rows[key] = (index, {
+                "key": key,
+                "resolved": True,
+                "name": player.name,
+                "rank_label": f"#{rank}" if rank is not None else None,
+                "value_label": f"{result.total_value:.2f}",
+                "team": (player.metadata or {}).get("team") or "FA",
+                "positions": ", ".join(player.positions) if player.positions else "—",
+                "status_label": None,
+                "movement_label": None,
+                "detail_url": f"/player/{quote(str(player.id), safe='')}?mode={mode}",
+                "alternate_url": None,
+            })
+
+    fallbacks = _my_players_fallbacks(active_store)
+    rows = []
+    for stored_index, key in enumerate(watch_keys):
+        if key in display_rows:
+            order, row = display_rows[key]
+            rows.append((0, order, stored_index, row))
+            continue
+        fallback = fallbacks.get(key)
+        rows.append((1, stored_index, stored_index, {
+            "key": key,
+            "resolved": False,
+            "name": fallback.get("name") if fallback else None,
+            "rank_label": None,
+            "value_label": None,
+            "team": None,
+            "positions": None,
+            "status_label": "Not available on this board" if fallback else "Player no longer available",
+            "movement_label": None,
+            "detail_url": None,
+            "alternate_url": fallback.get("alternate_url") if fallback else None,
+        }))
+    rows.sort(key=lambda item: item[:3])
+    return {"watch_rows": [item[3] for item in rows]}
+
+
 def _front_door_digest():
     """"Today on ValuCast" strip — assembled from the same committed artifacts
     the deep pages render, so every line deep-links to its source. Every slot
@@ -5209,6 +5352,19 @@ def rankings():
     all_params = "&".join([p for p in [url_params] + extra if p])
     push_url = f"/?{all_params}" if all_params else "/"
     response.headers["HX-Replace-Url"] = push_url
+    return response
+
+
+@app.route("/my-players")
+def my_players():
+    if _browser_direct_partial_request():
+        return redirect("/")
+    watch_keys = _parse_watch_keys(request.args.getlist("watch"))
+    response = make_response(render_template(
+        "partials/my_players.html",
+        **_my_players_context(request.args, watch_keys),
+    ))
+    response.headers["Cache-Control"] = "private, no-store"
     return response
 
 
