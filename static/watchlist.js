@@ -116,7 +116,9 @@
         refreshPanel();
     }
 
-    document.addEventListener("click", handleClick);
+    // Ranking rows are themselves clickable. Capture the star first so a
+    // follow/unfollow never also toggles the row detail underneath it.
+    document.addEventListener("click", handleClick, true);
     document.addEventListener("DOMContentLoaded", start);
     document.addEventListener("htmx:afterSwap", function () { syncControls(); refreshPanel(); });
     window.addEventListener("storage", function (event) {

@@ -230,6 +230,19 @@ def test_base_loads_watchlist_controller_and_controller_contract_is_fail_soft():
         assert f'params.delete("{name}")' in controller
     assert 'params.append("watch", key)' in controller
     assert 'fetch("/metrics/event"' not in controller
+    # The ranking rows themselves are clickable.  The delegated watch handler
+    # must run during capture so following a player cannot also open/close the
+    # row detail beneath the button.
+    assert 'document.addEventListener("click", handleClick, true)' in controller
+
+
+def test_watch_metrics_observe_capture_phase_before_watch_handler_stops_rows():
+    metrics = (Path(__file__).parent.parent / "static" / "metrics.js").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'closest("[data-metric]")' in metrics
+    assert '}, true);' in metrics
 
 
 def test_my_players_css_has_accessible_responsive_states():
