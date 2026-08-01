@@ -130,3 +130,53 @@ def test_hitter_and_pitcher_roles_do_not_collapse_in_partial():
     assert body.count('class="my-player-row is-unavailable"') == 2
     assert 'data-watch-key="9999999999_hitter"' in body
     assert 'data-watch-key="9999999999_pitcher"' in body
+
+
+def test_index_places_hidden_live_panel_immediately_before_rankings():
+    source = (Path(__file__).parent.parent / "templates" / "index.html").read_text(
+        encoding="utf-8"
+    )
+    panel = '<section id="my-players" class="my-players" aria-live="polite" hidden></section>'
+
+    assert panel in source
+    assert source.index(panel) < source.index('<div id="rankings-container">')
+    assert not source[source.index(panel) + len(panel):source.index('<div id="rankings-container">')].strip()
+
+
+def test_board_templates_expose_dormant_watch_buttons_beside_names():
+    root = Path(__file__).parent.parent / "templates" / "partials"
+    redraft = (root / "rankings_table.html").read_text(encoding="utf-8")
+    dynasty = (root / "rankings_table_dynasty.html").read_text(encoding="utf-8")
+
+    for source in (redraft, dynasty):
+        assert 'class="watch-toggle"' in source
+        assert 'data-watch-key="{{ watch_key }}"' in source
+        assert 'aria-pressed="false"' in source
+        assert "Follow" in source
+        assert " hidden" in source
+    assert redraft.index('class="watch-toggle"') < redraft.index("mobile-stat-strip")
+    assert dynasty.index('class="watch-toggle"') < dynasty.index("mobile-stat-strip")
+
+
+def test_base_loads_watchlist_controller_and_controller_contract_is_fail_soft():
+    root = Path(__file__).parent.parent
+    base = (root / "templates" / "base.html").read_text(encoding="utf-8")
+    controller = (root / "static" / "watchlist.js").read_text(encoding="utf-8")
+
+    assert "watchlist.js" in base
+    assert "defer" in base
+    for token in (
+        "vc-watchlist-v1",
+        "MAX_ITEMS = 50",
+        "localStorage",
+        "htmx:afterSwap",
+        'addEventListener("storage"',
+        'headers: { "HX-Request": "true" }',
+        "refreshToken",
+        "URLSearchParams",
+    ):
+        assert token in controller
+    for name in ("pool", "position", "search", "callups", "display"):
+        assert f'params.delete("{name}")' in controller
+    assert 'params.append("watch", key)' in controller
+    assert 'fetch("/metrics/event"' not in controller

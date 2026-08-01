@@ -34,8 +34,10 @@
                 <button type="button" class="compare-cb" aria-label="Add {{ result.player.name }} to compare" onclick="event.stopPropagation(); toggleCompare('{{ result.player.id }}', this)">+</button>
             </td>
             <td class="col-name">
+                {% set watch_key = watch_identity_for_player(result.player) %}
                 <button type="button" class="detail-toggle" aria-expanded="false" aria-label="Show {{ result.player.name }} details" onclick="event.stopPropagation(); toggleDetail('{{ result.player.id }}', this.closest('tr'))">▸</button>
                 <strong>{{ result.player.name }}</strong>
+                {% if watch_key %}<button type="button" class="watch-toggle" data-watch-key="{{ watch_key }}" data-watch-name="{{ result.player.name }}" data-metric="watch_player" aria-pressed="false" aria-label="Follow {{ result.player.name }} in My Players" hidden>☆</button>{% endif %}
                 {% set pos_rank = position_ranks.get(result.player.id, '') %}
                 {% if pos_rank %}<span class="pos-rank">{{ pos_rank }}</span>{% endif %}
                 {% if tier and (tier != prev_tier or loop.index0 == 0) %}

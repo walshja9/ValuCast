@@ -103,6 +103,12 @@ RECEIPTS_HOLD = False
 _WATCH_KEY_RE = re.compile(r"^[1-9]\d{0,9}_(?:hitter|pitcher)$")
 
 
+def _identity_key(mlbam_id, role) -> str | None:
+    if mlbam_id in (None, "") or role in (None, ""):
+        return None
+    return f"{mlbam_id}_{str(role).lower()}"
+
+
 def _parse_watch_keys(values, limit: int = 50) -> list[str]:
     accepted = []
     seen = set()
@@ -5016,6 +5022,16 @@ def _watch_role_for_pool(pool) -> str:
     return "pitcher" if pool in _PITCHER_POOLS else "hitter"
 
 
+def _watch_identity_for_player(player) -> str | None:
+    return _identity_key(_mlbam_id(player), _watch_role_for_pool(player.pool))
+
+
+app.jinja_env.globals.update(
+    watch_identity_for_player=_watch_identity_for_player,
+    watch_identity_key=_identity_key,
+)
+
+
 def _watch_context_args(args):
     """Keep valuation/league settings while removing board-only narrowing."""
     from werkzeug.datastructures import MultiDict
@@ -5925,12 +5941,6 @@ def intelligence_hub():
         readiness=readiness,
         as_of=readiness["quality_date"] or readiness["repository_date"],
     )
-
-
-def _identity_key(mlbam_id, role) -> str | None:
-    if mlbam_id in (None, "") or role in (None, ""):
-        return None
-    return f"{mlbam_id}_{str(role).lower()}"
 
 
 def _row_identity_key(row) -> str | None:
