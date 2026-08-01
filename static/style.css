@@ -4979,12 +4979,12 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     gap: .75rem;
     min-width: 0;
     padding: .55rem 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--c-border);
 }
 .my-player-identity { min-width: 0; overflow-wrap: anywhere; }
 .my-player-identity > span { display: block; color: var(--c-muted); font-size: .76rem; }
 .my-player-identity a { color: var(--c-text); }
-.my-player-numbers { display: flex; gap: .8rem; color: var(--c-green); font-variant-numeric: tabular-nums; }
+.my-player-numbers { display: flex; gap: .8rem; color: var(--c-signal); font-variant-numeric: tabular-nums; }
 .my-player-numbers span { min-width: 3.3rem; text-align: right; }
 .my-player-numbers small { display: block; color: var(--c-muted); font-size: .62rem; text-transform: uppercase; }
 .my-player-row.is-unavailable .my-player-identity,
@@ -4993,18 +4993,23 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     min-width: 44px;
     min-height: 44px;
     padding: 0;
-    border: 1px solid var(--border);
+    border: 1px solid var(--c-border);
     border-radius: .55rem;
     background: transparent;
-    color: var(--c-green);
+    color: var(--c-signal);
     font-size: 1.2rem;
     line-height: 1;
     cursor: pointer;
     vertical-align: middle;
 }
-.watch-toggle:hover { border-color: var(--c-green); background: rgba(52, 226, 196, .08); }
+.watch-toggle:hover { border-color: var(--c-signal); background: rgba(52, 226, 196, .08); }
 .watch-toggle:focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: 2px; }
 .rankings-table .watch-toggle { margin-left: .25rem; }
+.my-players-limit-notice {
+    margin: 0 0 .5rem;
+    color: var(--c-amber);
+    font-size: .85rem;
+}
 
 @media (max-width: 640px) {
     .my-players-heading { align-items: flex-start; flex-direction: column; gap: .2rem; }

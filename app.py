@@ -5025,14 +5025,16 @@ def _watch_role_for_pool(pool) -> str:
 
 
 def _watch_identity_for_player(player) -> str | None:
-    return _identity_key(_mlbam_id(player), _watch_role_for_pool(player.pool))
+    key = _identity_key(_mlbam_id(player), _watch_role_for_pool(player.pool))
+    return key if key and _WATCH_KEY_RE.fullmatch(key) else None
 
 
 def _watch_identity_for_row(row) -> str | None:
     role = str(getattr(row, "role", "") or "").lower()
     if role not in {"hitter", "pitcher"}:
         return None
-    return _identity_key(getattr(row, "mlbam_id", None), role)
+    key = _identity_key(getattr(row, "mlbam_id", None), role)
+    return key if key and _WATCH_KEY_RE.fullmatch(key) else None
 
 
 app.jinja_env.globals.update(
@@ -5086,18 +5088,16 @@ def _my_players_context(args, watch_keys) -> dict:
             _apply_prospect_board_context(ctx, clean_args)
         active_store = store
         active_preset = ctx.get("active_preset")
-        reranked = bool(
-            (mode == "prospects" and (ctx.get("custom_cats_active") or ctx.get("callups")))
-            or (mode == "dd_dynasty" and (active_preset or ctx.get("rank_by") == "now"))
-        )
         for index, row in enumerate(ctx.get("dd_rows") or [], 1):
             key = _row_identity_key(row)
             if not key:
                 continue
-            rank = index if reranked else (
-                row.prospect_rank if mode == "prospects" else (
-                    ctx.get("preset_rank_by_id", {}).get(row.id) or row.dynasty_rank
-                )
+            # Sort position and displayed board rank are intentionally distinct.
+            # "Now" and custom Prospect views re-order rows, but the primary
+            # rank cell still shows Dynasty # / P# (with a separate league-rank
+            # column on Prospects). Mirror that public contract here.
+            rank = row.prospect_rank if mode == "prospects" else (
+                ctx.get("preset_rank_by_id", {}).get(row.id) or row.dynasty_rank
             )
             value = row.value_for(active_preset) if active_preset else row.dynasty_value
             display_rows[key] = (index, {

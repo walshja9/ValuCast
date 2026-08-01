@@ -1,6 +1,7 @@
 import html
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
@@ -165,6 +166,62 @@ def test_same_prospect_identity_resolves_on_dynasty_and_prospect_boards():
         assert "Not available on this board" not in body
 
 
+def test_dynasty_now_panel_uses_displayed_dynasty_rank_not_sort_position():
+    args = MultiDict([
+        ("mode", "dd_dynasty"),
+        ("cats", "R,HR,RBI,SB,OBP"),
+        ("pcats", "W,SV,K,ERA,WHIP"),
+        ("rank_by", "now"),
+    ])
+    board = app_module._build_dynasty_context(args)
+    index, row = next(
+        (index, row)
+        for index, row in enumerate(board["dd_rows"], 1)
+        if row.dynasty_rank != index and app_module._row_identity_key(row)
+    )
+
+    panel = app_module._my_players_context(
+        args, [app_module._row_identity_key(row)]
+    )["watch_rows"][0]
+
+    assert index != row.dynasty_rank
+    assert panel["rank_label"] == f"#{row.dynasty_rank}"
+
+
+def test_custom_prospect_panel_uses_displayed_prospect_rank_not_sort_position():
+    args = MultiDict([
+        ("mode", "prospects"),
+        ("preset", "ops_7x7"),
+        ("rank_by", "league"),
+    ])
+    board = app_module._build_dynasty_context(args)
+    app_module._apply_prospect_board_context(board, args)
+    assert board["custom_cats_active"] is True
+    index, row = next(
+        (index, row)
+        for index, row in enumerate(board["dd_rows"], 1)
+        if row.prospect_rank != index and app_module._row_identity_key(row)
+    )
+
+    panel = app_module._my_players_context(
+        args, [app_module._row_identity_key(row)]
+    )["watch_rows"][0]
+
+    assert index != row.prospect_rank
+    assert panel["rank_label"] == f"#{row.prospect_rank}"
+
+
+def test_watch_controls_reject_malformed_feed_identities():
+    bad_player = SimpleNamespace(
+        metadata={"mlbam_id": "abc"},
+        pool=object(),
+    )
+    bad_row = SimpleNamespace(mlbam_id=-1, role="pitcher")
+
+    assert app_module._watch_identity_for_player(bad_player) is None
+    assert app_module._watch_identity_for_row(bad_row) is None
+
+
 def test_hitter_and_pitcher_roles_do_not_collapse_in_partial():
     response = app_module.app.test_client().get(
         "/my-players",
@@ -234,6 +291,8 @@ def test_base_loads_watchlist_controller_and_controller_contract_is_fail_soft():
     # must run during capture so following a player cannot also open/close the
     # row detail beneath the button.
     assert 'document.addEventListener("click", handleClick, true)' in controller
+    assert 'target.innerHTML = \'<div class="my-players-card glass"><p>My Players is limited' not in controller
+    assert 'className = "my-players-limit-notice"' in controller
 
 
 def test_watch_metrics_observe_capture_phase_before_watch_handler_stops_rows():
@@ -262,3 +321,7 @@ def test_my_players_css_has_accessible_responsive_states():
     assert "min-width: 44px" in css
     assert "min-height: 44px" in css
     assert "overflow-wrap: anywhere" in css
+    assert "var(--border)" not in css
+    assert "var(--c-green)" not in css
+    assert "var(--c-border)" in css
+    assert "var(--c-signal)" in css

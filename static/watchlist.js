@@ -50,7 +50,14 @@
     function announceLimit() {
         var target = panel();
         if (!target) { return; }
-        target.innerHTML = '<div class="my-players-card glass"><p>My Players is limited to 50 players on this device.</p></div>';
+        var notice = target.querySelector(".my-players-limit-notice");
+        if (!notice) {
+            notice = document.createElement("p");
+            notice.className = "my-players-limit-notice";
+            notice.setAttribute("role", "status");
+            target.insertBefore(notice, target.firstChild);
+        }
+        notice.textContent = "My Players is limited to 50 players on this device.";
         target.hidden = false;
     }
 
