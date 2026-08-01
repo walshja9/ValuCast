@@ -17,12 +17,12 @@
     "v06_score_source": "prospect_model_v0_6"
   },
   "elite_factual_raw_fallback_misses": [],
-  "generated_at": "2026-07-31T00:00:00+00:00",
+  "generated_at": "2026-08-01T00:00:00+00:00",
   "input_artifacts": {
     "investment_evidence_artifact": "valucast_international_signing_facts",
     "investment_evidence_as_of": "2026-07-22",
     "prospect_model_version": "0.6.1",
-    "rank_generated_at": "2026-07-31T00:00:00+00:00",
+    "rank_generated_at": "2026-08-01T00:00:00+00:00",
     "rank_name": "ValuCast Prospect Rank v1",
     "rank_version": "0.2.9"
   },
@@ -31,42 +31,42 @@
     "bands": {
       "top_100": {
         "all": {
-          "coverage_rate": 0.87,
-          "covered": 87,
-          "missing": 13,
+          "coverage_rate": 0.88,
+          "covered": 88,
+          "missing": 12,
           "rows": 100
         },
         "hitter": {
-          "coverage_rate": 0.8644,
+          "coverage_rate": 0.8793,
           "covered": 51,
-          "missing": 8,
-          "rows": 59
+          "missing": 7,
+          "rows": 58
         },
         "pitcher": {
-          "coverage_rate": 0.878,
-          "covered": 36,
+          "coverage_rate": 0.881,
+          "covered": 37,
           "missing": 5,
-          "rows": 41
+          "rows": 42
         }
       },
       "top_200": {
         "all": {
-          "coverage_rate": 0.825,
-          "covered": 165,
-          "missing": 35,
+          "coverage_rate": 0.835,
+          "covered": 167,
+          "missing": 33,
           "rows": 200
         },
         "hitter": {
-          "coverage_rate": 0.7807,
-          "covered": 89,
-          "missing": 25,
-          "rows": 114
+          "coverage_rate": 0.7965,
+          "covered": 90,
+          "missing": 23,
+          "rows": 113
         },
         "pitcher": {
-          "coverage_rate": 0.8837,
-          "covered": 76,
+          "coverage_rate": 0.8851,
+          "covered": 77,
           "missing": 10,
-          "rows": 86
+          "rows": 87
         }
       },
       "top_25": {
@@ -91,22 +91,22 @@
       },
       "top_50": {
         "all": {
-          "coverage_rate": 0.98,
-          "covered": 49,
-          "missing": 1,
+          "coverage_rate": 1.0,
+          "covered": 50,
+          "missing": 0,
           "rows": 50
         },
         "hitter": {
-          "coverage_rate": 0.9688,
-          "covered": 31,
-          "missing": 1,
-          "rows": 32
+          "coverage_rate": 1.0,
+          "covered": 30,
+          "missing": 0,
+          "rows": 30
         },
         "pitcher": {
           "coverage_rate": 1.0,
-          "covered": 18,
+          "covered": 20,
           "missing": 0,
-          "rows": 18
+          "rows": 20
         }
       }
     },
@@ -115,63 +115,49 @@
       "maximum_context_score": 100.0,
       "model_score_held_fixed": true,
       "scope": "direct_rank_v1_investment_component_only",
-      "top_50_missing_rows": [
-        {
-          "configured_missing_score": 25.0,
-          "direct_weight": 0.06,
-          "level": "AA",
-          "maximum_direct_score_delta": 4.5,
-          "mlbam_id": 806964,
-          "name": "Sebastian Walcott",
-          "rank": 47,
-          "role": "hitter",
-          "score": 39.08,
-          "score_source": "prospect_model_v0_6",
-          "score_upper_bound": 43.58
-        }
-      ]
+      "top_50_missing_rows": []
     },
     "status": "incomplete",
     "verified_evidence": {
       "bands": {
         "top_100": {
           "all": {
-            "coverage_rate": 0.87,
-            "covered": 87,
-            "missing": 13,
+            "coverage_rate": 0.88,
+            "covered": 88,
+            "missing": 12,
             "rows": 100
           },
           "hitter": {
-            "coverage_rate": 0.8644,
+            "coverage_rate": 0.8793,
             "covered": 51,
-            "missing": 8,
-            "rows": 59
+            "missing": 7,
+            "rows": 58
           },
           "pitcher": {
-            "coverage_rate": 0.878,
-            "covered": 36,
+            "coverage_rate": 0.881,
+            "covered": 37,
             "missing": 5,
-            "rows": 41
+            "rows": 42
           }
         },
         "top_200": {
           "all": {
-            "coverage_rate": 0.825,
-            "covered": 165,
-            "missing": 35,
+            "coverage_rate": 0.835,
+            "covered": 167,
+            "missing": 33,
             "rows": 200
           },
           "hitter": {
-            "coverage_rate": 0.7807,
-            "covered": 89,
-            "missing": 25,
-            "rows": 114
+            "coverage_rate": 0.7965,
+            "covered": 90,
+            "missing": 23,
+            "rows": 113
           },
           "pitcher": {
-            "coverage_rate": 0.8837,
-            "covered": 76,
+            "coverage_rate": 0.8851,
+            "covered": 77,
             "missing": 10,
-            "rows": 86
+            "rows": 87
           }
         },
         "top_25": {
@@ -196,22 +182,22 @@
         },
         "top_50": {
           "all": {
-            "coverage_rate": 0.98,
-            "covered": 49,
-            "missing": 1,
+            "coverage_rate": 1.0,
+            "covered": 50,
+            "missing": 0,
             "rows": 50
           },
           "hitter": {
-            "coverage_rate": 0.9688,
-            "covered": 31,
-            "missing": 1,
-            "rows": 32
+            "coverage_rate": 1.0,
+            "covered": 30,
+            "missing": 0,
+            "rows": 30
           },
           "pitcher": {
             "coverage_rate": 1.0,
-            "covered": 18,
+            "covered": 20,
             "missing": 0,
-            "rows": 18
+            "rows": 20
           }
         }
       },
@@ -233,8 +219,8 @@
     "raw_fallback_count": 0,
     "raw_fallback_top_200_count": 0,
     "raw_fallback_top_50_count": 0,
-    "row_count": 2906,
-    "v06_model_score_count": 2906
+    "row_count": 2909,
+    "v06_model_score_count": 2909
   },
   "source_policy": {
     "dd_and_public_ranks_used_as_context_only": true,
