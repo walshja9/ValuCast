@@ -5,6 +5,7 @@ separate from the universal model and refuse to rank incomplete category sets.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,12 @@ from projections.league_adapter import (
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_league_adapters.json"
+ARCHIVE_DIR = (
+    ROOT
+    / "data"
+    / "prediction_archive"
+    / "valucast_prospect_league_adapters"
+)
 ADAPTER_VERSION = "0.4.0"
 
 PRESETS = {
@@ -204,7 +211,6 @@ def build_adapter_artifact(universal: dict) -> dict:
         )
         for key, config in PRESETS.items()
     }
-    from datetime import datetime, timezone
     return {
         "status": "shadow_only",
         "adapter_version": ADAPTER_VERSION,
@@ -241,9 +247,31 @@ def build_adapter_artifact(universal: dict) -> dict:
     }
 
 
+def archive_adapters(
+    payload: dict,
+    archive_dir: Path = ARCHIVE_DIR,
+) -> tuple[Path, bool]:
+    generated_at = datetime.fromisoformat(
+        payload["generated_at"].replace("Z", "+00:00")
+    )
+    if generated_at.tzinfo is None:
+        generated_at = generated_at.replace(tzinfo=timezone.utc)
+    date_str = generated_at.astimezone(timezone.utc).date().isoformat()
+    path = archive_dir / f"{date_str}.json"
+    text = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return path, False
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+    return path, True
+
+
 def run_adapters(
     universal_path: Path = UNIVERSAL_ARTIFACT_PATH,
     artifact_path: Path = ARTIFACT_PATH,
+    archive_dir: Path = ARCHIVE_DIR,
 ) -> dict:
     universal = json.loads(universal_path.read_text(encoding="utf-8"))
     payload = build_adapter_artifact(universal)
@@ -251,8 +279,11 @@ def run_adapters(
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     os.replace(tmp, artifact_path)
+    archive_path, archive_changed = archive_adapters(payload, archive_dir)
     return {
         "artifact_path": str(artifact_path),
+        "archive_path": str(archive_path),
+        "archive_changed": archive_changed,
         "candidate_count": payload["candidate_count"],
         "preset_statuses": {
             name: preset["status"] for name, preset in payload["presets"].items()

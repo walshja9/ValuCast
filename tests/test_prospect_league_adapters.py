@@ -114,11 +114,68 @@ def test_supported_custom_categories_can_create_research_ranks():
     assert result["roles"]["hitter"]["players"][0]["adapter_rank"] == 1
 
 
-def test_run_adapters_writes_separate_artifact(tmp_path):
+def test_run_adapters_writes_serving_artifact_and_exact_dated_archive(
+    tmp_path, monkeypatch
+):
     universal_path = tmp_path / "universal.json"
     universal_path.write_text(json.dumps(_universal()), encoding="utf-8")
-    result = run_adapters(universal_path, tmp_path / "adapters.json")
+    expected = build_adapter_artifact(_universal())
+    expected["generated_at"] = "2026-07-31T12:34:56+00:00"
+    monkeypatch.setattr(
+        "prospects.adapters.build_adapter_artifact", lambda _universal: expected
+    )
+
+    result = run_adapters(
+        universal_path,
+        tmp_path / "adapters.json",
+        tmp_path / "archive",
+    )
     payload = json.loads((tmp_path / "adapters.json").read_text(encoding="utf-8"))
+    archived = json.loads(
+        (tmp_path / "archive" / "2026-07-31.json").read_text(encoding="utf-8")
+    )
+
     assert result["candidate_count"] == 4
-    assert payload["status"] == "shadow_only"
+    assert result["archive_changed"] is True
+    assert payload == expected
+    assert archived == expected
     assert payload["rule"].startswith("No adapter rank")
+    assert archived["scoring_contract"]["authority"] == "research_only"
+    assert archived["scoring_contract"]["feeds_live_value"] is False
+    assert archived["scoring_contract"]["is_dynasty_value"] is False
+
+
+def test_run_adapters_archive_is_idempotent_and_replaces_only_same_date(
+    tmp_path, monkeypatch
+):
+    universal_path = tmp_path / "universal.json"
+    universal_path.write_text(json.dumps(_universal()), encoding="utf-8")
+    artifact_path = tmp_path / "adapters.json"
+    archive_dir = tmp_path / "archive"
+
+    first_payload = build_adapter_artifact(_universal())
+    first_payload["generated_at"] = "2026-07-31T01:02:03Z"
+    monkeypatch.setattr(
+        "prospects.adapters.build_adapter_artifact", lambda _universal: first_payload
+    )
+    first = run_adapters(universal_path, artifact_path, archive_dir)
+    second = run_adapters(universal_path, artifact_path, archive_dir)
+
+    assert first["archive_changed"] is True
+    assert second["archive_changed"] is False
+
+    other_date = archive_dir / "2026-07-30.json"
+    other_date.write_text("sentinel", encoding="utf-8")
+    changed_payload = json.loads(json.dumps(first_payload))
+    changed_payload["candidate_count"] = 5
+    monkeypatch.setattr(
+        "prospects.adapters.build_adapter_artifact", lambda _universal: changed_payload
+    )
+    changed = run_adapters(universal_path, artifact_path, archive_dir)
+
+    assert changed["archive_changed"] is True
+    assert other_date.read_text(encoding="utf-8") == "sentinel"
+    assert json.loads(
+        (archive_dir / "2026-07-31.json").read_text(encoding="utf-8")
+    ) == changed_payload
+    assert not list(archive_dir.glob("*.tmp"))
