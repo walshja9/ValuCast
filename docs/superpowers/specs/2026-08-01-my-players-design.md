@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-01
 
-**Status:** Design approved; written review pending
+**Status:** Approved for implementation
 
 **Scope:** Display and local browser state only
 
