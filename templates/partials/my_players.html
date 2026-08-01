@@ -1,0 +1,32 @@
+{% if watch_rows %}
+<div class="my-players-card glass">
+    <div class="my-players-heading">
+        <h2>My Players</h2>
+        <span>Saved on this device.</span>
+    </div>
+    <ul class="my-players-list">
+        {% for row in watch_rows %}
+        <li class="my-player-row{{ ' is-unavailable' if not row.resolved else '' }}">
+            <div class="my-player-identity">
+                {% if row.detail_url %}<a href="{{ row.detail_url }}"><strong>{{ row.name }}</strong></a>
+                {% elif row.alternate_url %}<a href="{{ row.alternate_url }}"><strong>{{ row.name }}</strong></a>
+                {% elif row.name %}<strong>{{ row.name }}</strong>
+                {% else %}<strong>Player no longer available</strong>{% endif %}
+                {% if row.team or row.positions %}<span>{{ row.team or '—' }} · {{ row.positions or '—' }}</span>{% endif %}
+                {% if row.status_label %}<span class="my-player-status">{{ row.status_label }}</span>{% endif %}
+                {% if row.movement_label %}<span class="my-player-movement">{{ row.movement_label }}</span>{% endif %}
+            </div>
+            {% if row.resolved %}
+            <div class="my-player-numbers">
+                {% if row.rank_label %}<span><small>Rank</small>{{ row.rank_label }}</span>{% endif %}
+                {% if row.value_label %}<span><small>Value</small>{{ row.value_label }}</span>{% endif %}
+            </div>
+            {% endif %}
+            <button type="button" class="watch-toggle" data-watch-key="{{ row.key }}" data-watch-name="{{ row.name or 'unavailable player' }}"
+                    data-metric="unwatch_player" aria-pressed="true"
+                    aria-label="Unfollow {{ row.name or 'unavailable player' }} from My Players">★<span class="sr-only"> Unfollow</span></button>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
