@@ -1,0 +1,664 @@
+{
+  "artifact": "valucast_consensus_decision_error_audit",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-31T18:00:17.339544+00:00",
+  "as_of": "2026-07-31",
+  "scope": {
+    "kind": "matured_ahead_of_consensus_decisions",
+    "minimum_days_tracked": 14,
+    "decided_statuses": [
+      "closed_caught_up",
+      "open_away",
+      "open_toward",
+      "retired_we_backed_off"
+    ],
+    "claim_time_evidence_only": true
+  },
+  "source_hashes": {
+    "scorecard_sha256": "362aab88cfb8221b8fed7e864a8667eceb7726aa903d68afbdfef95234be8272",
+    "claim_archive_manifest_sha256": "d35bc34d972840357cfb07e9bfd813e47cf939d08fd2045de191efefd74e6c6f",
+    "claim_archive_count": 23
+  },
+  "quality": {
+    "expected_decided_count": 151,
+    "joined_decided_count": 151,
+    "join_errors": [],
+    "ready": true
+  },
+  "overall": {
+    "n": 151,
+    "wins": 42,
+    "moved_away": 34,
+    "retracted": 75,
+    "win_rate": 0.278,
+    "moved_away_rate": 0.225,
+    "retraction_rate": 0.497,
+    "win_rate_wilson_95": {
+      "lower": 0.213,
+      "upper": 0.354
+    },
+    "evidence_status": "eligible_for_exploratory_review"
+  },
+  "matched_control_context": {
+    "control_lift": 0.89,
+    "control_matured_n": 197,
+    "control_toward_rate": 0.315,
+    "segment_level_controls_reconstructed": false
+  },
+  "dimensions": {
+    "role": [
+      {
+        "segment": "hitter",
+        "n": 85,
+        "wins": 23,
+        "moved_away": 15,
+        "retracted": 47,
+        "win_rate": 0.271,
+        "moved_away_rate": 0.176,
+        "retraction_rate": 0.553,
+        "win_rate_wilson_95": {
+          "lower": 0.188,
+          "upper": 0.373
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "pitcher",
+        "n": 66,
+        "wins": 19,
+        "moved_away": 19,
+        "retracted": 28,
+        "win_rate": 0.288,
+        "moved_away_rate": 0.288,
+        "retraction_rate": 0.424,
+        "win_rate_wilson_95": {
+          "lower": 0.193,
+          "upper": 0.406
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      }
+    ],
+    "level": [
+      {
+        "segment": "a_a_plus",
+        "n": 61,
+        "wins": 16,
+        "moved_away": 14,
+        "retracted": 31,
+        "win_rate": 0.262,
+        "moved_away_rate": 0.23,
+        "retraction_rate": 0.508,
+        "win_rate_wilson_95": {
+          "lower": 0.168,
+          "upper": 0.384
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "aa",
+        "n": 48,
+        "wins": 7,
+        "moved_away": 10,
+        "retracted": 31,
+        "win_rate": 0.146,
+        "moved_away_rate": 0.208,
+        "retraction_rate": 0.646,
+        "win_rate_wilson_95": {
+          "lower": 0.072,
+          "upper": 0.272
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "aaa",
+        "n": 42,
+        "wins": 19,
+        "moved_away": 10,
+        "retracted": 13,
+        "win_rate": 0.452,
+        "moved_away_rate": 0.238,
+        "retraction_rate": 0.31,
+        "win_rate_wilson_95": {
+          "lower": 0.312,
+          "upper": 0.601
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      }
+    ],
+    "age": [
+      {
+        "segment": "19_or_younger",
+        "n": 22,
+        "wins": 5,
+        "moved_away": 6,
+        "retracted": 11,
+        "win_rate": 0.227,
+        "moved_away_rate": 0.273,
+        "retraction_rate": 0.5,
+        "win_rate_wilson_95": {
+          "lower": 0.101,
+          "upper": 0.434
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "20_21",
+        "n": 46,
+        "wins": 15,
+        "moved_away": 4,
+        "retracted": 27,
+        "win_rate": 0.326,
+        "moved_away_rate": 0.087,
+        "retraction_rate": 0.587,
+        "win_rate_wilson_95": {
+          "lower": 0.209,
+          "upper": 0.47
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "22_23",
+        "n": 64,
+        "wins": 17,
+        "moved_away": 20,
+        "retracted": 27,
+        "win_rate": 0.266,
+        "moved_away_rate": 0.312,
+        "retraction_rate": 0.422,
+        "win_rate_wilson_95": {
+          "lower": 0.173,
+          "upper": 0.385
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "24_or_older",
+        "n": 19,
+        "wins": 5,
+        "moved_away": 4,
+        "retracted": 10,
+        "win_rate": 0.263,
+        "moved_away_rate": 0.211,
+        "retraction_rate": 0.526,
+        "win_rate_wilson_95": {
+          "lower": 0.118,
+          "upper": 0.488
+        },
+        "evidence_status": "descriptive_only"
+      }
+    ],
+    "confidence": [
+      {
+        "segment": "high",
+        "n": 54,
+        "wins": 16,
+        "moved_away": 14,
+        "retracted": 24,
+        "win_rate": 0.296,
+        "moved_away_rate": 0.259,
+        "retraction_rate": 0.444,
+        "win_rate_wilson_95": {
+          "lower": 0.191,
+          "upper": 0.428
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "low",
+        "n": 7,
+        "wins": 1,
+        "moved_away": 0,
+        "retracted": 6,
+        "win_rate": 0.143,
+        "moved_away_rate": 0.0,
+        "retraction_rate": 0.857,
+        "win_rate_wilson_95": {
+          "lower": 0.026,
+          "upper": 0.513
+        },
+        "evidence_status": "insufficient"
+      },
+      {
+        "segment": "medium",
+        "n": 90,
+        "wins": 25,
+        "moved_away": 20,
+        "retracted": 45,
+        "win_rate": 0.278,
+        "moved_away_rate": 0.222,
+        "retraction_rate": 0.5,
+        "win_rate_wilson_95": {
+          "lower": 0.196,
+          "upper": 0.378
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      }
+    ],
+    "sample_reliability": [
+      {
+        "segment": "25_49_99",
+        "n": 54,
+        "wins": 17,
+        "moved_away": 14,
+        "retracted": 23,
+        "win_rate": 0.315,
+        "moved_away_rate": 0.259,
+        "retraction_rate": 0.426,
+        "win_rate_wilson_95": {
+          "lower": 0.207,
+          "upper": 0.447
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "50_plus",
+        "n": 95,
+        "wins": 25,
+        "moved_away": 20,
+        "retracted": 50,
+        "win_rate": 0.263,
+        "moved_away_rate": 0.211,
+        "retraction_rate": 0.526,
+        "win_rate_wilson_95": {
+          "lower": 0.185,
+          "upper": 0.36
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "below_25",
+        "n": 2,
+        "wins": 0,
+        "moved_away": 0,
+        "retracted": 2,
+        "win_rate": 0.0,
+        "moved_away_rate": 0.0,
+        "retraction_rate": 1.0,
+        "win_rate_wilson_95": {
+          "lower": 0.0,
+          "upper": 0.658
+        },
+        "evidence_status": "insufficient"
+      }
+    ],
+    "current_sample": [
+      {
+        "segment": "100_199_pa",
+        "n": 14,
+        "wins": 5,
+        "moved_away": 2,
+        "retracted": 7,
+        "win_rate": 0.357,
+        "moved_away_rate": 0.143,
+        "retraction_rate": 0.5,
+        "win_rate_wilson_95": {
+          "lower": 0.163,
+          "upper": 0.612
+        },
+        "evidence_status": "descriptive_only"
+      },
+      {
+        "segment": "200_399_pa",
+        "n": 54,
+        "wins": 13,
+        "moved_away": 13,
+        "retracted": 28,
+        "win_rate": 0.241,
+        "moved_away_rate": 0.241,
+        "retraction_rate": 0.519,
+        "win_rate_wilson_95": {
+          "lower": 0.146,
+          "upper": 0.369
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "20_49_99_ip",
+        "n": 27,
+        "wins": 11,
+        "moved_away": 9,
+        "retracted": 7,
+        "win_rate": 0.407,
+        "moved_away_rate": 0.333,
+        "retraction_rate": 0.259,
+        "win_rate_wilson_95": {
+          "lower": 0.245,
+          "upper": 0.593
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "50_99_99_ip",
+        "n": 30,
+        "wins": 8,
+        "moved_away": 8,
+        "retracted": 14,
+        "win_rate": 0.267,
+        "moved_away_rate": 0.267,
+        "retraction_rate": 0.467,
+        "win_rate_wilson_95": {
+          "lower": 0.142,
+          "upper": 0.444
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "below_100_pa",
+        "n": 5,
+        "wins": 0,
+        "moved_away": 0,
+        "retracted": 5,
+        "win_rate": 0.0,
+        "moved_away_rate": 0.0,
+        "retraction_rate": 1.0,
+        "win_rate_wilson_95": {
+          "lower": 0.0,
+          "upper": 0.434
+        },
+        "evidence_status": "insufficient"
+      },
+      {
+        "segment": "below_20_ip",
+        "n": 7,
+        "wins": 0,
+        "moved_away": 1,
+        "retracted": 6,
+        "win_rate": 0.0,
+        "moved_away_rate": 0.143,
+        "retraction_rate": 0.857,
+        "win_rate_wilson_95": {
+          "lower": 0.0,
+          "upper": 0.354
+        },
+        "evidence_status": "insufficient"
+      },
+      {
+        "segment": "missing",
+        "n": 14,
+        "wins": 5,
+        "moved_away": 1,
+        "retracted": 8,
+        "win_rate": 0.357,
+        "moved_away_rate": 0.071,
+        "retraction_rate": 0.571,
+        "win_rate_wilson_95": {
+          "lower": 0.163,
+          "upper": 0.612
+        },
+        "evidence_status": "descriptive_only"
+      }
+    ],
+    "initial_gap": [
+      {
+        "segment": "100_199",
+        "n": 30,
+        "wins": 11,
+        "moved_away": 4,
+        "retracted": 15,
+        "win_rate": 0.367,
+        "moved_away_rate": 0.133,
+        "retraction_rate": 0.5,
+        "win_rate_wilson_95": {
+          "lower": 0.219,
+          "upper": 0.545
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "200_plus",
+        "n": 31,
+        "wins": 12,
+        "moved_away": 3,
+        "retracted": 16,
+        "win_rate": 0.387,
+        "moved_away_rate": 0.097,
+        "retraction_rate": 0.516,
+        "win_rate_wilson_95": {
+          "lower": 0.237,
+          "upper": 0.562
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "25_49",
+        "n": 43,
+        "wins": 8,
+        "moved_away": 10,
+        "retracted": 25,
+        "win_rate": 0.186,
+        "moved_away_rate": 0.233,
+        "retraction_rate": 0.581,
+        "win_rate_wilson_95": {
+          "lower": 0.097,
+          "upper": 0.326
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "50_99",
+        "n": 47,
+        "wins": 11,
+        "moved_away": 17,
+        "retracted": 19,
+        "win_rate": 0.234,
+        "moved_away_rate": 0.362,
+        "retraction_rate": 0.404,
+        "win_rate_wilson_95": {
+          "lower": 0.136,
+          "upper": 0.372
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      }
+    ],
+    "consensus_rank": [
+      {
+        "segment": "101_250",
+        "n": 50,
+        "wins": 13,
+        "moved_away": 18,
+        "retracted": 19,
+        "win_rate": 0.26,
+        "moved_away_rate": 0.36,
+        "retraction_rate": 0.38,
+        "win_rate_wilson_95": {
+          "lower": 0.159,
+          "upper": 0.396
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "1_50",
+        "n": 5,
+        "wins": 1,
+        "moved_away": 2,
+        "retracted": 2,
+        "win_rate": 0.2,
+        "moved_away_rate": 0.4,
+        "retraction_rate": 0.4,
+        "win_rate_wilson_95": {
+          "lower": 0.036,
+          "upper": 0.624
+        },
+        "evidence_status": "insufficient"
+      },
+      {
+        "segment": "251_plus",
+        "n": 74,
+        "wins": 23,
+        "moved_away": 9,
+        "retracted": 42,
+        "win_rate": 0.311,
+        "moved_away_rate": 0.122,
+        "retraction_rate": 0.568,
+        "win_rate_wilson_95": {
+          "lower": 0.217,
+          "upper": 0.423
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "51_100",
+        "n": 22,
+        "wins": 5,
+        "moved_away": 5,
+        "retracted": 12,
+        "win_rate": 0.227,
+        "moved_away_rate": 0.227,
+        "retraction_rate": 0.545,
+        "win_rate_wilson_95": {
+          "lower": 0.101,
+          "upper": 0.434
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      }
+    ],
+    "board_coverage": [
+      {
+        "segment": "2",
+        "n": 131,
+        "wins": 37,
+        "moved_away": 31,
+        "retracted": 63,
+        "win_rate": 0.282,
+        "moved_away_rate": 0.237,
+        "retraction_rate": 0.481,
+        "win_rate_wilson_95": {
+          "lower": 0.212,
+          "upper": 0.365
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "3_4",
+        "n": 19,
+        "wins": 5,
+        "moved_away": 3,
+        "retracted": 11,
+        "win_rate": 0.263,
+        "moved_away_rate": 0.158,
+        "retraction_rate": 0.579,
+        "win_rate_wilson_95": {
+          "lower": 0.118,
+          "upper": 0.488
+        },
+        "evidence_status": "descriptive_only"
+      },
+      {
+        "segment": "5_plus",
+        "n": 1,
+        "wins": 0,
+        "moved_away": 0,
+        "retracted": 1,
+        "win_rate": 0.0,
+        "moved_away_rate": 0.0,
+        "retraction_rate": 1.0,
+        "win_rate_wilson_95": {
+          "lower": 0.0,
+          "upper": 0.793
+        },
+        "evidence_status": "insufficient"
+      }
+    ],
+    "availability": [
+      {
+        "segment": "available",
+        "n": 143,
+        "wins": 41,
+        "moved_away": 33,
+        "retracted": 69,
+        "win_rate": 0.287,
+        "moved_away_rate": 0.231,
+        "retraction_rate": 0.483,
+        "win_rate_wilson_95": {
+          "lower": 0.219,
+          "upper": 0.366
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      },
+      {
+        "segment": "limited",
+        "n": 3,
+        "wins": 1,
+        "moved_away": 1,
+        "retracted": 1,
+        "win_rate": 0.333,
+        "moved_away_rate": 0.333,
+        "retraction_rate": 0.333,
+        "win_rate_wilson_95": {
+          "lower": 0.061,
+          "upper": 0.792
+        },
+        "evidence_status": "insufficient"
+      },
+      {
+        "segment": "unavailable",
+        "n": 5,
+        "wins": 0,
+        "moved_away": 0,
+        "retracted": 5,
+        "win_rate": 0.0,
+        "moved_away_rate": 0.0,
+        "retraction_rate": 1.0,
+        "win_rate_wilson_95": {
+          "lower": 0.0,
+          "upper": 0.434
+        },
+        "evidence_status": "insufficient"
+      }
+    ],
+    "score_source": [
+      {
+        "segment": "other_missing",
+        "n": 7,
+        "wins": 1,
+        "moved_away": 0,
+        "retracted": 6,
+        "win_rate": 0.143,
+        "moved_away_rate": 0.0,
+        "retraction_rate": 0.857,
+        "win_rate_wilson_95": {
+          "lower": 0.026,
+          "upper": 0.513
+        },
+        "evidence_status": "insufficient"
+      },
+      {
+        "segment": "prospect_model_v0_6",
+        "n": 144,
+        "wins": 41,
+        "moved_away": 34,
+        "retracted": 69,
+        "win_rate": 0.285,
+        "moved_away_rate": 0.236,
+        "retraction_rate": 0.479,
+        "win_rate_wilson_95": {
+          "lower": 0.217,
+          "upper": 0.363
+        },
+        "evidence_status": "eligible_for_exploratory_review"
+      }
+    ]
+  },
+  "thresholds": {
+    "minimum_reporting_n": 10,
+    "minimum_candidate_review_n": 20,
+    "interval": "two_sided_wilson_95"
+  },
+  "research_disposition": {
+    "status": "exploratory_error_audit_only",
+    "existing_registrations_checked_first": [
+      "development_density",
+      "position_value_x",
+      "post_2026_prospect_challenger_epoch"
+    ],
+    "new_challenger_authorized": false,
+    "fresh_untouched_cohort_required_for_post_audit_hypotheses": true
+  },
+  "boundaries": {
+    "feeds_model_score": false,
+    "feeds_rank_or_value": false,
+    "feeds_publication": false,
+    "public_surface": false,
+    "authorizes_new_claim": false
+  }
+}
