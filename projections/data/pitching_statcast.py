@@ -544,6 +544,7 @@ def build_chunk_accumulator(
     return {
         "schema_version": SCHEMA_VERSION,
         "feature_contract_version": FEATURE_CONTRACT_VERSION,
+        "eligible_pitcher_ids_sha256": eligible_pitcher_ids_sha256(eligible_ids),
         "start": start,
         "end": end,
         "complete": True,
@@ -589,6 +590,11 @@ def canonical_sha256(payload) -> str:
     return hashlib.sha256(_canonical_bytes(payload)).hexdigest()
 
 
+def eligible_pitcher_ids_sha256(eligible_ids: set[str]) -> str:
+    """Return the order-independent identity of an eligible pitcher universe."""
+    return canonical_sha256(sorted(str(pitcher_id) for pitcher_id in eligible_ids))
+
+
 def _atomic_write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp_name = None
@@ -611,9 +617,21 @@ def _atomic_write_json(path: Path, payload) -> None:
             os.unlink(temp_name)
 
 
-def _validate_chunk(payload: dict, start: str, end: str) -> None:
+def _validate_chunk(
+    payload: dict, start: str, end: str, eligible_ids: set[str]
+) -> None:
     if not isinstance(payload, dict) or payload.get("complete") is not True:
         raise ValueError(f"cached chunk {start}..{end} is not complete")
+    if payload.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError(f"cached chunk {start}..{end} has wrong schema version")
+    if payload.get("feature_contract_version") != FEATURE_CONTRACT_VERSION:
+        raise ValueError(f"cached chunk {start}..{end} has wrong feature contract")
+    if payload.get("eligible_pitcher_ids_sha256") != eligible_pitcher_ids_sha256(
+        eligible_ids
+    ):
+        raise ValueError(
+            f"cached chunk {start}..{end} has wrong eligible pitcher universe"
+        )
     if payload.get("start") != start or payload.get("end") != end:
         raise ValueError(f"cached chunk {start}..{end} has mismatched bounds")
     if not isinstance(payload.get("accumulator"), dict):
@@ -638,13 +656,13 @@ def pull_chunks(
         path = cache_dir / f"{chunk_start}_{chunk_end}.json"
         if path.exists():
             payload = json.loads(path.read_text(encoding="utf-8"))
-            _validate_chunk(payload, chunk_start, chunk_end)
+            _validate_chunk(payload, chunk_start, chunk_end, eligible_ids)
             continue
         last_error = None
         for attempt in range(max_retries):
             try:
                 payload = fetch(chunk_start, chunk_end, eligible_ids)
-                _validate_chunk(payload, chunk_start, chunk_end)
+                _validate_chunk(payload, chunk_start, chunk_end, eligible_ids)
                 _atomic_write_json(path, payload)
                 if retry_sleep_seconds:
                     time.sleep(retry_sleep_seconds)
@@ -662,7 +680,7 @@ def pull_chunks(
 
 
 def load_cached_season(
-    cache_dir: Path, start: str, end: str
+    cache_dir: Path, start: str, end: str, eligible_ids: set[str]
 ) -> tuple[dict, int]:
     cache_dir = Path(cache_dir)
     chunks = date_chunks(start, end)
@@ -683,7 +701,7 @@ def load_cached_season(
         if not path.exists():
             raise ValueError(f"missing expected chunk {chunk_start}..{chunk_end}")
         payload = json.loads(path.read_text(encoding="utf-8"))
-        _validate_chunk(payload, chunk_start, chunk_end)
+        _validate_chunk(payload, chunk_start, chunk_end, eligible_ids)
         merged = merge_accumulators(merged, payload["accumulator"])
         completed += 1
     return merged, completed
@@ -748,6 +766,7 @@ def seal_season(
         "expected_chunk_count": int(expected_chunk_count),
         "completed_chunk_count": int(completed_chunk_count),
         "eligible_pitcher_count": len(eligible_ids),
+        "eligible_pitcher_ids_sha256": eligible_pitcher_ids_sha256(eligible_ids),
         "qualified_feature_row_count": len(rows),
         "unknown_pitch_count": unknown,
         "unknown_pitch_share": unknown_share,
@@ -756,27 +775,36 @@ def seal_season(
         "canonical_sha256": digest,
     }
 
-    if season_path.exists():
-        existing_rows = json.loads(season_path.read_text(encoding="utf-8"))
-        if canonical_sha256(existing_rows) != digest:
-            raise ValueError(
-                f"Refusing to overwrite finalized pitching Statcast season {season}"
-            )
-    else:
-        _atomic_write_json(season_path, rows)
-
     manifest_path = output_dir / "manifest.json"
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("schema_version") != SCHEMA_VERSION:
+            raise ValueError("manifest schema version does not match acquisition")
+        if manifest.get("feature_contract_version") != FEATURE_CONTRACT_VERSION:
+            raise ValueError("manifest feature contract does not match acquisition")
+        if not isinstance(manifest.get("seasons"), dict):
+            raise ValueError("manifest seasons must be an object")
     else:
         manifest = {
             "schema_version": SCHEMA_VERSION,
             "feature_contract_version": FEATURE_CONTRACT_VERSION,
             "seasons": {},
         }
-    existing_entry = manifest.setdefault("seasons", {}).get(str(season))
+    existing_entry = manifest["seasons"].get(str(season))
     if existing_entry is not None and existing_entry != entry:
-        raise ValueError(f"Refusing to overwrite finalized manifest season {season}")
+        raise ValueError(
+            f"Refusing to overwrite finalized: conflicting manifest season {season}"
+        )
+
+    if season_path.exists():
+        existing_rows = json.loads(season_path.read_text(encoding="utf-8"))
+        if canonical_sha256(existing_rows) != digest:
+            raise ValueError(
+                f"Refusing to overwrite finalized pitching Statcast season {season}"
+            )
+
+    if not season_path.exists():
+        _atomic_write_json(season_path, rows)
     if existing_entry is None:
         manifest["seasons"][str(season)] = entry
         _atomic_write_json(manifest_path, manifest)
@@ -797,7 +825,9 @@ def acquire_season(
     eligible_ids = load_eligible_pitcher_ids(season, data_dir)
     cache_dir = Path(cache_root) / str(season)
     expected = pull_chunks(start, end, cache_dir, eligible_ids)
-    accumulator, completed = load_cached_season(cache_dir, start, end)
+    accumulator, completed = load_cached_season(
+        cache_dir, start, end, eligible_ids
+    )
     return seal_season(
         accumulator,
         season=season,

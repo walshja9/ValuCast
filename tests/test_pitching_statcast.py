@@ -71,17 +71,28 @@ def _qualified_accumulator(count=250, *, unknown_pitches=0):
     }
 
 
-def _chunk_payload(start, end, accumulator=None):
+def _chunk_payload(start, end, accumulator=None, eligible_ids=("101",)):
     accumulator = accumulator or _aggregate([_pitch()])
     return {
         "schema_version": 1,
         "feature_contract_version": "mlb_pitcher_statcast_v1",
+        "eligible_pitcher_ids_sha256": (
+            pitching_statcast.eligible_pitcher_ids_sha256(set(eligible_ids))
+        ),
         "start": start,
         "end": end,
         "complete": True,
         "response_row_count": 1,
         "parseable_pitch_count": 1,
         "accumulator": accumulator,
+    }
+
+
+def _tree_bytes(root):
+    return {
+        path.relative_to(root).as_posix(): path.read_bytes()
+        for path in root.rglob("*")
+        if path.is_file()
     }
 
 
@@ -379,6 +390,9 @@ def test_stream_reduction_keeps_only_compact_accumulator_data():
     assert payload["complete"] is True
     assert payload["response_row_count"] == 1
     assert payload["parseable_pitch_count"] == 1
+    assert payload["eligible_pitcher_ids_sha256"] == (
+        pitching_statcast.eligible_pitcher_ids_sha256({"101"})
+    )
     assert payload["accumulator"]["pitchers"]["101"]["pitch_count"] == 1
     assert "Never Store" not in encoded
     assert "game_pk" not in encoded
@@ -394,7 +408,7 @@ def test_loading_cached_season_fails_when_an_expected_chunk_is_missing(tmp_path)
 
     with pytest.raises(ValueError, match="missing expected chunk"):
         pitching_statcast.load_cached_season(
-            tmp_path, "2025-04-01", "2025-04-10"
+            tmp_path, "2025-04-01", "2025-04-10", {"101"}
         )
 
 
@@ -408,7 +422,39 @@ def test_loading_cached_season_refuses_raw_or_unexpected_cache_files(tmp_path):
 
     with pytest.raises(ValueError, match="raw or unexpected cache file"):
         pitching_statcast.load_cached_season(
-            tmp_path, "2025-04-01", "2025-04-05"
+            tmp_path, "2025-04-01", "2025-04-05", {"101"}
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "replacement", "match"),
+    [
+        ("schema_version", 999, "schema version"),
+        ("feature_contract_version", "wrong", "feature contract"),
+        ("eligible_pitcher_ids_sha256", "0" * 64, "eligible pitcher universe"),
+    ],
+)
+def test_cached_chunks_are_bound_to_schema_contract_and_eligible_universe(
+    tmp_path, field, replacement, match
+):
+    path = tmp_path / "2025-04-01_2025-04-05.json"
+    payload = _chunk_payload("2025-04-01", "2025-04-05")
+    payload[field] = replacement
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match=match):
+        pitching_statcast.pull_chunks(
+            "2025-04-01",
+            "2025-04-05",
+            tmp_path,
+            {"101"},
+            fetch=lambda *_: pytest.fail("stale compact evidence was fetched/used"),
+            retry_sleep_seconds=0,
+        )
+
+    with pytest.raises(ValueError, match=match):
+        pitching_statcast.load_cached_season(
+            tmp_path, "2025-04-01", "2025-04-05", {"101"}
         )
 
 
@@ -471,6 +517,9 @@ def test_sealed_seasons_are_immutable_and_manifest_is_complete(tmp_path):
         "expected_chunk_count": 40,
         "completed_chunk_count": 40,
         "eligible_pitcher_count": 250,
+        "eligible_pitcher_ids_sha256": (
+            pitching_statcast.eligible_pitcher_ids_sha256(eligible_ids)
+        ),
         "qualified_feature_row_count": 250,
         "unknown_pitch_count": 0,
         "unknown_pitch_share": 0.0,
@@ -514,20 +563,89 @@ def test_sealed_seasons_are_immutable_and_manifest_is_complete(tmp_path):
         )
 
 
+@pytest.mark.parametrize(
+    ("field", "replacement", "match"),
+    [
+        ("schema_version", 999, "manifest schema version"),
+        ("feature_contract_version", "wrong", "manifest feature contract"),
+    ],
+)
+def test_seal_preflights_manifest_contract_before_writing_any_season_file(
+    tmp_path, field, replacement, match
+):
+    manifest = {
+        "schema_version": 1,
+        "feature_contract_version": "mlb_pitcher_statcast_v1",
+        "seasons": {},
+    }
+    manifest[field] = replacement
+    (tmp_path / "manifest.json").write_text(
+        json.dumps(manifest, indent=2), encoding="utf-8"
+    )
+    before = _tree_bytes(tmp_path)
+    eligible_ids = {str(100000 + index) for index in range(250)}
+
+    with pytest.raises(ValueError, match=match):
+        pitching_statcast.seal_season(
+            _qualified_accumulator(250),
+            season=2024,
+            start="2024-03-20",
+            end="2024-09-30",
+            expected_chunk_count=40,
+            completed_chunk_count=40,
+            eligible_ids=eligible_ids,
+            output_dir=tmp_path,
+        )
+
+    assert _tree_bytes(tmp_path) == before
+    assert not (tmp_path / "pitching_statcast_2024.json").exists()
+
+
+def test_seal_preflights_conflicting_manifest_entry_without_orphaning_season(tmp_path):
+    manifest = {
+        "schema_version": 1,
+        "feature_contract_version": "mlb_pitcher_statcast_v1",
+        "seasons": {"2024": {"canonical_sha256": "conflict"}},
+    }
+    (tmp_path / "manifest.json").write_text(
+        json.dumps(manifest, indent=2), encoding="utf-8"
+    )
+    before = _tree_bytes(tmp_path)
+    eligible_ids = {str(100000 + index) for index in range(250)}
+
+    with pytest.raises(ValueError, match="conflicting manifest season 2024"):
+        pitching_statcast.seal_season(
+            _qualified_accumulator(250),
+            season=2024,
+            start="2024-03-20",
+            end="2024-09-30",
+            expected_chunk_count=40,
+            completed_chunk_count=40,
+            eligible_ids=eligible_ids,
+            output_dir=tmp_path,
+        )
+
+    assert _tree_bytes(tmp_path) == before
+    assert not (tmp_path / "pitching_statcast_2024.json").exists()
+
+
 def test_generated_cache_and_output_trees_contain_no_raw_pitch_files(tmp_path):
     cache_dir = tmp_path / "cache"
     output_dir = tmp_path / "output"
     accumulator = _qualified_accumulator(250)
+    eligible_ids = {str(100000 + index) for index in range(250)}
     pitching_statcast.pull_chunks(
         "2024-03-20",
         "2024-03-24",
         cache_dir,
-        {str(100000 + index) for index in range(250)},
-        fetch=lambda start, end, _: _chunk_payload(start, end, accumulator),
+        eligible_ids,
+        fetch=lambda start, end, _: _chunk_payload(
+            start, end, accumulator, eligible_ids
+        ),
         retry_sleep_seconds=0,
     )
     merged, completed = pitching_statcast.load_cached_season(
-        cache_dir, "2024-03-20", "2024-03-24"
+        cache_dir, "2024-03-20", "2024-03-24", eligible_ids
     )
     pitching_statcast.seal_season(
         merged,
@@ -536,7 +654,7 @@ def test_generated_cache_and_output_trees_contain_no_raw_pitch_files(tmp_path):
         end="2024-03-24",
         expected_chunk_count=1,
         completed_chunk_count=completed,
-        eligible_ids={str(100000 + index) for index in range(250)},
+        eligible_ids=eligible_ids,
         output_dir=output_dir,
     )
 
