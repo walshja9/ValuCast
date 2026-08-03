@@ -4,11 +4,16 @@ The store is display-only scouting reference (FV + tool grades). It must never
 be wired into scoring; this test only covers the card-side lookup contract.
 """
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from web.fg_fv_store import FgFvStore, _DEFAULT_PATH
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class TestFgFvStore(unittest.TestCase):
@@ -41,6 +46,16 @@ class TestFgFvStore(unittest.TestCase):
         rec = store.get(sample_mid)
         self.assertIsNotNone(rec)
         self.assertIn("fv", rec)
+
+    def test_current_export_passes_builder_self_check(self):
+        result = subprocess.run(
+            [sys.executable, "scripts/build_fangraphs_fv_snapshot.py"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

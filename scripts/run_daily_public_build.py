@@ -62,6 +62,9 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_pooled_shadow.py",),
     ("scripts/build_prospect_universe.py",),
     ("scripts/build_prospect_availability.py",),
+    # HKB is external context only. The refresh is fail-soft on upstream outages
+    # and promotes source + snapshot together before the rank reads them.
+    ("scripts/fetch_hkb_source.py",),
     ("scripts/build_prospect_rank_v1.py",),
     # Contract: combined-level shadow runs IMMEDIATELY after the rank build
     # (asserted by test_combined_level_shadow) — nothing may sit between them.

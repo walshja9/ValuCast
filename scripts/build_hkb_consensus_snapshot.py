@@ -2,13 +2,13 @@
 consensus snapshot, mirroring the Pipeline/STS/FG/PL snapshots that
 prospects/rank_v1.py merges into context_only.source_ranks.
 
-HKB is editorial (no API). The source is the committed CSV data/hkb/hkb_source.csv
+HKB is external context (no supported API). The source is the committed CSV data/hkb/hkb_source.csv
 (Rank,Name,... columns). Names are joined to mlbam_id against ValuCast's own board +
 universe (the repo joins on mlbam_id, never name) via the same _normalize_name used to
 build normalized_name everywhere else.
 
-Out-of-band (run when HKB re-ranks): drop a fresh export into data/hkb/hkb_source.csv
-and re-run. The committed snapshot is what the daily build reads, so no daily step.
+The daily refresh fetches a candidate source and promotes source + snapshot only
+after this builder succeeds. The committed pair remains the network-free serving layer.
 """
 from __future__ import annotations
 

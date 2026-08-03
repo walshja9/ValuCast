@@ -47,7 +47,7 @@ def test_pl_counts_toward_consensus_and_is_capped():
     assert "pl" not in _public_source_ranks({"hkb": 184, "pl": 601})
 
 
-_HEADER = "Rk,Player,Pos,Team,Level,Age,Min,Max,App,Var,High,Low,Greg,Kyle,PJ,Tom"
+_HEADER = "Tier,Rk,Mv,Player,Pos,Team,Level,Age,Min,Max,App,Spr,High,Low,Greg,Kyle,Lucas,PJ,Raj,Tom"
 
 
 def _cand(mlbam, *, org, age, role):
@@ -58,8 +58,8 @@ def test_best_rank_wins_on_duplicate_join(tmp_path, monkeypatch):
     csv_path = tmp_path / "pl.csv"
     csv_path.write_text(
         _HEADER + "\n"
-        "50,Same Guy,SS,BOS,AA,21,,,,,,,,,,\n"
-        "30,Same Guy,SS,BOS,AA,21,,,,,,,,,,\n",
+        ",50,,Same Guy,SS,BOS,AA,21,,,,,,,,,,,,\n"
+        ",30,,Same Guy,SS,BOS,AA,21,,,,,,,,,,,,\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(pl, "PL_CSV", csv_path)
@@ -78,7 +78,7 @@ def test_team_age_mismatch_routes_to_unmatched(tmp_path, monkeypatch):
     # disagree -> unmatched, never players_by_mlbam.
     csv_path = tmp_path / "pl.csv"
     csv_path.write_text(
-        _HEADER + "\n35,Luis Hernandez,SS,SFG,CPX,17.6,,,,,,,,,,\n",
+        _HEADER + "\n,35,,Luis Hernandez,SS,SFG,CPX,17.6,,,,,,,,,,,,\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(pl, "PL_CSV", csv_path)
@@ -96,7 +96,7 @@ def test_team_and_age_match_joins(tmp_path, monkeypatch):
     # The real identity (org + age agree, org via the SF->SFG normalization) matches.
     csv_path = tmp_path / "pl.csv"
     csv_path.write_text(
-        _HEADER + "\n1,Real Guy,SS,SF,AA,21.4,,,,,,,,,,\n",
+        _HEADER + "\n,1,,Real Guy,SS,SF,AA,21.4,,,,,,,,,,,,\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(pl, "PL_CSV", csv_path)
@@ -112,7 +112,7 @@ def test_team_and_age_match_joins(tmp_path, monkeypatch):
 def test_per_ranker_columns_never_persisted(tmp_path, monkeypatch):
     csv_path = tmp_path / "pl.csv"
     csv_path.write_text(
-        _HEADER + "\n1,Real Guy,SS,BOS,AA,21,1,1,4,0.0,Tie,Tie,1,1,1,1\n",
+        _HEADER + "\n,1,,Real Guy,SS,BOS,AA,21,1,1,6,0.0,Tie,Tie,1,1,1,1,1,1\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(pl, "PL_CSV", csv_path)
@@ -123,13 +123,19 @@ def test_per_ranker_columns_never_persisted(tmp_path, monkeypatch):
     snap = pl.build_snapshot()
     record = snap["players_by_mlbam"]["555"]
     assert set(record) == {"name", "role", "pl_rank", "mlbam_id"}
-    for banned in ("Greg", "Kyle", "PJ", "Tom", "Min", "Max", "App", "Var", "High", "Low"):
+    for banned in (
+        "Greg", "Kyle", "Lucas", "PJ", "Raj", "Tom",
+        "Min", "Max", "App", "Spr", "High", "Low",
+    ):
         assert banned not in record
 
 
 def test_source_as_of_is_csv_mtime(tmp_path, monkeypatch):
     csv_path = tmp_path / "pl.csv"
-    csv_path.write_text(_HEADER + "\n1,Real Guy,SS,BOS,AA,21,,,,,,,,,,\n", encoding="utf-8")
+    csv_path.write_text(
+        _HEADER + "\n,1,,Real Guy,SS,BOS,AA,21,,,,,,,,,,,,\n",
+        encoding="utf-8",
+    )
     monkeypatch.setattr(pl, "PL_CSV", csv_path)
     monkeypatch.setattr(
         pl, "_board_name_index",

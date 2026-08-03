@@ -8,8 +8,8 @@ thousands of single-sub-model rows into the consensus universe):
   data/sts/sts_consensus_pitchers.csv
 
 STS publishes hitters and pitchers as separate lists, each with an "Avg Rank"
-(mean rank across its 7 source systems: BaGS/DIGS, FScore, PG+, Prospect
-Larceny, OOPSY, PARS, Prospect Tilt). We combine both, sort by Avg Rank, and
+(mean rank across its 8 source systems: BaGS, FScore, PG+, Prospect Larceny,
+OOPSY Peak, PARS, Prospect Tilt, LFX). We combine both, sort by Avg Rank, and
 assign a single COMBINED ordinal so it's comparable to the other combined
 prospect boards (pipeline/hkb/FG). Join is name-based (STS carries no mlbam),
 role-disambiguated against the current prospect board.
@@ -45,7 +45,7 @@ from scripts.consensus_join_util import (  # noqa: E402
 HIT_CSV = ROOT / "data" / "sts" / "sts_consensus_hitters.csv"
 PIT_CSV = ROOT / "data" / "sts" / "sts_consensus_pitchers.csv"
 
-# An STS row's "Coverage" = how many of its 7 sub-models rate the player. Rows
+# An STS row's "Coverage" = how many of its 8 sub-models rate the player. Rows
 # below 3 are one or two stat models' opinions, not a mini-consensus -- the
 # 6/24 vintage (exported with "Show low-coverage" OFF) had a floor of 3, and
 # the source definition must not drift with an export toggle (the 7/16 export
