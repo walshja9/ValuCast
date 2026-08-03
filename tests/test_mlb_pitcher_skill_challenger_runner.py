@@ -360,7 +360,7 @@ def test_prepare_fold_is_exact_walk_forward_and_held_out_poison_cannot_enter_tra
             row["held_out_hand_poison"] = "L" if row.get("pitcher_hand") != "L" else "R"
     for row in poisoned["outcomes"]:
         if row["season"] >= 2023:
-            row["K"] = row["BF"] - row["BB"]
+            row["K"] = row["BF"] - row["BB"] - row["H_ALLOWED"]
     after = harness.prepare_fold(poisoned, 2023, minimum_pitches=500)
     assert after["training_rows"] == before["training_rows"]
     assert harness.fit_fold(before["training_rows"], harness.PitcherSkillChallengerParams()) == harness.fit_fold(
@@ -684,6 +684,223 @@ def test_zero_ip_outcome_fails_before_fit_or_scored_endpoint_reconstruction(
     )
     with pytest.raises(ValueError, match="outcome IP must be positive"):
         harness.evaluate_registered_look(bundle, _registration())
+
+
+@pytest.mark.parametrize("field", ["BF", "K", "BB", "ER", "H_ALLOWED"])
+def test_observed_outcome_counts_must_be_integer_valued(field):
+    bundle = _bundle(players=2)
+    outcome = next(
+        row
+        for row in bundle["outcomes"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    outcome[field] = float(outcome[field]) + 0.5
+    with pytest.raises(ValueError, match="integer-valued"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda feature: feature.update(pitch_count=700.5),
+        lambda feature: feature["arsenal"].update(count=2.5),
+        *[
+            (
+                lambda feature, field=field: feature["pitch_types"]["four_seam"]
+                ["shape"][field].update(sample_count=300.5)
+            )
+            for field in (
+                "velocity",
+                "induced_vertical_movement",
+                "horizontal_movement",
+                "spin",
+                "extension",
+            )
+        ],
+    ],
+)
+def test_consumed_feature_counts_must_be_integer_valued(mutation):
+    bundle = _bundle(players=2)
+    feature = next(
+        row
+        for row in bundle["features"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2022
+    )
+    mutation(feature)
+    with pytest.raises(ValueError, match="integer-valued"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+def test_outcome_strikeouts_walks_and_hits_cannot_exceed_batters_faced():
+    bundle = _bundle(players=2)
+    outcome = next(
+        row
+        for row in bundle["outcomes"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    outcome["H_ALLOWED"] = outcome["BF"] - outcome["K"] - outcome["BB"] + 1
+    with pytest.raises(ValueError, match="K plus BB plus H_ALLOWED"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (
+            lambda feature: feature["location"].update(
+                heart_rate=feature["location"]["zone_rate"] + 0.01
+            ),
+            "heart_rate cannot exceed zone_rate",
+        ),
+        (
+            lambda feature: feature["outcomes"].update(
+                called_strike_rate=feature["outcomes"]["csw_rate"] + 0.01
+            ),
+            "called_strike_rate cannot exceed csw_rate",
+        ),
+        (
+            lambda feature: feature["outcomes"].update(
+                csw_rate=feature["outcomes"]["called_strike_rate"]
+                + feature["outcomes"]["whiff_rate"]
+                + 0.01
+            ),
+            "csw_rate cannot exceed called_strike_rate plus whiff_rate",
+        ),
+        (
+            lambda feature: feature["pitch_types"].update(
+                slider={**feature["pitch_types"]["slider"], "usage": 0.5},
+                four_seam={
+                    **feature["pitch_types"]["four_seam"],
+                    "usage": 0.6,
+                },
+            ),
+            "pitch-type usage sum cannot exceed 1",
+        ),
+        (
+            lambda feature: feature["arsenal"].update(count=1),
+            "arsenal.count must equal included pitch-type count",
+        ),
+    ],
+)
+def test_registered_feature_relations_fail_closed(mutation, message):
+    bundle = _bundle(players=2)
+    feature = next(
+        row
+        for row in bundle["features"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2022
+    )
+    mutation(feature)
+    with pytest.raises(ValueError, match=message):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+@pytest.mark.parametrize(
+    ("field", "bad_value"),
+    [
+        ("BF", 0.0),
+        ("IP", 0.0),
+        ("K", -1.0),
+        ("BB", -1.0),
+        ("HR", -1.0),
+        ("HBP", -1.0),
+        ("H_ALLOWED", -1.0),
+        ("K_9", -1.0),
+        ("BB_9", -1.0),
+        ("ERA", -1.0),
+        ("WHIP", -1.0),
+        ("cFIP", -1.0),
+        ("cFIP", float("nan")),
+        ("p_sp", float("inf")),
+    ],
+)
+def test_result_determining_control_inputs_fail_closed(field, bad_value):
+    bundle = _bundle(players=2)
+    control = next(
+        row
+        for row in bundle["controls"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    control[field] = bad_value
+    with pytest.raises(ValueError, match="Control"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+@pytest.mark.parametrize("p_sp", [-0.01, 1.01])
+def test_control_role_probability_must_be_within_unit_interval(p_sp):
+    bundle = _bundle(players=2)
+    control = next(
+        row
+        for row in bundle["controls"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    control["p_sp"] = p_sp
+    with pytest.raises(ValueError, match=r"Control p_sp must be in \[0, 1\]"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+def test_control_strikeouts_plus_walks_cannot_exceed_batters_faced():
+    bundle = _bundle(players=2)
+    control = next(
+        row
+        for row in bundle["controls"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    control["K"] = control["BF"] - control["BB"] + 1
+    with pytest.raises(ValueError, match="Control K plus BB cannot exceed Control BF"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+@pytest.mark.parametrize("fallback_kind", ["missing_feature", "below_pitch_floor"])
+def test_invalid_control_cannot_reach_fit_or_exact_control_fallback(
+    monkeypatch, fallback_kind
+):
+    bundle = _bundle(players=2)
+    if fallback_kind == "missing_feature":
+        bundle["features"] = [
+            row
+            for row in bundle["features"]
+            if not (row["mlbam_id"] == "1000" and row["season"] == 2022)
+        ]
+    else:
+        feature = next(
+            row
+            for row in bundle["features"]
+            if row["mlbam_id"] == "1000" and row["season"] == 2022
+        )
+        feature["pitch_count"] = 499
+    control = next(
+        row
+        for row in bundle["controls"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    control["WHIP"] = float("nan")
+    monkeypatch.setattr(
+        harness,
+        "fit_fold",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("invalid Control reached fit")
+        ),
+    )
+    with pytest.raises(ValueError, match="Control"):
+        harness.evaluate_registered_look(bundle, _registration())
+
+
+def test_observed_ip_and_projected_control_counts_may_remain_fractional():
+    bundle = _bundle(players=2)
+    outcome = next(
+        row
+        for row in bundle["outcomes"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    outcome["IP"] = 149.1
+    control = next(
+        row
+        for row in bundle["controls"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    control.update(IP=149.1, K=150.5, BB=47.25, HR=17.5, HBP=4.25)
+    fold = harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+    assert fold["qualification"]["eligible"] == 2
 
 
 def test_registration_extraction_is_deterministic_and_drift_fails_before_fit(tmp_path, monkeypatch):

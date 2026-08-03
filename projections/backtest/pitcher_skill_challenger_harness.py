@@ -402,9 +402,17 @@ def _required_outcome_number(outcome: dict, key: str) -> float:
     return float(value)
 
 
+def _required_outcome_count(outcome: dict, key: str) -> float:
+    value = _required_outcome_number(outcome, key)
+    if not value.is_integer():
+        raise ValueError(f"outcome {key} must be integer-valued")
+    return value
+
+
 def _validate_outcome(outcome: dict) -> None:
-    for key in ("BF", "IP", "K", "BB", "ER", "H_ALLOWED"):
-        _required_outcome_number(outcome, key)
+    for key in ("BF", "K", "BB", "ER", "H_ALLOWED"):
+        _required_outcome_count(outcome, key)
+    _required_outcome_number(outcome, "IP")
     bf = float(outcome["BF"])
     if bf <= 0:
         raise ValueError("outcome BF must be positive")
@@ -413,8 +421,15 @@ def _validate_outcome(outcome: dict) -> None:
     for key in ("K", "BB", "H_ALLOWED"):
         if float(outcome[key]) > bf:
             raise ValueError(f"outcome {key} cannot exceed outcome BF")
-    if float(outcome["K"]) + float(outcome["BB"]) > bf:
-        raise ValueError("outcome K plus BB cannot exceed outcome BF")
+    if (
+        float(outcome["K"])
+        + float(outcome["BB"])
+        + float(outcome["H_ALLOWED"])
+        > bf
+    ):
+        raise ValueError(
+            "outcome K plus BB plus H_ALLOWED cannot exceed outcome BF"
+        )
 
 
 def _required_score_number(mapping: dict, key: str, path: str) -> float:
@@ -449,29 +464,58 @@ def _required_nonnegative(mapping: dict, key: str, path: str) -> float:
     return value
 
 
+def _required_integer_nonnegative(mapping: dict, key: str, path: str) -> float:
+    value = _required_nonnegative(mapping, key, path)
+    if not value.is_integer():
+        raise ValueError(
+            f"malformed score feature: {path}.{key} must be integer-valued"
+        )
+    return value
+
+
 def _validate_score_feature(feature: dict) -> None:
     """Validate present, eligible feature evidence before prediction or rebuilding lines."""
-    _required_nonnegative(feature, "pitch_count", "feature")
+    _required_integer_nonnegative(feature, "pitch_count", "feature")
     outcomes = _required_score_mapping(feature, "outcomes", "feature")
-    for key in ("whiff_rate", "csw_rate", "called_strike_rate"):
-        _required_probability(outcomes, key, "feature.outcomes")
+    whiff_rate = _required_probability(outcomes, "whiff_rate", "feature.outcomes")
+    csw_rate = _required_probability(outcomes, "csw_rate", "feature.outcomes")
+    called_strike_rate = _required_probability(
+        outcomes, "called_strike_rate", "feature.outcomes"
+    )
+    if called_strike_rate > csw_rate + 1e-12:
+        raise ValueError("called_strike_rate cannot exceed csw_rate")
+    if csw_rate > called_strike_rate + whiff_rate + 1e-12:
+        raise ValueError(
+            "csw_rate cannot exceed called_strike_rate plus whiff_rate"
+        )
     location = _required_score_mapping(feature, "location", "feature")
-    for key in ("zone_rate", "heart_rate", "edge_rate", "waste_rate"):
+    zone_rate = _required_probability(location, "zone_rate", "feature.location")
+    heart_rate = _required_probability(location, "heart_rate", "feature.location")
+    for key in ("edge_rate", "waste_rate"):
         _required_probability(location, key, "feature.location")
+    if heart_rate > zone_rate + 1e-12:
+        raise ValueError("heart_rate cannot exceed zone_rate")
     for axis in ("plate_x", "plate_z"):
         mapping = _required_score_mapping(location, axis, "feature.location")
         _required_nonnegative(mapping, "stddev", f"feature.location.{axis}")
     arsenal = _required_score_mapping(feature, "arsenal", "feature")
-    _required_nonnegative(arsenal, "count", "feature.arsenal")
+    arsenal_count = _required_integer_nonnegative(
+        arsenal, "count", "feature.arsenal"
+    )
     for key in ("usage_hhi", "fastball_share"):
         _required_probability(arsenal, key, "feature.arsenal")
     for key in ("max_velocity_separation", "max_movement_separation"):
         _required_nonnegative(arsenal, key, "feature.arsenal")
     pitch_types = _required_score_mapping(feature, "pitch_types", "feature")
+    if arsenal_count != len(pitch_types):
+        raise ValueError("arsenal.count must equal included pitch-type count")
+    usage_sum = 0.0
     for pitch_type, type_row in pitch_types.items():
         if not isinstance(type_row, dict):
             raise ValueError(f"malformed score feature: feature.pitch_types.{pitch_type}")
-        _required_probability(type_row, "usage", f"feature.pitch_types.{pitch_type}")
+        usage_sum += _required_probability(
+            type_row, "usage", f"feature.pitch_types.{pitch_type}"
+        )
         shape = _required_score_mapping(
             type_row, "shape", f"feature.pitch_types.{pitch_type}"
         )
@@ -485,7 +529,7 @@ def _validate_score_feature(feature: dict) -> None:
             observed = _required_score_mapping(
                 shape, field, f"feature.pitch_types.{pitch_type}.shape"
             )
-            sample_count = _required_nonnegative(
+            sample_count = _required_integer_nonnegative(
                 observed,
                 "sample_count",
                 f"feature.pitch_types.{pitch_type}.shape.{field}",
@@ -502,6 +546,41 @@ def _validate_score_feature(feature: dict) -> None:
                         f"feature.pitch_types.{pitch_type}.shape.{field}.mean "
                         "must be nonnegative"
                     )
+    if usage_sum > 1.0 + 1e-12:
+        raise ValueError("pitch-type usage sum cannot exceed 1")
+
+
+def _required_control_number(
+    control: dict, key: str, *, nonnegative: bool = True
+) -> float:
+    value = control.get(key) if isinstance(control, dict) else None
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(float(value))
+        or (nonnegative and float(value) < 0)
+    ):
+        raise ValueError(f"missing or invalid Control {key}")
+    return float(value)
+
+
+def _validate_control(control: dict) -> None:
+    counts = {
+        key: _required_control_number(control, key)
+        for key in ("BF", "IP", "K", "BB", "HR", "HBP", "H_ALLOWED")
+    }
+    if counts["BF"] <= 0:
+        raise ValueError("Control BF must be positive")
+    if counts["IP"] <= 0:
+        raise ValueError("Control IP must be positive")
+    if counts["K"] + counts["BB"] > counts["BF"]:
+        raise ValueError("Control K plus BB cannot exceed Control BF")
+    for key in ("K_9", "BB_9", "ERA", "WHIP"):
+        _required_control_number(control, key)
+    _required_control_number(control, "cFIP")
+    p_sp = _required_control_number(control, "p_sp", nonnegative=False)
+    if not 0.0 <= p_sp <= 1.0:
+        raise ValueError("Control p_sp must be in [0, 1]")
 
 
 def _enrich_feature(feature: dict | None, hand: str, expected_season: int) -> dict | None:
@@ -559,6 +638,7 @@ def prepare_fold(bundle: dict, target_season: int, *, minimum_pitches: int) -> d
             raise ValueError("Control season mismatch")
         if int(outcome.get("season", -1)) != season:
             raise ValueError("outcome season mismatch")
+        _validate_control(control)
         _validate_outcome(outcome)
         feature = _enrich_feature(
             features.get((pitcher_id, season - 1)), identities[pitcher_id], season - 1
@@ -567,11 +647,9 @@ def prepare_fold(bundle: dict, target_season: int, *, minimum_pitches: int) -> d
         if feature is None:
             fallback_reason = "missing_feature"
         else:
-            pitch_count = _required_score_number(feature, "pitch_count", "feature")
-            if pitch_count < 0:
-                raise ValueError(
-                    "malformed score feature: feature.pitch_count must be nonnegative"
-                )
+            pitch_count = _required_integer_nonnegative(
+                feature, "pitch_count", "feature"
+            )
             if pitch_count < minimum_pitches:
                 fallback_reason = "below_pitch_floor"
             else:
@@ -693,7 +771,9 @@ def _score_variant(bundle: dict, *, ablation: str | None = None) -> tuple[list[d
                 fallback_counts[row["fallback_reason"]] += 1
                 challenger = copy.deepcopy(control)
             else:
-                _validate_score_feature(row["feature_row"])
+                # prepare_fold validated the source evidence before any fit.  The
+                # registered ablations intentionally create synthetic feature
+                # combinations that need not satisfy source-row identities.
                 rates = predict_rates(model, control, row["feature_row"])
                 challenger = apply_rates_to_control(
                     control, rates["k_bf"], rates["bb_bf"]
