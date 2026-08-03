@@ -1,7 +1,7 @@
 # MLB Pitcher Skill Challenger Design
 
-**Date:** 2026-08-02  
-**Status:** Approved in conversation; design only  
+**Date:** 2026-08-02
+**Status:** Approved in conversation; design only
 **Scope:** MLB pitchers; research-only
 
 ## Goal
