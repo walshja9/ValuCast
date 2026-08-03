@@ -140,6 +140,8 @@ def build_plan034_readiness(
     as_of: str,
 ) -> dict:
     contract_problems = validate_factual_contract(contract)
+    if contract_problems:
+        raise ValueError("invalid factual contract: " + "; ".join(contract_problems))
     rows = list((contract.get("historical") or {}).get("rows") or [])
     keys = [
         f"{row.get('cohort_year')}:{row.get('mlbam_id')}:{row.get('role')}"
@@ -184,8 +186,6 @@ def build_plan034_readiness(
     blockers = []
     if before_trigger:
         blockers.append(f"not_before:{not_before}")
-    if contract_problems:
-        blockers.append("invalid_factual_contract")
     if duplicates:
         blockers.append("duplicate_cohort_role_identity")
     if trigger.get("requires_2026_mlb_season_complete") is True:
@@ -208,7 +208,7 @@ def build_plan034_readiness(
             "role_counts": dict(sorted(role_counts.items())),
             "duplicates": duplicates,
         },
-        "input_contract": {"valid": not contract_problems, "problems": contract_problems},
+        "input_contract": {"valid": True, "problems": []},
         "aaa_statcast": {
             "row_count": len(aaa_rows),
             "missing_by_field": missing_by_field,
