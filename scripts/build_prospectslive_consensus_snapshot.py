@@ -3,13 +3,14 @@
 Input (committed, replaced by re-exporting from ProspectsLive when they re-rank):
   data/prospectslive/prospectslive_top600.csv
 This file arrives MANUALLY (operator drops in a fresh export); there is no fetch.
-Header: Rk,Player,Pos,Team,Level,Age,Min,Max,App,Var,High,Low,Greg,Kyle,PJ,Tom.
+The legacy filename is retained even when the export extends beyond rank 600.
+Required columns: Rk, Player, Pos, Team, Level, Age.
 
 ProspectsLive publishes a continuously-updated board with a composite consensus
 rank `Rk` (its own blend of rankers). We take that one composite `Rk` as
-ProspectsLive's single vote -- treated as ONE source (like STS, itself a 7-system
-consensus), NOT five. We NEVER read or persist the per-ranker columns
-(Greg/Kyle/PJ/Tom) or the spread columns (Min/Max/App/Var/High/Low): rank aggregate
+ProspectsLive's single vote -- treated as ONE source (like STS, itself an 8-system
+consensus), NOT six. We NEVER read or persist the per-ranker columns
+(Greg/Kyle/Lucas/PJ/Raj/Tom) or the spread columns (Min/Max/App/Spr/High/Low): rank aggregate
 only, a ToS posture. Join is name-based (PL carries no mlbam), gated on role + org +
 age against the current prospect board.
 
