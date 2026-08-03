@@ -458,6 +458,16 @@ def test_predicted_rates_are_always_finite_and_bounded():
     assert all(math.isfinite(value) and 0.0 <= value <= 1.0 for value in rates.values())
 
 
+def test_apply_reports_null_k_bb_at_zero_walks():
+    # Review P2-5: K/BB is undefined at zero walks — null, never 0.0 (which
+    # would report the best possible outcome as the worst possible ratio).
+    control = _control("42", 2026, bf=601.0, ip=149.2)
+    result = apply_rates_to_control(control, k_bf=0.3333333, bb_bf=0.0)
+
+    assert result["BB"] == 0.0
+    assert result["K_BB"] is None
+
+
 def test_apply_changes_only_skill_counts_and_reconciles_fip_whip_arithmetic():
     control = _control("42", 2026, bf=601.0, ip=149.2)
     original = copy.deepcopy(control)

@@ -104,6 +104,16 @@ Role Watch, ranks, values, projections, workflows, or served artifacts.
 ```
 <!-- mlb-pitcher-skill-registration:end -->
 
+## Acquisition status (clarified 2026-08-03, review)
+
+The integration branch added the acquisition *code* (immutable chunked
+fetch, sealing, and manifest machinery) but **no historical Statcast data
+was acquired or committed** — the commit titled "acquire immutable MLB
+pitcher Statcast history" ships machinery only. Running the fetch is a
+separately authorized owner step; until sealed season artifacts and the
+registration seals exist, readiness fails loudly and the look cannot be
+spent.
+
 ## Frozen boundaries
 
 - Control is `PitcherMarcelParams()` plus `build_pitcher_projections` at the

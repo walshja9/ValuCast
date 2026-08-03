@@ -1174,7 +1174,6 @@ def check_readiness(
             blockers.append(f"missing_declared_pairs:{target}")
         if fold_support[key]["qualified"] <= 0:
             blockers.append(f"missing_qualified_support:{target}")
-            blockers.append(f"missing_scoreable_support:{target}")
     if scoreable_population < MINIMUM_SAMPLE:
         blockers.append("minimum_scoreable_population")
     if serving_import_matches:

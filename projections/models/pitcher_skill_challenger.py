@@ -493,5 +493,8 @@ def apply_rates_to_control(control: dict, k_bf: float, bb_bf: float) -> dict:
     result["WHIP"] = round((float(result["BB"]) + float(result["H_ALLOWED"])) / ip, 3)
     result["K_9"] = round(9.0 * float(result["K"]) / ip, 3)
     result["BB_9"] = round(9.0 * float(result["BB"]) / ip, 3)
-    result["K_BB"] = round(float(result["K"]) / float(result["BB"]), 3) if result["BB"] else 0.0
+    # K/BB is undefined at zero walks — null, never 0.0 (which would report
+    # the best possible outcome as the worst possible ratio). Research display
+    # only; K_BB is not a gate endpoint.
+    result["K_BB"] = round(float(result["K"]) / float(result["BB"]), 3) if result["BB"] else None
     return result

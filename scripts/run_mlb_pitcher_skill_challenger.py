@@ -43,6 +43,11 @@ RESEARCH_IMPLEMENTATION_PATHS = (
     "projections/models/pitcher_skill_challenger.py",
     "projections/backtest/pitcher_skill_challenger_harness.py",
     "scripts/run_mlb_pitcher_skill_challenger.py",
+    # Review P2-3: the raw feature aggregates are research evidence too — a
+    # serving import of the acquisition module must trip the guard, not slide
+    # under it. The fetch CLI rides along so its own import stays legal.
+    "projections/data/pitching_statcast.py",
+    "scripts/fetch_mlb_pitcher_statcast.py",
 )
 SEALED_IMPLEMENTATION_PATHS = (
     *RESEARCH_IMPLEMENTATION_PATHS,

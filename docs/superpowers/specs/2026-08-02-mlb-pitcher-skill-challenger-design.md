@@ -118,7 +118,10 @@ each training fold.
 - Pitch-type usage.
 - Velocity.
 - Horizontal and vertical movement.
-- Release position and extension.
+- Extension. Release position is aggregated as collected evidence in the
+  sealed artifacts but is NOT a modeled feature — the registered feature
+  order (harness `REGISTERED_FEATURE_ORDER`) is authoritative and excludes
+  it (clarified 2026-08-03, review).
 - Spin rate only where coverage is adequate and missingness is explicit.
 - Shape values expressed relative to pitch type and pitcher handedness.
 
@@ -217,6 +220,11 @@ phase.
 ## Failure behavior and edge cases
 
 - Missing source season: fail the build; never substitute partial data.
+- Known limitation (documented 2026-08-03, review): a 5-day acquisition
+  chunk containing zero games (e.g. an aligned All-Star break window)
+  fails the fetch loudly rather than being skipped. This is fail-closed
+  and operator-visible; no scheduler-aware chunking is added until it
+  actually occurs.
 - Duplicate pitcher-season identity: fail.
 - Missing coverage for a player: exact incumbent fallback.
 - Pitch-type classification drift: report it and route unknown types to `other`.
