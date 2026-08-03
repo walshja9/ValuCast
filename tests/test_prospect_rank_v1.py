@@ -2,6 +2,7 @@
 import json
 
 import pytest
+import prospects.rank_v1 as rank_v1
 
 from prospects.rank_v1 import (
     BUCKET_CALIBRATION_VERSION,
@@ -522,6 +523,49 @@ def test_rank_v1_uses_real_validation_gates_not_shadow_blockers():
     assert payload["rank_contract"]["dd_values_used_for_score"] is False
     assert payload["rank_contract"]["external_rankings_used_for_score"] is False
     assert payload["rank_contract"]["prohibited_score_inputs"] == PROHIBITED_SCORE_INPUTS
+
+
+def test_rank_v1_is_invariant_to_external_context_mutation(monkeypatch):
+    public_rank = {"value": 1}
+
+    def fake_snapshot(path):
+        field = {
+            rank_v1.STS_CONSENSUS_PATH: "sts_rank",
+            rank_v1.FG_FV_SNAPSHOT_PATH: "fg_top100",
+            rank_v1.PROSPECTSLIVE_PATH: "pl_rank",
+            rank_v1.PIPELINE_PATH: "pipeline_rank",
+            rank_v1.HKB_PATH: "hkb_rank",
+        }[path]
+        return {
+            "1": {
+                field: public_rank["value"],
+                "fv": public_rank["value"],
+                "competitor_score": public_rank["value"],
+                "market_value": public_rank["value"],
+            }
+        }
+
+    monkeypatch.setattr(rank_v1, "_snapshot_by_mlbam", fake_snapshot)
+    first = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), _input_contract()
+    )
+    public_rank["value"] = 999
+    second = build_prospect_rank_v1(
+        _universe(), _dynasty_layer(), _prospect_model(), _input_contract()
+    )
+
+    scored = lambda payload: [
+        (row["mlbam_id"], row["score"], row["rank"])
+        for row in payload["board"]
+    ]
+    assert scored(first) == scored(second)
+    first_context = next(
+        row["context_only"] for row in first["board"] if row["mlbam_id"] == 1
+    )
+    second_context = next(
+        row["context_only"] for row in second["board"] if row["mlbam_id"] == 1
+    )
+    assert first_context["source_ranks"] != second_context["source_ranks"]
 
 
 def test_rank_v1_retains_rookie_eligible_active_roster_identities():

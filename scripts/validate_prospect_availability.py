@@ -77,6 +77,15 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
             problems.append(f"profiles[{index}].role must be hitter or pitcher")
         if row.get("present") is not True:
             problems.append(f"profiles[{index}].present must be true")
+        if row.get("evidence_state") not in {
+            "unknown",
+            "known_available",
+            "known_limited",
+            "known_unavailable",
+        }:
+            problems.append(f"profiles[{index}].evidence_state is invalid")
+        if not isinstance(row.get("evidence_provenance"), dict):
+            problems.append(f"profiles[{index}].evidence_provenance must be an object")
         risk_basis = row.get("risk_basis")
         if risk_basis in (None, ""):
             problems.append(f"profiles[{index}].risk_basis is required")

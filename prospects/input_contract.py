@@ -33,6 +33,30 @@ PROHIBITED_POLICY_FLAGS = (
     "dynasty_values_used",
 )
 
+PROHIBITED_MODEL_FIELDS = frozenset(
+    {
+        "consensus_rank",
+        "source_ranks",
+        "public_source_consensus",
+        "fv",
+        "tool_grades",
+        "competitor_score",
+        "competitor_rank",
+        "market_value",
+        "dynasty_value",
+        "valucast_rank",
+    }
+)
+
+
+def _prohibited_row_fields(rows: list[dict], label: str) -> list[str]:
+    return [
+        f"{label}[{index}].{field} is prohibited"
+        for index, row in enumerate(rows)
+        if isinstance(row, dict)
+        for field in sorted(PROHIBITED_MODEL_FIELDS & row.keys())
+    ]
+
 
 def validate_factual_contract(payload: dict[str, Any]) -> list[str]:
     problems: list[str] = []
@@ -52,12 +76,18 @@ def validate_factual_contract(payload: dict[str, Any]) -> list[str]:
             problems.append(f"source_policy.{flag} must be false")
 
     historical = payload.get("historical") or {}
-    if not isinstance(historical.get("rows"), list):
+    historical_rows = historical.get("rows")
+    if not isinstance(historical_rows, list):
         problems.append("historical.rows must be a list")
+    else:
+        problems.extend(_prohibited_row_fields(historical_rows, "historical.rows"))
     current = payload.get("current") or {}
     for role in ("hitters", "pitchers"):
-        if not isinstance(current.get(role), list):
+        role_rows = current.get(role)
+        if not isinstance(role_rows, list):
             problems.append(f"current.{role} must be a list")
+        else:
+            problems.extend(_prohibited_row_fields(role_rows, f"current.{role}"))
     service_rows = payload.get("mlb_service")
     if not isinstance(service_rows, list):
         problems.append("mlb_service must be a list")

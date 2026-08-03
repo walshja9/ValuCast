@@ -146,6 +146,25 @@ def test_coverage_audit_reports_investment_completeness_and_direct_sensitivity()
     assert context["direct_score_sensitivity"]["counterfactual_ranks_computed"] is False
 
 
+def test_coverage_audit_emits_deterministic_missing_evidence_queue():
+    payload = build_prospect_coverage_audit(
+        _rank_payload(
+            [
+                _row(2, "prospect_model_v0_6"),
+                _row(1, "prospect_model_v0_6", role="pitcher"),
+            ]
+        )
+    )
+
+    queue = payload["investment_context"]["missing_evidence_queue"]
+    assert [row["identity_key"] for row in queue] == [
+        "10001:pitcher",
+        "10002:hitter",
+    ]
+    assert all(row["verified_amount"] is None for row in queue)
+    assert all(row["changes_ranks_or_values"] is False for row in queue)
+
+
 def test_coverage_audit_reports_verified_evidence_applied_to_rank_input():
     rank_payload = _rank_payload(
         [

@@ -117,6 +117,33 @@ def test_availability_collapses_multi_level_samples_before_pricing_risk():
     assert payload["source_policy"]["external_rankings_used"] is False
 
 
+def test_availability_records_selected_row_and_evidence_state():
+    payload = build_prospect_availability(_input_contract())
+    row = next(item for item in payload["profiles"] if item["mlbam_id"] == 20)
+
+    assert row["evidence_state"] == "known_available"
+    assert row["evidence_provenance"] == {
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "status_source": "current_sample",
+        "selected_level": "A+",
+        "selected_sample": 21.667,
+        "selected_sample_unit": "IP",
+        "selected_sample_fetched_date": "2026-06-13",
+        "active_row_count": 2,
+        "adjustment_reason": "none",
+    }
+
+
+def test_availability_distinguishes_unknown_from_negative():
+    contract = _input_contract()
+    contract["current"]["hitters"][0]["sample_fetched_date"] = None
+
+    payload = build_prospect_availability(contract)
+    row = next(item for item in payload["profiles"] if item["mlbam_id"] == 10)
+
+    assert row["evidence_state"] == "unknown"
+
+
 def test_availability_uses_newest_sample_season_when_prior_history_is_present():
     contract = _input_contract()
     contract["current"]["pitchers"] = [
@@ -448,7 +475,7 @@ def test_run_prospect_availability_writes_artifact(tmp_path):
     assert result["profile_count"] == 3
     assert result["risk_profile_count"] == 2
     assert payload["artifact"] == "valucast_prospect_availability"
-    assert payload["artifact_version"] == "0.4.0"
+    assert payload["artifact_version"] == "0.5.0"
     assert payload["summary"]["profile_count"] == 3
     assert validate_prospect_availability(artifact_path)[1] == []
 
