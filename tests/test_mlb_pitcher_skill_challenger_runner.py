@@ -356,11 +356,11 @@ def test_prepare_fold_is_exact_walk_forward_and_held_out_poison_cannot_enter_tra
     poisoned = copy.deepcopy(bundle)
     for row in poisoned["features"]:
         if row["season"] >= 2022:
-            row["outcomes"]["whiff_rate"] = 999999.0
+            row["outcomes"]["whiff_rate"] = 1.0
             row["held_out_hand_poison"] = "L" if row.get("pitcher_hand") != "L" else "R"
     for row in poisoned["outcomes"]:
         if row["season"] >= 2023:
-            row["K"] = 10**100
+            row["K"] = row["BF"] - row["BB"]
     after = harness.prepare_fold(poisoned, 2023, minimum_pitches=500)
     assert after["training_rows"] == before["training_rows"]
     assert harness.fit_fold(before["training_rows"], harness.PitcherSkillChallengerParams()) == harness.fit_fold(
@@ -387,7 +387,11 @@ def test_exact_join_validation_rejects_duplicates_missing_pairs_seasons_and_hand
     conflicting_hand["features"][0]["pitcher_hand"] = "L"
     mutations.append((conflicting_hand, "conflicting hand"))
     season_mismatch = copy.deepcopy(base)
-    season_mismatch["controls"][0]["season"] = 1999
+    next(
+        row
+        for row in season_mismatch["controls"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2020
+    )["season"] = 1999
     mutations.append((season_mismatch, "missing Control"))
 
     for bundle, message in mutations:
@@ -591,6 +595,97 @@ def test_required_outcome_fields_fail_closed_before_scoring(field, bad_value):
         harness.prepare_fold(bundle, 2023, minimum_pitches=500)
 
 
+@pytest.mark.parametrize(
+    ("section", "field"),
+    [
+        ("outcomes", "whiff_rate"),
+        ("location", "zone_rate"),
+        ("arsenal", "usage_hhi"),
+        ("arsenal", "fastball_share"),
+    ],
+)
+def test_registered_probability_features_must_be_within_unit_interval(
+    section, field
+):
+    bundle = _bundle(players=2)
+    feature = next(
+        row
+        for row in bundle["features"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2022
+    )
+    feature[section][field] = 2.0
+    with pytest.raises(ValueError, match=r"\[0, 1\]"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+def test_pitch_type_usage_must_be_within_unit_interval():
+    bundle = _bundle(players=2)
+    feature = next(
+        row
+        for row in bundle["features"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2022
+    )
+    feature["pitch_types"]["four_seam"]["usage"] = 1.01
+    with pytest.raises(ValueError, match=r"\[0, 1\]"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda feature: feature.update(pitch_count=-1),
+        lambda feature: feature["arsenal"].update(count=-1),
+        lambda feature: feature["pitch_types"]["four_seam"]["shape"][
+            "velocity"
+        ].update(sample_count=-1),
+    ],
+)
+def test_registered_feature_counts_must_be_nonnegative(mutation):
+    bundle = _bundle(players=2)
+    feature = next(
+        row
+        for row in bundle["features"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2022
+    )
+    mutation(feature)
+    with pytest.raises(ValueError, match="nonnegative"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+@pytest.mark.parametrize("field", ["K", "BB"])
+def test_outcome_component_counts_cannot_exceed_batters_faced(field):
+    bundle = _bundle(players=2)
+    outcome = next(
+        row
+        for row in bundle["outcomes"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    outcome[field] = outcome["BF"] + 1
+    with pytest.raises(ValueError, match="cannot exceed outcome BF"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
+
+
+def test_zero_ip_outcome_fails_before_fit_or_scored_endpoint_reconstruction(
+    monkeypatch,
+):
+    bundle = _bundle(players=2)
+    outcome = next(
+        row
+        for row in bundle["outcomes"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    outcome["IP"] = 0
+    monkeypatch.setattr(
+        harness,
+        "fit_fold",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("invalid outcome reached fit")
+        ),
+    )
+    with pytest.raises(ValueError, match="outcome IP must be positive"):
+        harness.evaluate_registered_look(bundle, _registration())
+
+
 def test_registration_extraction_is_deterministic_and_drift_fails_before_fit(tmp_path, monkeypatch):
     registration = _registration()
     plan = tmp_path / "plan.md"
@@ -662,7 +757,7 @@ def test_registered_control_param_defaults_fail_closed_before_fit(monkeypatch):
         harness.evaluate_registered_look(_bundle(players=30), _registration())
 
 
-def test_implementation_seal_includes_model_and_rejects_staged_or_unstaged_changes(monkeypatch):
+def test_implementation_seal_covers_every_result_determining_path(monkeypatch):
     calls = []
 
     def clean_git(*args):
@@ -674,17 +769,151 @@ def test_implementation_seal_includes_model_and_rejects_staged_or_unstaged_chang
     monkeypatch.setattr(runner, "_git", clean_git)
     assert runner.current_implementation_commit() == "a" * 40
     log_call = next(args for args in calls if args[0] == "log")
-    assert "projections/models/pitcher_skill_challenger.py" in log_call
+    expected = {
+        "projections/models/pitcher_skill_challenger.py",
+        "projections/backtest/pitcher_skill_challenger_harness.py",
+        "scripts/run_mlb_pitcher_skill_challenger.py",
+        "projections/models/marcel_pitcher.py",
+        "projections/models/pitcher_params.py",
+        "projections/models/pitcher_role.py",
+        "projections/backtest/pitching_harness.py",
+        "projections/constants.py",
+        "projections/data/pitching_historical.py",
+        "projections/data/identity.py",
+    }
+    assert expected <= set(log_call)
 
-    monkeypatch.setattr(
-        runner,
-        "_git",
-        lambda *args: " M projections/models/pitcher_skill_challenger.py"
-        if args[0] == "status"
-        else "a" * 40,
-    )
+
+@pytest.mark.parametrize(
+    ("dirty_marker", "dirty_path"),
+    [
+        (" M", "projections/models/marcel_pitcher.py"),
+        ("M ", "projections/data/identity.py"),
+    ],
+)
+def test_implementation_seal_rejects_dirty_control_or_identity_path(
+    monkeypatch, dirty_marker, dirty_path
+):
+    def dirty_git(*args):
+        if args[0] == "status":
+            assert dirty_path in args
+            return f"{dirty_marker} {dirty_path}"
+        return "a" * 40
+
+    monkeypatch.setattr(runner, "_git", dirty_git)
     with pytest.raises(ValueError, match="uncommitted"):
         runner.current_implementation_commit()
+
+
+def test_readiness_hash_binds_every_joined_input_without_publishing_rows():
+    registration = _registration()
+    bundle = _bundle(players=60)
+    reserve = "reserve"
+    bundle["controls"].append(_control(reserve, 2020))
+    bundle["outcomes"].append(_outcome(reserve, 2020))
+    bundle["features"].append(_feature(reserve, 2019))
+    bundle["identities"].append({"mlbam_id": reserve, "throws": "R"})
+    bundle["persistence"].append(
+        {
+            "mlbam_id": reserve,
+            "season": 2020,
+            "forecast_window": "full_season",
+            "K_9": 9.5,
+            "BB_9": 2.9,
+            "ERA": 3.5,
+            "WHIP": 1.1,
+        }
+    )
+    bundle["common_support"] = harness.summarize_common_support(bundle)
+    unsealed = {
+        key: value for key, value in registration.items() if key != "readiness_hash"
+    }
+    baseline = harness.check_readiness(
+        bundle,
+        unsealed,
+        implementation_commit="a" * 40,
+        source_hashes=registration["source_hashes"],
+        serving_import_matches=[],
+    )
+    registration["readiness_hash"] = baseline["evidence_hash"]
+    assert harness.check_readiness(
+        bundle,
+        registration,
+        implementation_commit="a" * 40,
+        source_hashes=registration["source_hashes"],
+        serving_import_matches=[],
+    )["ready_to_spend"] is True
+
+    mutations = []
+
+    outcome_changed = copy.deepcopy(bundle)
+    next(
+        row
+        for row in outcome_changed["outcomes"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2020
+    )["K"] = 175.0
+    mutations.append(outcome_changed)
+
+    identity_changed = copy.deepcopy(bundle)
+    next(
+        row for row in identity_changed["identities"] if row["mlbam_id"] == "1000"
+    )["throws"] = "L"
+    mutations.append(identity_changed)
+
+    pairs_changed = copy.deepcopy(bundle)
+    pair = next(
+        row
+        for row in pairs_changed["pair_keys"]
+        if row["mlbam_id"] == "1000" and row["outcome_season"] == 2020
+    )
+    pair["mlbam_id"] = reserve
+    pairs_changed["common_support"] = harness.summarize_common_support(pairs_changed)
+    mutations.append(pairs_changed)
+
+    feature_changed = copy.deepcopy(bundle)
+    next(
+        row
+        for row in feature_changed["features"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2019
+    )["outcomes"]["whiff_rate"] += 0.01
+    mutations.append(feature_changed)
+
+    control_changed = copy.deepcopy(bundle)
+    next(
+        row
+        for row in control_changed["controls"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2020
+    )["K"] += 1.0
+    mutations.append(control_changed)
+
+    for changed in mutations:
+        readiness = harness.check_readiness(
+            changed,
+            registration,
+            implementation_commit="a" * 40,
+            source_hashes=registration["source_hashes"],
+            serving_import_matches=[],
+        )
+        assert readiness["ready_to_spend"] is False
+        assert "readiness_hash_mismatch" in readiness["blockers"]
+        assert readiness["evidence_hash"] != baseline["evidence_hash"]
+        assert readiness["scoreable_population"] == baseline["scoreable_population"]
+
+    hashes = baseline["input_hashes"]
+    assert set(hashes) == {
+        "controls_sha256",
+        "outcomes_sha256",
+        "identities_sha256",
+        "pair_keys_sha256",
+        "features_sha256",
+        "persistence_sha256",
+        "steamer_sha256",
+        "source_manifest_sha256",
+    }
+    assert all(len(value) == 64 for value in hashes.values())
+    encoded = json.dumps(hashes)
+    assert "1000" not in encoded
+    assert reserve not in encoded
 
 
 def test_readiness_requires_every_registered_scored_fold_even_when_total_is_large():
@@ -713,7 +942,23 @@ def test_unmatched_control_and_outcome_rows_are_disclosed_not_invalid():
     bundle = _bundle(players=50)
     bundle["controls"].append(_control("control-only", 2020))
     bundle["outcomes"].append(_outcome("outcome-only", 2020))
+    bundle["identities"].extend(
+        [
+            {"mlbam_id": "control-only", "throws": "R"},
+            {"mlbam_id": "outcome-only", "throws": "L"},
+        ]
+    )
+    bundle["features"].extend(
+        [
+            _feature("control-only", 2019),
+            _feature("outcome-only", 2019),
+        ]
+    )
     bundle["common_support"] = harness.summarize_common_support(bundle)
+    fold = harness.prepare_fold(bundle, 2020, minimum_pitches=500)
+    scored_ids = {row["mlbam_id"] for row in fold["scoring_rows"]}
+    assert "control-only" not in scored_ids
+    assert "outcome-only" not in scored_ids
     provisional = harness.check_readiness(
         bundle,
         {key: value for key, value in registration.items() if key != "readiness_hash"},
@@ -864,6 +1109,10 @@ def test_serving_import_scan_follows_indirect_production_python_imports(tmp_path
         for match in matches
     )
     assert not any("tests/test_allowed.py" in match for match in matches)
+
+
+def test_real_serving_graph_allows_sealed_control_dependencies():
+    assert runner.serving_import_matches() == []
 
 
 @pytest.mark.parametrize(

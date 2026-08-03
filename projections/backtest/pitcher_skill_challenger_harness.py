@@ -341,6 +341,55 @@ def summarize_common_support(bundle: dict) -> dict:
     }
 
 
+def _canonical_indexed_rows(
+    rows: list[dict], *, label: str, season_key: str = "season"
+) -> list[dict]:
+    indexed = _index(rows, label=label, season_key=season_key)
+    return [indexed[key] for key in sorted(indexed, key=lambda value: (value[1], value[0]))]
+
+
+def result_input_hashes(bundle: dict) -> dict[str, str]:
+    """Bind readiness to content, not just aggregate support counts.
+
+    The hashes cover every joined input that can affect eligibility, qualification,
+    predictions, outcomes, or the context-comparator result.  Only digests reach the
+    readiness/public result boundary; player-level rows remain private.
+    """
+    identities = _identity_index(bundle.get("identities") or [])
+    identity_rows = [
+        {"mlbam_id": pitcher_id, "throws": identities[pitcher_id]}
+        for pitcher_id in sorted(identities)
+    ]
+    pair_rows = [
+        {"mlbam_id": pitcher_id, "outcome_season": season}
+        for pitcher_id, season in _pair_keys(bundle.get("pair_keys") or [])
+    ]
+    return {
+        "controls_sha256": canonical_sha256(
+            _canonical_indexed_rows(bundle.get("controls") or [], label="Control")
+        ),
+        "outcomes_sha256": canonical_sha256(
+            _canonical_indexed_rows(bundle.get("outcomes") or [], label="outcome")
+        ),
+        "identities_sha256": canonical_sha256(identity_rows),
+        "pair_keys_sha256": canonical_sha256(pair_rows),
+        "features_sha256": canonical_sha256(
+            _canonical_indexed_rows(bundle.get("features") or [], label="feature")
+        ),
+        "persistence_sha256": canonical_sha256(
+            _canonical_indexed_rows(
+                bundle.get("persistence") or [], label="persistence"
+            )
+        ),
+        "steamer_sha256": canonical_sha256(
+            _canonical_indexed_rows(bundle.get("steamer") or [], label="Steamer")
+        ),
+        "source_manifest_sha256": canonical_sha256(
+            bundle.get("source_manifest") or {}
+        ),
+    }
+
+
 def _required_outcome_number(outcome: dict, key: str) -> float:
     value = outcome.get(key) if isinstance(outcome, dict) else None
     if (
@@ -356,8 +405,16 @@ def _required_outcome_number(outcome: dict, key: str) -> float:
 def _validate_outcome(outcome: dict) -> None:
     for key in ("BF", "IP", "K", "BB", "ER", "H_ALLOWED"):
         _required_outcome_number(outcome, key)
-    if float(outcome["BF"]) <= 0:
+    bf = float(outcome["BF"])
+    if bf <= 0:
         raise ValueError("outcome BF must be positive")
+    if float(outcome["IP"]) <= 0:
+        raise ValueError("outcome IP must be positive")
+    for key in ("K", "BB", "H_ALLOWED"):
+        if float(outcome[key]) > bf:
+            raise ValueError(f"outcome {key} cannot exceed outcome BF")
+    if float(outcome["K"]) + float(outcome["BB"]) > bf:
+        raise ValueError("outcome K plus BB cannot exceed outcome BF")
 
 
 def _required_score_number(mapping: dict, key: str, path: str) -> float:
@@ -378,32 +435,43 @@ def _required_score_mapping(mapping: dict, key: str, path: str) -> dict:
     return value
 
 
+def _required_probability(mapping: dict, key: str, path: str) -> float:
+    value = _required_score_number(mapping, key, path)
+    if not 0.0 <= value <= 1.0:
+        raise ValueError(f"malformed score feature: {path}.{key} must be in [0, 1]")
+    return value
+
+
+def _required_nonnegative(mapping: dict, key: str, path: str) -> float:
+    value = _required_score_number(mapping, key, path)
+    if value < 0:
+        raise ValueError(f"malformed score feature: {path}.{key} must be nonnegative")
+    return value
+
+
 def _validate_score_feature(feature: dict) -> None:
     """Validate present, eligible feature evidence before prediction or rebuilding lines."""
-    _required_score_number(feature, "pitch_count", "feature")
+    _required_nonnegative(feature, "pitch_count", "feature")
     outcomes = _required_score_mapping(feature, "outcomes", "feature")
     for key in ("whiff_rate", "csw_rate", "called_strike_rate"):
-        _required_score_number(outcomes, key, "feature.outcomes")
+        _required_probability(outcomes, key, "feature.outcomes")
     location = _required_score_mapping(feature, "location", "feature")
     for key in ("zone_rate", "heart_rate", "edge_rate", "waste_rate"):
-        _required_score_number(location, key, "feature.location")
+        _required_probability(location, key, "feature.location")
     for axis in ("plate_x", "plate_z"):
         mapping = _required_score_mapping(location, axis, "feature.location")
-        _required_score_number(mapping, "stddev", f"feature.location.{axis}")
+        _required_nonnegative(mapping, "stddev", f"feature.location.{axis}")
     arsenal = _required_score_mapping(feature, "arsenal", "feature")
-    for key in (
-        "count",
-        "usage_hhi",
-        "fastball_share",
-        "max_velocity_separation",
-        "max_movement_separation",
-    ):
-        _required_score_number(arsenal, key, "feature.arsenal")
+    _required_nonnegative(arsenal, "count", "feature.arsenal")
+    for key in ("usage_hhi", "fastball_share"):
+        _required_probability(arsenal, key, "feature.arsenal")
+    for key in ("max_velocity_separation", "max_movement_separation"):
+        _required_nonnegative(arsenal, key, "feature.arsenal")
     pitch_types = _required_score_mapping(feature, "pitch_types", "feature")
     for pitch_type, type_row in pitch_types.items():
         if not isinstance(type_row, dict):
             raise ValueError(f"malformed score feature: feature.pitch_types.{pitch_type}")
-        _required_score_number(type_row, "usage", f"feature.pitch_types.{pitch_type}")
+        _required_probability(type_row, "usage", f"feature.pitch_types.{pitch_type}")
         shape = _required_score_mapping(
             type_row, "shape", f"feature.pitch_types.{pitch_type}"
         )
@@ -417,17 +485,23 @@ def _validate_score_feature(feature: dict) -> None:
             observed = _required_score_mapping(
                 shape, field, f"feature.pitch_types.{pitch_type}.shape"
             )
-            sample_count = _required_score_number(
+            sample_count = _required_nonnegative(
                 observed,
                 "sample_count",
                 f"feature.pitch_types.{pitch_type}.shape.{field}",
             )
             if sample_count > 0:
-                _required_score_number(
+                mean = _required_score_number(
                     observed,
                     "mean",
                     f"feature.pitch_types.{pitch_type}.shape.{field}",
                 )
+                if field in {"velocity", "spin", "extension"} and mean < 0:
+                    raise ValueError(
+                        "malformed score feature: "
+                        f"feature.pitch_types.{pitch_type}.shape.{field}.mean "
+                        "must be nonnegative"
+                    )
 
 
 def _enrich_feature(feature: dict | None, hand: str, expected_season: int) -> dict | None:
@@ -472,23 +546,6 @@ def prepare_fold(bundle: dict, target_season: int, *, minimum_pitches: int) -> d
         if key[0] not in identities:
             raise ValueError(f"missing hand identity for {key[0]}")
 
-    # Identity-backed rows with matching T-1 evidence are intended study joins;
-    # unmatched source-only rows remain valid and are disclosed separately.
-    for pitcher_id, season in outcomes:
-        if (
-            pitcher_id in identities
-            and (pitcher_id, season - 1) in features
-            and (pitcher_id, season) not in controls
-        ):
-            raise ValueError(f"missing Control for {pitcher_id} {season}")
-    for pitcher_id, season in controls:
-        if (
-            pitcher_id in identities
-            and (pitcher_id, season - 1) in features
-            and (pitcher_id, season) not in outcomes
-        ):
-            raise ValueError(f"missing outcome for {pitcher_id} {season}")
-
     common_pairs = sorted(
         set(controls) & set(outcomes), key=lambda value: (value[1], value[0])
     )
@@ -511,6 +568,10 @@ def prepare_fold(bundle: dict, target_season: int, *, minimum_pitches: int) -> d
             fallback_reason = "missing_feature"
         else:
             pitch_count = _required_score_number(feature, "pitch_count", "feature")
+            if pitch_count < 0:
+                raise ValueError(
+                    "malformed score feature: feature.pitch_count must be nonnegative"
+                )
             if pitch_count < minimum_pitches:
                 fallback_reason = "below_pitch_floor"
             else:
@@ -962,6 +1023,7 @@ def _readiness_evidence(
     fold_support: dict,
     scoreable_population: int,
     common_support: dict,
+    input_hashes: dict,
     serving_import_matches: list,
 ) -> dict:
     return {
@@ -974,6 +1036,7 @@ def _readiness_evidence(
         "fold_support": fold_support,
         "scoreable_population": scoreable_population,
         "common_support": common_support,
+        "input_hashes": input_hashes,
         "bootstrap_seed": registration.get("bootstrap_seed"),
         "serving_import_matches": sorted(serving_import_matches),
     }
@@ -1002,6 +1065,7 @@ def check_readiness(
         fold_support[str(target)] = fold["qualification"]
         scoreable_population += len(fold["scoring_rows"])
     common_support = summarize_common_support(bundle)
+    input_hashes = result_input_hashes(bundle)
     evidence = _readiness_evidence(
         registration,
         implementation_commit=implementation_commit,
@@ -1010,6 +1074,7 @@ def check_readiness(
         fold_support=fold_support,
         scoreable_population=scoreable_population,
         common_support=common_support,
+        input_hashes=input_hashes,
         serving_import_matches=serving_import_matches,
     )
     evidence_hash = canonical_sha256(evidence)

@@ -39,10 +39,20 @@ PLAN_PATH = ROOT / "plans" / "035-mlb-pitcher-skill-challenger.md"
 OUTPUT_PATH = ROOT / RESULT_PATH
 HISTORICAL_DATA_DIR = ROOT / "projections" / "data"
 STATCAST_DATA_DIR = HISTORICAL_DATA_DIR / "pitching_statcast"
-SEALED_IMPLEMENTATION_PATHS = (
+RESEARCH_IMPLEMENTATION_PATHS = (
     "projections/models/pitcher_skill_challenger.py",
     "projections/backtest/pitcher_skill_challenger_harness.py",
     "scripts/run_mlb_pitcher_skill_challenger.py",
+)
+SEALED_IMPLEMENTATION_PATHS = (
+    *RESEARCH_IMPLEMENTATION_PATHS,
+    "projections/models/marcel_pitcher.py",
+    "projections/models/pitcher_params.py",
+    "projections/models/pitcher_role.py",
+    "projections/backtest/pitching_harness.py",
+    "projections/constants.py",
+    "projections/data/pitching_historical.py",
+    "projections/data/identity.py",
 )
 
 
@@ -232,7 +242,7 @@ def serving_import_matches() -> list[str]:
             parts.pop()
         return ".".join(parts)
 
-    excluded = {ROOT / path for path in SEALED_IMPLEMENTATION_PATHS}
+    excluded = {ROOT / path for path in RESEARCH_IMPLEMENTATION_PATHS}
     python_paths = []
     for path in sorted(ROOT.rglob("*.py")):
         relative = path.relative_to(ROOT)
