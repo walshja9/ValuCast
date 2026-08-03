@@ -20,7 +20,7 @@ INVESTMENT_EVIDENCE_PATH = (
 )
 
 AUDIT_NAME = "ValuCast Prospect Coverage Audit"
-AUDIT_VERSION = "0.4.0"
+AUDIT_VERSION = "0.5.0"
 
 V06_SCORE_SOURCE = "prospect_model_v0_6"
 RAW_FALLBACK_SCORE_SOURCES = {"universal_fallback", "identity_only_fallback"}
@@ -196,6 +196,36 @@ def _verified_investment_coverage(
     return result
 
 
+def _missing_investment_queue(
+    rows: list[dict], evidence_by_mlbam: dict[int, dict]
+) -> list[dict]:
+    queue = []
+    for row in rows:
+        mlbam_id = _clean_int(row.get("mlbam_id"))
+        role = str(row.get("role") or "")
+        if mlbam_id is None or role not in {"hitter", "pitcher"}:
+            continue
+        if _factual_investment(row) is not None or mlbam_id in evidence_by_mlbam:
+            continue
+        context = _context(row)
+        queue.append(
+            {
+                "identity_key": f"{mlbam_id}:{role}",
+                "mlbam_id": mlbam_id,
+                "role": role,
+                "name": row.get("name"),
+                "rank": row.get("rank"),
+                "acquisition_type": context.get("acquisition_type"),
+                "draft_pick_number": context.get("draft_pick_number"),
+                "source_status": "missing_verified_evidence",
+                "reason": "no_source_backed_investment_fact",
+                "verified_amount": None,
+                "changes_ranks_or_values": False,
+            }
+        )
+    return sorted(queue, key=lambda item: item["identity_key"])
+
+
 def _investment_sensitivity_entry(row: dict) -> dict:
     components = _components(row)
     source = _score_source(row)
@@ -352,6 +382,9 @@ def build_prospect_coverage_audit(
             "status": "incomplete" if top_200_investment_missing else "complete",
             "affects_root_status": False,
             "bands": investment_bands,
+            "missing_evidence_queue": _missing_investment_queue(
+                rows, evidence_by_mlbam
+            ),
             "verified_evidence": {
                 "status": (
                     "incomplete"

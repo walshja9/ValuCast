@@ -49,6 +49,13 @@ def validate_audit(path: Path = AUDIT_PATH) -> tuple[dict | None, list[str]]:
                     problems.append(f"investment_context.bands.{band} must be an object")
         if not isinstance(investment_context.get("direct_score_sensitivity"), dict):
             problems.append("investment_context.direct_score_sensitivity must be an object")
+        queue = investment_context.get("missing_evidence_queue")
+        if not isinstance(queue, list):
+            problems.append("investment_context.missing_evidence_queue must be a list")
+        elif any(row.get("changes_ranks_or_values") is not False for row in queue):
+            problems.append(
+                "investment_context.missing_evidence_queue must be non-serving"
+            )
         verified_evidence = investment_context.get("verified_evidence")
         if not isinstance(verified_evidence, dict):
             problems.append("investment_context.verified_evidence must be an object")

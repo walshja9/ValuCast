@@ -26,7 +26,7 @@ MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
-ARTIFACT_VERSION = "0.4.0"
+ARTIFACT_VERSION = "0.5.0"
 
 MAX_RISK_DISCOUNT = 0.12
 SEVERE_IL_DISCOUNT = 0.30
@@ -551,6 +551,37 @@ def _profile(
     )
     if risk_basis in {"official_mlb_il", "official_mlb_rehab"}:
         signals = il_signals
+    official_profile = (il_lookup or {}).get(str(mlbam_id)) or (il_lookup or {}).get(
+        mlbam_id
+    )
+    status_source = (
+        "manual_override"
+        if override_present
+        else "active_mlb_roster"
+        if active_mlb_roster
+        else "official_mlb_transactions"
+        if official_profile
+        else "upstream_factual_status"
+        if upstream_status
+        else "current_sample"
+    )
+    known_evidence = bool(
+        _latest_sample_date(active_rows)
+        or override_present
+        or active_mlb_roster
+        or official_profile
+        or upstream_status
+    )
+    evidence_state = (
+        "unknown"
+        if not known_evidence
+        else "known_available"
+        if risk_basis == "none"
+        else "known_limited"
+        if risk_basis
+        in {"current_sample_size", "sample_staleness", "official_mlb_rehab"}
+        else "known_unavailable"
+    )
     return {
         "mlbam_id": _clean_int(mlbam_id) or mlbam_id,
         "role": role,
@@ -574,6 +605,19 @@ def _profile(
         "signals": signals,
         "row_count": len(rows),
         "active_row_count": len(active_rows),
+        "evidence_state": evidence_state,
+        "evidence_provenance": {
+            "generated_at": generated_at,
+            "status_source": status_source,
+            "selected_level": display_row.get("level"),
+            "selected_sample": _round(_sample_value(display_row, role), 3),
+            "selected_sample_unit": "IP" if role == "pitcher" else "PA",
+            "selected_sample_fetched_date": _date_part(
+                display_row.get("sample_fetched_date")
+            ),
+            "active_row_count": len(active_rows),
+            "adjustment_reason": risk_basis,
+        },
         "present": True,
         "active_mlb_roster": active_mlb_roster,
     }
