@@ -43,6 +43,7 @@ def _control(
         "H_ALLOWED": hits,
         "ER": round(era * ip / 9.0, 4),
         "ERA": round(era, 3),
+        "cFIP": cfip,
         "WHIP": round((bb + hits) / ip, 3),
         "K_9": round(9.0 * k / ip, 3),
         "BB_9": round(9.0 * bb / ip, 3),
@@ -144,6 +145,7 @@ def _training_row(
     k_residual=None,
     bb_residual=None,
     missing_shapes=(),
+    fold_target_season=2030,
 ):
     control = _control(mlbam_id, outcome_season)
     feature = _feature(
@@ -166,6 +168,7 @@ def _training_row(
         "mlbam_id": str(mlbam_id),
         "feature_season": int(outcome_season - 1),
         "outcome_season": int(outcome_season),
+        "fold_target_season": int(fold_target_season),
         "control": control,
         "feature_row": feature,
         "outcome": outcome,
@@ -232,6 +235,8 @@ def test_poisoned_held_out_rows_cannot_change_any_fold_local_payload():
     test_season = 2024
     training = [row for row in all_rows if row["outcome_season"] < test_season]
     held_out = [row for row in all_rows if row["outcome_season"] >= test_season]
+    for row in training:
+        row["fold_target_season"] = test_season
     before = fit_fold(training, PitcherSkillChallengerParams())
 
     for row in held_out:
@@ -245,6 +250,19 @@ def test_poisoned_held_out_rows_cannot_change_any_fold_local_payload():
 
     assert after == before
     assert "POISON" not in json.dumps(after, sort_keys=True)
+
+
+def test_fit_rejects_target_or_future_outcomes_and_mixed_fold_targets():
+    valid = _training_row("1", 2023, fold_target_season=2024)
+    target = _training_row("2", 2024, fold_target_season=2024)
+    future = _training_row("3", 2025, fold_target_season=2024)
+    mixed_target = _training_row("4", 2022, fold_target_season=2025)
+
+    for poison in (target, future):
+        with pytest.raises(ValueError, match="before fold target"):
+            fit_fold([valid, poison], PitcherSkillChallengerParams())
+    with pytest.raises(ValueError, match="common fold target"):
+        fit_fold([valid, mixed_target], PitcherSkillChallengerParams())
 
 
 def test_fit_and_prediction_are_deterministic_under_row_and_key_reordering():
@@ -332,6 +350,67 @@ def test_missing_or_below_floor_feature_returns_control_rates_exactly():
     ) == expected
 
 
+def test_prediction_requires_nonempty_matching_identities_or_returns_control():
+    model = fit_fold(_rows(6), PitcherSkillChallengerParams())
+    control = _control("50", 2026, k_bf=0.237, bb_bf=0.071)
+    expected = {
+        "k_bf": control["K"] / control["BF"],
+        "bb_bf": control["BB"] / control["BF"],
+    }
+
+    missing_control_id = copy.deepcopy(control)
+    missing_control_id["mlbam_id"] = ""
+    missing_feature_id = _feature("50", 2025)
+    missing_feature_id["mlbam_id"] = ""
+    both_missing_control_id = copy.deepcopy(missing_control_id)
+    both_missing_feature_id = copy.deepcopy(missing_feature_id)
+
+    assert predict_rates(model, missing_control_id, _feature("50", 2025)) == expected
+    assert predict_rates(model, control, missing_feature_id) == expected
+    assert predict_rates(model, control, _feature("999", 2025)) == expected
+    assert predict_rates(
+        model, both_missing_control_id, both_missing_feature_id
+    ) == expected
+
+
+def test_malformed_nested_evidence_fails_closed_without_attribute_errors():
+    model = fit_fold(_rows(6), PitcherSkillChallengerParams())
+    control = _control("50", 2026)
+    expected = {
+        "k_bf": control["K"] / control["BF"],
+        "bb_bf": control["BB"] / control["BF"],
+    }
+    malformed_feature = _feature("50", 2025)
+    malformed_feature["pitch_types"] = []
+
+    assert predict_rates(model, control, malformed_feature) == expected
+
+    malformed_training = _training_row("50", 2026)
+    malformed_training["feature_row"]["outcomes"] = []
+    with pytest.raises(ValueError, match="malformed"):
+        fit_fold([malformed_training], PitcherSkillChallengerParams())
+
+    overflowing_feature = _feature("50", 2025)
+    overflowing_feature["pitch_count"] = 10**400
+    assert predict_rates(model, control, overflowing_feature) == expected
+
+    overflowing_training = _training_row("51", 2026)
+    overflowing_training["feature_row"]["pitch_count"] = 10**400
+    with pytest.raises(ValueError, match="invalid pitch_count"):
+        fit_fold([overflowing_training], PitcherSkillChallengerParams())
+
+
+def test_finite_inputs_that_overflow_fold_statistics_fail_closed():
+    rows = _rows(4)
+    for row in rows:
+        row["feature_row"]["pitch_types"]["four_seam"]["shape"]["velocity"][
+            "mean"
+        ] = 1e308
+
+    with pytest.raises(ValueError, match="non-finite"):
+        fit_fold(rows, PitcherSkillChallengerParams())
+
+
 def test_residual_corrections_use_pinned_type7_training_p5_p95_clips():
     rows = [
         _training_row(
@@ -405,23 +484,18 @@ def test_apply_changes_only_skill_counts_and_reconciles_fip_whip_arithmetic():
         "W",
         "mlbam_id",
         "season",
+        "cFIP",
     }
     assert {key: result[key] for key in unchanged} == {
         key: original[key] for key in unchanged
     }
 
-    control_raw_fip = (
-        13.0 * original["HR"]
-        + 3.0 * (original["BB"] + original["HBP"])
-        - 2.0 * original["K"]
-    ) / original["IP"]
-    cfip = original["ERA"] - control_raw_fip
     corrected_raw_fip = (
         13.0 * result["HR"]
         + 3.0 * (result["BB"] + result["HBP"])
         - 2.0 * result["K"]
     ) / result["IP"]
-    expected_era = max(0.0, corrected_raw_fip + cfip)
+    expected_era = max(0.0, corrected_raw_fip + original["cFIP"])
     assert result["ERA"] == round(expected_era, 3)
     assert result["ER"] == round(expected_era * result["IP"] / 9.0, 4)
     assert result["WHIP"] == round(
@@ -429,6 +503,32 @@ def test_apply_changes_only_skill_counts_and_reconciles_fip_whip_arithmetic():
     )
     assert result["K_9"] == round(9.0 * result["K"] / original["IP"], 3)
     assert result["BB_9"] == round(9.0 * result["BB"] / original["IP"], 3)
+
+
+def test_apply_uses_exact_fold_cfip_instead_of_inferring_from_rounded_era():
+    control = _control("42", 2026, bf=601.0, ip=149.2, cfip=3.2009)
+    result = apply_rates_to_control(control, k_bf=0.3333333, bb_bf=0.0555555)
+    corrected_raw_fip = (
+        13.0 * result["HR"]
+        + 3.0 * (result["BB"] + result["HBP"])
+        - 2.0 * result["K"]
+    ) / result["IP"]
+    exact_era = max(0.0, corrected_raw_fip + control["cFIP"])
+    control_raw_fip = (
+        13.0 * control["HR"]
+        + 3.0 * (control["BB"] + control["HBP"])
+        - 2.0 * control["K"]
+    ) / control["IP"]
+    old_inferred_era = corrected_raw_fip + (control["ERA"] - control_raw_fip)
+
+    assert result["ERA"] == round(exact_era, 3) == 2.856
+    assert round(old_inferred_era, 3) == 2.855
+    assert result["ER"] == round(exact_era * control["IP"] / 9.0, 4)
+
+    missing_cfip = copy.deepcopy(control)
+    del missing_cfip["cFIP"]
+    with pytest.raises(ValueError, match="cFIP"):
+        apply_rates_to_control(missing_cfip, k_bf=0.3333333, bb_bf=0.0555555)
 
 
 def test_payload_is_fixed_auditable_and_contains_no_names_ids_or_raw_rows():

@@ -61,17 +61,37 @@ class PitcherSkillChallengerParams:
 
 
 def _finite(value) -> bool:
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and math.isfinite(float(value))
-    )
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(float(value))
+    except (OverflowError, TypeError, ValueError):
+        return False
 
 
 def _required_number(mapping: dict, key: str) -> float:
     if not isinstance(mapping, dict) or not _finite(mapping.get(key)):
         raise ValueError(f"missing or invalid {key}")
     return float(mapping[key])
+
+
+def _required_mapping(mapping: dict, key: str) -> dict:
+    value = mapping.get(key) if isinstance(mapping, dict) else None
+    if not isinstance(value, dict):
+        raise ValueError(f"malformed {key} mapping")
+    return value
+
+
+def _validate_finite_payload(value, path: str = "payload") -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            _validate_finite_payload(item, f"{path}.{key}")
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            _validate_finite_payload(item, f"{path}[{index}]")
+    elif isinstance(value, (int, float)) and not isinstance(value, bool):
+        if not math.isfinite(float(value)):
+            raise ValueError(f"non-finite derived value at {path}")
 
 
 def _control_rates(control: dict) -> dict[str, float]:
@@ -93,7 +113,8 @@ def _hand(feature_row: dict) -> str:
 
 
 def _shape_value(type_row: dict, field: str, hand: str) -> tuple[float, int] | None:
-    shape = type_row.get("shape", {}).get(_SHAPE_SOURCE_FIELDS[field], {})
+    shape = _required_mapping(type_row, "shape")
+    shape = _required_mapping(shape, _SHAPE_SOURCE_FIELDS[field])
     value = shape.get("mean")
     count = shape.get("sample_count")
     if not _finite(value) or not _finite(count) or float(count) <= 0:
@@ -109,7 +130,10 @@ def _fit_shape_references(rows: list[dict]) -> dict:
     for row in rows:
         feature = row["feature_row"]
         hand = _hand(feature)
-        for pitch_type, type_row in sorted(feature.get("pitch_types", {}).items()):
+        pitch_types = _required_mapping(feature, "pitch_types")
+        for pitch_type, type_row in sorted(pitch_types.items()):
+            if not isinstance(type_row, dict):
+                raise ValueError("malformed pitch type mapping")
             key = f"{pitch_type}|{hand}"
             fields = totals.setdefault(key, {})
             for field in _SHAPE_FIELDS:
@@ -134,7 +158,10 @@ def _fit_shape_references(rows: list[dict]) -> dict:
 def _shape_deviations(feature_row: dict, references: dict) -> dict[str, float | None]:
     hand = _hand(feature_row)
     weighted = {field: [0.0, 0.0] for field in _SHAPE_FIELDS}
-    for pitch_type, type_row in sorted(feature_row.get("pitch_types", {}).items()):
+    pitch_types = _required_mapping(feature_row, "pitch_types")
+    for pitch_type, type_row in sorted(pitch_types.items()):
+        if not isinstance(type_row, dict):
+            raise ValueError("malformed pitch type mapping")
         usage = type_row.get("usage")
         if not _finite(usage) or float(usage) <= 0:
             continue
@@ -154,9 +181,11 @@ def _shape_deviations(feature_row: dict, references: dict) -> dict[str, float | 
 
 
 def _scalar_features(feature_row: dict) -> dict[str, float]:
-    outcomes = feature_row.get("outcomes", {})
-    location = feature_row.get("location", {})
-    arsenal = feature_row.get("arsenal", {})
+    outcomes = _required_mapping(feature_row, "outcomes")
+    location = _required_mapping(feature_row, "location")
+    arsenal = _required_mapping(feature_row, "arsenal")
+    plate_x = _required_mapping(location, "plate_x")
+    plate_z = _required_mapping(location, "plate_z")
     values = {
         "whiff_rate": outcomes.get("whiff_rate"),
         "csw_rate": outcomes.get("csw_rate"),
@@ -165,8 +194,8 @@ def _scalar_features(feature_row: dict) -> dict[str, float]:
         "heart_rate": location.get("heart_rate"),
         "edge_rate": location.get("edge_rate"),
         "waste_rate": location.get("waste_rate"),
-        "horizontal_location_dispersion": location.get("plate_x", {}).get("stddev"),
-        "vertical_location_dispersion": location.get("plate_z", {}).get("stddev"),
+        "horizontal_location_dispersion": plate_x.get("stddev"),
+        "vertical_location_dispersion": plate_z.get("stddev"),
         "arsenal_count": arsenal.get("count"),
         "usage_hhi": arsenal.get("usage_hhi"),
         "fastball_share": arsenal.get("fastball_share"),
@@ -192,25 +221,28 @@ def _row_parts(row: dict, minimum_pitches: int) -> tuple[dict, dict, dict]:
     try:
         feature_season = int(row["feature_season"])
         outcome_season = int(row["outcome_season"])
+        fold_target_season = int(row["fold_target_season"])
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError("training row lacks joined seasons") from exc
     if feature_season != outcome_season - 1:
         raise ValueError("feature season must equal outcome season T-1")
+    if outcome_season >= fold_target_season:
+        raise ValueError("outcome season must be before fold target")
     identities = {
         pitcher_id,
         str(feature.get("mlbam_id") or ""),
         str(control.get("mlbam_id") or ""),
         str(outcome.get("mlbam_id") or ""),
     }
-    seasons = {
-        feature_season,
-        int(feature.get("season", -1)),
-    }
-    outcome_seasons = {
-        outcome_season,
-        int(control.get("season", -1)),
-        int(outcome.get("season", -1)),
-    }
+    try:
+        seasons = {feature_season, int(feature.get("season", -1))}
+        outcome_seasons = {
+            outcome_season,
+            int(control.get("season", -1)),
+            int(outcome.get("season", -1)),
+        }
+    except (TypeError, ValueError) as exc:
+        raise ValueError("malformed season join") from exc
     if len(identities) != 1 or "" in identities:
         raise ValueError("mismatched MLBAM identity join")
     if len(seasons) != 1 or len(outcome_seasons) != 1:
@@ -314,6 +346,9 @@ def fit_fold(training_rows: list[dict], params: PitcherSkillChallengerParams) ->
         raise ValueError("invalid fold: no training rows")
     for row in training_rows:
         _row_parts(row, params.minimum_input_pitches)
+    fold_targets = {int(row["fold_target_season"]) for row in training_rows}
+    if len(fold_targets) != 1:
+        raise ValueError("training rows must share a common fold target")
     rows = sorted(
         training_rows,
         key=lambda row: (int(row.get("outcome_season", -1)), str(row.get("mlbam_id", ""))),
@@ -326,7 +361,9 @@ def fit_fold(training_rows: list[dict], params: PitcherSkillChallengerParams) ->
         seen.add(key)
 
     references = _fit_shape_references(rows)
+    _validate_finite_payload(references, "shape_references")
     deviations = [_shape_deviations(row["feature_row"], references) for row in rows]
+    _validate_finite_payload(deviations, "shape_deviations")
     medians = {}
     for field in _SHAPE_FIELDS:
         key = f"{field}_deviation"
@@ -339,6 +376,7 @@ def fit_fold(training_rows: list[dict], params: PitcherSkillChallengerParams) ->
         _raw_features(row["control"], row["feature_row"], references, medians)
         for row in rows
     ]
+    _validate_finite_payload(raw_design, "raw_design")
     columns = list(zip(*raw_design))
     means = [sum(column) / len(column) for column in columns]
     stds = [pstdev(column) or 1.0 for column in columns]
@@ -349,6 +387,9 @@ def fit_fold(training_rows: list[dict], params: PitcherSkillChallengerParams) ->
         ]
         for features in raw_design
     ]
+    _validate_finite_payload(
+        {"means": means, "stds": stds, "design": design}, "fold_scaling"
+    )
     residuals = {"k_bf": [], "bb_bf": []}
     for row in rows:
         control, _, outcome = _row_parts(row, params.minimum_input_pitches)
@@ -357,7 +398,7 @@ def fit_fold(training_rows: list[dict], params: PitcherSkillChallengerParams) ->
         residuals["k_bf"].append(float(outcome["K"]) / outcome_bf - control_rates["k_bf"])
         residuals["bb_bf"].append(float(outcome["BB"]) / outcome_bf - control_rates["bb_bf"])
     lower, upper = params.residual_clip_quantiles
-    return {
+    payload = {
         "research_only": True,
         "params": {
             **asdict(params),
@@ -378,6 +419,8 @@ def fit_fold(training_rows: list[dict], params: PitcherSkillChallengerParams) ->
         },
         "quantile_convention": "type7_linear",
     }
+    _validate_finite_payload(payload)
+    return payload
 
 
 def _prediction(coefficients: list[float], features: list[float]) -> float:
@@ -389,12 +432,14 @@ def _prediction(coefficients: list[float], features: list[float]) -> float:
 
 def predict_rates(model: dict, control: dict, feature_row: dict | None) -> dict:
     control_rates = _control_rates(control)
-    if feature_row is None:
+    if not isinstance(feature_row, dict):
         return control_rates
     try:
         if _required_number(feature_row, "pitch_count") < model["params"]["minimum_input_pitches"]:
             return control_rates
-        if str(feature_row.get("mlbam_id") or "") != str(control.get("mlbam_id") or ""):
+        control_id = str(control.get("mlbam_id") or "")
+        feature_id = str(feature_row.get("mlbam_id") or "")
+        if not control_id or not feature_id or feature_id != control_id:
             return control_rates
         if int(feature_row.get("season", -1)) != int(control.get("season", -1)) - 1:
             return control_rates
@@ -404,7 +449,7 @@ def predict_rates(model: dict, control: dict, feature_row: dict | None) -> dict:
             model["shape_references"],
             model["shape_medians"],
         )
-    except (TypeError, ValueError):
+    except (AttributeError, TypeError, ValueError):
         return control_rates
     standardized = [
         (value - center) / spread
@@ -434,12 +479,7 @@ def apply_rates_to_control(control: dict, k_bf: float, bb_bf: float) -> dict:
         _required_number(control, key)
 
     result = copy.deepcopy(control)
-    control_raw_fip = (
-        13.0 * float(control["HR"])
-        + 3.0 * (float(control["BB"]) + float(control["HBP"]))
-        - 2.0 * float(control["K"])
-    ) / ip
-    cfip = float(control["ERA"]) - control_raw_fip
+    cfip = _required_number(control, "cFIP")
     result["K"] = round(float(k_bf) * bf, 4)
     result["BB"] = round(float(bb_bf) * bf, 4)
     corrected_raw_fip = (
