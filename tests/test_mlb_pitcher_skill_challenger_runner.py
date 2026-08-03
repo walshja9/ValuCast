@@ -2,6 +2,7 @@ import copy
 import json
 import random
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -223,11 +224,13 @@ def _bundle(players=2, years=range(2016, 2026)):
             "source_hashes": {str(year): f"sha-{year}" for year in FEATURE_SEASONS},
         },
     }
+    support = {}
     for player in range(players):
         pid = str(1000 + player)
         bundle["identities"].append({"mlbam_id": pid, "throws": "L" if player % 2 else "R"})
         for year in years:
-            bundle["pair_keys"].append({"mlbam_id": pid, "outcome_season": year})
+            if year in TARGET_SEASONS:
+                bundle["pair_keys"].append({"mlbam_id": pid, "outcome_season": year})
             bundle["controls"].append(_control(pid, year, p_sp=0.8 if player % 2 == 0 else 0.2))
             bundle["outcomes"].append(_outcome(pid, year, ip=150 if player % 2 == 0 else 40))
             bundle["features"].append(_feature(pid, year - 1, signal=player / 10))
@@ -254,6 +257,23 @@ def _bundle(players=2, years=range(2016, 2026)):
                         "WHIP": 1.12,
                     }
                 )
+    for year in years:
+        support[str(year)] = {
+            "control_count": players,
+            "outcome_count": players,
+            "pair_count": players,
+            "control_only_count": 0,
+            "outcome_only_count": 0,
+        }
+    bundle["common_support"] = {
+        "source_seasons": list(years),
+        "scored_target_seasons": [year for year in years if year in TARGET_SEASONS],
+        "by_season": support,
+        "totals": {
+            key: sum(row[key] for row in support.values())
+            for key in next(iter(support.values()))
+        },
+    }
     return bundle
 
 
@@ -268,6 +288,61 @@ def _fake_predict(model, control, feature):
 def _install_fake_model(monkeypatch):
     monkeypatch.setattr(harness, "fit_fold", _fake_fit)
     monkeypatch.setattr(harness, "predict_rates", _fake_predict)
+
+
+def test_real_loader_shape_includes_2016_2019_training_but_declares_only_scored_pairs(monkeypatch):
+    registration = _registration(sealed=False)
+    feature_rows = {
+        year: [_feature("1000", year)] for year in FEATURE_SEASONS
+    }
+    manifest = {
+        "seasons": {
+            str(year): {"canonical_sha256": harness.canonical_sha256(feature_rows[year])}
+            for year in FEATURE_SEASONS
+        }
+    }
+
+    def fake_json(path):
+        if Path(path).name == "manifest.json":
+            return manifest
+        year = int(Path(path).stem.rsplit("_", 1)[1])
+        return feature_rows[year]
+
+    monkeypatch.setattr(runner, "_json", fake_json)
+    monkeypatch.setattr(
+        runner,
+        "_control_rows",
+        lambda season: [
+            _control("1000", season),
+            _control(f"control-only-{season}", season),
+        ],
+    )
+    monkeypatch.setattr(
+        runner,
+        "load_pitching_season",
+        lambda season, data_dir: [
+            _outcome("1000", season),
+            _outcome(f"outcome-only-{season}", season),
+        ],
+    )
+    monkeypatch.setattr(
+        runner,
+        "load_identity_store",
+        lambda data_dir: {"1000": {"throws": "R"}},
+    )
+    bundle = runner.load_study_bundle(registration)
+    assert {row["season"] for row in bundle["controls"]} == set(range(2016, 2026))
+    assert {row["outcome_season"] for row in bundle["pair_keys"]} == set(TARGET_SEASONS)
+    fold = harness.prepare_fold(bundle, 2020, minimum_pitches=500)
+    assert {row["outcome_season"] for row in fold["training_rows"]} == {2016, 2017, 2018, 2019}
+    assert {row["outcome_season"] for row in fold["scoring_rows"]} == {2020}
+    assert bundle["common_support"]["by_season"]["2020"] == {
+        "control_count": 2,
+        "outcome_count": 2,
+        "pair_count": 1,
+        "control_only_count": 1,
+        "outcome_only_count": 1,
+    }
 
 
 def test_prepare_fold_is_exact_walk_forward_and_held_out_poison_cannot_enter_training():
@@ -288,6 +363,9 @@ def test_prepare_fold_is_exact_walk_forward_and_held_out_poison_cannot_enter_tra
             row["K"] = 10**100
     after = harness.prepare_fold(poisoned, 2023, minimum_pitches=500)
     assert after["training_rows"] == before["training_rows"]
+    assert harness.fit_fold(before["training_rows"], harness.PitcherSkillChallengerParams()) == harness.fit_fold(
+        after["training_rows"], harness.PitcherSkillChallengerParams()
+    )
 
 
 def test_exact_join_validation_rejects_duplicates_missing_pairs_seasons_and_hands():
@@ -438,6 +516,12 @@ def test_context_comparators_use_exact_common_support_and_cannot_change_verdict(
     assert comparison["gate"] == base["gate"]
     assert comparison["metrics"] == base["metrics"]
     assert base["context_comparators"]["steamer"]["missing_count"] > 0
+    for comparator in ("persistence", "steamer"):
+        context = base["context_comparators"][comparator]
+        assert set(context["mae"]) == set(harness.ENDPOINTS)
+        assert set(context["control_mae_on_common_support"]) == set(harness.ENDPOINTS)
+        assert set(context["challenger_mae_on_common_support"]) == set(harness.ENDPOINTS)
+        assert context["common_support_count"] + context["missing_count"] == base["sample"]
 
 
 def test_three_ablations_are_descriptive_only_and_cannot_rescue_gate(monkeypatch):
@@ -460,6 +544,51 @@ def test_every_payload_is_private_and_uses_only_allowed_verdicts(monkeypatch):
     for token in ("PRIVATE PLAYER", "player_name", "mlbam_id", "predictions", "per_player", "competitor", "board_rank", "raw_pitch"):
         assert token.lower() not in encoded.lower()
     assert result["prospective_confirmation"] == {"required": True, "season": 2026, "after_season_complete": True}
+    qualification = result["qualification"]
+    assert qualification["totals"] == {
+        "eligible": 180,
+        "qualified": 180,
+        "excluded": 0,
+    }
+    assert set(qualification["by_fold"]) == {str(year) for year in TARGET_SEASONS}
+    assert result["coverage"]["common_support"]["by_season"]["2020"]["pair_count"] == 30
+
+
+def test_malformed_present_score_feature_fails_before_prediction_or_line_rebuild(monkeypatch):
+    _install_fake_model(monkeypatch)
+    bundle = _bundle(players=30)
+    feature = next(
+        row
+        for row in bundle["features"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2022
+    )
+    del feature["outcomes"]["whiff_rate"]
+    monkeypatch.setattr(
+        harness,
+        "apply_rates_to_control",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("malformed evidence reached line rebuild")
+        ),
+    )
+    with pytest.raises(ValueError, match="malformed score feature"):
+        harness.evaluate_registered_look(bundle, _registration())
+
+
+@pytest.mark.parametrize("field", ["BF", "IP", "K", "BB", "ER", "H_ALLOWED"])
+@pytest.mark.parametrize("bad_value", [None, -1, float("nan"), float("inf")])
+def test_required_outcome_fields_fail_closed_before_scoring(field, bad_value):
+    bundle = _bundle(players=2)
+    outcome = next(
+        row
+        for row in bundle["outcomes"]
+        if row["mlbam_id"] == "1000" and row["season"] == 2023
+    )
+    if bad_value is None:
+        del outcome[field]
+    else:
+        outcome[field] = bad_value
+    with pytest.raises(ValueError, match="outcome"):
+        harness.prepare_fold(bundle, 2023, minimum_pitches=500)
 
 
 def test_registration_extraction_is_deterministic_and_drift_fails_before_fit(tmp_path, monkeypatch):
@@ -487,6 +616,129 @@ def test_registration_extraction_is_deterministic_and_drift_fails_before_fit(tmp
     with pytest.raises(ValueError, match="registration drift"):
         harness.evaluate_registered_look(_bundle(players=30), drifted)
     assert called is False
+
+
+def test_registered_param_and_control_floor_drift_fail_before_fit(monkeypatch):
+    called = False
+
+    def forbidden_fit(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("fit must not run")
+
+    monkeypatch.setattr(harness, "fit_fold", forbidden_fit)
+    monkeypatch.setattr(
+        harness,
+        "PitcherSkillChallengerParams",
+        lambda: SimpleNamespace(
+            ridge_lambda=9.0,
+            minimum_input_pitches=500,
+            residual_clip_quantiles=(0.05, 0.95),
+        ),
+    )
+    with pytest.raises(ValueError, match="parameter defaults"):
+        harness.evaluate_registered_look(_bundle(players=30), _registration())
+    assert called is False
+
+
+def test_registered_control_param_defaults_fail_closed_before_fit(monkeypatch):
+    monkeypatch.setattr(
+        harness,
+        "PitcherMarcelParams",
+        lambda: SimpleNamespace(
+            season_weights=(5.0, 4.0, 3.0),
+            n_reg=301.0,
+            era_from_fip=True,
+        ),
+    )
+    monkeypatch.setattr(
+        harness,
+        "fit_fold",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("fit must not run")
+        ),
+    )
+    with pytest.raises(ValueError, match="Control parameter defaults"):
+        harness.evaluate_registered_look(_bundle(players=30), _registration())
+
+
+def test_implementation_seal_includes_model_and_rejects_staged_or_unstaged_changes(monkeypatch):
+    calls = []
+
+    def clean_git(*args):
+        calls.append(args)
+        if args[0] == "status":
+            return ""
+        return "a" * 40
+
+    monkeypatch.setattr(runner, "_git", clean_git)
+    assert runner.current_implementation_commit() == "a" * 40
+    log_call = next(args for args in calls if args[0] == "log")
+    assert "projections/models/pitcher_skill_challenger.py" in log_call
+
+    monkeypatch.setattr(
+        runner,
+        "_git",
+        lambda *args: " M projections/models/pitcher_skill_challenger.py"
+        if args[0] == "status"
+        else "a" * 40,
+    )
+    with pytest.raises(ValueError, match="uncommitted"):
+        runner.current_implementation_commit()
+
+
+def test_readiness_requires_every_registered_scored_fold_even_when_total_is_large():
+    registration = _registration()
+    bundle = _bundle(players=60)
+    bundle["pair_keys"] = [
+        row for row in bundle["pair_keys"] if row["outcome_season"] != 2020
+    ]
+    bundle["common_support"]["scored_target_seasons"] = list(TARGET_SEASONS[1:])
+    readiness = harness.check_readiness(
+        bundle,
+        registration,
+        implementation_commit="a" * 40,
+        source_hashes=registration["source_hashes"],
+        serving_import_matches=[],
+    )
+    assert readiness["scoreable_population"] >= 250
+    assert readiness["ready_to_spend"] is False
+    assert "scored_target_seasons_mismatch" in readiness["blockers"]
+    assert "missing_declared_pairs:2020" in readiness["blockers"]
+    assert "missing_qualified_support:2020" in readiness["blockers"]
+
+
+def test_unmatched_control_and_outcome_rows_are_disclosed_not_invalid():
+    registration = _registration()
+    bundle = _bundle(players=50)
+    bundle["controls"].append(_control("control-only", 2020))
+    bundle["outcomes"].append(_outcome("outcome-only", 2020))
+    bundle["common_support"] = harness.summarize_common_support(bundle)
+    provisional = harness.check_readiness(
+        bundle,
+        {key: value for key, value in registration.items() if key != "readiness_hash"},
+        implementation_commit="a" * 40,
+        source_hashes=registration["source_hashes"],
+        serving_import_matches=[],
+    )
+    registration["readiness_hash"] = provisional["evidence_hash"]
+    readiness = harness.check_readiness(
+        bundle,
+        registration,
+        implementation_commit="a" * 40,
+        source_hashes=registration["source_hashes"],
+        serving_import_matches=[],
+    )
+    assert readiness["ready_to_spend"] is True
+    assert readiness["common_support"]["by_season"]["2020"] == {
+        "control_count": 51,
+        "outcome_count": 51,
+        "pair_count": 50,
+        "control_only_count": 1,
+        "outcome_only_count": 1,
+    }
+    assert readiness["common_support"]["totals"]["control_only_count"] == 1
+    assert readiness["common_support"]["totals"]["outcome_only_count"] == 1
 
 
 def test_unsealed_registration_reports_missing_hashes_but_cannot_be_ready_or_spent(monkeypatch):
@@ -562,7 +814,56 @@ def test_runner_failure_writes_spent_error_with_fail_closed_boundaries(tmp_path,
     result = json.loads(output.read_text(encoding="utf-8"))
     assert {key: result[key] for key in harness.BASE_FLAGS} == harness.BASE_FLAGS
     assert result["verdict"] == "spent_error"
+    assert result["implementation_commit"] == registration["implementation_commit"]
+    assert result["source_hashes"] == registration["source_hashes"]
+    assert result["registration_hash"] == harness.canonical_sha256(registration)
+    assert result["readiness_hash"] == registration["readiness_hash"]
     assert "boom" not in json.dumps(result)
+
+
+def test_serving_import_scan_follows_indirect_production_python_imports(tmp_path, monkeypatch):
+    (tmp_path / "projections" / "backtest").mkdir(parents=True)
+    (tmp_path / "projections" / "models").mkdir(parents=True)
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "serving_package").mkdir()
+    (tmp_path / "app.py").write_text(
+        "import serving_helper\nimport serving_package\n", encoding="utf-8"
+    )
+    (tmp_path / "serving_helper.py").write_text(
+        "from projections.backtest import pitcher_skill_challenger_harness\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "projections" / "backtest" / "pitcher_skill_challenger_harness.py").write_text(
+        "from projections.models import pitcher_skill_challenger\n", encoding="utf-8"
+    )
+    (tmp_path / "projections" / "models" / "pitcher_skill_challenger.py").write_text(
+        "VALUE = 1\n", encoding="utf-8"
+    )
+    (tmp_path / "scripts" / "run_mlb_pitcher_skill_challenger.py").write_text(
+        "VALUE = 1\n", encoding="utf-8"
+    )
+    (tmp_path / "serving_package" / "__init__.py").write_text(
+        "from . import nested\n", encoding="utf-8"
+    )
+    (tmp_path / "serving_package" / "nested.py").write_text(
+        "from projections.models import pitcher_skill_challenger\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "tests" / "test_allowed.py").write_text(
+        "from projections.backtest import pitcher_skill_challenger_harness\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(runner, "ROOT", tmp_path)
+    matches = runner.serving_import_matches()
+    assert any(match.startswith("app.py -> serving_helper.py ->") for match in matches)
+    assert any(
+        match.startswith(
+            "app.py -> serving_package/__init__.py -> serving_package/nested.py ->"
+        )
+        for match in matches
+    )
+    assert not any("tests/test_allowed.py" in match for match in matches)
 
 
 @pytest.mark.parametrize(

@@ -6,6 +6,7 @@ tuning, fold selection, output selection, and production wiring are out of scope
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import os
 import subprocess
@@ -21,6 +22,7 @@ from projections.backtest.pitcher_skill_challenger_harness import (
     evaluate_registered_look,
     load_registration,
     missing_registration_seals,
+    summarize_common_support,
     write_spent_result,
 )
 from projections.data.identity import load_identity_store
@@ -37,6 +39,11 @@ PLAN_PATH = ROOT / "plans" / "035-mlb-pitcher-skill-challenger.md"
 OUTPUT_PATH = ROOT / RESULT_PATH
 HISTORICAL_DATA_DIR = ROOT / "projections" / "data"
 STATCAST_DATA_DIR = HISTORICAL_DATA_DIR / "pitching_statcast"
+SEALED_IMPLEMENTATION_PATHS = (
+    "projections/models/pitcher_skill_challenger.py",
+    "projections/backtest/pitcher_skill_challenger_harness.py",
+    "scripts/run_mlb_pitcher_skill_challenger.py",
+)
 
 
 def parse_args(argv=None):
@@ -130,7 +137,8 @@ def load_study_bundle(registration: dict) -> dict:
     outcomes = []
     persistence = []
     pair_keys = []
-    for target in target_seasons:
+    outcome_seasons = range(min(feature_seasons) + 1, max(target_seasons) + 1)
+    for target in outcome_seasons:
         target_controls = _control_rows(target)
         target_outcomes = [
             {**row, "mlbam_id": str(row["mlbam_id"]), "season": target}
@@ -138,8 +146,9 @@ def load_study_bundle(registration: dict) -> dict:
         ]
         control_ids = {row["mlbam_id"] for row in target_controls}
         outcome_ids = {row["mlbam_id"] for row in target_outcomes}
-        for pitcher_id in sorted(control_ids & outcome_ids):
-            pair_keys.append({"mlbam_id": pitcher_id, "outcome_season": target})
+        if target in target_seasons:
+            for pitcher_id in sorted(control_ids & outcome_ids):
+                pair_keys.append({"mlbam_id": pitcher_id, "outcome_season": target})
         controls.extend(target_controls)
         outcomes.extend(target_outcomes)
 
@@ -157,7 +166,7 @@ def load_study_bundle(registration: dict) -> dict:
         {"mlbam_id": str(pitcher_id), "throws": row.get("throws")}
         for pitcher_id, row in sorted(identity_store.items())
     ]
-    return {
+    bundle = {
         "pair_keys": pair_keys,
         "controls": controls,
         "outcomes": outcomes,
@@ -174,6 +183,8 @@ def load_study_bundle(registration: dict) -> dict:
             },
         },
     }
+    bundle["common_support"] = summarize_common_support(bundle)
+    return bundle
 
 
 def _git(*args: str) -> str:
@@ -184,13 +195,15 @@ def _git(*args: str) -> str:
 
 
 def current_implementation_commit() -> str:
+    dirty = _git("status", "--porcelain", "--", *SEALED_IMPLEMENTATION_PATHS)
+    if dirty:
+        raise ValueError("pitcher challenger implementation has uncommitted changes")
     value = _git(
         "log",
         "-1",
         "--format=%H",
         "--",
-        "projections/backtest/pitcher_skill_challenger_harness.py",
-        "scripts/run_mlb_pitcher_skill_challenger.py",
+        *SEALED_IMPLEMENTATION_PATHS,
     )
     if len(value) != 40:
         raise ValueError("pitcher challenger implementation is not committed")
@@ -210,23 +223,87 @@ def current_source_hashes(registration: dict) -> dict:
 
 
 def serving_import_matches() -> list[str]:
-    """Fail closed if research modules become reachable from serving paths."""
-    needles = (
-        "pitcher_skill_challenger_harness",
-        "run_mlb_pitcher_skill_challenger",
-    )
-    roots = [
-        ROOT / "app.py",
-        ROOT / "templates",
-        ROOT / "static",
-        ROOT / "quality",
-        ROOT / "prospects",
-        ROOT / ".github",
-    ]
-    matches = []
-    for root in roots:
-        paths = [root] if root.is_file() else sorted(root.rglob("*")) if root.exists() else []
-        for path in paths:
+    """Fail closed on direct or transitive production imports of research code."""
+
+    def module_name(path: Path) -> str:
+        relative = path.relative_to(ROOT).with_suffix("")
+        parts = list(relative.parts)
+        if parts and parts[-1] == "__init__":
+            parts.pop()
+        return ".".join(parts)
+
+    excluded = {ROOT / path for path in SEALED_IMPLEMENTATION_PATHS}
+    python_paths = []
+    for path in sorted(ROOT.rglob("*.py")):
+        relative = path.relative_to(ROOT)
+        if path in excluded or "tests" in relative.parts:
+            continue
+        if any(part in {".git", ".venv", "venv", "__pycache__"} for part in relative.parts):
+            continue
+        python_paths.append(path)
+    module_paths = {module_name(path): path for path in python_paths + list(excluded)}
+    forbidden = {module_name(path) for path in excluded}
+    graph = {}
+
+    def imported_modules(path: Path) -> set[str]:
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except (OSError, UnicodeDecodeError, SyntaxError):
+            return set()
+        current = module_name(path)
+        package = (
+            current.split(".")
+            if path.name == "__init__.py"
+            else current.split(".")[:-1]
+        )
+        imports = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imports.update(alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                if node.level:
+                    keep = max(0, len(package) - node.level + 1)
+                    prefix = package[:keep]
+                    base = ".".join(prefix + ([node.module] if node.module else []))
+                else:
+                    base = node.module or ""
+                if base:
+                    imports.add(base)
+                for alias in node.names:
+                    candidate = f"{base}.{alias.name}" if base else alias.name
+                    if candidate in module_paths:
+                        imports.add(candidate)
+        return imports
+
+    for module, path in module_paths.items():
+        if module not in forbidden:
+            graph[module] = imported_modules(path)
+
+    matches = set()
+    for start, path in sorted(module_paths.items()):
+        if start in forbidden or "tests" in path.relative_to(ROOT).parts:
+            continue
+        queue = [(start, [start])]
+        visited = set()
+        while queue:
+            module, chain = queue.pop(0)
+            if module in visited:
+                continue
+            visited.add(module)
+            for dependency in sorted(graph.get(module, ())):
+                next_chain = chain + [dependency]
+                if dependency in forbidden:
+                    labels = [
+                        module_paths[value].relative_to(ROOT).as_posix()
+                        for value in next_chain
+                    ]
+                    matches.add(" -> ".join(labels))
+                elif dependency in graph:
+                    queue.append((dependency, next_chain))
+
+    needles = tuple(path.stem for path in excluded)
+    for directory in (ROOT / "templates", ROOT / "static", ROOT / ".github"):
+        for path in sorted(directory.rglob("*")) if directory.exists() else []:
             if not path.is_file():
                 continue
             try:
@@ -235,7 +312,7 @@ def serving_import_matches() -> list[str]:
                 continue
             for number, line in enumerate(lines, 1):
                 if any(needle in line for needle in needles):
-                    matches.append(f"{path.relative_to(ROOT).as_posix()}:{number}")
+                    matches.add(f"{path.relative_to(ROOT).as_posix()}:{number}")
     return sorted(matches)
 
 
@@ -262,6 +339,8 @@ def _spent_boundary(registration: dict, readiness: dict, verdict: str) -> dict:
         **BASE_FLAGS,
         "study_id": registration["study_id"],
         "registration_hash": canonical_sha256(registration),
+        "implementation_commit": registration.get("implementation_commit"),
+        "source_hashes": registration.get("source_hashes"),
         "readiness_hash": readiness.get("evidence_hash"),
         "verdict": verdict,
     }

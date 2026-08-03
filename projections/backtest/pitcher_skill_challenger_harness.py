@@ -12,6 +12,8 @@ import tempfile
 from pathlib import Path
 
 from projections.backtest.pitching_harness import _qualified
+from projections.constants import MIN_RP_IP_EVAL, MIN_SP_IP_EVAL
+from projections.models.pitcher_params import PitcherMarcelParams
 from projections.models.pitcher_skill_challenger import (
     FEATURE_ORDER,
     PitcherSkillChallengerParams,
@@ -138,6 +140,24 @@ def validate_registration(registration: dict, *, require_seals: bool) -> None:
     _expect(registration.get("bootstrap_seed") == BOOTSTRAP_SEED, "bootstrap seed")
     _expect(registration.get("outer_looks") == 1, "outer look count")
     _expect(tuple(FEATURE_ORDER) == REGISTERED_FEATURE_ORDER, "feature order")
+    params = PitcherSkillChallengerParams()
+    _expect(
+        params.ridge_lambda == RIDGE_LAMBDA
+        and params.minimum_input_pitches == MINIMUM_PITCHES
+        and tuple(params.residual_clip_quantiles) == (0.05, 0.95),
+        "parameter defaults",
+    )
+    _expect(
+        MIN_SP_IP_EVAL == 60 and MIN_RP_IP_EVAL == 20,
+        "Control qualification floors",
+    )
+    control_params = PitcherMarcelParams()
+    _expect(
+        tuple(control_params.season_weights) == (5.0, 4.0, 3.0)
+        and control_params.n_reg == 300.0
+        and control_params.era_from_fip is True,
+        "Control parameter defaults",
+    )
     _expect(model.get("feature_set") == "one_combined_shape_location_execution_arsenal_set", "feature set")
     _expect(
         model.get("target_residuals")
@@ -287,6 +307,129 @@ def _pair_keys(rows: list[dict]) -> list[tuple[str, int]]:
     return sorted(pairs, key=lambda value: (value[1], value[0]))
 
 
+def summarize_common_support(bundle: dict) -> dict:
+    """Disclose the Control/outcome intersection without invalidating unmatched rows."""
+    controls = _index(bundle.get("controls") or [], label="Control")
+    outcomes = _index(bundle.get("outcomes") or [], label="outcome")
+    declared = _pair_keys(bundle.get("pair_keys") or [])
+    seasons = sorted({season for _, season in controls} | {season for _, season in outcomes})
+    by_season = {}
+    for season in seasons:
+        control_ids = {pitcher_id for pitcher_id, value in controls if value == season}
+        outcome_ids = {pitcher_id for pitcher_id, value in outcomes if value == season}
+        by_season[str(season)] = {
+            "control_count": len(control_ids),
+            "outcome_count": len(outcome_ids),
+            "pair_count": len(control_ids & outcome_ids),
+            "control_only_count": len(control_ids - outcome_ids),
+            "outcome_only_count": len(outcome_ids - control_ids),
+        }
+    fields = (
+        "control_count",
+        "outcome_count",
+        "pair_count",
+        "control_only_count",
+        "outcome_only_count",
+    )
+    return {
+        "source_seasons": seasons,
+        "scored_target_seasons": sorted({season for _, season in declared}),
+        "by_season": by_season,
+        "totals": {
+            field: sum(row[field] for row in by_season.values()) for field in fields
+        },
+    }
+
+
+def _required_outcome_number(outcome: dict, key: str) -> float:
+    value = outcome.get(key) if isinstance(outcome, dict) else None
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(float(value))
+        or float(value) < 0
+    ):
+        raise ValueError(f"missing or invalid outcome {key}")
+    return float(value)
+
+
+def _validate_outcome(outcome: dict) -> None:
+    for key in ("BF", "IP", "K", "BB", "ER", "H_ALLOWED"):
+        _required_outcome_number(outcome, key)
+    if float(outcome["BF"]) <= 0:
+        raise ValueError("outcome BF must be positive")
+
+
+def _required_score_number(mapping: dict, key: str, path: str) -> float:
+    value = mapping.get(key) if isinstance(mapping, dict) else None
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(float(value))
+    ):
+        raise ValueError(f"malformed score feature: {path}.{key}")
+    return float(value)
+
+
+def _required_score_mapping(mapping: dict, key: str, path: str) -> dict:
+    value = mapping.get(key) if isinstance(mapping, dict) else None
+    if not isinstance(value, dict):
+        raise ValueError(f"malformed score feature: {path}.{key}")
+    return value
+
+
+def _validate_score_feature(feature: dict) -> None:
+    """Validate present, eligible feature evidence before prediction or rebuilding lines."""
+    _required_score_number(feature, "pitch_count", "feature")
+    outcomes = _required_score_mapping(feature, "outcomes", "feature")
+    for key in ("whiff_rate", "csw_rate", "called_strike_rate"):
+        _required_score_number(outcomes, key, "feature.outcomes")
+    location = _required_score_mapping(feature, "location", "feature")
+    for key in ("zone_rate", "heart_rate", "edge_rate", "waste_rate"):
+        _required_score_number(location, key, "feature.location")
+    for axis in ("plate_x", "plate_z"):
+        mapping = _required_score_mapping(location, axis, "feature.location")
+        _required_score_number(mapping, "stddev", f"feature.location.{axis}")
+    arsenal = _required_score_mapping(feature, "arsenal", "feature")
+    for key in (
+        "count",
+        "usage_hhi",
+        "fastball_share",
+        "max_velocity_separation",
+        "max_movement_separation",
+    ):
+        _required_score_number(arsenal, key, "feature.arsenal")
+    pitch_types = _required_score_mapping(feature, "pitch_types", "feature")
+    for pitch_type, type_row in pitch_types.items():
+        if not isinstance(type_row, dict):
+            raise ValueError(f"malformed score feature: feature.pitch_types.{pitch_type}")
+        _required_score_number(type_row, "usage", f"feature.pitch_types.{pitch_type}")
+        shape = _required_score_mapping(
+            type_row, "shape", f"feature.pitch_types.{pitch_type}"
+        )
+        for field in (
+            "velocity",
+            "induced_vertical_movement",
+            "horizontal_movement",
+            "spin",
+            "extension",
+        ):
+            observed = _required_score_mapping(
+                shape, field, f"feature.pitch_types.{pitch_type}.shape"
+            )
+            sample_count = _required_score_number(
+                observed,
+                "sample_count",
+                f"feature.pitch_types.{pitch_type}.shape.{field}",
+            )
+            if sample_count > 0:
+                _required_score_number(
+                    observed,
+                    "mean",
+                    f"feature.pitch_types.{pitch_type}.shape.{field}",
+                )
+
+
 def _enrich_feature(feature: dict | None, hand: str, expected_season: int) -> dict | None:
     if feature is None:
         return None
@@ -320,8 +463,8 @@ def prepare_fold(bundle: dict, target_season: int, *, minimum_pitches: int) -> d
     outcomes = _index(bundle.get("outcomes") or [], label="outcome")
     features = _index(bundle.get("features") or [], label="feature")
     identities = _identity_index(bundle.get("identities") or [])
-    pairs = _pair_keys(bundle.get("pair_keys") or [])
-    for key in pairs:
+    declared_pairs = _pair_keys(bundle.get("pair_keys") or [])
+    for key in declared_pairs:
         if key not in controls:
             raise ValueError(f"missing Control for {key[0]} {key[1]}")
         if key not in outcomes:
@@ -329,26 +472,50 @@ def prepare_fold(bundle: dict, target_season: int, *, minimum_pitches: int) -> d
         if key[0] not in identities:
             raise ValueError(f"missing hand identity for {key[0]}")
 
-    training_rows = []
-    scoring_rows = []
-    for pitcher_id, season in pairs:
-        if season > target_season:
-            continue
+    # Identity-backed rows with matching T-1 evidence are intended study joins;
+    # unmatched source-only rows remain valid and are disclosed separately.
+    for pitcher_id, season in outcomes:
+        if (
+            pitcher_id in identities
+            and (pitcher_id, season - 1) in features
+            and (pitcher_id, season) not in controls
+        ):
+            raise ValueError(f"missing Control for {pitcher_id} {season}")
+    for pitcher_id, season in controls:
+        if (
+            pitcher_id in identities
+            and (pitcher_id, season - 1) in features
+            and (pitcher_id, season) not in outcomes
+        ):
+            raise ValueError(f"missing outcome for {pitcher_id} {season}")
+
+    common_pairs = sorted(
+        set(controls) & set(outcomes), key=lambda value: (value[1], value[0])
+    )
+
+    def joined_row(pitcher_id: str, season: int) -> dict:
+        if pitcher_id not in identities:
+            raise ValueError(f"missing hand identity for {pitcher_id}")
         control = copy.deepcopy(controls[(pitcher_id, season)])
         outcome = copy.deepcopy(outcomes[(pitcher_id, season)])
         if int(control.get("season", -1)) != season:
             raise ValueError("Control season mismatch")
         if int(outcome.get("season", -1)) != season:
             raise ValueError("outcome season mismatch")
+        _validate_outcome(outcome)
         feature = _enrich_feature(
             features.get((pitcher_id, season - 1)), identities[pitcher_id], season - 1
         )
         fallback_reason = None
         if feature is None:
             fallback_reason = "missing_feature"
-        elif float(feature.get("pitch_count", 0) or 0) < minimum_pitches:
-            fallback_reason = "below_pitch_floor"
-        row = {
+        else:
+            pitch_count = _required_score_number(feature, "pitch_count", "feature")
+            if pitch_count < minimum_pitches:
+                fallback_reason = "below_pitch_floor"
+            else:
+                _validate_score_feature(feature)
+        return {
             "mlbam_id": pitcher_id,
             "feature_season": season - 1,
             "outcome_season": season,
@@ -359,23 +526,43 @@ def prepare_fold(bundle: dict, target_season: int, *, minimum_pitches: int) -> d
             "fallback_reason": fallback_reason,
             "projected_role": _projected_role(control),
         }
-        if season < target_season:
-            if fallback_reason is None:
-                training_rows.append(row)
-        elif _qualified_under_control_role(outcome, control):
+
+    training_rows = []
+    for pitcher_id, season in common_pairs:
+        if season >= target_season:
+            continue
+        row = joined_row(pitcher_id, season)
+        if row["fallback_reason"] is None:
+            training_rows.append(row)
+
+    target_pairs = [key for key in declared_pairs if key[1] == target_season]
+    scoring_rows = []
+    for pitcher_id, season in target_pairs:
+        row = joined_row(pitcher_id, season)
+        if _qualified_under_control_role(row["outcome"], row["control"]):
             scoring_rows.append(row)
-    return {"target_season": target_season, "training_rows": training_rows, "scoring_rows": scoring_rows}
+    return {
+        "target_season": target_season,
+        "training_rows": training_rows,
+        "scoring_rows": scoring_rows,
+        "qualification": {
+            "eligible": len(target_pairs),
+            "qualified": len(scoring_rows),
+            "excluded": len(target_pairs) - len(scoring_rows),
+        },
+    }
 
 
 def _actual_endpoints(outcome: dict) -> dict[str, float]:
-    ip = float(outcome.get("IP", 0))
+    _validate_outcome(outcome)
+    ip = float(outcome["IP"])
     if ip <= 0:
         raise ValueError("actual IP must be positive")
     return {
-        "k_per_9": 9.0 * float(outcome.get("K", 0)) / ip,
-        "bb_per_9": 9.0 * float(outcome.get("BB", 0)) / ip,
-        "era": 9.0 * float(outcome.get("ER", 0)) / ip,
-        "whip": (float(outcome.get("BB", 0)) + float(outcome.get("H_ALLOWED", 0))) / ip,
+        "k_per_9": 9.0 * float(outcome["K"]) / ip,
+        "bb_per_9": 9.0 * float(outcome["BB"]) / ip,
+        "era": 9.0 * float(outcome["ER"]) / ip,
+        "whip": (float(outcome["BB"]) + float(outcome["H_ALLOWED"])) / ip,
     }
 
 
@@ -422,8 +609,13 @@ def _score_variant(bundle: dict, *, ablation: str | None = None) -> tuple[list[d
     errors = []
     fallback_counts = {"below_pitch_floor": 0, "missing_feature": 0}
     fold_samples = {}
-    for target in TARGET_SEASONS:
-        prepared = prepare_fold(bundle, target, minimum_pitches=MINIMUM_PITCHES)
+    qualification_by_fold = {}
+    # Validate every scored fold before any prediction or line reconstruction.
+    prepared_folds = {
+        target: prepare_fold(bundle, target, minimum_pitches=MINIMUM_PITCHES)
+        for target in TARGET_SEASONS
+    }
+    for target, prepared in prepared_folds.items():
         training = copy.deepcopy(prepared["training_rows"])
         scoring = copy.deepcopy(prepared["scoring_rows"])
         if ablation:
@@ -433,12 +625,14 @@ def _score_variant(bundle: dict, *, ablation: str | None = None) -> tuple[list[d
             raise ValueError(f"invalid fold {target}: no training history")
         model = fit_fold(training, PitcherSkillChallengerParams())
         fold_samples[str(target)] = len(scoring)
+        qualification_by_fold[str(target)] = prepared["qualification"]
         for row in scoring:
             control = row["control"]
             if row["fallback_reason"]:
                 fallback_counts[row["fallback_reason"]] += 1
                 challenger = copy.deepcopy(control)
             else:
+                _validate_score_feature(row["feature_row"])
                 rates = predict_rates(model, control, row["feature_row"])
                 challenger = apply_rates_to_control(
                     control, rates["k_bf"], rates["bb_bf"]
@@ -465,7 +659,12 @@ def _score_variant(bundle: dict, *, ablation: str | None = None) -> tuple[list[d
                     "challenger_total_error": sum(challenger_errors.values()),
                 }
             )
-    return errors, {"fallback_counts": fallback_counts, "fold_samples": fold_samples}
+    return errors, {
+        "fallback_counts": fallback_counts,
+        "fold_samples": fold_samples,
+        "qualification_by_fold": qualification_by_fold,
+        "common_support": summarize_common_support(bundle),
+    }
 
 
 def _mean(values: list[float]) -> float | None:
@@ -666,8 +865,12 @@ def _context_metrics(bundle: dict, errors: list[dict], label: str) -> dict:
         forecast_values = _forecast_endpoints(forecast)
         common.append(
             {
-                endpoint: abs(forecast_values[endpoint] - actual[endpoint])
-                for endpoint in ENDPOINTS
+                "comparator": {
+                    endpoint: abs(forecast_values[endpoint] - actual[endpoint])
+                    for endpoint in ENDPOINTS
+                },
+                "control": row["control_errors"],
+                "challenger": row["challenger_errors"],
             }
         )
     return {
@@ -675,7 +878,15 @@ def _context_metrics(bundle: dict, errors: list[dict], label: str) -> dict:
         "common_support_count": len(common),
         "missing_count": len(errors) - len(common),
         "mae": {
-            endpoint: _mean([row[endpoint] for row in common])
+            endpoint: _mean([row["comparator"][endpoint] for row in common])
+            for endpoint in ENDPOINTS
+        },
+        "control_mae_on_common_support": {
+            endpoint: _mean([row["control"][endpoint] for row in common])
+            for endpoint in ENDPOINTS
+        },
+        "challenger_mae_on_common_support": {
+            endpoint: _mean([row["challenger"][endpoint] for row in common])
             for endpoint in ENDPOINTS
         },
     }
@@ -705,9 +916,16 @@ def evaluate_registered_look(bundle: dict, registration: dict) -> dict:
         "folds": list(TARGET_SEASONS),
         "coverage": coverage,
         "qualification": {
-            "starter_floor_ip": 60,
-            "reliever_floor_ip": 20,
+            "starter_floor_ip": MIN_SP_IP_EVAL,
+            "reliever_floor_ip": MIN_RP_IP_EVAL,
             "role_source": "Control_p_sp",
+            "by_fold": coverage["qualification_by_fold"],
+            "totals": {
+                key: sum(
+                    row[key] for row in coverage["qualification_by_fold"].values()
+                )
+                for key in ("eligible", "qualified", "excluded")
+            },
         },
         "metrics": metrics,
         "gate": gate,
@@ -741,7 +959,9 @@ def _readiness_evidence(
     implementation_commit: str,
     source_hashes: dict,
     fold_training_counts: dict,
+    fold_support: dict,
     scoreable_population: int,
+    common_support: dict,
     serving_import_matches: list,
 ) -> dict:
     return {
@@ -751,7 +971,9 @@ def _readiness_evidence(
         "required_feature_seasons": list(FEATURE_SEASONS),
         "required_target_seasons": list(TARGET_SEASONS),
         "fold_training_counts": fold_training_counts,
+        "fold_support": fold_support,
         "scoreable_population": scoreable_population,
+        "common_support": common_support,
         "bootstrap_seed": registration.get("bootstrap_seed"),
         "serving_import_matches": sorted(serving_import_matches),
     }
@@ -772,24 +994,42 @@ def check_readiness(
     if manifest.get("source_hashes") != source_hashes:
         raise ValueError("source manifest hashes do not reconcile")
     fold_training_counts = {}
+    fold_support = {}
     scoreable_population = 0
     for target in TARGET_SEASONS:
         fold = prepare_fold(bundle, target, minimum_pitches=MINIMUM_PITCHES)
         fold_training_counts[str(target)] = len(fold["training_rows"])
+        fold_support[str(target)] = fold["qualification"]
         scoreable_population += len(fold["scoring_rows"])
+    common_support = summarize_common_support(bundle)
     evidence = _readiness_evidence(
         registration,
         implementation_commit=implementation_commit,
         source_hashes=source_hashes,
         fold_training_counts=fold_training_counts,
+        fold_support=fold_support,
         scoreable_population=scoreable_population,
+        common_support=common_support,
         serving_import_matches=serving_import_matches,
     )
     evidence_hash = canonical_sha256(evidence)
     missing = missing_registration_seals(registration)
     blockers = []
-    if any(count <= 0 for count in fold_training_counts.values()):
-        blockers.append("missing_fold_training_history")
+    declared_target_seasons = tuple(common_support["scored_target_seasons"])
+    if declared_target_seasons != TARGET_SEASONS:
+        blockers.append("scored_target_seasons_mismatch")
+    declared_support = bundle.get("common_support")
+    if declared_support is not None and declared_support != common_support:
+        blockers.append("common_support_mismatch")
+    for target in TARGET_SEASONS:
+        key = str(target)
+        if fold_training_counts[key] <= 0:
+            blockers.append(f"missing_fold_training_history:{target}")
+        if fold_support[key]["eligible"] <= 0:
+            blockers.append(f"missing_declared_pairs:{target}")
+        if fold_support[key]["qualified"] <= 0:
+            blockers.append(f"missing_qualified_support:{target}")
+            blockers.append(f"missing_scoreable_support:{target}")
     if scoreable_population < MINIMUM_SAMPLE:
         blockers.append("minimum_scoreable_population")
     if serving_import_matches:
