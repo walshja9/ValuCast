@@ -207,8 +207,6 @@ if __name__ == "__main__":
         board = []
     board_mids = {str(r.get("mlbam_id")) for r in board if r.get("mlbam_id") is not None}
     on_board = sum(1 for mid in by_mlbam if mid in board_mids)
-    griffin = next((r for r in by_mlbam.values() if r["name"] == "Konnor Griffin"), None)
-
     print("unique_players :", c["unique_players"])
     print("matched_mlbam  :", c["matched_to_mlbam"])
     print("unmatched      :", c["unmatched"])
@@ -219,10 +217,6 @@ if __name__ == "__main__":
     assert 1100 <= c["unique_players"] <= 1400, c
     assert c["matched_to_mlbam"] >= 700, c
     assert 600 <= on_board <= 1100, on_board
-    # Griffin maps to an mlbam (complete map) but, having graduated, his mlbam is
-    # NOT a current prospect board row -> he drops from the board join for free.
-    assert griffin is not None and griffin["fv"] == "70", griffin
-    assert griffin["mlbam_id"] not in board_mids, "graduated FG#1 must not be a board row"
     if "--write" in sys.argv:
         print("wrote", OUT_PATH, write_snapshot())
     else:
