@@ -9,19 +9,19 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 1.6,
+        "gap": 3.66,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 695578,
           "name": "James Wood",
           "rank": 2,
-          "value": 97.51
+          "value": 95.46
         },
         "top": {
           "mlbam_id": 691406,
           "name": "Junior Caminero",
           "rank": 1,
-          "value": 99.11
+          "value": 99.12
         }
       },
       "status": "passed",
@@ -55,7 +55,7 @@
               "SP"
             ],
             "rank": 4,
-            "value": 82.42
+            "value": 80.45
           },
           {
             "name": "Shohei Ohtani",
@@ -64,7 +64,7 @@
               "SP"
             ],
             "rank": 5,
-            "value": 78.5
+            "value": 78.04
           },
           {
             "name": "Paul Skenes",
@@ -72,7 +72,7 @@
               "SP"
             ],
             "rank": 11,
-            "value": 74.11
+            "value": 72.74
           },
           {
             "name": "Cam Schlittler",
@@ -80,7 +80,7 @@
               "SP"
             ],
             "rank": 23,
-            "value": 66.61
+            "value": 65.3
           }
         ],
         "reliever_count": 0,
@@ -185,10 +185,10 @@
       "id": "prospect_transition_continuity",
       "message": "Prospect transition calibration is continuous across the latest vintages.",
       "metrics": {
-        "baseline_date": "2026-08-02",
+        "baseline_date": "2026-08-03",
         "bucket_step_threshold": 6.0,
-        "current_date": "2026-08-03",
-        "evaluated_matched_row_count": 2911,
+        "current_date": "2026-08-04",
+        "evaluated_matched_row_count": 2914,
         "hitter_count": 0,
         "incident_count": 0,
         "model_delta_limit": 1.0,
@@ -439,7 +439,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 52,
+        "archive_day_span": 53,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -548,7 +548,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 219
+        "row_count": 235
       },
       "status": "passed"
     },
@@ -556,8 +556,8 @@
       "id": "movers_surface_gate",
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
-        "cooling_count": 8,
-        "generated_at": "2026-08-03T00:00:00+00:00",
+        "cooling_count": 9,
+        "generated_at": "2026-08-04T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 12
@@ -604,25 +604,25 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-08-03T13:08:49.921657+00:00",
+  "generated_at": "2026-08-04T12:51:21.052700+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-08-03",
-      "buy_signals": "2026-08-03",
-      "milb_stat_freshness_audit": "2026-08-03",
-      "mlb_layer": "2026-08-03",
-      "movers": "2026-08-03",
-      "prospect_card_data_audit": "2026-08-03",
-      "prospect_coverage_audit": "2026-08-03",
-      "prospect_rank": "2026-08-03",
-      "public_snapshot": "2026-08-03",
-      "recent_signal_report": "2026-08-03"
+      "buy_review": "2026-08-04",
+      "buy_signals": "2026-08-04",
+      "milb_stat_freshness_audit": "2026-08-04",
+      "mlb_layer": "2026-08-04",
+      "movers": "2026-08-04",
+      "prospect_card_data_audit": "2026-08-04",
+      "prospect_coverage_audit": "2026-08-04",
+      "prospect_rank": "2026-08-04",
+      "public_snapshot": "2026-08-04",
+      "recent_signal_report": "2026-08-04"
     },
-    "mlb_count": 925,
+    "mlb_count": 927,
     "prospect_count": 2914,
-    "public_row_count": 3839
+    "public_row_count": 3841
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",
