@@ -302,8 +302,8 @@ def test_primary_nav_links_to_intelligence_surfaces():
     assert response.status_code == 200
     # Core surfaces stay in the primary nav. aria-current is wired for every
     # primary-nav entry (not just Backfields) — "/" is current on the homepage.
-    assert 'href="/" aria-current="page">Board</a>' in html
-    assert 'href="/backfields"' in html and ">Backfields</a>" in html
+    assert 'href="/" aria-current="page">Rankings</a>' in html
+    assert 'href="/backfields"' in html and ">Farm Systems</a>" in html
     assert 'href="/map">Map</a>' in html
     assert 'href="/methodology">Methodology</a>' in html
     # Intelligence Hub demoted out of the site-nav (7/14 declutter); the footer
@@ -316,7 +316,7 @@ def test_primary_nav_links_to_intelligence_surfaces():
     assert 'href="/movers">Movers</a>' in html
     assert 'href="/buys">Buys</a>' in html
     assert 'href="/receipts">Receipts</a>' in html
-    assert 'href="/gaps">Gaps</a>' in html
+    assert 'href="/gaps">Disagreements</a>' in html
     # Scouting is consolidated into Backfields; still no top-nav item.
     assert 'href="/scouting">Scouting</a>' not in html
 
@@ -333,7 +333,7 @@ def test_primary_nav_hold_flags_hide_buys_and_receipts(monkeypatch):
     assert 'href="/receipts">Receipts</a>' not in html
     # Unheld promoted items stay.
     assert 'href="/movers">Movers</a>' in html
-    assert 'href="/gaps">Gaps</a>' in html
+    assert 'href="/gaps">Disagreements</a>' in html
 
 
 def _arias_card_html():

@@ -16,6 +16,70 @@ class TestLaunchPolish(unittest.TestCase):
     def html(self, path):
         return self.client.get(path).data.decode("utf-8")
 
+    def test_positioning_message_metadata_nav_board_and_footer_are_aligned(self):
+        html = self.html("/?mode=prospects")
+
+        self.assertIn(
+            "<title>ValuCast | Independent Prospect Intelligence for Dynasty Baseball</title>",
+            html,
+        )
+        description = (
+            "Independent prospect evaluation for league-aware dynasty rankings, "
+            "values, trades, buys and call-up decisions, with public methodology "
+            "and receipts."
+        )
+        self.assertIn(f'<meta name="description" content="{description}">', html)
+        self.assertIn(f'<meta property="og:description" content="{description}">', html)
+        self.assertIn(f'<meta name="twitter:description" content="{description}">', html)
+
+        self.assertIn('class="positioning-strip"', html)
+        self.assertIn(
+            "Independent prospect intelligence, translated for your dynasty league.",
+            html,
+        )
+        self.assertIn(
+            "ValuCast evaluates players independently, then turns that evidence into "
+            "league-aware rankings, values, trades, buys, and call-up decisions.",
+            html,
+        )
+
+        nav = re.search(r'<nav class="site-nav".*?</nav>', html, re.S).group(0)
+        for marker in (
+            'href="/" aria-current="page">Rankings</a>',
+            'href="/board">Archives</a>',
+            'href="/gaps">Disagreements</a>',
+            'href="/backfields">Farm Systems</a>',
+        ):
+            self.assertIn(marker, nav)
+        for old_label in (">Board</a>", ">The Archives</a>", ">Gaps</a>", ">Backfields</a>"):
+            self.assertNotIn(old_label, nav)
+
+        self.assertIn(
+            "Independent prospect evaluation, league-aware value, current evidence, "
+            "and actionable signals.",
+            html,
+        )
+        self.assertIn(
+            "ValuCast independently evaluates prospects, translates that evidence "
+            "into league-specific fantasy decisions, and publishes the methodology "
+            "and receipts.",
+            html,
+        )
+
+        css = self.html("/static/style.css")
+        self.assertIn(".positioning-strip {", css)
+        self.assertNotIn("min-height:", css[css.index(".positioning-strip {"):css.index(".welcome-strip {")])
+
+    def test_share_graphic_positioning_preserves_named_products(self):
+        import inspect
+        import app as app_module
+
+        default = inspect.signature(app_module._graphic_header).parameters["tagline"].default
+        self.assertEqual(default, "Independent prospect intelligence")
+
+        for renderer in (app_module._buys_share_card_png, app_module._buys_hold_share_card_png):
+            self.assertIn('tagline="Ahead of the Curve"', inspect.getsource(renderer))
+
     def test_welcome_strip_only_renders_on_customizable_boards(self):
         for path in ("/", "/?mode=dd_dynasty"):
             html = self.html(path)
