@@ -1,7 +1,7 @@
 # Stage 1 Outcome Proof Design
 
 **Date:** 2026-08-04
-**Status:** Proposed
+**Status:** Approved
 **Scope:** Evaluation and reporting only. No scoring, ranking, value, publication-cap, Role Watch, or pitcher-veto change.
 
 ## Goal
