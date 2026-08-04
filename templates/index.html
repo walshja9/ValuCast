@@ -16,6 +16,11 @@
     <div class="notice">{{ notice }}</div>
     {% endif %}
 
+    <section class="positioning-strip" aria-labelledby="positioning-title">
+        <h2 id="positioning-title">Independent prospect intelligence, translated for your dynasty league.</h2>
+        <p>ValuCast evaluates players independently, then turns that evidence into league-aware rankings, values, trades, buys, and call-up decisions.</p>
+    </section>
+
     {{ board_nav(active=horizon, dd_available=dd_available, aria='Board horizon') }}
 
     {# 7/14 declutter: freshness badge and on-ramp strip dropped from the front
@@ -163,7 +168,7 @@
     {% else %}{# prospects #}
     <div class="rank-toolbar rank-toolbar-locked glass" id="rank-toolbar">
         <span class="config-summary-line">
-            <span class="config-summary">ValuCast prospect board - current evidence, peak context, buy signals, and share tools.{% if dd_generated_at %} - Updated {{ editorial_date(dd_generated_at) }}{% endif %}</span>
+            <span class="config-summary">Independent prospect evaluation, league-aware value, current evidence, and actionable signals.{% if dd_generated_at %} - Updated {{ editorial_date(dd_generated_at) }}{% endif %}</span>
             <span class="board-source">Board source: ValuCast public snapshot</span>
         </span>
         {# No visible knobs on this horizon, so the form must carry the league

@@ -78,13 +78,13 @@ def test_backfields_nav_link_and_active_state():
     response, html = _html("/")
     assert response.status_code == 200
     nav = _site_nav(html)
-    assert 'href="/backfields">Backfields' in nav
+    assert 'href="/backfields">Farm Systems' in nav
     # Intelligence surfaces are promoted into the primary nav (hold flags off).
     assert 'href="/buys">Buys' in nav
 
     response, html = _html("/backfields")
     assert response.status_code == 200
-    assert re.search(r'<a href="/backfields"\s+aria-current="page">Backfields</a>', html)
+    assert re.search(r'<a href="/backfields"\s+aria-current="page">Farm Systems</a>', html)
 
 
 def test_prospect_neighbor_navigation_points_to_backfields():

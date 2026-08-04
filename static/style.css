@@ -271,6 +271,23 @@ main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
 .seg-opt:has(input:checked) > span { background: var(--c-blue-strong); color: #fff; }
 .seg-opt input:focus-visible + span { outline: 2px solid var(--c-blue-strong); outline-offset: -2px; }
 
+.positioning-strip {
+    margin: 0 0 var(--space-2);
+    padding: .1rem;
+}
+.positioning-strip h2 {
+    margin: 0;
+    color: var(--c-text);
+    font-size: clamp(.95rem, 2vw, 1.15rem);
+    line-height: 1.25;
+}
+.positioning-strip p {
+    margin: .2rem 0 0;
+    color: var(--c-muted);
+    font-size: .78rem;
+    line-height: 1.4;
+}
+
 .welcome-strip {
     position: relative;
     display: grid;
