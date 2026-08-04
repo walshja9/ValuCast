@@ -70,6 +70,16 @@ class TestLaunchPolish(unittest.TestCase):
         self.assertIn(".positioning-strip {", css)
         self.assertNotIn("min-height:", css[css.index(".positioning-strip {"):css.index(".welcome-strip {")])
 
+    def test_share_graphic_positioning_preserves_named_products(self):
+        import inspect
+        import app as app_module
+
+        default = inspect.signature(app_module._graphic_header).parameters["tagline"].default
+        self.assertEqual(default, "Independent prospect intelligence")
+
+        for renderer in (app_module._buys_share_card_png, app_module._buys_hold_share_card_png):
+            self.assertIn('tagline="Ahead of the Curve"', inspect.getsource(renderer))
+
     def test_welcome_strip_only_renders_on_customizable_boards(self):
         for path in ("/", "/?mode=dd_dynasty"):
             html = self.html(path)

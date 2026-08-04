@@ -2587,14 +2587,22 @@ def _draw_glass_text(img, draw, xy, text, font, *, glow=(36, 168, 156)):
     img.paste(fill, (ox, oy), mask)
 
 
-def _graphic_header(img, draw, *, headline, subtitle, extra_line=None, tagline="Ahead of the Curve", value_history=None):
+def _graphic_header(
+    img,
+    draw,
+    *,
+    headline,
+    subtitle,
+    extra_line=None,
+    tagline="Independent prospect intelligence",
+    value_history=None,
+):
     text = _GRAPHIC_PALETTE["text"]
     muted = _GRAPHIC_PALETTE["muted"]
     green = _GRAPHIC_PALETTE["green"]
 
-    # Compact brand lockup, not a billboard — this is an exported app surface.
-    # The tagline brands the graphic without dominating it; defaults to "Ahead of
-    # the Curve" (the buys brand), overridden per board (e.g. "Top Prospects").
+    # Compact brand lockup, not a billboard. Prospect and player graphics use
+    # the company positioning by default; named products override it explicitly.
     # (headline arg kept for call-site compatibility.)
     _graphic_brand_curve(img, draw, value_history=value_history)
     _paste_brand_mark(img, 48, 42, size=52)
@@ -10618,7 +10626,14 @@ def _buys_share_card_png(
     subtitle = "Top 40 prospect buys by signal, not reputation"
     if date_label:
         subtitle = f"{subtitle} - {date_label}"
-    _graphic_header(img, draw, headline="AHEAD OF THE CURVE", subtitle=subtitle, extra_line=source_label)
+    _graphic_header(
+        img,
+        draw,
+        headline="AHEAD OF THE CURVE",
+        subtitle=subtitle,
+        extra_line=source_label,
+        tagline="Ahead of the Curve",
+    )
 
     def split_lines(name, fnt, max_width, max_lines=2):
         return _graphic_wrap_text(draw, name or "Unknown", fnt, max_width, max_lines=max_lines)
@@ -10745,6 +10760,7 @@ def _buys_hold_share_card_png():
         headline="AHEAD OF THE CURVE",
         subtitle="Prospect buy signals return later this week",
         extra_line="ValuCast prospect board",
+        tagline="Ahead of the Curve",
     )
 
     panel = (120, 500, 960, 850)
