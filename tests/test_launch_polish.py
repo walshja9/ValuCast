@@ -80,6 +80,14 @@ class TestLaunchPolish(unittest.TestCase):
         for renderer in (app_module._buys_share_card_png, app_module._buys_hold_share_card_png):
             self.assertIn('tagline="Ahead of the Curve"', inspect.getsource(renderer))
 
+    def test_share_graphic_display_font_keeps_visible_word_gaps(self):
+        import app as app_module
+
+        font = app_module._graphic_font(22)
+        gap = font.getlength("A A") - font.getlength("AA")
+
+        self.assertGreaterEqual(gap, 8)
+
     def test_welcome_strip_only_renders_on_customizable_boards(self):
         for path in ("/", "/?mode=dd_dynasty"):
             html = self.html(path)
