@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,6 +14,7 @@ from prospects.stage1_outcome_proof import (
     render_markdown,
     validate_stage1_outcome_proof,
 )
+from scripts.build_stage1_outcome_proof import INPUTS, OUTPUT_JSON, OUTPUT_REPORT, _sha, run
 
 
 def _row(player, cohort, target, model, prior, neighbor, role="hitter"):
@@ -408,3 +411,65 @@ def test_disagreement_funnel_rejects_unknown_movement_bucket():
 def test_evidence_bands_reject_insufficient_rows_before_partitioning():
     with pytest.raises(ValueError, match="ten nonempty deciles"):
         build_evidence_bands([_row(1, 2018, 0.0, 0.1, 0.2, 0.3)], {"bins": []})
+
+
+def test_cli_writes_json_and_markdown(tmp_path):
+    output_json = tmp_path / "proof.json"
+    output_report = tmp_path / "proof.md"
+    payload = run(output_json=output_json, output_report=output_report, resamples=100)
+    assert json.loads(output_json.read_text(encoding="utf-8")) == payload
+    assert output_report.read_text(encoding="utf-8") == render_markdown(payload)
+
+
+def test_source_hash_is_line_ending_neutral(tmp_path):
+    lf = tmp_path / "lf.json"
+    crlf = tmp_path / "crlf.json"
+    lf.write_bytes(b'{\n  "ok": true\n}\n')
+    crlf.write_bytes(b'{\r\n  "ok": true\r\n}\r\n')
+    assert _sha(lf) == _sha(crlf)
+
+
+def test_cli_entrypoint_loads_the_project_package():
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [sys.executable, str(root / "scripts/build_stage1_outcome_proof.py"), "--help"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_committed_inputs_rebuild_deterministically():
+    first = run(write=False, resamples=10)
+    second = run(write=False, resamples=10)
+    assert first == second
+
+
+def test_committed_outputs_validate_when_sources_match():
+    committed = json.loads(OUTPUT_JSON.read_text(encoding="utf-8"))
+    current_hashes = {key: _sha(path) for key, path in INPUTS.items()}
+    recorded_hashes = {key: value["sha256"] for key, value in committed["sources"].items()}
+    if current_hashes != recorded_hashes:
+        pytest.skip("daily source artifact advanced beyond this research snapshot")
+    assert validate_stage1_outcome_proof(committed) == []
+    assert render_markdown(committed) == OUTPUT_REPORT.read_text(encoding="utf-8")
+
+
+def test_proof_module_and_artifact_have_no_production_importers():
+    root = Path(__file__).resolve().parents[1]
+    candidates = [
+        path for path in root.rglob("*.py")
+        if "tests" not in path.parts
+        and "scripts" not in path.parts
+        and path.name != "stage1_outcome_proof.py"
+    ]
+    for folder in (root / "templates", root / "static", root / ".github"):
+        candidates.extend(
+            path for path in folder.rglob("*")
+            if path.suffix in {".html", ".js", ".yml", ".yaml"}
+        )
+    for path in candidates:
+        text = path.read_text(encoding="utf-8")
+        assert "stage1_outcome_proof" not in text
+        assert "valucast_stage1_outcome_proof" not in text
