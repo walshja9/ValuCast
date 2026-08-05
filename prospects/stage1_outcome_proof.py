@@ -176,6 +176,8 @@ def _evidence_label(sample_size: int) -> str:
 def build_evidence_bands(rows: list[dict], reliability_role: dict) -> list[dict]:
     ordered = sorted(rows, key=lambda row: (float(row["model_prediction"]), str(row["mlbam_id"])))
     expected = reliability_role.get("bins") or []
+    if len(ordered) < 10 or len(expected) != 10:
+        raise ValueError("evidence bands require ten nonempty deciles")
     bands = []
     for decile in range(10):
         start = decile * len(ordered) // 10
@@ -243,6 +245,9 @@ def build_disagreement_funnel(scorecard: dict) -> dict:
         band = gap_bin(call["initial_gap"])
         if band == "missing":
             raise ValueError("disagreement call is missing its frozen initial gap")
+        bucket = call.get("bucket")
+        if bucket not in (None, "toward", "away", "flat"):
+            raise ValueError(f"unclassified disagreement bucket: {bucket}")
         for target in (output["overall"], output["roles"][role]):
             target["total"] += 1
             cell = target["bins"].setdefault(band, _empty_funnel())
@@ -252,10 +257,10 @@ def build_disagreement_funnel(scorecard: dict) -> dict:
                 raise ValueError(f"unclassified disagreement status: {call['status']}")
             target[lifecycle[0]] += 1
             cell[lifecycle[0]] += 1
-            if call.get("bucket") == "toward":
+            if bucket == "toward":
                 target["moved_toward"] += 1
                 cell["moved_toward"] += 1
-            if call.get("bucket") == "away":
+            if bucket == "away":
                 target["moved_away"] += 1
                 cell["moved_away"] += 1
     for summary in (output["overall"], *output["roles"].values()):
@@ -373,11 +378,42 @@ def validate_stage1_outcome_proof(payload: dict) -> list[str]:
             problems.append(f"{role} evidence bands must be ten ordered deciles")
         if sum(band.get("sample_size", 0) for band in bands) != summary.get("sample_size"):
             problems.append(f"{role} evidence bands do not reconcile")
-        if any(
-            sum((band.get("outcome_counts") or {}).values()) != band.get("sample_size")
-            for band in bands
-        ):
-            problems.append(f"{role} evidence band outcomes do not reconcile")
+        for band in bands:
+            size = band.get("sample_size")
+            counts = band.get("outcome_counts")
+            valid_counts = (
+                type(size) is int
+                and size > 0
+                and isinstance(counts, dict)
+                and set(counts) == {"bust", "role", "star"}
+                and all(type(value) is int and value >= 0 for value in counts.values())
+                and sum(counts.values()) == size
+            )
+            if not valid_counts:
+                problems.append(f"{role} evidence band outcome counts are invalid")
+                continue
+            shares = band.get("outcome_shares")
+            valid_shares = (
+                isinstance(shares, dict)
+                and set(shares) == {"bust", "role", "star"}
+                and all(
+                    isinstance(value, (int, float))
+                    and math.isfinite(float(value))
+                    and 0.0 <= value <= 1.0
+                    and _round(value) == _round(counts[key] / size)
+                    for key, value in shares.items()
+                )
+            )
+            if not valid_shares:
+                problems.append(f"{role} evidence band outcome shares do not reconcile")
+            contributor_rate = band.get("contributor_rate")
+            if not (
+                isinstance(contributor_rate, (int, float))
+                and math.isfinite(float(contributor_rate))
+                and 0.0 <= contributor_rate <= 1.0
+                and _round(contributor_rate) == _round((counts["role"] + counts["star"]) / size)
+            ):
+                problems.append(f"{role} evidence band contributor rate does not reconcile")
         if len(summary.get("cohorts") or {}) != summary.get("cohort_count"):
             problems.append(f"{role} cohort detail does not reconcile")
     evaluation = payload.get("evaluation") or {}
@@ -416,6 +452,14 @@ def validate_stage1_outcome_proof(payload: dict) -> list[str]:
         for cell in [scope, *bins.values()]:
             if cell and sum(int(cell.get(key, 0)) for key in FUNNEL_STATUSES) != int(cell.get("total", 0)):
                 problems.append("disagreement lifecycle does not partition its population")
+            if cell:
+                movement = (cell.get("moved_toward"), cell.get("moved_away"))
+                if (
+                    type(cell.get("total")) is not int
+                    or any(type(value) is not int or value < 0 for value in movement)
+                    or sum(movement) > cell["total"]
+                ):
+                    problems.append("disagreement movement counts are invalid")
     sources = payload.get("sources") or {}
     if set(sources) != {"oof", "reliability", "backtest", "scorecard"}:
         problems.append("source hashes are incomplete")

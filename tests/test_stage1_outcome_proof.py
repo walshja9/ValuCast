@@ -311,3 +311,100 @@ def test_validator_reconciles_overall_disagreement_funnel_to_role_scopes():
         "bins": {},
     }
     assert "overall disagreement funnel does not reconcile to role scopes" in validate_stage1_outcome_proof(payload)
+
+
+def test_validator_rejects_mutated_evidence_band_contributor_rate():
+    root = Path(__file__).resolve().parents[1]
+    paths = {
+        "oof": root / "data/models/valucast_outcome_oof_scores.json",
+        "reliability": root / "data/models/valucast_probability_reliability.json",
+        "backtest": root / "data/models/valucast_prospect_dynasty_backtest.json",
+        "scorecard": root / "data/models/valucast_ahead_of_consensus_scorecard.json",
+    }
+    inputs = {key: json.loads(path.read_text(encoding="utf-8")) for key, path in paths.items()}
+    payload = build_stage1_outcome_proof(
+        oof_payload=inputs["oof"],
+        reliability_payload=inputs["reliability"],
+        backtest_payload=inputs["backtest"],
+        scorecard_payload=inputs["scorecard"],
+        sources={
+            key: {"path": str(path.relative_to(root)).replace("\\", "/"), "sha256": "a" * 64}
+            for key, path in paths.items()
+        },
+        generated_at=max(str(item.get("generated_at") or "") for item in inputs.values()),
+        seed=34041,
+        resamples=2,
+    )
+    payload["historical"]["roles"]["hitter"]["evidence_bands"][0]["contributor_rate"] = 1.0
+    assert "hitter evidence band contributor rate does not reconcile" in validate_stage1_outcome_proof(payload)
+
+
+def test_validator_requires_exact_evidence_band_outcome_keys():
+    root = Path(__file__).resolve().parents[1]
+    paths = {
+        "oof": root / "data/models/valucast_outcome_oof_scores.json",
+        "reliability": root / "data/models/valucast_probability_reliability.json",
+        "backtest": root / "data/models/valucast_prospect_dynasty_backtest.json",
+        "scorecard": root / "data/models/valucast_ahead_of_consensus_scorecard.json",
+    }
+    inputs = {key: json.loads(path.read_text(encoding="utf-8")) for key, path in paths.items()}
+    payload = build_stage1_outcome_proof(
+        oof_payload=inputs["oof"],
+        reliability_payload=inputs["reliability"],
+        backtest_payload=inputs["backtest"],
+        scorecard_payload=inputs["scorecard"],
+        sources={
+            key: {"path": str(path.relative_to(root)).replace("\\", "/"), "sha256": "a" * 64}
+            for key, path in paths.items()
+        },
+        generated_at=max(str(item.get("generated_at") or "") for item in inputs.values()),
+        seed=34041,
+        resamples=2,
+    )
+    payload["historical"]["roles"]["hitter"]["evidence_bands"][0]["outcome_counts"].pop("star")
+    assert "hitter evidence band outcome counts are invalid" in validate_stage1_outcome_proof(payload)
+
+
+def test_validator_rejects_movement_counts_above_the_scope_total():
+    root = Path(__file__).resolve().parents[1]
+    paths = {
+        "oof": root / "data/models/valucast_outcome_oof_scores.json",
+        "reliability": root / "data/models/valucast_probability_reliability.json",
+        "backtest": root / "data/models/valucast_prospect_dynasty_backtest.json",
+        "scorecard": root / "data/models/valucast_ahead_of_consensus_scorecard.json",
+    }
+    inputs = {key: json.loads(path.read_text(encoding="utf-8")) for key, path in paths.items()}
+    payload = build_stage1_outcome_proof(
+        oof_payload=inputs["oof"],
+        reliability_payload=inputs["reliability"],
+        backtest_payload=inputs["backtest"],
+        scorecard_payload=inputs["scorecard"],
+        sources={
+            key: {"path": str(path.relative_to(root)).replace("\\", "/"), "sha256": "a" * 64}
+            for key, path in paths.items()
+        },
+        generated_at=max(str(item.get("generated_at") or "") for item in inputs.values()),
+        seed=34041,
+        resamples=2,
+    )
+    for scope in [payload["disagreements"]["overall"], *payload["disagreements"]["roles"].values()]:
+        scope["moved_toward"] = scope["total"]
+        scope["moved_away"] = 1
+    assert "disagreement movement counts are invalid" in validate_stage1_outcome_proof(payload)
+
+
+def test_disagreement_funnel_rejects_unknown_movement_bucket():
+    with pytest.raises(ValueError, match="unclassified disagreement bucket"):
+        build_disagreement_funnel({
+            "calls": [{
+                "identity_key": "1_hitter",
+                "initial_gap": 25,
+                "status": "open_toward",
+                "bucket": "sideways",
+            }]
+        })
+
+
+def test_evidence_bands_reject_insufficient_rows_before_partitioning():
+    with pytest.raises(ValueError, match="ten nonempty deciles"):
+        build_evidence_bands([_row(1, 2018, 0.0, 0.1, 0.2, 0.3)], {"bins": []})
