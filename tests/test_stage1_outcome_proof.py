@@ -30,6 +30,33 @@ def _row(player, cohort, target, model, prior, neighbor, role="hitter"):
     }
 
 
+def _inputs():
+    return {
+        key: json.loads(path.read_text(encoding="utf-8"))
+        for key, path in INPUTS.items()
+    }
+
+
+def _build(inputs, *, resamples=2):
+    return build_stage1_outcome_proof(
+        oof_payload=inputs["oof"],
+        reliability_payload=inputs["reliability"],
+        backtest_payload=inputs["backtest"],
+        scorecard_payload=inputs["scorecard"],
+        sources={
+            key: {"path": str(path.relative_to(path.parents[2])).replace("\\", "/"), "sha256": "a" * 64}
+            for key, path in INPUTS.items()
+        },
+        generated_at=max(str(item.get("generated_at") or "") for item in inputs.values()),
+        seed=34041,
+        resamples=resamples,
+    )
+
+
+def _committed_payload():
+    return json.loads(OUTPUT_JSON.read_text(encoding="utf-8"))
+
+
 def test_auc_is_tie_correct_and_requires_both_classes():
     assert auc([0.1, 0.2, 0.8, 0.9], [0, 0, 1, 1]) == 1.0
     assert auc([0.5, 0.5], [0, 1]) == 0.5
@@ -143,6 +170,44 @@ def test_disagreement_funnel_uses_frozen_gap_not_current_ranks():
     baseline = build_disagreement_funnel({"calls": [call]})
     call.update(valucast_now=9999, consensus_now=-9999)
     assert build_disagreement_funnel({"calls": [call]}) == baseline
+
+
+@pytest.mark.parametrize("field", ["initial_gap", "consensus_catch_up"])
+def test_builder_rejects_mutated_claim_time_arithmetic(field):
+    inputs = _inputs()
+    call = next(call for call in inputs["scorecard"]["calls"] if call["consensus_catch_up"] is not None)
+    call[field] += 1
+
+    with pytest.raises(ValueError, match="claim-time arithmetic"):
+        _build(inputs)
+
+
+def test_builder_rejects_status_bucket_inconsistent_with_claim_time_move():
+    inputs = _inputs()
+    call = next(call for call in inputs["scorecard"]["calls"] if call["status"] == "open_toward")
+    call.update(status="open_flat", bucket="flat")
+
+    with pytest.raises(ValueError, match="status/bucket"):
+        _build(inputs)
+
+
+def test_builder_rejects_exit_status_inconsistent_with_claim_time_move():
+    inputs = _inputs()
+    call = next(call for call in inputs["scorecard"]["calls"] if call["status"] == "left_universe")
+    call["status"] = "retired_we_backed_off"
+    inputs["scorecard"]["funnel"]["left_universe"] -= 1
+    inputs["scorecard"]["funnel"]["retired_we_backed_off"] += 1
+
+    with pytest.raises(ValueError, match="status/bucket"):
+        _build(inputs)
+
+
+def test_builder_rejects_source_funnel_that_does_not_match_calls():
+    inputs = _inputs()
+    inputs["scorecard"]["funnel"]["open_toward"] += 1
+
+    with pytest.raises(ValueError, match="source funnel"):
+        _build(inputs)
 
 
 def test_payload_is_research_only_and_renders_from_one_source():
@@ -396,6 +461,64 @@ def test_validator_rejects_movement_counts_above_the_scope_total():
     assert "disagreement movement counts are invalid" in validate_stage1_outcome_proof(payload)
 
 
+def test_validator_reconciles_cohort_samples_and_historical_resolution_counts():
+    payload = _committed_payload()
+    payload["historical"]["roles"]["hitter"]["cohorts"]["2016"]["sample_size"] += 1
+    assert "hitter cohort samples do not reconcile" in validate_stage1_outcome_proof(payload)
+
+
+def test_validator_recomputes_evidence_band_wilson_interval():
+    payload = _committed_payload()
+    payload["historical"]["roles"]["hitter"]["evidence_bands"][0]["contributor_wilson95"]["low"] = 0.0
+    assert "hitter evidence band Wilson interval does not reconcile" in validate_stage1_outcome_proof(payload)
+
+
+@pytest.mark.parametrize(
+    ("metric_name", "value"),
+    [
+        ("spearman_rho", 1.1),
+        ("kendall_tau_b", -1.1),
+        ("roc_auc", 1.1),
+    ],
+)
+def test_validator_rejects_invalid_metric_ranges(metric_name, value):
+    payload = _committed_payload()
+    payload["historical"]["roles"]["hitter"]["metrics"][metric_name]["model"]["point"] = value
+    assert f"hitter {metric_name} metric estimates are invalid" in validate_stage1_outcome_proof(payload)
+
+
+def test_validator_rejects_invalid_metric_delta():
+    payload = _committed_payload()
+    payload["historical"]["roles"]["hitter"]["metrics"]["roc_auc"]["model_minus_baseline"]["level_age_prior"]["point"] += 0.01
+    assert "hitter roc_auc metric delta does not reconcile" in validate_stage1_outcome_proof(payload)
+
+
+def test_validator_rejects_inconsistent_bootstrap_contract():
+    payload = _committed_payload()
+    payload["historical"]["roles"]["hitter"]["bootstrap"]["resamples"] -= 1
+    assert "bootstrap contracts do not reconcile" in validate_stage1_outcome_proof(payload)
+
+
+def test_validator_recomputes_retrospective_support_gate():
+    payload = _committed_payload()
+    comparison = payload["historical"]["roles"]["hitter"]["metrics"]["roc_auc"]["model_minus_baseline"]["level_age_prior"]
+    comparison["historical_support"] = False
+    comparison["evidence_status"] = "descriptive"
+    assert "hitter roc_auc retrospective support gate does not reconcile" in validate_stage1_outcome_proof(payload)
+
+
+def test_payload_records_metric_definitions_and_historical_resolution_counts():
+    payload = _committed_payload()
+    assert set(payload["metric_definitions"]) == {
+        "spearman_rho", "kendall_tau_b", "roc_auc", "bootstrap_interval"
+    }
+    evaluation = payload["evaluation"]
+    assert evaluation["historical_resolved_rows"] == evaluation["historical_rows"]
+    assert evaluation["historical_unresolved_rows"] == 0
+    assert evaluation["historical_censored_rows"] == 0
+    assert "LF-normalized SHA-256" in render_markdown(payload)
+
+
 def test_disagreement_funnel_rejects_unknown_movement_bucket():
     with pytest.raises(ValueError, match="unclassified disagreement bucket"):
         build_disagreement_funnel({
@@ -440,14 +563,17 @@ def test_cli_entrypoint_loads_the_project_package():
     assert result.returncode == 0, result.stderr
 
 
-def test_committed_inputs_rebuild_deterministically():
-    first = run(write=False, resamples=10)
-    second = run(write=False, resamples=10)
-    assert first == second
+def test_committed_inputs_reproduce_exact_default_payload():
+    committed = _committed_payload()
+    current_hashes = {key: _sha(path) for key, path in INPUTS.items()}
+    recorded_hashes = {key: value["sha256"] for key, value in committed["sources"].items()}
+    if current_hashes != recorded_hashes:
+        pytest.skip("daily source artifact advanced beyond this research snapshot")
+    assert run(write=False) == committed
 
 
 def test_committed_outputs_validate_when_sources_match():
-    committed = json.loads(OUTPUT_JSON.read_text(encoding="utf-8"))
+    committed = _committed_payload()
     current_hashes = {key: _sha(path) for key, path in INPUTS.items()}
     recorded_hashes = {key: value["sha256"] for key, value in committed["sources"].items()}
     if current_hashes != recorded_hashes:

@@ -10,6 +10,12 @@
     "rank_calibration": "not_applicable_to_oof_stage1_scores",
     "outcome_contract": "four_year_bust_role_star_v1"
   },
+  "metric_definitions": {
+    "spearman_rho": "rank correlation between frozen Stage 1 score and ordinal outcome",
+    "kendall_tau_b": "tie-adjusted rank correlation between frozen Stage 1 score and ordinal outcome",
+    "roc_auc": "ordering discrimination for contributor (Role or Star), not probability calibration",
+    "bootstrap_interval": "two-sided 95% percentile interval from player-clustered resamples"
+  },
   "sources": {
     "oof": {
       "path": "data/models/valucast_outcome_oof_scores.json",
@@ -37,6 +43,8 @@
       2019
     ],
     "historical_rows": 2901,
+    "historical_resolved_rows": 2901,
+    "historical_unresolved_rows": 0,
     "historical_censored_rows": 0
   },
   "outcome_contract": {

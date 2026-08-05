@@ -9,6 +9,7 @@
 Public superiority authorized: **No**
 
 Contributor means a factual Role or Star outcome within the fixed four-year horizon. All historical rows are mature; open, censored, and retracted claim-time disagreements remain visible in their full funnel. These ordinal outcomes are not realized WAR.
+Historical outcomes: **2,901 resolved**, **0 unresolved**, **0 censored**.
 
 ## Contributor discrimination and ordering
 
@@ -37,6 +38,13 @@ Each estimate is followed by its 95% player-cluster bootstrap interval. Baseline
 | Pitcher (n=1522, 4 cohorts) | Spearman rho | 0.335 [0.287, 0.381] | 0.268 [0.222, 0.314] | 0.355 [0.311, 0.398] | 0.067 [0.022, 0.109] | supported_retrospective | -0.020 [-0.059, 0.019] | descriptive |
 | Pitcher (n=1522, 4 cohorts) | Kendall tau-b | 0.277 [0.238, 0.315] | 0.221 [0.183, 0.258] | 0.298 [0.261, 0.334] | 0.056 [0.020, 0.092] | supported_retrospective | -0.021 [-0.053, 0.012] | descriptive |
 | Pitcher (n=1522, 4 cohorts) | ROC AUC | 0.751 [0.717, 0.785] | 0.703 [0.669, 0.737] | 0.766 [0.735, 0.798] | 0.049 [0.015, 0.081] | supported_retrospective | -0.015 [-0.045, 0.014] | descriptive |
+
+## Metric definitions
+
+- **Spearman rho:** rank correlation between frozen Stage 1 score and ordinal outcome.
+- **Kendall tau-b:** tie-adjusted rank correlation between frozen Stage 1 score and ordinal outcome.
+- **ROC AUC:** ordering discrimination for contributor (Role or Star), not probability calibration.
+- **Intervals:** two-sided 95% percentile interval from player-clustered resamples.
 
 ## Stage 1 evidence bands
 
@@ -93,7 +101,7 @@ Initial-gap bins use frozen claim-time ranks. Open, resolved, censored, and retr
 
 ## Provenance
 
-| Input | Path | SHA-256 |
+| Input | Path | LF-normalized SHA-256 |
 |---|---|---|
 | backtest | `data/models/valucast_prospect_dynasty_backtest.json` | `28546fe7e43ee2f4a74d32e2bc0b344f847c97bf40d583367ad961562003e7ea` |
 | oof | `data/models/valucast_outcome_oof_scores.json` | `6d661c72bd1eecbf61f8458f4d068a635bca648ef7d4245e0686d911f93cd1d5` |

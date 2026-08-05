@@ -3,13 +3,14 @@ from __future__ import annotations
 import json
 import math
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 from scipy.stats import kendalltau, rankdata, spearmanr
 
 from prospects.probability_reliability import _wilson_interval
 from scripts.audit_consensus_decisions import gap_bin
+from scripts.build_ahead_of_consensus_scorecard import _classify_move
 
 BOOTSTRAP_SEED = 34041
 BOOTSTRAP_RESAMPLES = 10_000
@@ -19,6 +20,12 @@ PREDICTIONS = {
     "model": "model_prediction",
     "level_age_prior": "prior_prediction",
     "historical_neighbors_25": "neighbor_prediction",
+}
+METRIC_DEFINITIONS = {
+    "spearman_rho": "rank correlation between frozen Stage 1 score and ordinal outcome",
+    "kendall_tau_b": "tie-adjusted rank correlation between frozen Stage 1 score and ordinal outcome",
+    "roc_auc": "ordering discrimination for contributor (Role or Star), not probability calibration",
+    "bootstrap_interval": "two-sided 95% percentile interval from player-clustered resamples",
 }
 
 
@@ -234,6 +241,74 @@ def _empty_funnel() -> dict:
     }
 
 
+def _validate_scorecard_claims(scorecard: dict) -> None:
+    calls = scorecard.get("calls") or []
+    status_counts = Counter()
+    for call in calls:
+        status = call.get("status")
+        status_counts[status] += 1
+        try:
+            consensus_then = call["consensus_then"]
+            valucast_then = call["valucast_then"]
+            initial_gap = call["initial_gap"]
+            if any(type(value) is not int for value in (consensus_then, valucast_then, initial_gap)):
+                raise TypeError
+            if initial_gap != consensus_then - valucast_then:
+                raise ValueError
+            consensus_now = call.get("consensus_now")
+            catch_up = call.get("consensus_catch_up")
+            if consensus_now is None:
+                if catch_up is not None:
+                    raise ValueError
+            elif type(consensus_now) is not int or catch_up != consensus_then - consensus_now:
+                raise ValueError
+        except (KeyError, TypeError, ValueError):
+            raise ValueError("disagreement claim-time arithmetic does not reconcile") from None
+
+        bucket = call.get("bucket")
+        if str(status).startswith("open_"):
+            expected_bucket = _classify_move(catch_up, initial_gap) if catch_up is not None else "flat"
+            valid_status = status == f"open_{expected_bucket}" and bucket == expected_bucket
+        elif status in {"closed_caught_up", "retired_we_backed_off"}:
+            valucast_now = call.get("valucast_now")
+            valid_status = type(valucast_now) is int
+            if valid_status:
+                field_came = max(0, catch_up or 0)
+                valucast_backed = max(0, valucast_now - valucast_then)
+                valid_status = (
+                    status == "closed_caught_up"
+                    and catch_up is not None
+                    and bucket == "toward"
+                    and field_came > valucast_backed
+                ) or (
+                    status == "retired_we_backed_off"
+                    and bucket is None
+                    and field_came <= valucast_backed
+                    and (catch_up is not None or valucast_backed > 0)
+                )
+        elif status == "resolved_called_up_or_graduated":
+            valid_status = (
+                bucket is None
+                and consensus_now is None
+                and call.get("valucast_now") is None
+                and catch_up is None
+            )
+        elif status == "left_universe":
+            valid_status = bucket is None and consensus_now is None and catch_up is None
+        else:
+            valid_status = False
+        if not valid_status:
+            raise ValueError("disagreement status/bucket does not reconcile to claim-time movement")
+
+    source_funnel = scorecard.get("funnel") or {}
+    expected_statuses = set().union(*FUNNEL_STATUSES.values())
+    if set(source_funnel) != expected_statuses or any(
+        type(source_funnel[status]) is not int or source_funnel[status] != status_counts[status]
+        for status in expected_statuses
+    ):
+        raise ValueError("disagreement source funnel does not reconcile to calls")
+
+
 def build_disagreement_funnel(scorecard: dict) -> dict:
     output = {"overall": {**_empty_funnel(), "bins": {}}, "roles": {}}
     for role in ROLES:
@@ -304,6 +379,7 @@ def build_stage1_outcome_proof(
         or len(identities) != len(set(identities))
     ):
         raise ValueError("disagreement evidence is not an exact research-only claim-time archive join")
+    _validate_scorecard_claims(scorecard_payload)
     rows = oof_payload["rows"]
     roles = {}
     for role in ROLES:
@@ -324,11 +400,14 @@ def build_stage1_outcome_proof(
             "rank_calibration": "not_applicable_to_oof_stage1_scores",
             "outcome_contract": "four_year_bust_role_star_v1",
         },
+        "metric_definitions": METRIC_DEFINITIONS,
         "sources": sources,
         "evaluation": {
             "mature_through_cohort": max(int(row["test_cohort"]) for row in rows),
             "closed_cohorts": sorted({int(row["test_cohort"]) for row in rows}),
             "historical_rows": len(rows),
+            "historical_resolved_rows": len(rows),
+            "historical_unresolved_rows": 0,
             "historical_censored_rows": 0,
         },
         "outcome_contract": {
@@ -361,6 +440,30 @@ def build_stage1_outcome_proof(
     return payload
 
 
+def _valid_number(value, low: float, high: float, *, nullable: bool = False) -> bool:
+    if value is None:
+        return nullable
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(float(value))
+        and low <= float(value) <= high
+    )
+
+
+def _valid_estimate(cell: object, low: float, high: float) -> bool:
+    if not isinstance(cell, dict):
+        return False
+    point, interval_low, interval_high = cell.get("point"), cell.get("low"), cell.get("high")
+    if not all(_valid_number(value, low, high, nullable=True) for value in (point, interval_low, interval_high)):
+        return False
+    if point is None:
+        return interval_low is None and interval_high is None
+    if (interval_low is None) != (interval_high is None):
+        return False
+    return interval_low is None or interval_low <= interval_high
+
+
 def validate_stage1_outcome_proof(payload: dict) -> list[str]:
     problems = []
     if payload.get("artifact") != "valucast_stage1_outcome_proof":
@@ -369,10 +472,106 @@ def validate_stage1_outcome_proof(payload: dict) -> list[str]:
         problems.append("status must be research_only")
     if payload.get("schema_version") != SCHEMA_VERSION:
         problems.append("schema_version is invalid")
+    if payload.get("metric_definitions") != METRIC_DEFINITIONS:
+        problems.append("metric definitions are invalid")
+    evaluation = payload.get("evaluation") or {}
+    closed_cohorts = evaluation.get("closed_cohorts") or []
+    claim_policy = payload.get("claim_policy") or {}
+    expected_claim_policy = {
+        "minimum_closed_cohorts": 3,
+        "minimum_matched_role_n": 250,
+        "delta_interval_must_exclude_zero": True,
+        "retrospective_only": True,
+    }
+    if claim_policy != expected_claim_policy:
+        problems.append("claim policy is invalid")
     roles = ((payload.get("historical") or {}).get("roles") or {})
     if set(roles) != set(ROLES):
         problems.append("historical roles must be hitter and pitcher")
+    bootstrap_contracts = []
+    metric_ranges = {
+        "spearman_rho": (-1.0, 1.0, -2.0, 2.0),
+        "kendall_tau_b": (-1.0, 1.0, -2.0, 2.0),
+        "roc_auc": (0.0, 1.0, -1.0, 1.0),
+    }
     for role, summary in roles.items():
+        cohorts = summary.get("cohorts") or {}
+        if (
+            len(cohorts) != summary.get("cohort_count")
+            or sum(int(cohort.get("sample_size", 0)) for cohort in cohorts.values()) != summary.get("sample_size")
+            or set(cohorts) != {str(cohort) for cohort in closed_cohorts}
+        ):
+            problems.append(f"{role} cohort samples do not reconcile")
+        for cohort in cohorts.values():
+            if type(cohort.get("sample_size")) is not int or cohort["sample_size"] <= 0:
+                problems.append(f"{role} cohort samples are invalid")
+            if not _valid_number(cohort.get("contributor_base_rate"), 0.0, 1.0):
+                problems.append(f"{role} cohort contributor rate is invalid")
+            cohort_metrics = cohort.get("metrics") or {}
+            for metric_name, (low, high, _, _) in metric_ranges.items():
+                values = cohort_metrics.get(metric_name) or {}
+                if set(values) != set(PREDICTIONS) or any(
+                    not _valid_number(values.get(label), low, high, nullable=True)
+                    for label in PREDICTIONS
+                ):
+                    problems.append(f"{role} cohort {metric_name} metrics are invalid")
+
+        metrics = summary.get("metrics") or {}
+        for metric_name, (low, high, delta_low, delta_high) in metric_ranges.items():
+            metric = metrics.get(metric_name) or {}
+            estimates_valid = set(metric) == {*PREDICTIONS, "model_minus_baseline"} and all(
+                _valid_estimate(metric.get(label), low, high) for label in PREDICTIONS
+            )
+            if not estimates_valid:
+                problems.append(f"{role} {metric_name} metric estimates are invalid")
+                continue
+            comparisons = metric.get("model_minus_baseline") or {}
+            if set(comparisons) != set(PREDICTIONS) - {"model"}:
+                problems.append(f"{role} {metric_name} metric deltas are invalid")
+                continue
+            for label, comparison in comparisons.items():
+                model_point = metric["model"]["point"]
+                baseline_point = metric[label]["point"]
+                expected_delta = (
+                    _round(model_point - baseline_point)
+                    if model_point is not None and baseline_point is not None
+                    else None
+                )
+                if (
+                    not _valid_estimate(comparison, delta_low, delta_high)
+                    or (
+                        comparison.get("point") is not None
+                        if expected_delta is None
+                        else not math.isclose(comparison.get("point", math.inf), expected_delta, abs_tol=0.0000011)
+                    )
+                ):
+                    problems.append(f"{role} {metric_name} metric delta does not reconcile")
+                    continue
+                expected_support = bool(
+                    summary.get("sample_size", 0) >= expected_claim_policy["minimum_matched_role_n"]
+                    and summary.get("cohort_count", 0) >= expected_claim_policy["minimum_closed_cohorts"]
+                    and comparison.get("low") is not None
+                    and comparison["low"] > 0.0
+                )
+                if (
+                    comparison.get("historical_support") is not expected_support
+                    or comparison.get("evidence_status")
+                    != ("supported_retrospective" if expected_support else "descriptive")
+                ):
+                    problems.append(f"{role} {metric_name} retrospective support gate does not reconcile")
+
+        bootstrap = summary.get("bootstrap") or {}
+        if (
+            set(bootstrap) != {"seed", "resamples", "cluster"}
+            or type(bootstrap.get("seed")) is not int
+            or type(bootstrap.get("resamples")) is not int
+            or bootstrap.get("resamples", 0) <= 0
+            or bootstrap.get("cluster") != "mlbam_id"
+        ):
+            problems.append(f"{role} bootstrap contract is invalid")
+        else:
+            bootstrap_contracts.append(tuple(bootstrap[key] for key in ("seed", "resamples", "cluster")))
+
         bands = summary.get("evidence_bands") or []
         if len(bands) != 10 or any(band.get("decile") != index + 1 for index, band in enumerate(bands)):
             problems.append(f"{role} evidence bands must be ten ordered deciles")
@@ -414,9 +613,21 @@ def validate_stage1_outcome_proof(payload: dict) -> list[str]:
                 and _round(contributor_rate) == _round((counts["role"] + counts["star"]) / size)
             ):
                 problems.append(f"{role} evidence band contributor rate does not reconcile")
-        if len(summary.get("cohorts") or {}) != summary.get("cohort_count"):
-            problems.append(f"{role} cohort detail does not reconcile")
-    evaluation = payload.get("evaluation") or {}
+            if band.get("contributor_wilson95") != _wilson_interval(counts["role"] + counts["star"], size):
+                problems.append(f"{role} evidence band Wilson interval does not reconcile")
+    if len(set(bootstrap_contracts)) > 1:
+        problems.append("bootstrap contracts do not reconcile")
+    resolution_counts = [
+        evaluation.get("historical_resolved_rows"),
+        evaluation.get("historical_unresolved_rows"),
+        evaluation.get("historical_censored_rows"),
+    ]
+    if (
+        any(type(value) is not int or value < 0 for value in resolution_counts)
+        or sum(resolution_counts) != evaluation.get("historical_rows")
+        or resolution_counts[0] != evaluation.get("historical_rows")
+    ):
+        problems.append("historical resolution counts do not reconcile")
     if roles and sum(int(summary.get("sample_size", 0)) for summary in roles.values()) != evaluation.get("historical_rows"):
         problems.append("hitter and pitcher samples do not reconcile to the matched population")
     disagreements = payload.get("disagreements") or {}
@@ -512,6 +723,7 @@ def render_markdown(payload: dict) -> str:
         "Public superiority authorized: **No**",
         "",
         "Contributor means a factual Role or Star outcome within the fixed four-year horizon. All historical rows are mature; open, censored, and retracted claim-time disagreements remain visible in their full funnel. These ordinal outcomes are not realized WAR.",
+        f"Historical outcomes: **{payload['evaluation']['historical_resolved_rows']:,} resolved**, **{payload['evaluation']['historical_unresolved_rows']:,} unresolved**, **{payload['evaluation']['historical_censored_rows']:,} censored**.",
         "",
         "## Contributor discrimination and ordering",
         "",
@@ -553,6 +765,13 @@ def render_markdown(payload: dict) -> str:
             )
     lines.extend([
         "",
+        "## Metric definitions",
+        "",
+        f"- **Spearman rho:** {payload['metric_definitions']['spearman_rho']}.",
+        f"- **Kendall tau-b:** {payload['metric_definitions']['kendall_tau_b']}.",
+        f"- **ROC AUC:** {payload['metric_definitions']['roc_auc']}.",
+        f"- **Intervals:** {payload['metric_definitions']['bootstrap_interval']}.",
+        "",
         "## Stage 1 evidence bands",
         "",
         "Bands are within-role score deciles, not probabilities or public player grades.",
@@ -590,7 +809,7 @@ def render_markdown(payload: dict) -> str:
         "",
         "## Provenance",
         "",
-        "| Input | Path | SHA-256 |",
+        "| Input | Path | LF-normalized SHA-256 |",
         "|---|---|---|",
     ])
     for name, source in sorted(payload["sources"].items()):
