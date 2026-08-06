@@ -327,9 +327,33 @@ def test_active_mlb_roster_clears_stale_injury_status():
     pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
 
     assert pitcher["active_mlb_roster"] is True
-    assert pitcher["status"] == "thin_current_sample"
+    assert pitcher["status"] == "available"
     assert pitcher["risk_basis"] == "current_sample_size"
     assert "official_mlb_il_override" not in pitcher["signals"]
+
+
+def test_active_mlb_roster_with_thin_sample_still_validates(tmp_path):
+    payload = build_prospect_availability(
+        _input_contract(),
+        active_roster_ids={"30"},
+    )
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert validate_prospect_availability(artifact_path)[1] == []
+
+
+def test_active_mlb_roster_with_stale_sample_still_validates(tmp_path):
+    contract = _input_contract()
+    contract["current"]["pitchers"][2]["sample_staleness_years"] = 1
+    payload = build_prospect_availability(contract, active_roster_ids={"30"})
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert pitcher["status"] == "available"
+    assert pitcher["risk_basis"] == "sample_staleness"
+    assert validate_prospect_availability(artifact_path)[1] == []
 
 
 def test_official_mlb_il_injured_prospect_overrides_stale_sample():
@@ -475,7 +499,7 @@ def test_run_prospect_availability_writes_artifact(tmp_path):
     assert result["profile_count"] == 3
     assert result["risk_profile_count"] == 2
     assert payload["artifact"] == "valucast_prospect_availability"
-    assert payload["artifact_version"] == "0.5.0"
+    assert payload["artifact_version"] == "0.5.1"
     assert payload["summary"]["profile_count"] == 3
     assert validate_prospect_availability(artifact_path)[1] == []
 
