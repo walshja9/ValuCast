@@ -691,6 +691,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
                     "reused_against_updated_grounding": True,
                 }
                 reused_stale += 1
+        generated_now = False
         if result is None:
             # Attempts (success or failure) count against the budget, not just successes —
             # otherwise a run of API errors (rate limit, outage) never trips the cutoff and
@@ -712,7 +713,10 @@ def _attach_llm_reports(rows, reports, store) -> dict:
                 "valid": gen["valid"], "hard_ok": gen["hard_ok"], "problems": gen["problems"],
             }
             generated += 1
+            generated_now = True
         fresh[key] = result
+        if generated_now:
+            _save_llm_cache(fresh)
         if not result.get("valid"):
             flagged += 1
         report["report_llm"] = {
