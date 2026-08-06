@@ -514,6 +514,32 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "for attempt in" not in workflow
 
 
+def test_daily_public_workflow_retries_and_preserves_scouting_progress():
+    workflow = Path(".github/workflows/daily-public-data.yml").read_text(
+        encoding="utf-8"
+    )
+    cache_sha = "0400d5f644dc74513175e3cd8d07132dd4860809"
+    cache_path = "data/models/valucast_scouting_llm_cache.json"
+    restore_name = "- name: Restore LLM scouting cache"
+    build_name = "- name: Build ValuCast public snapshot gate"
+    save_name = "- name: Save LLM scouting cache"
+
+    assert '- cron: "30 11-19 * * *"' in workflow
+    assert workflow.count("- cron:") == 1
+    assert workflow.count(cache_path) >= 2
+    assert f"uses: actions/cache/restore@{cache_sha} # v4.2.4" in workflow
+    assert f"uses: actions/cache/save@{cache_sha} # v4.2.4" in workflow
+    assert "scouting-llm-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
+    assert "key: ${{ steps.scouting-llm-cache.outputs.cache-primary-key }}" in workflow
+
+    restore = workflow.index(restore_name)
+    build = workflow.index(build_name)
+    save = workflow.index(save_name)
+    assert restore < build < save
+    save_step = workflow[save : workflow.find("\n      - name:", save + 1)]
+    assert "if: always()" in save_step
+
+
 def test_daily_public_build_orchestrator_has_no_duplicate_steps():
     run_daily_public_build.validate_steps()
     build_steps = [" ".join(step) for step in run_daily_public_build.BUILD_STEPS]
