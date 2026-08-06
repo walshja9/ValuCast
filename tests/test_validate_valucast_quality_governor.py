@@ -73,7 +73,23 @@ def test_validate_governor_fails_blocked_transition_continuity_veto(tmp_path):
                 "id": "prospect_transition_continuity",
                 "status": "blocked",
                 "message": "Stable model scores produced material prospect transition calibration cliffs.",
-                "metrics": {"samples": [{"name": "Josue Briceno"}]},
+                "metrics": {
+                    "samples": [
+                        {
+                            "name": "Josue Briceno",
+                            "mlbam_id": "123",
+                            "role": "hitter",
+                            "transition_signals": ["level"],
+                            "old_level": "A+",
+                            "new_level": "AA",
+                            "model_score_delta": 0.4,
+                            "bucket_adjustment_delta": -7.5,
+                            "final_score_delta": -7.1,
+                            "old_rank": 101,
+                            "new_rank": 202,
+                        }
+                    ]
+                },
             }
         ],
         surface_readiness={"dynasty": True, "buys": True, "movers": True, "prospects": False},
@@ -89,6 +105,14 @@ def test_validate_governor_fails_blocked_transition_continuity_veto(tmp_path):
     assert payload is not None
     assert any("prospect transition continuity veto" in problem.lower() for problem in problems)
     assert any("Josue Briceno" in problem for problem in problems)
+    problem = next(problem for problem in problems if "Josue Briceno" in problem)
+    assert "mlbam=123" in problem
+    assert "signals=level" in problem
+    assert "level=A+->AA" in problem
+    assert "model_delta=0.4" in problem
+    assert "bucket_delta=-7.5" in problem
+    assert "final_delta=-7.1" in problem
+    assert "rank=101->202" in problem
 
 
 def test_validate_governor_fails_when_buys_surface_blocked(tmp_path):
@@ -108,3 +132,5 @@ def test_validate_governor_fails_bad_shape(tmp_path):
     path = _write(tmp_path, status="candidate_ready", checks=[])
     payload, problems = validate_governor(path)
     assert problems
+
+

@@ -41,14 +41,34 @@ def validate_governor(path: Path = GOVERNOR_PATH) -> tuple[dict | None, list[str
         None,
     )
     if transition_veto:
-        names = ", ".join(
-            str(sample.get("name"))
-            for sample in (transition_veto.get("metrics") or {}).get("samples") or []
-            if sample.get("name")
-        )
+        details = []
+        for sample in (transition_veto.get("metrics") or {}).get("samples") or []:
+            parts = [str(sample.get("name") or "unknown")]
+            if sample.get("mlbam_id"):
+                parts.append(f"mlbam={sample.get('mlbam_id')}")
+            if sample.get("role"):
+                parts.append(f"role={sample.get('role')}")
+            if sample.get("transition_signals"):
+                parts.append("signals=" + ",".join(str(v) for v in sample.get("transition_signals") or []))
+            if sample.get("old_level") or sample.get("new_level"):
+                parts.append(f"level={sample.get('old_level')}->{sample.get('new_level')}")
+            if sample.get("old_availability") or sample.get("new_availability"):
+                parts.append(f"availability={sample.get('old_availability')}->{sample.get('new_availability')}")
+            if sample.get("old_starter_role") or sample.get("new_starter_role"):
+                parts.append(f"starter_role={sample.get('old_starter_role')}->{sample.get('new_starter_role')}")
+            for key, label in (
+                ("model_score_delta", "model_delta"),
+                ("bucket_adjustment_delta", "bucket_delta"),
+                ("final_score_delta", "final_delta"),
+            ):
+                if sample.get(key) is not None:
+                    parts.append(f"{label}={sample.get(key)}")
+            if sample.get("old_rank") or sample.get("new_rank"):
+                parts.append(f"rank={sample.get('old_rank')}->{sample.get('new_rank')}")
+            details.append(" [" + "; ".join(parts) + "]")
         problems.append(
             "prospect transition continuity veto blocks daily publication"
-            + (f": {names}" if names else "")
+            + (":" + "".join(details) if details else "")
         )
     # Shape-valid but content-blocked must still fail this gate for surfaces the
     # live app actually serves gated on that flag: the daily commit is atomic
