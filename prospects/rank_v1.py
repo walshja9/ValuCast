@@ -1662,6 +1662,25 @@ def _bucket_calibration_adjustment(
             / MODERATE_THIN_RELIABILITY_FLOOR,
         )
         penalty = -MODERATE_THIN_CONFIDENCE_PENALTY_K * deficit
+        # The availability threshold hands this row over from the thin branch.
+        # Never make that handoff harsher than the thin penalty at the same sample,
+        # even when blended model reliability lags current-sample reliability.
+        handoff_thinness = max(
+            0.0,
+            min(1.0, 1.0 - current_reliability / 100.0),
+        )
+        handoff_ramp = max(
+            0.0,
+            (THIN_SAMPLE_RELIABILITY_RAMP - current_reliability)
+            / THIN_SAMPLE_RELIABILITY_RAMP,
+        )
+        penalty = max(
+            penalty,
+            -THIN_SAMPLE_CONFIDENCE_PENALTY_MAX
+            * handoff_thinness
+            * handoff_ramp,
+        )
+        penalty = round(penalty, 2)
         career_validated = _career_validated_discipline(career_entry, role)
         if career_validated:
             # The thin line continues a proven multi-year contact/discipline skill, so
