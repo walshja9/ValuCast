@@ -71,4 +71,3 @@ Use strict RED-GREEN cycles:
 3. Run the focused scouting and workflow test files.
 4. Run the complete test suite used by the repository's PR workflow.
 5. Inspect the final diff and verify only the four implementation/test files plus this design and its implementation plan changed.
-

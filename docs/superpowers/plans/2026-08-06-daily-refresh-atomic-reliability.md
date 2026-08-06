@@ -278,4 +278,3 @@ gh pr list --state open --limit 100
 ```
 
 Expected: clean rebase, no whitespace errors, only the approved design/plan plus four implementation/test files, and no overlapping open PR.
-
