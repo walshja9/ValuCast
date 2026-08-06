@@ -4,16 +4,14 @@ on:
   schedule:
     # GitHub scheduled workflows are best-effort: runs are routinely delayed
     # 30-60+ min or dropped entirely during congestion (the 10:45 UTC primary
-    # was silently skipped on 2026-06-21), so the primary gets two fallbacks.
+    # was silently skipped on 2026-06-21), so the primary gets hourly retries.
     #
     # Primary refresh: 7:30 AM ET during daylight time (7/2 request — the old
     # pre-8-AM-share-window constraint retired with the 8 AM briefing). Data
-    # lands ~8:15-8:30 AM ET after the ~55 min build. EST note: these UTC crons
-    # drift an hour earlier in ET when daylight time ends.
-    - cron: "30 11 * * *"
-    # Same-morning fallbacks if the primary is skipped.
-    - cron: "20 12 * * *"
-    - cron: "30 13 * * *"
+    # Later slots recover failed or runner-starved attempts. These UTC slots drift
+    # an hour earlier in ET when daylight time ends.
+    # Hourly recovery window: preflight skips after today's atomic commit exists.
+    - cron: "30 11-19 * * *"
   workflow_dispatch:
     inputs:
       approve_valucast_buys:
@@ -132,6 +130,15 @@ jobs:
           restore-keys: |
             aaa-statcast-v1-${{ runner.os }}-
 
+      - name: Restore LLM scouting cache
+        id: scouting-llm-cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: data/models/valucast_scouting_llm_cache.json
+          key: scouting-llm-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            scouting-llm-v1-${{ runner.os }}-
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -192,6 +199,13 @@ jobs:
             data/prospects/raw/aaa_statcast_pitch_cache.json
             data/prospects/raw/.aaa_statcast_cache_ready
           key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}
+
+      - name: Save LLM scouting cache
+        if: always()
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: data/models/valucast_scouting_llm_cache.json
+          key: ${{ steps.scouting-llm-cache.outputs.cache-primary-key }}
 
       # Rolls the dated peak-projection rank archive (written by the build step above,
       # which archives today's rank_v1_rank into
