@@ -98,6 +98,11 @@ jobs:
           git fetch origin
           git checkout -B master origin/master
 
+      - name: Pin refresh date
+        # Keep one date across a long run so crossing UTC midnight cannot make
+        # validation disagree with the artifacts built earlier in this job.
+        run: echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
@@ -353,7 +358,7 @@ jobs:
             git add data/milb_observation_archive/*.json
           fi
           git diff --cached --quiet && exit 0
-          git commit -m "data: daily public refresh $(date -u +%Y-%m-%d)"
+          git commit -m "data: daily public refresh $VALUCAST_REFRESH_DATE"
           # We synced to the latest origin/master right after checkout and built on
           # it, so this push is normally a fast-forward. If something pushed during
           # the ~25-min build, FAIL LOUD instead of rebase-merging: the old

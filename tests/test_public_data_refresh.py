@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 from urllib.error import URLError
 
@@ -512,6 +513,32 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "git push origin master" in workflow
     assert "git rebase" not in workflow
     assert "for attempt in" not in workflow
+
+    # A long/manual run may cross UTC midnight. Build, validation, and the
+    # marker commit must keep using the date captured for that one run.
+    pin_date = workflow.index("VALUCAST_REFRESH_DATE=$(date -u +%F)")
+    build = workflow.index("python scripts/run_daily_public_build.py --only build")
+    validate = workflow.index("python scripts/run_daily_public_build.py --only validate")
+    commit = workflow.index(
+        'git commit -m "data: daily public refresh $VALUCAST_REFRESH_DATE"'
+    )
+    assert pin_date < build < validate < commit
+
+
+def test_freshness_cli_uses_pinned_refresh_date(monkeypatch):
+    calls = []
+    monkeypatch.setenv("VALUCAST_REFRESH_DATE", "2026-08-06")
+    monkeypatch.setattr(sys, "argv", ["validate_public_data_freshness.py"])
+    monkeypatch.setattr(
+        freshness,
+        "validate_public_data",
+        lambda expected_date, max_age_days=0: calls.append(
+            (expected_date, max_age_days)
+        ) or [],
+    )
+
+    assert freshness.main() == 0
+    assert calls == [("2026-08-06", 0)]
 
 
 def test_daily_public_workflow_retries_and_preserves_scouting_progress():
