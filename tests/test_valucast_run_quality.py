@@ -41,9 +41,10 @@ class TestValucastRunQuality(unittest.TestCase):
         from web.projection_store import ProjectionStore
         players = ProjectionStore(str(RUN)).get_all()
         with_team = sum(1 for p in players if (p.metadata.get("team") or "").strip())
-        # ~74% in practice; the rest are blank in current.json itself (FAs/unteamed) —
-        # that's the source ceiling (current.json is only ~64% teamed), not a join bug.
-        self.assertGreater(with_team / len(players), 0.7)   # meaningful, nonblank teams
+        source_with_team = sum(1 for row in self.rows if (row.get("team") or "").strip())
+        # Free agents make upstream coverage drift. This guard owns only the join:
+        # ProjectionStore must preserve every team the committed run supplies.
+        self.assertEqual(with_team, source_with_team)
 
     def test_manifest_documents_eligibility_source(self):
         man = json.loads((RUN.parent / "run_manifest.json").read_text(encoding="utf-8"))
