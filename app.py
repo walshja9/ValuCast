@@ -10007,7 +10007,9 @@ def _scoreboard_view(sc: dict) -> dict:
         "retraction_rate_pct": (round(retract_rate * 100) if retract_rate is not None else None),
         "cohort_status": cohorts.get("status"),
         "cohort_count": cohort_count,
-        "cohort_label": f"{cohort_count} board{'s' if cohort_count != 1 else ''}",
+        "cohort_label": (
+            f"{cohort_count} registered cohort{'s' if cohort_count != 1 else ''}"
+        ),
         "independence_attestation": sc.get("independence_attestation"),
     }
 
@@ -10104,10 +10106,13 @@ def _forward_scoreboard_share_card_png(view):
     )
 
     # Co-entrant baseline strip: the public consensus is a NAMED co-entrant, not a
-    # footnote (anti-trophy checklist #3). Board count comes from the cohort section.
+    # footnote (anti-trophy checklist #3). Cohort count comes from the cohort section.
     ce_y = hy + hh + 14
     draw.rounded_rectangle((x, ce_y, x + w, ce_y + 46), radius=8, fill=card, outline=border, width=1)
-    co_entrant = f"Co-entrant: Aggregate public consensus ({v.get('cohort_label') or '0 boards'})"
+    co_entrant = (
+        "Co-entrant: Aggregate public consensus "
+        f"({v.get('cohort_label') or '0 registered cohorts'})"
+    )
     draw.text((x + 18, ce_y + 13), co_entrant, fill=blue, font=_graphic_font(17, bold=True))
 
     # Funnel tiles: wins / losses / self-retraction rate / open — losses as prominent
@@ -10156,7 +10161,8 @@ def _forward_scoreboard_share_card_png(view):
         (x + 20, acct_y + 80),
         _graphic_fit_text(
             draw,
-            "Independence: consensus is context only and never feeds the model score.",
+            "Protocol: each player consensus requires at least 2 public boards; "
+            "consensus never feeds the model score.",
             _graphic_font(14),
             w - 40,
         ),

@@ -98,6 +98,7 @@ def test_scoreboard_renders_artifact_numbers(client, monkeypatch):
     # (3) consensus baseline as a NAMED co-entrant strip with board count
     assert "Aggregate public consensus" in html
     assert "sb-co-entrant" in html
+    assert "each player consensus requires at least 2 public boards" in html
     # (5) self-retraction rate companion stat (fixture: 44%)
     assert "44%" in html
     # (2) losses shown (fixture has 28 real losses) + (6) funnel counts visible
@@ -139,13 +140,13 @@ def test_scoreboard_share_card_png_ok(client, monkeypatch):
     assert resp.data[:8] == b"\x89PNG\r\n\x1a\n"
 
 
-def test_scoreboard_view_pluralizes_cohort_count_once():
+def test_scoreboard_view_labels_registered_cohort_count():
     payload = json.loads(_FIXTURE.read_text(encoding="utf-8"))
     payload["cohorts"]["cohort_count"] = 1
-    assert app_module._scoreboard_view(payload)["cohort_label"] == "1 board"
+    assert app_module._scoreboard_view(payload)["cohort_label"] == "1 registered cohort"
 
     payload["cohorts"]["cohort_count"] = 2
-    assert app_module._scoreboard_view(payload)["cohort_label"] == "2 boards"
+    assert app_module._scoreboard_view(payload)["cohort_label"] == "2 registered cohorts"
 
 
 def test_scoreboard_share_card_keeps_full_provisional_ci_label(monkeypatch):
@@ -164,6 +165,21 @@ def test_scoreboard_share_card_keeps_full_provisional_ci_label(monkeypatch):
     app_module._forward_scoreboard_share_card_png(view)
 
     assert rendered["ci_label"] == view["ci_label"]
+
+
+def test_scoreboard_share_card_discloses_consensus_board_minimum(monkeypatch):
+    payload = json.loads(_FIXTURE.read_text(encoding="utf-8"))
+    original = app_module._graphic_fit_text
+    rendered = []
+
+    def track_fit(draw, text, font, max_width):
+        rendered.append(text)
+        return original(draw, text, font, max_width)
+
+    monkeypatch.setattr(app_module, "_graphic_fit_text", track_fit)
+    app_module._forward_scoreboard_share_card_png(app_module._scoreboard_view(payload))
+
+    assert any("at least 2 public boards" in text for text in rendered)
 
 
 def test_scoreboard_share_card_preview_ok(client, monkeypatch):
