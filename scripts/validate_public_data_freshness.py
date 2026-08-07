@@ -250,7 +250,10 @@ def validate_public_data(expected_date: str, max_age_days: int = 0) -> list[str]
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--date", default=date.today().isoformat())
+    parser.add_argument(
+        "--date",
+        default=os.environ.get("VALUCAST_REFRESH_DATE", date.today().isoformat()),
+    )
     # PR/push CI runs between UTC midnight and the morning refresh with
     # yesterday's committed artifacts; a bounded lag keeps that check green
     # without letting genuinely stale data through. The publish path leaves
