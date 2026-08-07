@@ -15,13 +15,13 @@
           "mlbam_id": 691718,
           "name": "Pete Crow-Armstrong",
           "rank": 2,
-          "value": 90.92
+          "value": 90.91
         },
         "top": {
           "mlbam_id": 691406,
           "name": "Junior Caminero",
           "rank": 1,
-          "value": 99.12
+          "value": 99.11
         }
       },
       "status": "passed",
@@ -50,21 +50,21 @@
         "pitcher_count": 4,
         "pitcher_samples": [
           {
-            "name": "Jacob Misiorowski",
-            "positions": [
-              "SP"
-            ],
-            "rank": 5,
-            "value": 78.42
-          },
-          {
             "name": "Shohei Ohtani",
             "positions": [
               "DH",
               "SP"
             ],
+            "rank": 5,
+            "value": 77.84
+          },
+          {
+            "name": "Jacob Misiorowski",
+            "positions": [
+              "SP"
+            ],
             "rank": 6,
-            "value": 77.86
+            "value": 77.63
           },
           {
             "name": "Paul Skenes",
@@ -72,7 +72,7 @@
               "SP"
             ],
             "rank": 12,
-            "value": 71.24
+            "value": 70.63
           },
           {
             "name": "Cam Schlittler",
@@ -80,7 +80,7 @@
               "SP"
             ],
             "rank": 24,
-            "value": 63.48
+            "value": 63.44
           }
         ],
         "reliever_count": 0,
@@ -102,80 +102,80 @@
             "name": "Kade Anderson",
             "rank": 1,
             "role": "pitcher",
-            "score": 69.0
+            "score": 67.75
           },
           {
             "mlbam_id": 803285,
             "name": "Tyler Bremner",
             "rank": 3,
             "role": "pitcher",
-            "score": 62.11
+            "score": 62.0
           },
           {
             "mlbam_id": 824604,
             "name": "Liam Doyle",
             "rank": 5,
             "role": "pitcher",
-            "score": 58.2
+            "score": 58.39
           },
           {
             "mlbam_id": 696146,
             "name": "Hagen Smith",
             "rank": 8,
             "role": "pitcher",
-            "score": 57.44
+            "score": 57.49
           },
           {
             "mlbam_id": 687312,
             "name": "Gabriel Hughes",
-            "rank": 12,
+            "rank": 11,
             "role": "pitcher",
-            "score": 54.72
+            "score": 55.41
           },
           {
             "mlbam_id": 805906,
             "name": "Gage Wood",
-            "rank": 14,
+            "rank": 13,
             "role": "pitcher",
-            "score": 52.13
+            "score": 52.48
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
             "rank": 15,
             "role": "pitcher",
-            "score": 50.67
+            "score": 51.34
           },
           {
             "mlbam_id": 701364,
             "name": "Jamie Arnold",
             "rank": 16,
             "role": "pitcher",
-            "score": 49.67
+            "score": 49.95
           },
           {
             "mlbam_id": 804817,
             "name": "Kyson Witherspoon",
-            "rank": 19,
+            "rank": 17,
             "role": "pitcher",
-            "score": 48.19
+            "score": 49.56
           },
           {
             "mlbam_id": 702566,
             "name": "Owen Murphy",
-            "rank": 23,
+            "rank": 20,
             "role": "pitcher",
-            "score": 45.88
+            "score": 46.81
           }
         ],
         "top25_evaluated_count": 25,
         "top25_n": 25,
-        "top25_pitcher_count": 10,
+        "top25_pitcher_count": 11,
         "top25_sample_ready": true,
         "top50_evaluated_count": 50,
         "top50_n": 50,
-        "top50_pitcher_count": 18,
-        "top50_pitcher_rate": 0.36,
+        "top50_pitcher_count": 19,
+        "top50_pitcher_rate": 0.38,
         "top50_sample_ready": true
       },
       "status": "blocked",
@@ -356,8 +356,7 @@
           "balanced": 9,
           "impact": 5,
           "mixed": 22,
-          "starter_volume": 13,
-          "thin": 1
+          "starter_volume": 14
         },
         "best_single_level_covered_count": 0,
         "best_single_level_samples": [],
@@ -366,22 +365,11 @@
           "low_impact",
           "thin"
         ],
-        "caution_factual_context_count": 1,
+        "caution_factual_context_count": 0,
         "evaluated_count": 50,
         "max_allowed_caution_factual_context_count": 8,
         "sample_ready": true,
-        "samples": [
-          {
-            "level": "AAA",
-            "mlbam_id": 686796,
-            "name": "Blake Walston",
-            "rank": 30,
-            "role": "pitcher",
-            "sample": 1.0,
-            "sample_unit": "IP",
-            "skill_band": "thin"
-          }
-        ],
+        "samples": [],
         "top_n": 50
       },
       "status": "passed",
@@ -413,7 +401,7 @@
         "current_season_row_count": 7246,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
-        "top200_history_fallback_count": 2,
+        "top200_history_fallback_count": 3,
         "top50_history_fallback_count": 0,
         "top50_stat_context_mismatch_count": 0
       },
@@ -483,7 +471,7 @@
       "metrics": {
         "evaluated_count": 50,
         "max_allowed_unpriced_availability_risk_count": 0,
-        "priced_availability_risk_count": 1,
+        "priced_availability_risk_count": 0,
         "sample_ready": true,
         "samples": [],
         "top_n": 50,
@@ -548,7 +536,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 235
+        "row_count": 225
       },
       "status": "passed"
     },
@@ -556,7 +544,7 @@
       "id": "movers_surface_gate",
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
-        "cooling_count": 6,
+        "cooling_count": 11,
         "generated_at": "2026-08-07T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
@@ -604,7 +592,7 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-08-07T10:49:11.634859+00:00",
+  "generated_at": "2026-08-07T14:11:51.939607+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
@@ -620,9 +608,9 @@
       "public_snapshot": "2026-08-07",
       "recent_signal_report": "2026-08-07"
     },
-    "mlb_count": 922,
+    "mlb_count": 920,
     "prospect_count": 2926,
-    "public_row_count": 3848
+    "public_row_count": 3846
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",

@@ -134,8 +134,8 @@
           "floor": 0.6,
           "minimum_eligible_top25_pitcher_count": 3,
           "status": "pass",
-          "top25_pitcher_count": 10,
-          "top25_population_coverage_rate": 0.3
+          "top25_pitcher_count": 11,
+          "top25_population_coverage_rate": 0.272727
         },
         "cross_role_change_power": {
           "evidence_class": "prospective_change_gate",
@@ -166,16 +166,16 @@
           "evidence_class": "current_publication_shape",
           "max_top25_pitchers": 7,
           "max_top50_pitcher_rate": 0.3,
-          "model_component_eligible_board_count": 2926,
+          "model_component_eligible_board_count": 2881,
           "model_component_field": "components.model_score",
           "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
           "model_component_top25_evaluated_count": 25,
-          "model_component_top25_hitter_count": 13,
-          "model_component_top25_pitcher_count": 12,
+          "model_component_top25_hitter_count": 11,
+          "model_component_top25_pitcher_count": 14,
           "status": "fail",
-          "top25_pitcher_count": 10,
-          "top50_pitcher_count": 18,
-          "top50_pitcher_rate": 0.36
+          "top25_pitcher_count": 11,
+          "top50_pitcher_count": 19,
+          "top50_pitcher_rate": 0.38
         },
         "historical_absolute_concordance": {
           "confirms_current_change": false,
@@ -252,7 +252,7 @@
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
         "buy_comparison_count": 6,
-        "latest_rank_bucket_count": 15,
+        "latest_rank_bucket_count": 24,
         "observation_span_days": 8,
         "rank_comparison_count": 6
       },
@@ -279,7 +279,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-08-07T10:15:52.471121+00:00",
+        "activated_at": "2026-08-07T13:49:26.101323+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -291,9 +291,9 @@
         "status": "active",
         "validated_through": "2019"
       },
-      "candidate_count": 2954,
+      "candidate_count": 2909,
       "impact_board_gate": {
-        "activated_at": "2026-08-07T10:15:52.471121+00:00",
+        "activated_at": "2026-08-07T13:49:26.101323+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.130666,
         "cv_method": "walk_forward",
