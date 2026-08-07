@@ -528,6 +528,7 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
 def test_freshness_cli_uses_pinned_refresh_date(monkeypatch):
     calls = []
     monkeypatch.setenv("VALUCAST_REFRESH_DATE", "2026-08-06")
+    monkeypatch.delenv("VALUCAST_FRESHNESS_MAX_AGE_DAYS", raising=False)
     monkeypatch.setattr(sys, "argv", ["validate_public_data_freshness.py"])
     monkeypatch.setattr(
         freshness,
