@@ -57,7 +57,7 @@
             "velo": 83.35
           }
         },
-        "rank": 8
+        "rank": 10
       },
       {
         "mlbam_id": 687312,
@@ -232,8 +232,8 @@
       "floor": 0.6,
       "minimum_eligible_top25_pitcher_count": 3,
       "status": "pass",
-      "top25_pitcher_count": 11,
-      "top25_population_coverage_rate": 0.272727
+      "top25_pitcher_count": 12,
+      "top25_population_coverage_rate": 0.25
     },
     "cross_role_change_power": {
       "evidence_class": "prospective_change_gate",
@@ -264,14 +264,14 @@
       "evidence_class": "current_publication_shape",
       "max_top25_pitchers": 7,
       "max_top50_pitcher_rate": 0.3,
-      "model_component_eligible_board_count": 2881,
+      "model_component_eligible_board_count": 2889,
       "model_component_field": "components.model_score",
       "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
       "model_component_top25_evaluated_count": 25,
       "model_component_top25_hitter_count": 11,
       "model_component_top25_pitcher_count": 14,
       "status": "fail",
-      "top25_pitcher_count": 11,
+      "top25_pitcher_count": 12,
       "top50_pitcher_count": 19,
       "top50_pitcher_rate": 0.38
     },
@@ -304,35 +304,35 @@
     {
       "eligible_top25_count": 25,
       "minimum_sources": 1,
-      "pitcher_count": 11,
-      "pitcher_source_rank_median": 72
+      "pitcher_count": 12,
+      "pitcher_source_rank_median": 61.2
     },
     {
       "eligible_top25_count": 24,
       "minimum_sources": 2,
-      "pitcher_count": 10,
-      "pitcher_source_rank_median": 62.5
+      "pitcher_count": 11,
+      "pitcher_source_rank_median": 52.5
     },
     {
       "eligible_top25_count": 23,
       "minimum_sources": 3,
-      "pitcher_count": 9,
-      "pitcher_source_rank_median": 53.0
+      "pitcher_count": 10,
+      "pitcher_source_rank_median": 50.2
     },
     {
-      "eligible_top25_count": 19,
+      "eligible_top25_count": 20,
       "minimum_sources": 4,
-      "pitcher_count": 7,
-      "pitcher_source_rank_median": 47
+      "pitcher_count": 8,
+      "pitcher_source_rank_median": 40.5
     },
     {
-      "eligible_top25_count": 16,
+      "eligible_top25_count": 17,
       "minimum_sources": 5,
-      "pitcher_count": 6,
-      "pitcher_source_rank_median": 40.0
+      "pitcher_count": 7,
+      "pitcher_source_rank_median": 33
     }
   ],
-  "generated_at": "2026-08-07T14:10:31.364183+00:00",
+  "generated_at": "2026-08-08T12:23:04.136045+00:00",
   "limitations": [
     "Historical absolute concordance is retrospective and does not confirm a current scoring change.",
     "AAA Statcast is measured current evidence, not a historical outcome panel.",
@@ -347,8 +347,8 @@
   },
   "schema_version": "1.2.0",
   "source_dates": {
-    "aaa_artifact_generated_at": "2026-08-07T10:47:33.471910+00:00",
-    "rank_artifact_generated_at": "2026-08-07T00:00:00+00:00"
+    "aaa_artifact_generated_at": "2026-08-08T12:23:03.680944+00:00",
+    "rank_artifact_generated_at": "2026-08-08T00:00:00+00:00"
   },
   "source_policy": {
     "external_rankings_used_as_outcomes": false,
