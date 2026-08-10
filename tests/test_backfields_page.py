@@ -898,9 +898,9 @@ def test_team_board_context_groups_by_mlb_org_not_affiliate(monkeypatch):
     assert "FA" not in all_teams
 
 
-def test_team_board_prefers_current_affiliate_org_over_stale_snapshot_team(monkeypatch):
+def test_team_board_uses_current_affiliate_when_snapshot_org_is_missing(monkeypatch):
     rows = [
-        _row("David Sandlin", "BOS", prospect_rank=1, dynasty_rank=1, value=40),
+        _row("David Sandlin", "FA", prospect_rank=1, dynasty_rank=1, value=40),
     ]
     rows[0].context = {"stat_line_team": "Charlotte Knights"}
 
@@ -917,9 +917,20 @@ def test_team_board_prefers_current_affiliate_org_over_stale_snapshot_team(monke
         app_module._build_team_board_context("BOS", limit=20)
 
 
-def test_team_board_prefers_current_roster_org_over_historical_affiliate(monkeypatch):
+def test_team_board_prefers_current_snapshot_org_over_stale_fantrax(monkeypatch):
     rows = [
-        _row("Brandon Clarke", "BOS", prospect_rank=1, dynasty_rank=1, value=40),
+        _row("Anthony Eyanson", "BAL", prospect_rank=1, dynasty_rank=1, value=40),
+    ]
+    rows[0].context = {"stat_line_team": "Chesapeake Baysox"}
+
+    monkeypatch.setattr(app_module, "_team_board_current_roster_org", lambda row: "BOS")
+
+    assert app_module._team_board_org_for(rows[0]) == "BAL"
+
+
+def test_team_board_uses_roster_when_snapshot_org_is_missing_and_affiliate_historical(monkeypatch):
+    rows = [
+        _row("Brandon Clarke", "FA", prospect_rank=1, dynasty_rank=1, value=40),
     ]
     rows[0].context = {
         "stat_line_team": "Greenville Drive",
