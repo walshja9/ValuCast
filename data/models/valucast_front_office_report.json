@@ -25,24 +25,24 @@
       }
     ],
     "forward_archive_progress": {
-      "buy_comparison_count": 8,
+      "buy_comparison_count": 9,
       "current_supported_grade": null,
       "minimum_buy_comparisons": 7,
       "minimum_rank_comparisons": 7,
       "minimum_span_days": 14,
       "missing": [
         {
-          "current": 10,
+          "current": 11,
           "metric": "observation_span_days",
           "required": 14
         }
       ],
       "next_target_grade": "A-",
-      "observation_span_days": 10,
-      "rank_comparison_count": 8,
+      "observation_span_days": 11,
+      "rank_comparison_count": 9,
       "remaining_buy_comparisons": 0,
       "remaining_rank_comparisons": 0,
-      "remaining_span_days": 4,
+      "remaining_span_days": 3,
       "status": "collecting"
     },
     "front_office_risk_count": 25,
@@ -51,9 +51,9 @@
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-08-09T12:24:01.615316+00:00",
+  "generated_at": "2026-08-10T12:36:39.137620+00:00",
   "next_build_order": [
-    "Keep logging forward archives: ~4 more observation day(s) needed to reach A- forward support.",
+    "Keep logging forward archives: ~3 more observation day(s) needed to reach A- forward support.",
     "Run the Prospect Model v0.7-vs-v0.6 bucket comparison and publish the by-bucket verdict.",
     "Promote the ordinal bridge only after it beats the historical-neighbor baseline out of sample.",
     "Keep uncertainty-band explanations visible on every prospect detail surface.",
@@ -64,13 +64,13 @@
       "blockers": [],
       "status": "candidate_ready",
       "targeted_row_refresh_count": 0,
-      "top200_history_fallback_count": 2,
+      "top200_history_fallback_count": 3,
       "top50_history_fallback_count": 0,
       "top50_stat_context_mismatch_count": 0
     },
     "pipeline_observability": {
       "date_mismatch_count": 0,
-      "expected_date": "2026-08-09",
+      "expected_date": "2026-08-10",
       "missing_or_unreadable_count": 0,
       "ready_for_daily_publication": true,
       "status": "candidate_ready",
@@ -92,7 +92,7 @@
         "public_snapshot_ready": false,
         "quality_governor_all_checks_passed": false,
         "quality_governor_ready": false,
-        "row_count": 3861,
+        "row_count": 3864,
         "surface_readiness": {
           "buys": true,
           "dynasty": true,
@@ -158,7 +158,7 @@
     },
     {
       "evidence": {
-        "buy_comparison_count": 8,
+        "buy_comparison_count": 9,
         "buy_comparisons_needed": 0,
         "buys_monitor_status": "collecting",
         "cap_reasons": [
@@ -195,17 +195,17 @@
             "minimum_span_days": 30,
             "missing": [
               {
-                "current": 8,
+                "current": 9,
                 "metric": "rank_comparison_count",
                 "required": 14
               },
               {
-                "current": 8,
+                "current": 9,
                 "metric": "buy_comparison_count",
                 "required": 14
               },
               {
-                "current": 10,
+                "current": 11,
                 "metric": "observation_span_days",
                 "required": 30
               }
@@ -219,17 +219,17 @@
             "minimum_span_days": 60,
             "missing": [
               {
-                "current": 8,
+                "current": 9,
                 "metric": "rank_comparison_count",
                 "required": 30
               },
               {
-                "current": 8,
+                "current": 9,
                 "metric": "buy_comparison_count",
                 "required": 30
               },
               {
-                "current": 10,
+                "current": 11,
                 "metric": "observation_span_days",
                 "required": 60
               }
@@ -243,7 +243,7 @@
             "minimum_span_days": 14,
             "missing": [
               {
-                "current": 10,
+                "current": 11,
                 "metric": "observation_span_days",
                 "required": 14
               }
@@ -252,8 +252,8 @@
           }
         },
         "limitations": "Strong public-model evidence with real historical outcome support; not a club-grade system because proprietary scouting, medical, player-development, and tracking data are not present.",
-        "observation_days_needed": 4,
-        "observation_span_days": 10,
+        "observation_days_needed": 3,
+        "observation_span_days": 11,
         "rank_comparisons_needed": 0,
         "score_cap": 87,
         "target_grade": "A-",
