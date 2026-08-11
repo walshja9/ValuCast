@@ -3476,9 +3476,8 @@ class TestModelsRegistryPage(unittest.TestCase):
         self.assertIn("/models", body)
 
     def test_receipts_link_hidden_on_models_and_methodology_when_held(self):
-        # 7/17 nav audit P1: /models and /methodology linked /receipts
-        # unconditionally while base.html's primary nav correctly gates it
-        # on receipts_hold. Flipping the hold must un-light both.
+        # Contextual proof links hide with the surface, while the stable primary
+        # anchor remains visible and honestly marked held.
         import app as app_mod
         self.assertIn('href="/receipts"', self.client.get("/models").data.decode())
         self.assertIn('href="/receipts"', self.client.get("/methodology").data.decode())
@@ -3490,8 +3489,13 @@ class TestModelsRegistryPage(unittest.TestCase):
             methodology_body = self.client.get("/methodology").data.decode()
         finally:
             app_mod.RECEIPTS_HOLD = original
-        self.assertNotIn('href="/receipts"', models_body)
-        self.assertNotIn('href="/receipts"', methodology_body)
+        models_main = models_body[models_body.index("<main>"):models_body.index("</main>")]
+        methodology_main = methodology_body[
+            methodology_body.index("<main>"):methodology_body.index("</main>")
+        ]
+        self.assertNotIn('href="/receipts"', models_main)
+        self.assertNotIn('href="/receipts"', methodology_main)
+        self.assertRegex(models_body, r'href="/receipts"[^>]*is-held')
         # The Ledger link is a separate, unheld surface and must stay.
         self.assertIn("/ledger", models_body)
         self.assertIn("/ledger", methodology_body)

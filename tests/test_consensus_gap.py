@@ -192,9 +192,8 @@ def test_gaps_wired_into_nav_llms_and_daily_build():
     assert "scripts/validate_gaps_claim_ledger.py" in validate
     workflow = (ROOT / ".github" / "workflows" / "daily-public-data.yml").read_text(encoding="utf-8")
     assert "data/models/valucast_consensus_gap.json" in workflow
-    # 7/14 declutter: nav ownership moved to the site-nav in base.html (the
-    # horizon-tabs partial now carries only the Redraft/Dynasty/Prospects/Backfields
-    # horizon switch).
+    # Destination ownership stays in the primary nav; the horizon partial carries
+    # only Redraft, Dynasty, and Prospects.
     nav = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")
     assert '/gaps' in nav
     llms = (ROOT / "static" / "llms.txt").read_text(encoding="utf-8")

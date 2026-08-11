@@ -23,15 +23,14 @@ class TestTabMarkup(unittest.TestCase):
 
     def test_horizon_tabs_are_links(self):
         html = self.client.get("/").data.decode("utf-8")
-        self.assertIn('href="/?mode=dd_dynasty"', html)
-        self.assertIn('href="/backfields"', html)
         horizon_nav = re.search(r'<nav class="horizon-tabs"[^>]*>(.*?)</nav>', html, re.S).group(1)
-        # Nav diet 7/1: the prospect value board gets a tab — movers/receipts/hub all
-        # deep-link into /?mode=prospects, so it can't stay an orphaned surface.
+        # Horizons switch the board universe; Farm Systems remains a primary
+        # destination instead of being duplicated here.
+        self.assertIn('href="/?mode=dd_dynasty"', horizon_nav)
         self.assertIn('href="/?mode=prospects"', horizon_nav)
-        self.assertIn(">Backfields</a>", horizon_nav)
+        self.assertNotIn('href="/backfields"', horizon_nav)
         self.assertIn('class="horizon-tabs"', html)
-        self.assertIn('aria-current="page"', html)
+        self.assertIn('aria-current="page"', horizon_nav)
 
     def test_scoring_row_is_mode_radios_on_redraft(self):
         html = self.client.get("/").data.decode("utf-8")

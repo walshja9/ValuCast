@@ -702,6 +702,46 @@ def test_build_snapshot_forwards_previous_prospect_rank_to_governor(monkeypatch)
     assert captured["previous"] is previous
 
 
+def test_build_snapshot_forwards_movers_to_governor(monkeypatch):
+    movers = {
+        "generated_at": "2026-08-10T12:00:00+00:00",
+        "source_policy": {"mode": "native_daily_history"},
+        "validation": {"ready_for_live_consumers": True},
+    }
+    captured = {}
+
+    def fake_quality_governor(*args, **kwargs):
+        captured["movers"] = kwargs.get("movers")
+        return {
+            "governor_version": "test",
+            "ready_for_public_snapshot": True,
+            "ready_for_buys_promotion": False,
+            "blockers": [],
+            "buy_blockers": [],
+            "surface_readiness": {
+                "dynasty": True,
+                "prospects": True,
+                "buys": False,
+            },
+            "surface_blockers": {
+                "dynasty": [],
+                "prospects": [],
+                "buys": [],
+            },
+        }
+
+    monkeypatch.setattr(snapshot_builder, "evaluate_quality_governor", fake_quality_governor)
+
+    build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+        movers=movers,
+    )
+
+    assert captured["movers"] is movers
+
+
 def test_public_snapshot_preserves_prospect_handedness_for_scouting():
     payload = build_snapshot(
         _rank_payload(),

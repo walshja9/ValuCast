@@ -6416,20 +6416,10 @@ def _team_board_context_for(row):
 def _team_board_org_for(row):
     """Resolve the current MLB org for a Backfields row.
 
-    The public snapshot and MiLB stat line can each be stale in different ways:
-    row.team may lag a trade, while stat_line_team can be an older affiliate
-    from historical MiLB context. Prefer the current Fantrax roster org when it
-    is uniquely available, then use affiliate and snapshot fallbacks.
+    The public snapshot is built cache-first from MLB's nightly currentTeam
+    data. Fantrax and stat_line_team can each lag a trade, so they are fallbacks.
     """
-    roster_org = _team_board_current_roster_org(row)
-    if roster_org:
-        return roster_org
     context = _team_board_context_for(row)
-    affiliate = str(context.get("stat_line_team") or "").strip()
-    if affiliate and _team_board_affiliate_context_is_current(context):
-        org = _canonical_team_board_org(MINOR_TEAM_MLB_AFFILIATES.get(affiliate))
-        if org:
-            return org
     for key in ("mlb_team", "current_org", "org", "parent_org"):
         org = _canonical_team_board_org(context.get(key))
         if org:
@@ -6438,7 +6428,12 @@ def _team_board_org_for(row):
         org = _canonical_team_board_org(getattr(row, attr, None))
         if org:
             return org
-    return None
+    affiliate = str(context.get("stat_line_team") or "").strip()
+    if affiliate and _team_board_affiliate_context_is_current(context):
+        org = _canonical_team_board_org(MINOR_TEAM_MLB_AFFILIATES.get(affiliate))
+        if org:
+            return org
+    return _team_board_current_roster_org(row)
 
 
 def _team_board_as_float(value):

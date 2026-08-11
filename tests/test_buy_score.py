@@ -429,12 +429,18 @@ class TestBuysRoute(_RealAppCase):
         self.assertNotIn("Juneiker Caceres", html)
 
     def test_aotc_hold_hides_public_navigation_and_backfields_surface(self):
+        import re
+
         with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", True):
             map_html = self.client.get("/map").data.decode("utf-8")
             backfields_html = self.client.get("/backfields").data.decode("utf-8")
 
-        self.assertNotIn('href="/buys"', map_html)
-        self.assertNotIn('href="/buys"', backfields_html)
+        map_nav = re.search(r'<nav class="site-nav".*?</nav>', map_html, re.S).group(0)
+        backfields_main = backfields_html[
+            backfields_html.index("<main>"):backfields_html.index("</main>")
+        ]
+        self.assertRegex(map_nav, r'href="/buys"[^>]*is-held')
+        self.assertNotIn('href="/buys"', backfields_main)
         # The held surface is the /buys "Ahead of the Curve" buy-signals board (its
         # risers section + the /buys link). The Backfields divergence list is a
         # separate, live surface intentionally branded "Ahead of the Curve", so the
