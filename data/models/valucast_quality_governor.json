@@ -9,13 +9,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 7.09,
+        "gap": 8.33,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 691718,
           "name": "Pete Crow-Armstrong",
           "rank": 2,
-          "value": 92.03
+          "value": 90.79
         },
         "top": {
           "mlbam_id": 691406,
@@ -55,7 +55,7 @@
               "SP"
             ],
             "rank": 3,
-            "value": 78.88
+            "value": 78.93
           },
           {
             "name": "Shohei Ohtani",
@@ -64,7 +64,7 @@
               "SP"
             ],
             "rank": 5,
-            "value": 77.81
+            "value": 77.79
           },
           {
             "name": "Paul Skenes",
@@ -72,15 +72,15 @@
               "SP"
             ],
             "rank": 13,
-            "value": 70.13
+            "value": 69.91
           },
           {
             "name": "Cam Schlittler",
             "positions": [
               "SP"
             ],
-            "rank": 24,
-            "value": 64.91
+            "rank": 22,
+            "value": 65.85
           }
         ],
         "reliever_count": 0,
@@ -185,10 +185,10 @@
       "id": "prospect_transition_continuity",
       "message": "Prospect transition calibration is continuous across the latest vintages.",
       "metrics": {
-        "baseline_date": "2026-08-09",
+        "baseline_date": "2026-08-10",
         "bucket_step_threshold": 6.0,
-        "current_date": "2026-08-10",
-        "evaluated_matched_row_count": 2940,
+        "current_date": "2026-08-11",
+        "evaluated_matched_row_count": 2949,
         "hitter_count": 0,
         "incident_count": 0,
         "model_delta_limit": 1.0,
@@ -427,7 +427,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 57,
+        "archive_day_span": 58,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -536,7 +536,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 223
+        "row_count": 225
       },
       "status": "passed"
     },
@@ -545,7 +545,7 @@
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
         "cooling_count": 12,
-        "generated_at": "2026-08-10T00:00:00+00:00",
+        "generated_at": "2026-08-11T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 12
@@ -592,25 +592,25 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-08-10T12:36:39.137620+00:00",
+  "generated_at": "2026-08-11T12:35:13.327182+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-08-10",
-      "buy_signals": "2026-08-10",
-      "milb_stat_freshness_audit": "2026-08-10",
-      "mlb_layer": "2026-08-10",
-      "movers": "2026-08-10",
-      "prospect_card_data_audit": "2026-08-10",
-      "prospect_coverage_audit": "2026-08-10",
-      "prospect_rank": "2026-08-10",
-      "public_snapshot": "2026-08-10",
-      "recent_signal_report": "2026-08-10"
+      "buy_review": "2026-08-11",
+      "buy_signals": "2026-08-11",
+      "milb_stat_freshness_audit": "2026-08-11",
+      "mlb_layer": "2026-08-11",
+      "movers": "2026-08-11",
+      "prospect_card_data_audit": "2026-08-11",
+      "prospect_coverage_audit": "2026-08-11",
+      "prospect_rank": "2026-08-11",
+      "public_snapshot": "2026-08-11",
+      "recent_signal_report": "2026-08-11"
     },
-    "mlb_count": 915,
+    "mlb_count": 917,
     "prospect_count": 2949,
-    "public_row_count": 3864
+    "public_row_count": 3866
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",

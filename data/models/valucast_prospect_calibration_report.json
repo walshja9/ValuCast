@@ -21,11 +21,11 @@
     ],
     "top_context_band": 50
   },
-  "generated_at": "2026-08-10T00:00:00+00:00",
+  "generated_at": "2026-08-11T00:00:00+00:00",
   "input_artifacts": {
     "prospect_availability_version": "0.5.1",
     "prospect_model_version": "0.6.1",
-    "rank_generated_at": "2026-08-10T00:00:00+00:00",
+    "rank_generated_at": "2026-08-11T00:00:00+00:00",
     "rank_name": "ValuCast Prospect Rank v1",
     "rank_version": "0.2.9"
   },
@@ -57,7 +57,7 @@
           "pitcher": 43,
           "unknown": 0
         },
-        "score_average": 40.8906,
+        "score_average": 40.8914,
         "score_max": 67.82,
         "score_min": 32.16,
         "score_source_counts": {
@@ -94,7 +94,7 @@
           "pitcher": 97,
           "unknown": 0
         },
-        "score_average": 35.1868,
+        "score_average": 35.187,
         "score_max": 67.82,
         "score_min": 27.14,
         "score_source_counts": {
@@ -159,7 +159,7 @@
           "pitcher": 19,
           "unknown": 0
         },
-        "score_average": 47.5524,
+        "score_average": 47.5514,
         "score_max": 67.82,
         "score_min": 38.27,
         "score_source_counts": {
@@ -172,7 +172,7 @@
     "bucket_metrics": [
       {
         "average_sample": 60.0046,
-        "average_score": 15.3752,
+        "average_score": 15.3749,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
@@ -210,7 +210,7 @@
       },
       {
         "average_sample": 323.4625,
-        "average_score": 17.8255,
+        "average_score": 17.8256,
         "bucket": "hitter|upper_level|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "upper_level",
@@ -229,7 +229,7 @@
       },
       {
         "average_sample": 49.5195,
-        "average_score": 8.188,
+        "average_score": 8.1879,
         "bucket": "pitcher|lower_minors|prospect_model_v0_6|active_sample",
         "evidence_bucket": "active_sample",
         "level_band": "lower_minors",
@@ -286,7 +286,7 @@
       },
       {
         "average_sample": 38.9444,
-        "average_score": 18.5722,
+        "average_score": 18.57,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|injured",
         "evidence_bucket": "injured",
         "level_band": "upper_level",
@@ -305,7 +305,7 @@
       },
       {
         "average_sample": 48.74,
-        "average_score": 20.884,
+        "average_score": 20.883,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|stale_or_inactive",
         "evidence_bucket": "stale_or_inactive",
         "level_band": "upper_level",
@@ -324,7 +324,7 @@
       },
       {
         "average_sample": 112.4,
-        "average_score": 6.9235,
+        "average_score": 6.923,
         "bucket": "hitter|upper_level|prospect_model_v0_6|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "upper_level",
@@ -381,7 +381,7 @@
       },
       {
         "average_sample": 272.25,
-        "average_score": 7.825,
+        "average_score": 7.81,
         "bucket": "hitter|upper_level|prospect_model_v0_6|stale_or_inactive",
         "evidence_bucket": "stale_or_inactive",
         "level_band": "upper_level",
@@ -510,7 +510,7 @@
       },
       {
         "average_sample": 22.3364,
-        "average_score": 5.0459,
+        "average_score": 5.0458,
         "bucket": "pitcher|lower_minors|prospect_model_v0_6|thin_current_sample",
         "evidence_bucket": "thin_current_sample",
         "level_band": "lower_minors",
@@ -548,7 +548,7 @@
       },
       {
         "average_sample": 28.3,
-        "average_score": 14.92,
+        "average_score": 14.91,
         "bucket": "pitcher|upper_level|prospect_model_v0_6|rehab",
         "evidence_bucket": "rehab",
         "level_band": "upper_level",
@@ -621,7 +621,7 @@
       }
     ],
     "bucket_tuning_flag_count": 0,
-    "consensus_elite_disagreement_count": 21,
+    "consensus_elite_disagreement_count": 22,
     "context_disagreement_count_top50": 0,
     "fallback_watchlist_count_top200": 1,
     "pedigree_watchlist_count_top50": 0,
@@ -665,8 +665,8 @@
         "board_count": 3,
         "board_rank_max": 64,
         "board_rank_min": 38,
-        "consensus_rank": 42,
-        "divergence": -2710,
+        "consensus_rank": 45,
+        "divergence": -2707,
         "identity_key": "836582_hitter",
         "mlbam_id": "836582",
         "name": "Luis Hern\u00e1ndez",
@@ -674,6 +674,20 @@
         "team": "SFG",
         "usage": "calibration_watchlist_context_not_live_rank_or_value",
         "valucast_rank": 2752
+      },
+      {
+        "board_count": 4,
+        "board_rank_max": 410,
+        "board_rank_min": 28,
+        "consensus_rank": 36,
+        "divergence": -2491,
+        "identity_key": "829034_hitter",
+        "mlbam_id": "829034",
+        "name": "Josuar Gonzalez",
+        "role": "hitter",
+        "team": "SFG",
+        "usage": "calibration_watchlist_context_not_live_rank_or_value",
+        "valucast_rank": 2527
       },
       {
         "board_count": 5,
@@ -706,7 +720,7 @@
       {
         "board_count": 5,
         "board_rank_max": 69,
-        "board_rank_min": 15,
+        "board_rank_min": 14,
         "consensus_rank": 18,
         "divergence": -274,
         "identity_key": "821270_hitter",
@@ -819,8 +833,8 @@
         "board_count": 4,
         "board_rank_max": 121,
         "board_rank_min": 30,
-        "consensus_rank": 50,
-        "divergence": -106,
+        "consensus_rank": 48,
+        "divergence": -108,
         "identity_key": "703186_pitcher",
         "mlbam_id": "703186",
         "name": "Jarlin Susana",
@@ -844,8 +858,22 @@
         "valucast_rank": 110
       },
       {
+        "board_count": 5,
+        "board_rank_max": 73,
+        "board_rank_min": 18,
+        "consensus_rank": 41,
+        "divergence": -72,
+        "identity_key": "807080_hitter",
+        "mlbam_id": "807080",
+        "name": "Eric Hartman",
+        "role": "hitter",
+        "team": "ATL",
+        "usage": "calibration_watchlist_context_not_live_rank_or_value",
+        "valucast_rank": 113
+      },
+      {
         "board_count": 3,
-        "board_rank_max": 104,
+        "board_rank_max": 105,
         "board_rank_min": 42,
         "consensus_rank": 46,
         "divergence": -72,
@@ -856,20 +884,6 @@
         "team": "TBR",
         "usage": "calibration_watchlist_context_not_live_rank_or_value",
         "valucast_rank": 118
-      },
-      {
-        "board_count": 5,
-        "board_rank_max": 73,
-        "board_rank_min": 18,
-        "consensus_rank": 42,
-        "divergence": -71,
-        "identity_key": "807080_hitter",
-        "mlbam_id": "807080",
-        "name": "Eric Hartman",
-        "role": "hitter",
-        "team": "ATL",
-        "usage": "calibration_watchlist_context_not_live_rank_or_value",
-        "valucast_rank": 113
       },
       {
         "board_count": 5,
@@ -890,14 +904,14 @@
         "board_rank_max": 141,
         "board_rank_min": 24,
         "consensus_rank": 38,
-        "divergence": -54,
+        "divergence": -55,
         "identity_key": "828098_hitter",
         "mlbam_id": "828098",
         "name": "JoJo Parker",
         "role": "hitter",
         "team": "TOR",
         "usage": "calibration_watchlist_context_not_live_rank_or_value",
-        "valucast_rank": 92
+        "valucast_rank": 93
       },
       {
         "board_count": 5,
@@ -930,7 +944,7 @@
       {
         "board_count": 4,
         "board_rank_max": 57,
-        "board_rank_min": 13,
+        "board_rank_min": 15,
         "consensus_rank": 22,
         "divergence": -44,
         "identity_key": "814307_hitter",
@@ -943,7 +957,7 @@
       },
       {
         "board_count": 5,
-        "board_rank_max": 19,
+        "board_rank_max": 20,
         "board_rank_min": 8,
         "consensus_rank": 12,
         "divergence": -38,
@@ -982,7 +996,7 @@
         "score": 31.18,
         "score_source": "universal_fallback",
         "source_ranks_context": {
-          "hkb": 312
+          "hkb": 313
         }
       }
     ],
