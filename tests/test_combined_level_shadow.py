@@ -116,13 +116,10 @@ def test_combined_level_shadow_keeps_served_rank_stage_penalties():
         assert row["shadow_score"] <= row["shadow_score_before_rank_adjustments"]
 
 
-def test_combined_level_shadow_excludes_prior_year_served_model_lines():
-    # Invariant, not pinned IDs: a prospect is shadowed ONLY when its served
-    # model line matches a current-season line. Which specific prospects have a
-    # stale (prior-year) served line rotates daily as the served board and model
-    # regenerate (e.g. Andrew Sears' served line flipped from 2025 A+ to a 2026
-    # AA line on 2026-07-04), so we assert the exclusion rule holds across the
-    # live board rather than naming players that graduate/rotate out.
+def test_combined_level_shadow_excludes_prior_year_served_model_lines(tmp_path):
+    # The live-board invariant catches any stale line that is emitted. A
+    # deterministic stale copy below proves the exclusion gate is exercised even
+    # on days when every naturally served model line is current.
     import json
 
     from prospects.combined_level_shadow import (
@@ -161,17 +158,31 @@ def test_combined_level_shadow_excludes_prior_year_served_model_lines():
             f"shadowed prospect {key} has a stale (non-current) served model line"
         )
 
-    # Non-vacuous: at least one multi-level prospect IS excluded specifically
-    # because its served line is stale (confirms the gate is doing real work).
-    shadowed_keys = {(row["mlbam_id"], row["role"]) for row in payload["shadows"]}
-    stale_excluded = [
-        key
-        for key, current_rows in current_by_key.items()
-        if key not in shadowed_keys
-        and (model_row := model_by_key.get(key)) is not None
-        and not _served_model_line_is_current(model_row, current_rows, key[1])
-    ]
-    assert stale_excluded, "expected at least one stale-served-line exclusion on the live board"
+    target_key = (payload["shadows"][0]["mlbam_id"], payload["shadows"][0]["role"])
+    target_model_row = model_by_key[target_key]
+    target_current_rows = current_by_key[target_key]
+    assert _served_model_line_is_current(
+        target_model_row, target_current_rows, target_key[1]
+    )
+
+    # Preserve every other real model input and make only the served sample
+    # impossible to match. Without the production gate this player would still
+    # have two valid current levels and would incorrectly enter the shadow.
+    target_model_row["sample"] = float(target_model_row["sample"]) + 10_000.0
+    assert not _served_model_line_is_current(
+        target_model_row, target_current_rows, target_key[1]
+    )
+    stale_model_path = tmp_path / "prospect-model-with-stale-served-line.json"
+    stale_model_path.write_text(json.dumps(model_payload), encoding="utf-8")
+
+    stale_payload = build_combined_level_shadow(
+        model_path=stale_model_path,
+        generated_at="2026-06-27T12:00:00+00:00",
+    )
+    stale_shadowed_keys = {
+        (row["mlbam_id"], row["role"]) for row in stale_payload["shadows"]
+    }
+    assert target_key not in stale_shadowed_keys
 
 
 def test_combined_level_shadow_artifact_and_validator_round_trip(tmp_path):
