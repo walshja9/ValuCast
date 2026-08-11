@@ -10,14 +10,20 @@ from app import app
 
 def test_receipts_page_shows_hold_message_and_hides_share_card_when_held(monkeypatch):
     """7/1: the pre-launch fix shrank the board to 4 hits / 0 misses -- too thin to
-    show credibly. Held from public view (nav + share-card) while the daily build
-    keeps running in the background; see RECEIPTS_HOLD in app.py."""
+    show credibly. The stable nav anchor leads to an explicit hold page while the
+    share card stays protected and the daily build keeps running."""
+    import re
+
     monkeypatch.setattr(app_module, "RECEIPTS_HOLD", True)
     client = app.test_client()
 
     page = client.get("/receipts").data.decode("utf-8")
     assert "Building a real track record" in page
-    assert 'href="/receipts"' not in page  # nav tab hidden
+    nav = re.search(r'<nav class="site-nav".*?</nav>', page, re.S).group(0)
+    main = page[page.index("<main>"):page.index("</main>")]
+    assert re.search(r'href="/receipts"[^>]*is-held', nav)
+    assert '<span class="site-nav-held" aria-hidden="true">Held</span>' in nav
+    assert 'href="/receipts"' not in main
     assert "buys-actions" not in page  # export buttons hidden
 
     assert client.get("/receipts/share-card").status_code == 404
