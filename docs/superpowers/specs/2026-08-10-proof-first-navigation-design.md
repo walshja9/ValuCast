@@ -151,4 +151,3 @@ Browser verification will cover keyboard operation and 390px/desktop layouts. Re
 - The duplicate Backfields horizon tab is removed without removing `/backfields`.
 - The mobile header is shorter and has no horizontal overflow.
 - Existing metrics can support a seven-day and fourteen-day before/after read.
-
