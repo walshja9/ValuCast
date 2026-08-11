@@ -31,17 +31,32 @@
 <body>
     <header class="site-header">
         <h1><a href="/"><img class="site-logo" src="{{ url_for('static', filename='brand/valucast-mark-64.png') }}" alt=""><span class="brand-word">ValuCast</span></a></h1>
+        {% set research_active = (
+            request.path == '/gaps'
+            or request.path == '/ledger'
+            or request.path == '/glossary'
+            or request.path == '/board'
+            or request.path.startswith('/board/')
+            or request.path == '/map'
+            or request.path == '/methodology'
+        ) %}
         <nav class="site-nav" aria-label="Primary navigation">
-            <a href="/"{% if request.path == '/' %} aria-current="page"{% endif %}>Rankings</a>
-            <a href="/board"{% if request.path == '/board' or request.path.startswith('/board/') %} aria-current="page"{% endif %}>Archives</a>
-            <a href="/movers"{% if request.path == '/movers' %} aria-current="page"{% endif %}>Movers</a>
-            {% if not aotc_hold %}<a href="/buys"{% if request.path == '/buys' %} aria-current="page"{% endif %}>Buys</a>{% endif %}
-            {% if not receipts_hold %}<a href="/receipts"{% if request.path == '/receipts' %} aria-current="page"{% endif %}>Receipts</a>{% endif %}
-            <a href="/gaps"{% if request.path == '/gaps' %} aria-current="page"{% endif %}>Disagreements</a>
-            <a href="/backfields"{% if backfields_page %} aria-current="page"{% endif %}>Farm Systems</a>
-            <a href="/map"{% if request.path == '/map' %} aria-current="page"{% endif %}>Map</a>
-            {# Intelligence Hub demoted to the footer (7/14 declutter) — _footer_provenance.html links /intelligence on every page. #}
-            <a href="/methodology"{% if methodology_page %} aria-current="page"{% endif %}>Methodology</a>
+            <a href="/movers" class="site-nav-link"{% if request.path == '/movers' %} aria-current="page"{% endif %}>Movers</a>
+            <a href="/buys" class="site-nav-link{% if aotc_hold %} is-held{% endif %}"{% if request.path == '/buys' %} aria-current="page"{% endif %}{% if aotc_hold %} aria-label="Buys, temporarily held"{% endif %}>Buys{% if aotc_hold %}<span class="site-nav-held" aria-hidden="true">Held</span>{% endif %}</a>
+            <a href="/receipts" class="site-nav-link{% if receipts_hold %} is-held{% endif %}"{% if request.path == '/receipts' %} aria-current="page"{% endif %}{% if receipts_hold %} aria-label="Receipts, temporarily held"{% endif %}>Receipts{% if receipts_hold %}<span class="site-nav-held" aria-hidden="true">Held</span>{% endif %}</a>
+            <a href="/" class="site-nav-link"{% if request.path == '/' %} aria-current="page"{% endif %}>Rankings</a>
+            <a href="/backfields" class="site-nav-link"{% if backfields_page %} aria-current="page"{% endif %}>Farm Systems</a>
+            <details class="site-nav-research{% if research_active %} has-current{% endif %}">
+                <summary>Research</summary>
+                <div class="site-nav-research-menu">
+                    <a href="/gaps"{% if request.path == '/gaps' %} aria-current="page"{% endif %}>Disagreements</a>
+                    <a href="/ledger"{% if request.path == '/ledger' %} aria-current="page"{% endif %}>The Ledger</a>
+                    <a href="/glossary"{% if request.path == '/glossary' %} aria-current="page"{% endif %}>Glossary</a>
+                    <a href="/board"{% if request.path == '/board' or request.path.startswith('/board/') %} aria-current="page"{% endif %}>Archives</a>
+                    <a href="/map"{% if request.path == '/map' %} aria-current="page"{% endif %}>Map</a>
+                    <a href="/methodology"{% if request.path == '/methodology' %} aria-current="page"{% endif %}>Methodology</a>
+                </div>
+            </details>
         </nav>
     </header>
     <main>
@@ -90,7 +105,7 @@
         document.body.addEventListener(evt, htmxFailureNotice);
     });
     document.addEventListener('click', function (e) {
-        document.querySelectorAll('details.graphic-menu[open]').forEach(function (d) {
+        document.querySelectorAll('details.graphic-menu[open], details.site-nav-research[open]').forEach(function (d) {
             if (!d.contains(e.target)) d.removeAttribute('open');
         });
     });
@@ -99,7 +114,7 @@
     // but had no keyboard way to close (7/17 mobile/a11y audit P2).
     document.addEventListener('keydown', function (e) {
         if (e.key !== 'Escape') return;
-        document.querySelectorAll('details.graphic-menu[open]').forEach(function (d) {
+        document.querySelectorAll('details.graphic-menu[open], details.site-nav-research[open]').forEach(function (d) {
             d.removeAttribute('open');
             const toggle = d.querySelector('summary');
             if (toggle) toggle.focus();
