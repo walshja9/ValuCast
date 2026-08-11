@@ -78,25 +78,31 @@ def test_backfields_nav_link_and_active_state():
     response, html = _html("/")
     assert response.status_code == 200
     nav = _site_nav(html)
-    assert 'href="/backfields">Farm Systems' in nav
+    assert 'href="/backfields" class="site-nav-link">Farm Systems' in nav
     # Intelligence surfaces are promoted into the primary nav (hold flags off).
-    assert 'href="/buys">Buys' in nav
+    assert 'href="/buys" class="site-nav-link">Buys' in nav
 
     response, html = _html("/backfields")
     assert response.status_code == 200
-    assert re.search(r'<a href="/backfields"\s+aria-current="page">Farm Systems</a>', html)
+    assert re.search(
+        r'<a href="/backfields" class="site-nav-link"\s+aria-current="page">Farm Systems</a>',
+        html,
+    )
 
 
-def test_prospect_neighbor_navigation_points_to_backfields():
+def test_prospect_neighbor_navigation_uses_primary_farm_systems():
     for path in ("/buys", "/map"):
         response, html = _html(path)
         assert response.status_code in {200, 503}
         if response.status_code == 503:
             continue
-        assert 'href="/backfields" class="htab htab-prospects">Backfields</a>' in html
-        # 7/1: Backfields stays the minors hub; the prospect value board now ALSO has
-        # its own (plain-htab) tab because deep links land there constantly.
-        assert 'href="/?mode=prospects" class="htab' in html
+        site_nav = _site_nav(html)
+        horizon_nav = re.search(
+            r'<nav class="horizon-tabs"[^>]*>(.*?)</nav>', html, re.S
+        ).group(1)
+        assert 'href="/backfields" class="site-nav-link"' in site_nav
+        assert 'href="/backfields"' not in horizon_nav
+        assert 'href="/?mode=prospects" class="htab' in horizon_nav
 
 
 def test_primary_nav_uses_backfields_as_prospect_hub():
@@ -126,7 +132,9 @@ def test_backfields_hides_held_buys_but_keeps_scouting_deep_link():
         app_module.AHEAD_OF_THE_CURVE_HOLD = original
 
     assert response.status_code == 200
-    assert 'href="/buys"' not in html
+    main = html[html.index("<main>"):html.index("</main>")]
+    assert 'href="/buys"' not in main
+    assert re.search(r'href="/buys"[^>]*is-held', _site_nav(html))
     assert 'href="/scouting' in html
 
 
