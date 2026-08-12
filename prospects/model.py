@@ -17,6 +17,10 @@ from zoneinfo import ZoneInfo
 
 from prospects.gate import _round as _gate_round, decide_gate
 from prospects.input_contract import VALUCAST_INPUT_PATH, validate_factual_contract
+from prospects.investment_challenger import (
+    investment_feature_names,
+    investment_feature_vector,
+)
 from prospects.level_translation_challenger import (
     STRIKE_PCT_FEATURE_NAMES,
     STRIKE_PCT_NON_SHRINK,
@@ -74,6 +78,10 @@ OUTCOME_TARGET = {"bust": 0.0, "role": 0.5, "star": 1.0}
 PEDIGREE_FRESH_YEARS = 2.0
 PEDIGREE_STALE_YEARS = 5.0
 PITCHER_STALE_PEDIGREE_DECAY_ENABLED = False
+# Fixed Plan 036 investment-feature challenger. The incumbent default preserves
+# every served/trained feature exactly; the research harness may set the string
+# mode around both fold training and scoring through its existing model_flags.
+PITCHER_INVESTMENT_FEATURE_MODE = "incumbent"
 # E1 pitcher challenger levers (model-supremacy audit lane #1). Dark parallel
 # path: both default False and change NO served score. Flipped only by a
 # `model_flags` variant in prospects.rank_backtest's exploratory replay. Lever
@@ -478,19 +486,35 @@ def _outcome_feature_vector(record: dict, role: str) -> list[float] | None:
     # -> both features exactly 0.0 with the known flag down).
     if role == "pitcher" and PITCHER_STRIKE_PCT_ENABLED:
         vector += [float(value) for value in strike_pct_extra(record)]
+    if role == "pitcher":
+        vector = investment_feature_vector(
+            _incumbent_outcome_feature_names(role),
+            vector,
+            PITCHER_INVESTMENT_FEATURE_MODE,
+        )
     return vector
 
 
-def _outcome_feature_names(role: str) -> tuple[str, ...]:
-    """OUTCOME feature names, with the E1 role-split names appended when the
-    lever is on. Kept in lockstep with _outcome_feature_vector so the stored
-    feature_names, the shrink walk, and the drivers all agree on every index."""
+def _incumbent_outcome_feature_names(role: str) -> tuple[str, ...]:
+    """Return the incumbent names including any enabled append-only levers."""
     names = OUTCOME_FEATURE_NAMES[role]
     if role == "pitcher" and PITCHER_OUTCOME_ROLE_SPLIT_ENABLED:
         names = names + PITCHER_ROLE_SPLIT_FEATURE_NAMES
     if role == "pitcher" and PITCHER_STRIKE_PCT_ENABLED:
         names = names + STRIKE_PCT_FEATURE_NAMES
     return names
+
+
+def _outcome_feature_names(role: str) -> tuple[str, ...]:
+    """Names matching the active rich feature vector for training and scoring."""
+    names = _incumbent_outcome_feature_names(role)
+    if role != "pitcher" or PITCHER_INVESTMENT_FEATURE_MODE == "incumbent":
+        return names
+    incumbent = frozenset(investment_feature_names(role, "incumbent"))
+    active = frozenset(
+        investment_feature_names(role, PITCHER_INVESTMENT_FEATURE_MODE)
+    )
+    return tuple(name for name in names if name not in incumbent or name in active)
 
 
 def _canonical_impact_feature_vector(base: list[float], role: str) -> list[float]:
@@ -985,8 +1009,16 @@ def outcome_oof_rows(role: str, dataset_rows: list[dict]) -> list[dict]:
     return out
 
 
-def train_role(role: str, dataset_rows: list[dict], now: str | None = None) -> dict:
-    rows = _historical_rows(dataset_rows, role)
+def train_role(
+    role: str,
+    dataset_rows: list[dict],
+    now: str | None = None,
+    *,
+    mature_through: int = MATURE_THROUGH,
+) -> dict:
+    if isinstance(mature_through, bool) or not isinstance(mature_through, int):
+        raise ValueError("mature_through must be an integer year")
+    rows = _historical_rows(dataset_rows, role, mature_through=mature_through)
     model_kind = OUTCOME_MODEL_KIND[role]
     validation = _walk_forward(
         rows,
@@ -1004,7 +1036,7 @@ def train_role(role: str, dataset_rows: list[dict], now: str | None = None) -> d
         },
         sample_size=len(validation["targets"]),
         cv_method="walk_forward",
-        validated_through=str(MATURE_THROUGH),
+        validated_through=str(mature_through),
         min_sample=MIN_GATE_SAMPLE,
         min_improvement_pct=MIN_GATE_IMPROVEMENT_PCT,
         lower_is_better=True,
@@ -1044,9 +1076,17 @@ def train_impact_role(
     seasons_by_player: dict,
     references: dict,
     now: str | None = None,
+    *,
+    mature_through: int = MATURE_THROUGH,
 ) -> dict:
+    if isinstance(mature_through, bool) or not isinstance(mature_through, int):
+        raise ValueError("mature_through must be an integer year")
     rows = _historical_impact_rows(
-        dataset_rows, role, seasons_by_player, references
+        dataset_rows,
+        role,
+        seasons_by_player,
+        references,
+        mature_through=mature_through,
     )
     model_kind = "hurdle_ridge"
     ridge_lambda = HITTER_IMPACT_RIDGE_LAMBDA if role == "hitter" else RIDGE_LAMBDA
@@ -1064,7 +1104,7 @@ def train_impact_role(
         },
         sample_size=len(validation["targets"]),
         cv_method="walk_forward",
-        validated_through=str(MATURE_THROUGH),
+        validated_through=str(mature_through),
         min_sample=MIN_GATE_SAMPLE,
         min_improvement_pct=MIN_GATE_IMPROVEMENT_PCT,
         lower_is_better=True,
@@ -1706,11 +1746,21 @@ def refresh_impact_drivers(payload: dict, contract: dict) -> tuple[dict, int]:
     return refreshed, changed
 
 
-def build_shadow_model(contract: dict, now: str | None = None) -> dict:
+def build_shadow_model(
+    contract: dict,
+    now: str | None = None,
+    *,
+    mature_through: int = MATURE_THROUGH,
+) -> dict:
     validate_input_contract(contract)
+    if isinstance(mature_through, bool) or not isinstance(mature_through, int):
+        raise ValueError("mature_through must be an integer year")
     now = now or datetime.now(timezone.utc).isoformat()
     rows = contract["historical"].get("rows", [])
-    role_models = {role: train_role(role, rows, now) for role in ("hitter", "pitcher")}
+    role_models = {
+        role: train_role(role, rows, now, mature_through=mature_through)
+        for role in ("hitter", "pitcher")
+    }
     seasons_by_player = contract["historical_mlb_seasons"]
     references = _impact_references(seasons_by_player)
     active_impact_categories = {
@@ -1727,7 +1777,14 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
     }
     direct_7x7 = not any(missing_impact_categories.values())
     impact_models = {
-        role: train_impact_role(role, rows, seasons_by_player, references, now)
+        role: train_impact_role(
+            role,
+            rows,
+            seasons_by_player,
+            references,
+            now,
+            mature_through=mature_through,
+        )
         for role in ("hitter", "pitcher")
     }
 
@@ -1764,7 +1821,7 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
             },
             sample_size=len(targets),
             cv_method="walk_forward",
-            validated_through=str(MATURE_THROUGH),
+            validated_through=str(mature_through),
             min_sample=MIN_GATE_SAMPLE * 2,
             min_improvement_pct=MIN_GATE_IMPROVEMENT_PCT,
             lower_is_better=True,
@@ -1818,7 +1875,7 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
             "direct_7x7": False,
             "player_grouped": True,
             "validation": "expanding_window",
-            "mature_through": MATURE_THROUGH,
+            "mature_through": mature_through,
         },
         "impact_target": (
             "best forward MLB season percentile across the factual fantasy "
@@ -1846,7 +1903,7 @@ def build_shadow_model(contract: dict, now: str | None = None) -> dict:
             "missing_pitcher_categories": missing_impact_categories["pitcher"],
             "player_grouped": True,
             "validation": "expanding_window",
-            "mature_through": MATURE_THROUGH,
+            "mature_through": mature_through,
         },
         "scope": "AA/AAA statistical prospects only",
         "board_gate": board_gate,

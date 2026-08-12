@@ -169,6 +169,39 @@ def _contract(n_per_role=420):
     }
 
 
+def test_mature_through_is_opt_in_and_default_remains_byte_compatible():
+    contract = _contract(n_per_role=60)
+    for role, mlbam_id in (("hitter", 900001), ("pitcher", 900002)):
+        contract["historical"]["rows"].append(
+            _historical(role, 2021, mlbam_id, "bust")
+        )
+        contract["historical_mlb_seasons"][f"{mlbam_id}_{role}"] = []
+
+    default = build_shadow_model(
+        contract, now="2026-06-12T00:00:00+00:00"
+    )
+    explicit_incumbent = build_shadow_model(
+        contract,
+        now="2026-06-12T00:00:00+00:00",
+        mature_through=2019,
+    )
+    extended = build_shadow_model(
+        contract,
+        now="2026-06-12T00:00:00+00:00",
+        mature_through=2021,
+    )
+
+    assert default == explicit_incumbent
+    assert extended["roles"]["hitter"]["training_sample"] == (
+        default["roles"]["hitter"]["training_sample"] + 1
+    )
+    assert extended["roles"]["pitcher"]["training_sample"] == (
+        default["roles"]["pitcher"]["training_sample"] + 1
+    )
+    assert extended["target_contract"]["mature_through"] == 2021
+    assert extended["impact_target_contract"]["mature_through"] == 2021
+
+
 def test_model_module_has_no_external_rank_or_valuation_dependencies():
     import prospects.model as model
 
@@ -430,6 +463,81 @@ def _stale_arm(draft_year, cohort_year=2021, **overrides):
         draft_year=draft_year, draft_pick_number=10, draft_round=1,
         signing_bonus=4_000_000, pick_value=8.0, **overrides,
     )
+
+
+def test_pitcher_investment_feature_mode_defaults_to_byte_compatible_incumbent():
+    from prospects import model
+
+    record = _stale_arm(draft_year=2020)
+
+    assert model.PITCHER_INVESTMENT_FEATURE_MODE == "incumbent"
+    assert model._outcome_feature_names("pitcher") == model.OUTCOME_FEATURE_NAMES["pitcher"]
+    assert model._outcome_feature_vector(record, "pitcher") == model._outcome_feature_vector(
+        dict(record), "pitcher"
+    )
+
+
+def test_pitcher_investment_candidate_drops_only_raw_pick_value(monkeypatch):
+    from prospects import model
+
+    record = _stale_arm(draft_year=2020)
+    original = dict(record)
+    incumbent_names = model._outcome_feature_names("pitcher")
+    incumbent_values = model._outcome_feature_vector(record, "pitcher")
+
+    monkeypatch.setattr(
+        model, "PITCHER_INVESTMENT_FEATURE_MODE", "drop_raw_pick_value"
+    )
+    candidate_names = model._outcome_feature_names("pitcher")
+    candidate_values = model._outcome_feature_vector(record, "pitcher")
+
+    assert "pick_value" in incumbent_names
+    assert "pick_value" not in candidate_names
+    assert candidate_names == tuple(
+        name for name in incumbent_names if name != "pick_value"
+    )
+    assert candidate_values == [
+        value
+        for name, value in zip(incumbent_names, incumbent_values)
+        if name != "pick_value"
+    ]
+    assert len(candidate_names) == len(candidate_values)
+    for retained in (
+        "rule4_drafted",
+        "draft_record_known",
+        "inverse_draft_pick",
+        "inverse_draft_round",
+        "log_signing_bonus",
+        "college_drafted",
+        "prep_drafted",
+    ):
+        assert retained in candidate_names
+    assert record == original
+
+
+def test_pitcher_investment_candidate_leaves_hitters_byte_identical(monkeypatch):
+    from prospects import model
+
+    record = _historical(
+        "hitter",
+        2021,
+        12,
+        "role",
+        draft_year=2019,
+        draft_pick_number=5,
+        signing_bonus=6_000_000,
+    )
+    original = dict(record)
+    incumbent_names = model._outcome_feature_names("hitter")
+    incumbent_values = model._outcome_feature_vector(record, "hitter")
+
+    monkeypatch.setattr(
+        model, "PITCHER_INVESTMENT_FEATURE_MODE", "drop_raw_pick_value"
+    )
+
+    assert model._outcome_feature_names("hitter") == incumbent_names
+    assert model._outcome_feature_vector(record, "hitter") == incumbent_values
+    assert record == original
 
 
 def test_pitcher_pedigree_decay_is_flag_gated_and_stale_zeroes_magnitudes(monkeypatch):

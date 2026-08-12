@@ -554,10 +554,12 @@ def test_rank_v1_is_invariant_to_external_context_mutation(monkeypatch):
         _universe(), _dynasty_layer(), _prospect_model(), _input_contract()
     )
 
-    scored = lambda payload: [
-        (row["mlbam_id"], row["score"], row["rank"])
-        for row in payload["board"]
-    ]
+    def scored(payload):
+        return [
+            (row["mlbam_id"], row["score"], row["rank"])
+            for row in payload["board"]
+        ]
+
     assert scored(first) == scored(second)
     first_context = next(
         row["context_only"] for row in first["board"] if row["mlbam_id"] == 1
@@ -1627,7 +1629,7 @@ def test_gs_reclassification_step_is_bounded():
     assert step <= 2.6, step
 
 
-def _three_hitter_board(*, active_ids, graduated_ids):
+def _three_hitter_board(*, active_ids, graduated_ids, model_score_mode="incumbent_role_quantile"):
     """Item B harness: 3 hitters with distinct raw model scores; id 11 can be
     an active-roster call-up (retained or graduated via mlb_service)."""
     players = []
@@ -1651,7 +1653,7 @@ def _three_hitter_board(*, active_ids, graduated_ids):
         profile["name"] = f"Pool Hitter {mlbam_id}"
         profile["normalized_name"] = f"pool hitter {mlbam_id}"
         profiles.append(profile)
-        ranked.append({
+        model_row = {
             "mlbam_id": mlbam_id,
             "name": f"Pool Hitter {mlbam_id}",
             "normalized_name": f"pool hitter {mlbam_id}",
@@ -1661,7 +1663,16 @@ def _three_hitter_board(*, active_ids, graduated_ids):
             "sample_reliability": 0.6,
             "role_gate": "active",
             "impact_gate": "active",
-        })
+        }
+        if model_score_mode == "common_target":
+            model_row.update(
+                {
+                    "expected_outcome_score_common_target": outcome,
+                    "expected_category_impact_score_common_target": impact,
+                    "common_target_calibration": {"sha256": "sealed123"},
+                }
+            )
+        ranked.append(model_row)
         current.append({
             "mlbam_id": mlbam_id,
             "name": f"Pool Hitter {mlbam_id}",
@@ -1712,6 +1723,7 @@ def _three_hitter_board(*, active_ids, graduated_ids):
         input_contract,
         mlb_roster_status=_mlb_roster_status(list(active_ids)),
         require_mlb_roster_status=True,
+        model_score_mode=model_score_mode,
     )
 
 
@@ -1747,6 +1759,77 @@ def test_graduated_callup_stays_out_of_the_board_pool():
     # The graduated id is off the board AND out of the pool: 2-row pool.
     assert pcts[12] == round(2 / 3, 6)
     assert pcts[13] == round(1 / 3, 6)
+
+
+def test_common_target_mode_uses_only_precalibrated_fields_and_fails_closed():
+    payload = {
+        "ranked": [
+            {
+                "mlbam_id": 91,
+                "role": "pitcher",
+                "expected_outcome_score": 0.99,
+                "expected_category_impact_score": 0.98,
+                "expected_outcome_score_common_target": 0.31,
+                "expected_category_impact_score_common_target": 0.41,
+                "common_target_calibration": {"sha256": "abc123"},
+            }
+        ]
+    }
+
+    lookup = rank_v1._model_lookup(payload, model_score_mode="common_target")
+    profile = lookup[("91", "pitcher")]
+
+    assert rank_v1._model_score(profile) == 35.2
+    component = rank_v1._model_score_normalization_component(profile)
+    assert component == {
+        "version": "fold_trained_common_target_v1",
+        "method": "fold_trained_common_realized_target",
+        "calibrator_sha256": "abc123",
+        "fields": {
+            "expected_outcome_score": {"raw": 0.99, "normalized": 0.31},
+            "expected_category_impact_score": {"raw": 0.98, "normalized": 0.41},
+        },
+    }
+
+    missing = {"ranked": [{**payload["ranked"][0]}]}
+    missing["ranked"][0].pop("expected_category_impact_score_common_target")
+    with pytest.raises(ValueError, match="common-target"):
+        rank_v1._model_lookup(missing, model_score_mode="common_target")
+
+
+def test_model_score_mode_rejects_unknown_values_and_keeps_incumbent_default():
+    payload = {
+        "ranked": [
+            {
+                "mlbam_id": 92,
+                "role": "hitter",
+                "expected_outcome_score": 0.5,
+                "expected_category_impact_score": 0.4,
+            }
+        ]
+    }
+    assert rank_v1._model_lookup(payload) == rank_v1._model_lookup(
+        payload, model_score_mode="incumbent_role_quantile"
+    )
+    with pytest.raises(ValueError, match="model_score_mode"):
+        rank_v1._model_lookup(payload, model_score_mode="quota_fix")
+
+
+def test_common_target_mode_survives_full_board_build_without_role_remap():
+    payload = _three_hitter_board(
+        active_ids=[],
+        graduated_ids=set(),
+        model_score_mode="common_target",
+    )
+
+    components = [row["components"]["model_score_normalization"] for row in payload["board"]]
+    assert {component["method"] for component in components} == {
+        "fold_trained_common_realized_target"
+    }
+    assert all(
+        "role_percentile" not in component["fields"]["expected_outcome_score"]
+        for component in components
+    )
 
 
 def test_no_current_season_penalty_is_prior_pedigree_injury_aware_and_destacked():

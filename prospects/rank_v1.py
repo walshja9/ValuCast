@@ -149,6 +149,9 @@ MODEL_COMPONENT_WEIGHTS = {
 MODEL_SCORE_QUANTILE_NORMALIZATION_VERSION = "role_quantile_to_pooled_v0_1"
 MODEL_SCORE_QUANTILE_NORMALIZED_SUFFIX = "_role_quantile_normalized"
 MODEL_SCORE_QUANTILE_PERCENTILE_SUFFIX = "_role_percentile"
+MODEL_SCORE_MODES = frozenset({"incumbent_role_quantile", "common_target"})
+COMMON_TARGET_NORMALIZATION_VERSION = "fold_trained_common_target_v1"
+COMMON_TARGET_SUFFIX = "_common_target"
 SCORE_WEIGHTS = {
     "prospect_model_v0_6": {
         "model_score": 0.76,
@@ -326,13 +329,22 @@ def _generated_date(payload: dict) -> str | None:
     return _date_part(payload.get("generated_at"))
 
 
-def _model_lookup(prospect_model: dict) -> dict[tuple[str, str], dict]:
+def _model_lookup(
+    prospect_model: dict,
+    *,
+    model_score_mode: str = "incumbent_role_quantile",
+) -> dict[tuple[str, str], dict]:
+    if model_score_mode not in MODEL_SCORE_MODES:
+        raise ValueError(f"unknown model_score_mode: {model_score_mode}")
     rows = []
     for row in prospect_model.get("ranked") or []:
         key = identity_key(row.get("mlbam_id"), row.get("role"))
         if key:
             rows.append(dict(row))
-    _apply_role_quantile_model_score_normalization(rows)
+    if model_score_mode == "incumbent_role_quantile":
+        _apply_role_quantile_model_score_normalization(rows)
+    else:
+        _apply_common_target_model_score_normalization(rows)
     lookup = {}
     for row in rows:
         key = identity_key(row.get("mlbam_id"), row.get("role"))
@@ -931,6 +943,25 @@ def _apply_role_quantile_model_score_normalization(rows: list[dict]) -> None:
                 start = end + 1
 
 
+def _apply_common_target_model_score_normalization(rows: list[dict]) -> None:
+    """Copy only sealed fold-trained common-target fields into the score path."""
+    for row in rows:
+        if row.get("role") not in {"hitter", "pitcher"}:
+            continue
+        calibration = row.get("common_target_calibration") or {}
+        calibration_hash = str(calibration.get("sha256") or "").strip()
+        if not calibration_hash:
+            raise ValueError("common-target model row is missing calibration hash")
+        for field in MODEL_COMPONENT_WEIGHTS:
+            calibrated = _clean_float(row.get(f"{field}{COMMON_TARGET_SUFFIX}"))
+            if calibrated is None:
+                raise ValueError(
+                    f"common-target model row is missing calibrated field {field}"
+                )
+            row[_model_score_field_normalized_key(field)] = calibrated
+        row["_model_score_normalization_mode"] = "common_target"
+
+
 def _model_score_component_value(model_profile: dict, field: str) -> float | None:
     normalized = _clean_float(
         model_profile.get(_model_score_field_normalized_key(field))
@@ -953,13 +984,24 @@ def _model_score_normalization_component(model_profile: dict | None) -> dict | N
         fields[field] = {
             "raw": _round(_clean_float(model_profile.get(field)), 6),
             "normalized": _round(normalized, 6),
-            "role_percentile": _round(
+        }
+        if model_profile.get("_model_score_normalization_mode") != "common_target":
+            fields[field]["role_percentile"] = _round(
                 _clean_float(model_profile.get(_model_score_field_percentile_key(field))),
                 6,
-            ),
-        }
+            )
     if not fields:
         return None
+    if model_profile.get("_model_score_normalization_mode") == "common_target":
+        return {
+            "version": COMMON_TARGET_NORMALIZATION_VERSION,
+            "method": "fold_trained_common_realized_target",
+            "calibrator_sha256": str(
+                (model_profile.get("common_target_calibration") or {}).get("sha256")
+                or ""
+            ),
+            "fields": fields,
+        }
     return {
         "version": MODEL_SCORE_QUANTILE_NORMALIZATION_VERSION,
         "method": "within_role_percentile_to_pooled_distribution",
@@ -2151,6 +2193,7 @@ def build_prospect_rank_v1(
     investment_evidence: dict | None = None,
     *,
     stage1_state: str = "incumbent",
+    model_score_mode: str = "incumbent_role_quantile",
 ) -> dict:
     stage1 = build_stage1_contract(
         prospect_model,
@@ -2169,7 +2212,8 @@ def build_prospect_rank_v1(
                 for profile in stage1_by_key.values()
                 if profile["model_profile"] is not None
             ]
-        }
+        },
+        model_score_mode=model_score_mode,
     )
     layer_by_key = _layer_lookup(
         {
@@ -2206,17 +2250,18 @@ def build_prospect_rank_v1(
             for role in ("hitter", "pitcher")
         )
     }
-    _apply_role_quantile_model_score_normalization(
-        _board_model_score_normalization_rows(
-            rows,
-            model_by_key,
-            input_by_key,
-            # Item B: exclude only ids the board loop itself excludes, so the
-            # Pass-2 pool matches main-board membership exactly (retained
-            # rookie call-ups stay IN the pool).
-            graduated_active_mlb_ids | manual_graduated_ids,
+    if model_score_mode == "incumbent_role_quantile":
+        _apply_role_quantile_model_score_normalization(
+            _board_model_score_normalization_rows(
+                rows,
+                model_by_key,
+                input_by_key,
+                # Item B: exclude only ids the board loop itself excludes, so the
+                # Pass-2 pool matches main-board membership exactly (retained
+                # rookie call-ups stay IN the pool).
+                graduated_active_mlb_ids | manual_graduated_ids,
+            )
         )
-    )
     seen: set[tuple[str, str]] = set()
     duplicate_keys: list[tuple[str, str]] = []
     missing_mlbam_count = 0
@@ -2253,7 +2298,6 @@ def build_prospect_rank_v1(
             duplicate_keys.append(key)
             continue
         seen.add(key)
-        stage1_profile = stage1_by_key.get(key) or {}
         layer_profile = layer_by_key.get(key)
         model_profile = model_by_key.get(key)
         input_row = input_by_key.get(key)

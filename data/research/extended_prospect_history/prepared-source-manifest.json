@@ -1,0 +1,540 @@
+{
+    "artifact": "valucast_extended_prospect_history_source_manifest",
+    "draft_facts_output": {
+        "path": "data/research/extended_prospect_history/draft-facts.json",
+        "sha256": "f87acb8b262968d1c1045128eb4a0d0425d414def50c3d2b224c28a41247ba2f"
+    },
+    "identity_parity": {
+        "candidate_count": 1559,
+        "cohort_year": 2014,
+        "committed_count": 1559,
+        "extra": [],
+        "missing": [],
+        "status": "ready"
+    },
+    "mode": "prepare_only",
+    "output": {
+        "path": "data/research/extended_prospect_history/prepared.json",
+        "sha256": "8c681c09f95d471300f2d84f0bc933afc93ea0b5f7d7f5eb89f132cdd1baa66e"
+    },
+    "schema_version": 2,
+    "sources": [
+        {
+            "cohort_year": 2009,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2009.json",
+            "sha256": "5e0fa261f3a7e8fdddfd77690bfc31b94f84024e88ed0262334a06661ea7987b"
+        },
+        {
+            "cohort_year": 2010,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2010.json",
+            "sha256": "5b0f42130fe67424d4d4ab5645d453bccd226a98d0d5c0922f40bbec7c72179e"
+        },
+        {
+            "cohort_year": 2011,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2011.json",
+            "sha256": "25139b7e78dd9d6478ad9d4a8ca56d65e793b6ad76ff59425d164b8b003763ee"
+        },
+        {
+            "cohort_year": 2012,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2012.json",
+            "sha256": "25662abad0dc2708d87470e936aeda3fd73651cd4a4558babf19f038b8d6fa81"
+        },
+        {
+            "cohort_year": 2013,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2013.json",
+            "sha256": "28f8376cdf24ce46d91056bcb97e198d9a5738652f0db6ec4f1eb4c7a3ab26ba"
+        },
+        {
+            "cohort_year": 2014,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2014.json",
+            "sha256": "4471a1faddf78ed3995a35e289b9040eeccd130fc4de8399477de7b552781496"
+        },
+        {
+            "cohort_year": 2015,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2015.json",
+            "sha256": "e1f965f908e9ee428347558333d0e07a9e84fff09b8dcaabe79891b80d97bfe2"
+        },
+        {
+            "cohort_year": 2016,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2016.json",
+            "sha256": "852a874e0d550ca872c2ca1ee9679399457a9fd29a2cb7a3ac89625afd3f0e98"
+        },
+        {
+            "cohort_year": 2017,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2017.json",
+            "sha256": "e093e229671194566a3287674782854ff7763347daa055f590f0cec35fb77dde"
+        },
+        {
+            "cohort_year": 2018,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2018.json",
+            "sha256": "b6f5b907fdd6489321b75f2da6af1d580e43a536bf57cb9135da73f0860c7054"
+        },
+        {
+            "cohort_year": 2019,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2019.json",
+            "sha256": "a0339ceb2439683d61376abca196431768d3db097909b2db0ff3499450df2b9f"
+        },
+        {
+            "cohort_year": 2021,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2021.json",
+            "sha256": "b13e4fc8214dd62c9457b0e07f2eaa5f3e394f6cf7399da82edf0fed02d78f74"
+        },
+        {
+            "cohort_year": 2022,
+            "kind": "milb_checkpoint",
+            "origin": "tracked_checkpoint",
+            "path": "data/research/extended_prospect_history/checkpoints/milb-2022.json",
+            "sha256": "ab43191238a2bb92334bb61609f51cbeda29b27b6f1c91cf834a44e5e516c0eb"
+        },
+        {
+            "cohort_year": 2009,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2009.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2009,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "2bef69e05d684edbda73ac78a52943f498f3b232e142dde4185699f7e86e38ad",
+            "status": 200
+        },
+        {
+            "cohort_year": 2010,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2010.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2010,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "38d1ca15019c433e0eef174f072290caf9e5551752792c943289e55ab453c217",
+            "status": 200
+        },
+        {
+            "cohort_year": 2011,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2011.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2011,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "d7a508c47fa5b4a410653b0872927d4b8fe44198be232d57063a538ac83c3f81",
+            "status": 200
+        },
+        {
+            "cohort_year": 2012,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2012.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2012,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "c5c62aecfc83655a02c645bf57acf764151073c6e3a0700f9f3923e704537791",
+            "status": 200
+        },
+        {
+            "cohort_year": 2013,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2013.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2013,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "22f488b339efa3d7a666932688f4ad04864778219df8cbee0e65d914ea0966e9",
+            "status": 200
+        },
+        {
+            "cohort_year": 2014,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2014.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2014,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "a085916329fb42f0f885e12767e85ada4c6f1dfc71ac44e346696b3ed00e3ea3",
+            "status": 200
+        },
+        {
+            "cohort_year": 2015,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2015.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2015,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "4b7a98bdfa2bc421cec0626f152aac2d1631dfeae70134384b2e83e43728df67",
+            "status": 200
+        },
+        {
+            "cohort_year": 2016,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2016.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2016,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "fb530117bf64607d6e3ac1904361d60c164b8574c652d9aa9e80c4888acfe627",
+            "status": 200
+        },
+        {
+            "cohort_year": 2017,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2017.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2017,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "a295d972de3554f956c3746930437d2ebbc71c9c4504721be8001f8d75e7c8fa",
+            "status": 200
+        },
+        {
+            "cohort_year": 2018,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2018.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2018,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "24cbb39947d42146ab2eaf9205c50212abdd59dd48287054ccaa1313e57c10bc",
+            "status": 200
+        },
+        {
+            "cohort_year": 2019,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2019.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2019,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "d4211a0eb1b4dc3db4f08ecc0b64b80b461aa0bcb9a4175e8484a5c41f5b2945",
+            "status": 200
+        },
+        {
+            "cohort_year": 2021,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2021.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2021,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "3edd306ce8e36a9f965a7739c05e9ff7483e068569c14aa41282192e8e7616c8",
+            "status": 200
+        },
+        {
+            "cohort_year": 2022,
+            "endpoint": "https://statsapi.mlb.com/api/v1/stats",
+            "kind": "milb_statsapi_response",
+            "origin": "registered_raw_response",
+            "path": "data/research/extended_prospect_history/milb-source-responses/milb-2022.json",
+            "query": {
+                "group": "hitting,pitching",
+                "limit": 10000,
+                "playerPool": "ALL",
+                "season": 2022,
+                "sportIds": "11,12,13,14",
+                "stats": "season"
+            },
+            "sha256": "9ca4e4b03856520c5c82a47296b6d20f744204fd692627b5c7158b3d3bb64112",
+            "status": 200
+        },
+        {
+            "kind": "identity_parity_contract",
+            "path": "data/research/extended_prospect_history/parity-2014-identities.json",
+            "sha256": "0b61e9eeecb0f5540d909b1f69afa1238dd5bee1abc2da1d7670401a3192f0c7"
+        },
+        {
+            "candidate_covered_count": 6753,
+            "kind": "draft_facts_base",
+            "path": "data/prospects/raw/mlb_draft_facts_cache.json",
+            "sha256": "87431a642a19fdc30858c8217edacc8d3d856f5de416a0bbee7e3c8eaf4dfc86"
+        },
+        {
+            "candidate_count": 3644,
+            "kind": "draft_facts_supplement",
+            "path": "data/research/extended_prospect_history/draft-facts-supplement.json",
+            "sha256": "4be8127f4afecbaff16e39eb112376a7e83fd0708dd7c08cbde1054a0e0700fd"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2002",
+            "fetched_at": "2026-08-11T22:48:30.368686+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2002.json",
+            "query": {},
+            "sha256": "c5e2805ea69741f31d39e693598c0e75a21f0cdc5c8e0a442e08fdde343bb957"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2003",
+            "fetched_at": "2026-08-11T22:48:31.251867+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2003.json",
+            "query": {},
+            "sha256": "499828a1d35b22a01bbfe7696870cf86af549160c284ef9eaedecc39d28721c1"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2004",
+            "fetched_at": "2026-08-11T22:48:32.141239+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2004.json",
+            "query": {},
+            "sha256": "89729672aa75866ec58b183df5b2d717109ed799a1784527e35680be1290fa66"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2005",
+            "fetched_at": "2026-08-11T22:48:33.117398+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2005.json",
+            "query": {},
+            "sha256": "4a4b84fca0d1e00c744cb40216d8e7dca81d20fd0d2751f639848c772aef19b3"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2006",
+            "fetched_at": "2026-08-11T22:48:33.949718+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2006.json",
+            "query": {},
+            "sha256": "05e541caf212e8ae6bb71c962ddfd804f5f0664b354a2657538e9311979c7401"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2007",
+            "fetched_at": "2026-08-11T22:48:34.722992+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2007.json",
+            "query": {},
+            "sha256": "d25cf389f9dbd24f513941a69e18372da1a538d9aca47e68536f95a0c4ac7bc5"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2008",
+            "fetched_at": "2026-08-11T22:48:35.838619+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2008.json",
+            "query": {},
+            "sha256": "001fafca4829739b5e9632c55e1cc77517cc4e96cd259fd6d37015e43cbb0c61"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2009",
+            "fetched_at": "2026-08-11T22:48:36.631841+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2009.json",
+            "query": {},
+            "sha256": "0b759ee08ad8dbe379b0a6744461bcfc199869edfc12090e33605c05ce4386bb"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2010",
+            "fetched_at": "2026-08-11T22:48:37.399440+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2010.json",
+            "query": {},
+            "sha256": "7468973baf29418a5b4d069bde3f2ce5e4c38a380f1a3e1cfa1453974b9173aa"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2011",
+            "fetched_at": "2026-08-11T22:48:38.699684+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2011.json",
+            "query": {},
+            "sha256": "02ca244b145950e570edd1bee91e4d72067b84cb8adb2a8f5bb4cb42a248862a"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/draft/2012",
+            "fetched_at": "2026-08-11T22:48:39.560516+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/draft-2012.json",
+            "query": {},
+            "sha256": "d0decf75353384f4a6dde69e4f88e7f95b30076461435445551b153b3bd2127c"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.195181+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-01.json",
+            "query": {
+                "personIds": "430687,433591,434590,435078,444465,444468,444474,444481,444485,444489,444524,444549,444553,444555,444557,444558,444859,444876,445270,445274,445275,445615,446328,446857,448171,448176,448762,448857,449061,449181,450855,451075,451113,451114,451136,451182,451628,451639,451705,451711,451713,451715,452168,452306,452326,452675,453036,453301,453652,455361,455371,455376,455377,455378,455399,455405,456051,456061,456071,456078,456145,456149,456150,456160,456397,456417,456481,456487,456488,456493,456776,456781,456782,457117,457133,458216,458221,458930,460344,460349,460588,461360,461735,462089,462092,462117,462120,462472,462480,462495,462515,462961,462962,462986,462995,463011,463017,463019,463040,463313"
+            },
+            "sha256": "f39766f3fc9cbbeb6e2473eeab7e87edd0a44932ed659e8871f12763dafa097a"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.297699+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-02.json",
+            "query": {
+                "personIds": "463610,463645,463675,463692,463706,463726,463748,463752,464345,464385,464400,464403,464407,464414,464423,464425,464426,464433,464436,465002,465017,465038,465058,465615,465674,465696,465705,465713,465734,465753,465757,465768,465784,466338,466339,466388,466454,466457,466459,466480,466983,467008,467070,467078,467092,467094,467099,467100,467102,467142,467143,467144,467683,467733,467792,467793,467798,467802,467807,467816,467833,467850,467856,468175,468393,468401,468406,468452,468470,468474,468475,468476,468504,468517,468523,468528,468538,468539,468540,469134,469135,469142,469145,469175,469775,469802,469804,469810,469826,469835,469839,469844,469845,470466,470470,470481,470484,470490,470491,470516"
+            },
+            "sha256": "ac3fcabb3e2d8ef69992e4d0d589bc594fae1f25b7a0614d157db565b8a2bab6"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.397269+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-03.json",
+            "query": {
+                "personIds": "471178,471183,471187,471193,471835,471837,471839,471843,471886,471896,471897,471905,471906,471911,471919,471920,471921,472505,472551,472572,472610,473208,473218,473240,473248,473275,477361,477377,477454,477458,477462,477609,477644,484552,485567,485569,485630,487019,487663,487675,491623,491624,491627,491640,491646,491661,491667,491676,491688,491695,491696,491701,491703,491707,491708,492728,492815,492818,492821,492872,492879,492880,493101,493256,493364,493588,494686,495561,495655,495663,495664,496005,496048,496057,496058,496073,499543,499603,499614,499864,499882,499926,500102,500207,500208,500274,500279,500441,500610,500666,500674,500717,500721,500723,500724,500730,500731,500734,500739,500743"
+            },
+            "sha256": "ebbec81d8248f852129890659980f27e15ef77a359a68c33c0685b371af0a460"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.556384+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-04.json",
+            "query": {
+                "personIds": "500744,500748,500765,500768,500776,500779,500869,500871,500872,500874,500882,500887,500888,500891,500892,500895,500901,500902,500903,500906,500908,500909,500910,500972,501013,501170,501192,501196,501197,501205,501213,501223,501227,501240,501245,501250,501253,501255,501303,501308,501317,501319,501320,501323,501324,501381,501440,501458,501463,501469,501470,501480,501491,501502,501528,501529,501551,501556,501563,501564,501565,501566,501571,501585,501589,501593,501605,501625,501626,501629,501637,501644,501645,501647,501659,501660,501661,501671,501674,501679,501687,501697,501699,501703,501715,501725,501726,501727,501729,501731,501732,501735,501736,501748,501765,503027,503034,503085,503345,503356"
+            },
+            "sha256": "3f5c87a3b71e658751b604fc07fec37c3f72ef53c1ab5c8cebd969392ae92cc8"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.643897+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-05.json",
+            "query": {
+                "personIds": "503424,503425,503429,503437,503439,503444,503447,503449,503474,503498,503556,503565,503566,503569,503570,503571,503575,503577,503578,503601,503800,503804,503931,503941,504083,504093,504184,504186,504210,504308,504314,504379,504829,505251,505447,505490,506560,506687,506692,506693,506694,506702,506706,506711,506728,510548,510552,510554,510721,511628,514390,514630,514639,514642,514668,514719,514720,514854,514888,514894,514913,514917,514923,514931,514982,515189,515768,515808,516148,516410,516414,516416,516418,516430,516472,516589,516613,516614,516631,516650,516654,516661,516674,516684,516687,516689,516736,516738,516755,516758,516760,516768,516769,516770,516771,516775,516776,516782,516799,516809"
+            },
+            "sha256": "0639db300b144f361bac5e944bb578408ef46f87e5a5beb0454370adc8ddaab3"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.746412+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-06.json",
+            "query": {
+                "personIds": "516811,516853,516915,516925,516934,516935,516937,516949,516950,516970,516995,517008,517031,517059,517060,517209,517350,517359,517370,517374,517380,517390,517392,517413,517414,517426,517465,517529,517530,517539,517591,517595,517629,517888,518169,518170,519508,519708,519748,520209,520270,520288,520350,520471,520950,520951,520952,520976,520977,520979,520980,521011,521050,521054,521055,521060,521088,521089,521230,521232,521310,521348,521428,521655,521656,521659,521692,521811,522052,522068,522588,522668,522689,522728,523648,523650,523848,523989,524175,524289,524308,524648,524728,525630,525665,525768,525828,526269,526913,527035,527037,527038,527048,527050,527052,527054,527055,530037,531326,531589"
+            },
+            "sha256": "5caf88673ab43e70ffcd9610cd63f926a6f759adad793a4b6cd8d790aec47266"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.823927+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-07.json",
+            "query": {
+                "personIds": "533167,534368,534648,538177,539315,539438,539603,540204,540262,541077,541343,541347,541587,541593,541611,541613,541644,541645,542201,542203,542233,542255,542266,542272,542274,542303,542311,542316,542341,542360,542362,542369,542404,542406,542419,542428,542432,542443,542444,542454,542466,542473,542474,542479,542482,542491,542508,542543,542544,542555,542561,542576,542585,542587,542590,542621,542635,542655,542664,542669,542670,542672,542674,542694,542755,542857,542862,544014,544019,544146,544153,544154,544242,544249,544253,544258,544371,544374,544380,544560,544573,544727,544739,544744,544745,544752,544755,544759,544762,544825,544827,544829,544838,544936,544938,544993,545001,545046,545059,545117"
+            },
+            "sha256": "9014645ff1bed537007ec46a559dfa0808f732331fb87e32b8ba2479989b4d79"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:10.906442+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-08.json",
+            "query": {
+                "personIds": "545146,545196,545248,545389,545404,545641,545690,545844,545856,545989,545995,545996,546894,547348,547372,547532,547749,547755,547973,547982,549887,549930,550013,550014,550339,550340,550493,550495,551629,552268,553867,553878,553889,553900,553970,553980,553981,553993,554028,554036,554229,554239,554330,554347,554386,554395,554408,559094,564653,570148,570231,570233,570498,570628,570631,570649,570654,570664,570691,570702,570731,570777,570803,570877,570879,570884,570912,570929,571034,571054,571870,572223,573348,573352,573353,573589,573620,573629,573631,573650,573653,573661,573668,573670,573673,573748,574861,575310,575589,575828,576788,576828,577011,577308,577448,577929,578428,578659,579208,584171"
+            },
+            "sha256": "7e21e97546f39bb09542a14489d1eb1bf06f964f352a00d0e6388dd5b930d448"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:11.011962+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-09.json",
+            "query": {
+                "personIds": "584173,584176,584280,584291,587894,588751,590851,591331,591511,592310,592466,592486,592488,592911,593372,593428,593436,593576,593587,593592,593661,593771,593799,593836,593960,594271,594292,595052,595774,595832,595833,596059,596271,596311,596331,596692,596723,596728,596742,596804,596811,596816,596817,596825,596834,596840,596843,596846,596851,596952,596991,597251,597311,597534,597651,598116,598457,598517,598575,598676,598773,598866,598878,598899,599819,600151,600909,600975,602334,602344,603876,604697,605104,605350,605898,606273,606279,606291,607897,607962,607963,607980,608029,608043,608061,608069,608080,608085,608086,608096,608166,608680,608766,609110,609116,609258,612272,612972,615868,616405"
+            },
+            "sha256": "319b7f8b432290815e9be63d3ceaae7a486399ec5c910feab44c1d1b6604ce16"
+        },
+        {
+            "endpoint": "https://statsapi.mlb.com/api/v1/people",
+            "fetched_at": "2026-08-11T22:49:11.076480+00:00",
+            "kind": "draft_facts_statsapi_response",
+            "path": "data/research/extended_prospect_history/draft-source-responses/people-10.json",
+            "query": {
+                "personIds": "623886,623901,623928,623929,623966,623982,623994,624134,625283,628217,628705,633830,634738,636520"
+            },
+            "sha256": "02a01d195b218ab2b1cb9bccadad357c19faf70299dd5595794ea678b6133ccc"
+        }
+    ]
+}
