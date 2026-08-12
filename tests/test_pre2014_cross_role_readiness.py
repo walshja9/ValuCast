@@ -254,7 +254,16 @@ def test_actual_replay_receipt_passes_official_registered_readiness_validation(
     ]
     source_replay = _replay(prepared, manifest, draft_facts, source_bytes)
     result_path = cli.ROOT / readiness.REGISTERED_RESULT_PATH
-    assert not result_path.exists()
+    # The historical readiness receipt remains valid after its single-use look
+    # is permanently sealed.  Prove S036 owns the expected result blob using
+    # tree metadata only; opening outcome bytes before a new reservation would
+    # violate the outcome-blind contract this test is exercising.
+    assert result_path.is_file()
+    assert cli._git(
+        "rev-parse",
+        "f06f14599659863bbacf459a1e2fa654529b6c01:"
+        + readiness.REGISTERED_RESULT_PATH,
+    ) == "b65f34f0c302e98269c25216fc7c325d79769e0c"
     report = build_pre2014_readiness(
         prepared,
         manifest,

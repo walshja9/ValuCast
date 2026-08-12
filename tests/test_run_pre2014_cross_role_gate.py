@@ -1131,6 +1131,39 @@ def test_strict_statsapi_parser_preserves_missing_direct_categories_as_missing()
     assert "so" not in parsed[0]
 
 
+def test_strict_statsapi_parser_treats_bare_dash_as_missing_numeric_value():
+    parsed = parse_strict_statsapi_seasons(
+        {
+            "stats": [
+                {
+                    "type": {"displayName": "yearByYear"},
+                    "group": {"displayName": "pitching"},
+                    "splits": [
+                        {
+                            "season": "2025",
+                            "sport": {"id": 1},
+                            "player": {"id": 123},
+                            "gameType": "R",
+                            "stat": {
+                                "inningsPitched": "0.0",
+                                "era": "-.--",
+                                "whip": "-",
+                                "strikeoutWalkRatio": "-.--",
+                            },
+                        }
+                    ],
+                }
+            ]
+        },
+        "pitcher",
+        mlbam_id=123,
+    )
+
+    assert parsed == [
+        {"year": 2025, "ip": 0.0, "era": None, "whip": None, "k_bb": None}
+    ]
+
+
 @pytest.mark.parametrize(
     ("role", "stat"),
     [

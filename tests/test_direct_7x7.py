@@ -163,6 +163,92 @@ def test_direct_target_fails_closed_on_missing_qualifying_category():
         )
 
 
+def test_zero_walk_positive_strikeout_target_has_top_ordered_k_bb_value():
+    record = {"mlbam_id": 11, "role": "pitcher", "cohort_year": 2015}
+    references = {
+        "pitcher": {
+            field: [1.0, 2.0]
+            for field in ("so", "qs", "sv_hld", "era", "whip", "k_bb", "l")
+        }
+    }
+    zero_walk = _pitcher_season(2016)
+    zero_walk.update({"ip": 11, "so": 6, "bb": 0, "k_bb": None})
+    explicit_above_max = {**zero_walk, "k_bb": 999.0}
+
+    assert direct_7x7_target(
+        record, {"11_pitcher": [zero_walk]}, references
+    ) == direct_7x7_target(
+        record, {"11_pitcher": [explicit_above_max]}, references
+    )
+
+
+@pytest.mark.parametrize(
+    ("mlbam_id", "cohort_year", "season_year"),
+    [(607320, 2013, 2016), (670288, 2018, 2022)],
+)
+def test_registered_zero_walk_target_regressions_are_category_complete(
+    mlbam_id, cohort_year, season_year
+):
+    record = {
+        "mlbam_id": mlbam_id,
+        "role": "pitcher",
+        "cohort_year": cohort_year,
+    }
+    references = {
+        "pitcher": {
+            field: [1.0, 2.0]
+            for field in ("so", "qs", "sv_hld", "era", "whip", "k_bb", "l")
+        }
+    }
+    season = {
+        "year": season_year,
+        "ip": 11.0,
+        "so": 6.0,
+        "bb": 0.0,
+        "qs": 0,
+        "sv": 0.0,
+        "hld": 0.0,
+        "era": 1.64,
+        "whip": 0.91,
+        "k_bb": None,
+        "l": 0.0,
+    }
+
+    assert direct_7x7_target(
+        record, {f"{mlbam_id}_pitcher": [season]}, references
+    ) >= 0.0
+
+
+@pytest.mark.parametrize(
+    ("strikeouts", "walks"),
+    [(0, 0), (6, 1), (None, 0), (6, None)],
+)
+def test_missing_k_bb_still_fails_without_positive_strikeout_zero_walk_fact(
+    strikeouts, walks
+):
+    record = {"mlbam_id": 11, "role": "pitcher", "cohort_year": 2015}
+    references = {
+        "pitcher": {
+            field: [1.0]
+            for field in ("so", "qs", "sv_hld", "era", "whip", "k_bb", "l")
+        }
+    }
+    season = _pitcher_season(2016)
+    season.update({"ip": 11, "so": strikeouts, "bb": walks, "k_bb": None})
+
+    with pytest.raises(DirectValueError, match="missing canonical categories.*k_bb"):
+        direct_7x7_target(record, {"11_pitcher": [season]}, references)
+
+
+def test_zero_walk_missing_k_bb_reference_remains_fail_closed():
+    row = {"mlbam_id": 11, "role": "pitcher", "cohort_year": 2015}
+    season = _pitcher_season(2016)
+    season.update({"ip": 20, "so": 6, "bb": 0, "k_bb": None})
+
+    with pytest.raises(DirectValueError, match="reference season.*missing.*k_bb"):
+        build_fold_references([row], {"11_pitcher": [season]})
+
+
 def test_direct_target_always_uses_all_seven_categories_without_coverage_drops():
     references = {
         "hitter": {

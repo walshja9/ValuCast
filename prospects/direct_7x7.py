@@ -112,6 +112,35 @@ def _identity_key(row: Mapping[str, Any]) -> str:
     return f"{int(row['mlbam_id'])}_{row['role']}"
 
 
+def _target_category_value(
+    season: dict[str, Any], category: str
+) -> tuple[float | None, bool]:
+    """Return a target value plus whether it is strictly above finite refs.
+
+    MLB reports K/BB as undefined when a pitcher strikes out at least one
+    batter without issuing a walk.  That is not missing performance evidence:
+    the factual zero denominator orders the season above every finite K/BB.
+    A 0/0 or otherwise incomplete line remains unresolved.
+    """
+    value = _category_value(season, category)
+    if value is not None or category != "k_bb":
+        return value, False
+    raw_strikeouts = season.get("so")
+    raw_walks = season.get("bb")
+    strikeouts = (
+        None if raw_strikeouts is None else _finite(raw_strikeouts, "so")
+    )
+    walks = None if raw_walks is None else _finite(raw_walks, "bb")
+    if (
+        strikeouts is not None
+        and walks is not None
+        and strikeouts > 0.0
+        and walks == 0.0
+    ):
+        return 0.0, True
+    return None, False
+
+
 def build_fold_references(
     training_rows: Iterable[Mapping[str, Any]],
     seasons_by_player: Mapping[str, list[dict]],
@@ -207,7 +236,7 @@ def direct_7x7_target(
         missing = [
             category
             for category in IMPACT_CATEGORIES[role]
-            if _category_value(season, category) is None
+            if _target_category_value(season, category)[0] is None
         ]
         if missing:
             raise DirectValueError(
@@ -223,9 +252,15 @@ def direct_7x7_target(
         for categories in IMPACT_CATEGORY_GROUPS[role].values():
             category_scores = []
             for category in categories:
-                value = float(_category_value(season, category))
+                value, above_finite_references = _target_category_value(
+                    season, category
+                )
                 distribution = references[role][category]
-                percentile = bisect_right(distribution, value) / len(distribution)
+                percentile = (
+                    1.0
+                    if above_finite_references
+                    else bisect_right(distribution, float(value)) / len(distribution)
+                )
                 if category in IMPACT_INVERSE_CATEGORIES[role]:
                     percentile = 1.0 - percentile
                 category_scores.append(percentile)

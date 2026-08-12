@@ -776,7 +776,7 @@ def _draft_facts(payload: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def _strict_number(value: Any, *, field: str) -> float | None:
-    if str(value).strip() in {"-.--", ".---"}:
+    if str(value).strip() in {"-", "-.--", ".---"}:
         return None
     try:
         number = float(value)
