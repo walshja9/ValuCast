@@ -1,0 +1,440 @@
+{
+  "artifact": "valucast_pre2014_cross_role_supersession_readiness",
+  "automatic_promotion": false,
+  "blockers": [],
+  "bootstrap": {
+    "cross_role_concordance": {
+      "point_statistic": "incumbent_discordance_reduction",
+      "unit": "cohort_then_identity_within_role"
+    },
+    "direct_mae": {
+      "point_statistic": "relative_mae_improvement",
+      "unit": "player_within_cohort_hierarchical"
+    },
+    "interval": "two_sided_95_percentile",
+    "resamples": 10000,
+    "seed": 35011
+  },
+  "candidate": {
+    "calibration": "fold_trained_role_head_isotonic",
+    "candidate_count": 1,
+    "forbidden_substitutions": [
+      "raw_pick_value",
+      "live_role_quantile",
+      "governor_relaxation"
+    ],
+    "governor_thresholds_changed": false,
+    "head_blend": {
+      "impact": 0.42,
+      "outcome": 0.58
+    },
+    "pitcher_investment_feature_mode": "drop_raw_pick_value",
+    "rank_model_score_mode": "common_target"
+  },
+  "claim_authorized": false,
+  "corrections": {
+    "allowed": [
+      "zero_walk_positive_strikeout_k_bb_ordinal_target",
+      "statsapi_bare_dash_missing_numeric_sentinel"
+    ],
+    "candidate_changes": 0,
+    "category_drops": 0,
+    "row_or_identity_drops": 0,
+    "threshold_changes": 0
+  },
+  "execution_authorized": true,
+  "governor": {
+    "check_id": "prospect_top_board_role_shape",
+    "max_top25_pitcher_count": 7,
+    "max_top50_pitcher_rate": 0.3
+  },
+  "hashes": {
+    "current_prospect_contract": {
+      "binding": "git_blob_only_pre_reservation",
+      "git_blob": "5f4d8ff0278baef634b1910b894dc42974c131de",
+      "path": "data/prospects/prospect_model_inputs.json"
+    },
+    "implementation_change_paths": [
+      ".gitattributes",
+      "prospects/direct_7x7.py",
+      "scripts/build_pre2014_cross_role_supersession_readiness.py",
+      "scripts/run_pre2014_cross_role_gate.py",
+      "scripts/run_pre2014_cross_role_supersession_gate.py",
+      "scripts/validate_pre2014_cross_role_supersession_gate.py",
+      "tests/test_direct_7x7.py",
+      "tests/test_pre2014_cross_role_readiness.py",
+      "tests/test_pre2014_cross_role_supersession_readiness.py",
+      "tests/test_run_pre2014_cross_role_gate.py",
+      "tests/test_run_pre2014_cross_role_supersession_gate.py",
+      "tests/test_validate_pre2014_cross_role_supersession_gate.py"
+    ],
+    "implementation_files": [
+      {
+        "git_blob": "5b446009139881a3aba13b34767eced001e0fae7",
+        "path": ".gitattributes",
+        "sha256": "0550c0f422335f3b657d32412b87e24568bd00293de1727bb2e2154ca613517f"
+      },
+      {
+        "git_blob": "d382c58d3c9a8a690a5ed1038f0861f0262fc9c4",
+        "path": "mlb/__init__.py",
+        "sha256": "ea3a37a59929ae4b2b07cc45417e424d6e360f0d94e2a05dc5c03c0291c6a863"
+      },
+      {
+        "git_blob": "a046e8d56d3391aeb452caf462fb63c509ae25de",
+        "path": "mlb/availability.py",
+        "sha256": "0cc0fcf7b2dfa1feee66f4de0e0b0e3a6e612a33ebe8c84f33f484a646465fae"
+      },
+      {
+        "git_blob": "69652cd1dbf3714c02ab6ac83e08dac1259738b5",
+        "path": "mlb/roster_status.py",
+        "sha256": "08951a2c1dec4809c87553cf540c6e1e209e5548923039cac2682dc8d5d7f2d4"
+      },
+      {
+        "git_blob": "4ee21cda3b1f3acc0615201beac5a4b615f357fc",
+        "path": "prospects/__init__.py",
+        "sha256": "b8c5fb6459064582f37159e97d3f93ffcc48151377ac77463513455b79f9e94e"
+      },
+      {
+        "git_blob": "fb299154f5330b6596a388df52b24a6c37a5efa6",
+        "path": "prospects/ahead_of_consensus.py",
+        "sha256": "bc355d41cf3185b5bbbf0f9012ee910371eb31e99183e414deae34d461cfcabe"
+      },
+      {
+        "git_blob": "60e7b20f28ecde3831d3fe48f68c27e7a9d3c93c",
+        "path": "prospects/availability.py",
+        "sha256": "ca76ccbf229f1da4403649f34cac72015c3ba04156ba3705faa75ba792b3c21d"
+      },
+      {
+        "git_blob": "65fdd8659fffb33840e7d4011b4dc551a55fdca7",
+        "path": "prospects/calibration_report.py",
+        "sha256": "b6e1fa6ef62fe350a97ae5075da9253d7542b2c7bb1afc86ed5622a86ea6c99d"
+      },
+      {
+        "git_blob": "6fc195c3da75ef8c62fb28db4d017904a29ee339",
+        "path": "prospects/common_target_calibration.py",
+        "sha256": "97104b94349ec3549a72d1936f5cccc5382c36abda0e883b2b96edaa00bb3946"
+      },
+      {
+        "git_blob": "da6c3028af75a2d1ab8870539148087e3c608306",
+        "path": "prospects/direct_7x7.py",
+        "sha256": "7a8941fc6ffaa4abc2f4c7cc32b008ecd127e04501a6a386ff4154f2f3141e02"
+      },
+      {
+        "git_blob": "b8c63d26084ff702f2a75a57a7299291da4583b8",
+        "path": "prospects/dynasty.py",
+        "sha256": "e25b8ec848d39006d0a057f4d74288c9b5a65b96781e5c996ad9e0855aa459d9"
+      },
+      {
+        "git_blob": "6a42cc91f50025a39737e5dd2b1bae6cf9bd6fe2",
+        "path": "prospects/dynasty_backtest.py",
+        "sha256": "4e895c2a78dac030e4ccf537087a54404f47dde94095d1a4ff8bd21d49fe08c9"
+      },
+      {
+        "git_blob": "54156f9a442e5824795c66b97ed11624f0675845",
+        "path": "prospects/extended_history.py",
+        "sha256": "15033d049915b7d50ca42fb0dd9b96849b6faed1473ea92d1cabca894bda3f37"
+      },
+      {
+        "git_blob": "dd6e22aae744918b4d6e9ebc5c4625e32cd30f0b",
+        "path": "prospects/gate.py",
+        "sha256": "10bc963ba9aab57f73db512d92089112c2644534772fb6b02fac67085bb2abc9"
+      },
+      {
+        "git_blob": "caab4452a031b1312e3a1460bf01008e9a3e3de2",
+        "path": "prospects/input_contract.py",
+        "sha256": "208e522b5741b51a15b0e0cdb269da54540a90deef23000fd85d624488b920f5"
+      },
+      {
+        "git_blob": "b141591fa311b945447fe1062659e97872106c94",
+        "path": "prospects/investment_challenger.py",
+        "sha256": "71c9b77db0efc8a62d5400a673af4184f0a711179a33564bb61028e6460cf723"
+      },
+      {
+        "git_blob": "c240c9f3cafe38b0c8f6b91f24b676e1e3e177f0",
+        "path": "prospects/level_translation_challenger.py",
+        "sha256": "18cf35ae6495947dce1bfc237c7fa92bdf52b2a235651b1be9b1de0a5cfcfbe9"
+      },
+      {
+        "git_blob": "ed65560f9ab66ccbe0f3a0daf5b8c2a5be11e89e",
+        "path": "prospects/milb_translation.py",
+        "sha256": "3b7c78c02b935a2b1a72b06e0a9991392e26e6270153817d9a2c36ceeae49ffe"
+      },
+      {
+        "git_blob": "b32734d08cfc868b277ad1b374a0408acddba461",
+        "path": "prospects/model.py",
+        "sha256": "47fc1ced233d8a2a744e8b1b20e8951a8d234ef06041fbbd718114e7a9d73997"
+      },
+      {
+        "git_blob": "104692f2f4c21779196dd0a561fccd15f8053147",
+        "path": "prospects/outcome_oof.py",
+        "sha256": "1f99d9e0a57abe84f4e668e9f83f0d54f0b646ca485c21a648bdd62c2e6aee6e"
+      },
+      {
+        "git_blob": "15403ea8707fa1292b19cd01e4d2c2cf96ebc0a1",
+        "path": "prospects/peak_projection.py",
+        "sha256": "13e1b1f47bfc93a889a6d21ad832c557904e6b88665a5337276d3d838ada67fe"
+      },
+      {
+        "git_blob": "862f1e11c17a6d6f2e326f24c2c05a7d7d20ef2c",
+        "path": "prospects/pitcher_challenger.py",
+        "sha256": "e61b36b05994017513d1c7968e8cc91ce3e25a619dcc67bdaaa35e8792fa966d"
+      },
+      {
+        "git_blob": "910a4802ea16f537e8122081710fc8a646efe7df",
+        "path": "prospects/pre2014_cross_role_gate.py",
+        "sha256": "770ddba245318a21ebef794910b15348a615d50ae78b546adf20c0bfbf09eb47"
+      },
+      {
+        "git_blob": "83af8df3a9b4d6114ee7bc8d35af11c184d76944",
+        "path": "prospects/pre2014_current_board.py",
+        "sha256": "c18ce7741d29ec96f67eb7b686642d3ddde9aae007a03bfc16127d1c0076814b"
+      },
+      {
+        "git_blob": "fecfca348728fc20de693d13b8699bc93177079a",
+        "path": "prospects/pre2014_fold_scoring.py",
+        "sha256": "d3e0e0356db18022b4675ecf220687cccfc536234314e0b086bcea78f7f2436d"
+      },
+      {
+        "git_blob": "282b69682fa47197eb4a417015404e6077fd0117",
+        "path": "prospects/pre2014_readiness.py",
+        "sha256": "5798df904f6c934c1ca67feb24a1d96b7ce5585c035451b59f370e74eb438185"
+      },
+      {
+        "git_blob": "a1181a2bdfb4745e00768704aaec29eeac1cd994",
+        "path": "prospects/rank_backtest.py",
+        "sha256": "05e637676e2ffa953baa9984ebfbae6343661239f6679f43e36d15c4f6aea672"
+      },
+      {
+        "git_blob": "e455dda293f3eac152fbc3db105e43b8c7358a18",
+        "path": "prospects/rank_v1.py",
+        "sha256": "831040944a797479c9ee63f610192af17a3a051986bf1c41c3d3e206234eec96"
+      },
+      {
+        "git_blob": "386770a1176a046a6cd839d59ab0c686c16147d3",
+        "path": "prospects/raw_input_builder.py",
+        "sha256": "0861202d656bf7afd3f0ae2fa1163a74f47e7f99e0dee847eff081c832dd7d98"
+      },
+      {
+        "git_blob": "1b00053703f468eb9f8fffc4e7118aadeae27a73",
+        "path": "prospects/realized_value_readiness.py",
+        "sha256": "074a7481539546475e56d8cf4e1258d5e4bbddd99502eb7aea9479d086cd7842"
+      },
+      {
+        "git_blob": "6b293782525fff4a4eb9c778fa0d1d70f1e7f9db",
+        "path": "prospects/stage1_contract.py",
+        "sha256": "4364682a149dc8d4102681d53a6cb9446ff89f4b6541d81c17fd098b16241a6a"
+      },
+      {
+        "git_blob": "87ec1137f6c4b9ceb406bad34f795e6e7c58474d",
+        "path": "prospects/universal.py",
+        "sha256": "e76faa90af633f84fcc54bc4b45678d4a9bdc1ae273bc20ad01a5000b151da57"
+      },
+      {
+        "git_blob": "3c3a03a0d712f914395fedf9040f454b7eb3f057",
+        "path": "prospects/universe.py",
+        "sha256": "f8577658fc03fe5706856036151aa1a7cb0427401b8cb503a26445edc1ada6d5"
+      },
+      {
+        "git_blob": "40574602c7b808a26be215528717e4b7e4f42115",
+        "path": "quality/__init__.py",
+        "sha256": "2dd36d104d489c62792ee9f9b0d5591e744204ca2ed4190969bd121d9fca1494"
+      },
+      {
+        "git_blob": "6507e0b2d22e5fe2b32a013a56e89e0a07e6adc5",
+        "path": "quality/valucast_governor.py",
+        "sha256": "33571fd13a77050890268c3b613f7a77e856279449b9422e5ee8506d1b05f440"
+      },
+      {
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "path": "scraper/__init__.py",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "git_blob": "75a5860518ad93b073d8213b0bbd6ac2cbf35530",
+        "path": "scraper/mlb_actuals.py",
+        "sha256": "edcec5f205379f8e15ae8cccb9bfbccfc100ebf6d2c5b1069fa2a32e088ff289"
+      },
+      {
+        "git_blob": "aa135f7a89fdd897de264c59d4d104ae32af1b79",
+        "path": "scripts/backfill_extended_prospect_outcomes.py",
+        "sha256": "7174238348862ba3402fa02a9726862cbeb2aa516888dc2114e66293b83ca315"
+      },
+      {
+        "git_blob": "d1c03e4b68f9a5a6020e739cbee60feed6e46443",
+        "path": "scripts/build_extended_prospect_history.py",
+        "sha256": "60de5d8fb26708e627d06c2ca260356a14a27119033850982c5f7554304d5ea9"
+      },
+      {
+        "git_blob": "0231184b8661625af892872b51288070c4a81c7a",
+        "path": "scripts/build_pre2014_cross_role_readiness.py",
+        "sha256": "178a81a50bc9faabdc20fa8a34c8b057ea650e59299fb1f904407d4ed10db141"
+      },
+      {
+        "git_blob": "62808b28bbb84642f8e9871ff69309ddd75442f5",
+        "path": "scripts/build_pre2014_cross_role_supersession_readiness.py",
+        "sha256": "0d442816b5ad859a2e4f584374c55968b74eb542833f640467ef9a4464acd179"
+      },
+      {
+        "git_blob": "2b72532920faedff45d9cc89440b2fd84dc267bc",
+        "path": "scripts/build_stage2_quality_starts.py",
+        "sha256": "a507353dcf973ee98dce6a83cc7557d9960d92022731c04c0d42eb9e6a1ba3e6"
+      },
+      {
+        "git_blob": "ada063328ed173cad3d40bfd5363e602a616003b",
+        "path": "scripts/run_pre2014_cross_role_gate.py",
+        "sha256": "421f70a4580b64776f6d214f892512150d6282722594cf69229d4ed4c6d5308f"
+      },
+      {
+        "git_blob": "d90bc33a913e57c7c0083985dc9f52d714885717",
+        "path": "scripts/run_pre2014_cross_role_supersession_gate.py",
+        "sha256": "7c2ce649f243400ac91e66d8904560d3858660375359a6798282c592fa7f9c69"
+      },
+      {
+        "git_blob": "f5bd5012e291f005fecec3dc17ed8e990a7d0ff3",
+        "path": "scripts/validate_pre2014_cross_role_gate.py",
+        "sha256": "cb4080f1de0cee6d515c8ac174b1403c4b78619d8ef34036c51b5bf0d00f7089"
+      },
+      {
+        "git_blob": "d863f87e361b16d4b661e7fb3b314cc8956cc0ad",
+        "path": "scripts/validate_pre2014_cross_role_supersession_gate.py",
+        "sha256": "2adf6017404914fa031b56e641a750b0704614b2d34ab6e09a0d2111e12204ef"
+      },
+      {
+        "git_blob": "1e006efca72f5c97e5ada46067274a60d6575628",
+        "path": "tests/test_direct_7x7.py",
+        "sha256": "56ab53e7aacdfea96ec7d04d1564fbfd0b66834184080ecedd3bec1b94a9e58f"
+      },
+      {
+        "git_blob": "47cd5d29d706312806aaeab21c96b8a91365a7d8",
+        "path": "tests/test_pre2014_cross_role_readiness.py",
+        "sha256": "4be2c84bcc667b9921b691363d9b3ce8722b81612027e0bfc99a2dc290fd88f6"
+      },
+      {
+        "git_blob": "f75e399958ae86e57d4ef4e781f6790d0633e862",
+        "path": "tests/test_pre2014_cross_role_supersession_readiness.py",
+        "sha256": "50115f4779fcf3201e3c4aa9291ba190ee3bfa37a57c31e385d2403f08532da3"
+      },
+      {
+        "git_blob": "4db1898eb8f9aa9c0cc3fdfca49713e673ef6c3b",
+        "path": "tests/test_run_pre2014_cross_role_gate.py",
+        "sha256": "7f2965e62e6ec4383e8bad4fad4d00dbd1c988bcc4e46c02285203e2d130ea81"
+      },
+      {
+        "git_blob": "ba9d69a78e8def5d4fe31f9280bb1c5909fd17e3",
+        "path": "tests/test_run_pre2014_cross_role_supersession_gate.py",
+        "sha256": "31e35ab453d583f604dc378dd334562ca44e149ddac2eed449f4857d4df230fc"
+      },
+      {
+        "git_blob": "b7d9e7334648a1a26801003db5403ea5197cf616",
+        "path": "tests/test_validate_pre2014_cross_role_supersession_gate.py",
+        "sha256": "d6bfad2a0bfd9ea5395d2358626e8d8d6db14652b55cae7ae0dec79be9758b4b"
+      },
+      {
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "path": "web/__init__.py",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "git_blob": "bc4055e536a4d45c9037dc34f80d13a876f9b123",
+        "path": "web/buy_score.py",
+        "sha256": "9d3c15351204c6c632461e17777140d5ee443da678d680f18b79c2acfc02b2ab"
+      },
+      {
+        "git_blob": "c6487f7b1801a0dc5f239d53e64a91dbcb72f471",
+        "path": "web/position_matching.py",
+        "sha256": "2c1aadd13a735e576635319d5a50c6dbf7607bce8c61f3c009ea35a2b6d99c62"
+      },
+      {
+        "git_blob": "bf2e95fdacde77dc613c30792dcf21fd2f7711bb",
+        "path": "web/prospect_context.py",
+        "sha256": "18266932b581939776b5339e27efceb0e750cfef15d8efca577afa2ad2b6a12e"
+      },
+      {
+        "git_blob": "4515e7be3887497ead9f878cd37bf3599cad698e",
+        "path": "web/prospect_percentiles.py",
+        "sha256": "38d386826964f799ac7c74907afdbf7d1623c2dff0766a641a6379c66541546e"
+      },
+      {
+        "git_blob": "13832afd0726af695a4aaff8ce92b6309e0b6ab4",
+        "path": "web/public_snapshot_models.py",
+        "sha256": "0ca6d08fbb7ef00f0e9a2e27313d78ef097e8b5bfc41aa410d572f1abbd93587"
+      },
+      {
+        "git_blob": "e953083fbe7b6ff56ddeeab12b89be977a711a73",
+        "path": "web/public_snapshot_store.py",
+        "sha256": "59948dc7bc7229013a08c79707853cbc6d2ba1dffa2cbd6645fde5c72f124b2d"
+      },
+      {
+        "git_blob": "efabb3647bf96890716ad97cfeca5544a8b88db7",
+        "path": "web/search_fold.py",
+        "sha256": "e305523e766f2709e3db9c04bd9ac00f3b9f55da9b517b518f651b59683fbba2"
+      }
+    ]
+  },
+  "implementation_base_commit": "b4a5b2bfd4bb324e7b8d6e7d249fb91fea9f0708",
+  "look_spent": false,
+  "outer_folds": [
+    2017,
+    2018,
+    2019,
+    2021
+  ],
+  "primary_endpoint": "direct_7x7_target_percentile_rank_mae",
+  "research_only": true,
+  "result": {
+    "exists": false,
+    "path": "data/validation/valucast_pre2014_cross_role_supersession_gate.json",
+    "unspent": true
+  },
+  "schema_version": 1,
+  "status": "ready",
+  "supersedes": {
+    "network_refetch_forbidden": true,
+    "outcome_blob_records": [
+      {
+        "binding": "git_blob_only_pre_reservation",
+        "git_blob": "b65f34f0c302e98269c25216fc7c325d79769e0c",
+        "path": "data/validation/valucast_pre2014_cross_role_gate.json"
+      },
+      {
+        "binding": "git_blob_only_pre_reservation",
+        "git_blob": "41153259894183f9cbf311e6855c22e9c8f05a61",
+        "path": "data/validation/valucast_pre2014_cross_role_evidence.json"
+      },
+      {
+        "binding": "git_blob_only_pre_reservation",
+        "git_blob": "1ed2ff8476333c8ebd193659084e68eb5133f345",
+        "path": "data/research/extended_prospect_history/sealed-acquisition-checkpoint.json"
+      }
+    ],
+    "plan036_artifact_commit": "f06f14599659863bbacf459a1e2fa654529b6c01",
+    "plan036_execution_commit": "568aea2e91bf473ba4491dec394e16afdffd5478",
+    "plan036_readiness": {
+      "git_blob": "d9061c337bf1f9fc78d8e997a94071554599afd0",
+      "path": "data/validation/valucast_pre2014_cross_role_readiness.json",
+      "sha256": "12a1023bd1000e54520c2ac445aebbe603c27c69f2bcc0badf3cbbf1fae7e610"
+    },
+    "plan036_registration": {
+      "git_blob": "69a51320771c2a147191d005ff1665156700002c",
+      "path": "plans/036-pre2014-cross-role-calibration-gate.md",
+      "sha256": "70cfe7948a5bb82bcaaa16308c60eabafcf0d7f72e3d618978232d15155fd862"
+    },
+    "prior_error_type": "FoldScoringError",
+    "prior_status": "spent_error",
+    "same_look_lineage": true
+  },
+  "thresholds": {
+    "cross_role_bootstrap_lower_strictly_gt": 0.0,
+    "current_governor_required": true,
+    "direct_mae_bootstrap_lower_strictly_gt": 0.0,
+    "maximum_fold_relative_regression": 0.05,
+    "maximum_role_concordance_relative_regression": 0.01,
+    "minimum_cross_role_concordance_relative_improvement": 0.02,
+    "minimum_direct_mae_relative_improvement": 0.02,
+    "minimum_fold_role_coverage": 0.9,
+    "minimum_outer_folds": 4,
+    "minimum_unique_players_per_role": 250,
+    "top25_direct_regret_no_worse": true,
+    "top25_ordinal_regret_no_worse": true
+  }
+}
