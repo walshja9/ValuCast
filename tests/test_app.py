@@ -3526,6 +3526,35 @@ class TestModelRegistryValidator(unittest.TestCase):
         from scripts.validate_model_registry import validate
         self.assertEqual(validate(), [])
 
+    def test_universal_model_verdict_resolution_structure(self):
+        """8/13 owner resolution rule: removing PROVISIONAL means RESOLVED,
+        never reworded. The Stage 1 outcome proof resolved the hitter ordering
+        question (VALIDATED, evidence-cited); the pitcher question stays open
+        with its reason byte-identical to the pre-split entry and a REGISTERED
+        resolution condition so it terminates instead of hedging forever."""
+        import json
+        reg = json.loads(
+            (Path(__file__).parent.parent / "data" / "models" /
+             "valucast_model_registry.json").read_text(encoding="utf-8")
+        )
+        by_id = {e["id"]: e for e in reg["entries"]}
+        self.assertNotIn("universal_prospect_model", by_id)   # split, not edited
+        hitters = by_id["universal_prospect_model_hitters"]
+        pitchers = by_id["universal_prospect_model_pitchers"]
+        self.assertEqual(hitters["verdict"], "VALIDATED")
+        self.assertEqual(
+            hitters["evidence"], "data/validation/valucast_stage1_outcome_proof.json"
+        )
+        self.assertEqual(pitchers["verdict"], "PROVISIONAL")
+        # Byte-identical to the pre-split reason — resolved-not-reworded.
+        self.assertEqual(
+            pitchers["verdict_reason"],
+            "Observed in shadow only — backtested but not promoted to a validated verdict.",
+        )
+        condition = pitchers.get("resolution_condition") or ""
+        self.assertIn("2020", condition)
+        self.assertIn("VALIDATED", condition)
+
     def test_missing_evidence_fails(self):
         import json
         import tempfile
