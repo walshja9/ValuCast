@@ -1570,22 +1570,42 @@ class TestInputHardening(unittest.TestCase):
 
 
 def test_prospects_board_flags_rookie_eligible_players_with_prior_mlb_taste():
-    """7/1: a cup-of-coffee call-up (e.g. Carson Whisenhunt, recalled then optioned
-    right back down) still ranks as a prospect -- correctly, per MLB's rookie-service
-    rule -- but without any indicator, it can look like the board doesn't know he's
-    already touched the majors. Surface it instead of hiding it."""
+    """7/1 invariant: a rookie-eligible player with MLB time is never rendered
+    unmarked -- the chip family ("MLB taste" / "Called up" / "In MLB") upgrades
+    with his status, but SOME call-up chip must show. Originally pinned to
+    Carson Whisenhunt, which broke every data push's CI when he graduated on
+    8/8 (player_type flipped to mlb). Select the qualifying player from the
+    SAME served context the template reads, so the test follows the data
+    instead of a name that ages out (the #52 deterministic-fixture pattern)."""
+    from werkzeug.datastructures import ImmutableMultiDict
+
+    args = ImmutableMultiDict([("mode", "prospects")])
+    ctx = app_module._build_dynasty_context(args)
+    app_module._apply_prospect_board_context(ctx, args)
+    marked_ids = set(ctx.get("call_up_by_id") or {}) | set(
+        ctx.get("mlb_debut_by_id") or {}
+    )
+    qualifying = [
+        row
+        for row in ctx.get("dd_rows") or []
+        if row.id in marked_ids or getattr(row, "active_mlb_callup", False)
+    ]
+    if not qualifying:
+        pytest.skip(
+            "no rookie-eligible player with MLB time on today's visible board"
+        )
+    target = qualifying[0]
+
     client = app.test_client()
     html = client.get("/?mode=prospects").data.decode("utf-8")
-    idx = html.find("Whisenhunt")
-    assert idx != -1, "Whisenhunt should still be on the prospects board"
-    row_html = html[idx:idx + 2000]
-    # Live-data test: the chip family upgrades as his status changes ("MLB taste"
-    # when previously optioned back down; "Called up"/"In MLB" while on an active
-    # roster, as on 7/9 when the afternoon pulse caught his recall). The invariant
-    # is that a rookie-eligible player with MLB time is never rendered unmarked.
+    # Anchor on the row id, not the display name -- featured strips (e.g. the
+    # today-cell) can mention the same player before his table row renders.
+    idx = html.find(str(target.id))
+    assert idx != -1, f"{target.name} ({target.id}) should render on the prospects board"
+    row_html = html[idx:idx + 3500]
     assert (
         "MLB taste" in row_html or "Called up" in row_html or "In MLB" in row_html
-    ), "Whisenhunt must carry a call-up family chip"
+    ), f"{target.name} must carry a call-up family chip"
     assert "callup-chip" in row_html
 
 
