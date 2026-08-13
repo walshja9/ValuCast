@@ -45,13 +45,26 @@
       "public_page": "/methodology"
     },
     {
-      "id": "universal_prospect_model",
-      "name": "Universal Prospect Model",
+      "id": "universal_prospect_model_hitters",
+      "name": "Universal Prospect Model — Hitters",
+      "subsystem_kind": "model",
+      "verdict": "VALIDATED",
+      "verdict_reason": "Stage 1 ordering resolved on 2,901 matured 2016–2019 outcomes: beats the level/age prior AND the 25-historical-neighbors baseline on Spearman, Kendall tau-b, and ROC AUC, every delta interval excluding zero (player-clustered bootstrap, n=1,379 hitters, 4 closed cohorts). Retrospective ordering evidence; not a probability calibration and not a public superiority claim.",
+      "evidence": "data/validation/valucast_stage1_outcome_proof.json",
+      "evidence_label": "Stage 1 outcome proof (hitters)",
+      "source_module": "prospects/universal.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "universal_prospect_model_pitchers",
+      "name": "Universal Prospect Model — Pitchers",
       "subsystem_kind": "model",
       "verdict": "PROVISIONAL",
       "verdict_reason": "Observed in shadow only — backtested but not promoted to a validated verdict.",
-      "evidence": "data/models/valucast_universal_prospect_index_backtest.json",
-      "evidence_label": "Universal index backtest (shadow)",
+      "resolution_condition": "When the 2020 and 2021 cohorts mature under the existing MATURE_THROUGH policy, the Stage 1 outcome proof re-runs including them. Pitcher-vs-neighbors delta interval excluding zero (>=3 closed cohorts, n>=250, same claim policy) resolves VALIDATED; an interval excluding zero in the other direction resolves the neighbors claim negative (owner then decides REJECTED vs remains-PROVISIONAL framing). No third outcome; no wording edits in the interim.",
+      "evidence": "data/validation/valucast_stage1_outcome_proof.json",
+      "evidence_label": "Stage 1 outcome proof (pitchers: beats level/age prior; neighbors delta descriptive)",
       "source_module": "prospects/universal.py",
       "feeds_value": true,
       "public_page": "/methodology"
