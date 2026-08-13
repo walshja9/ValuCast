@@ -242,6 +242,141 @@ def test_current_record_selection_prefers_larger_sample():
     assert selected[0]["plate_appearances"] == 240
 
 
+@pytest.mark.parametrize(
+    ("role", "missing_field"),
+    [
+        *[("hitter", field) for field in (
+            "iso", "k_pct", "bb_pct", "ops", "avg", "obp", "slg", "babip",
+            "home_runs", "stolen_bases",
+        )],
+        *[("pitcher", field) for field in (
+            "k_per_9", "bb_per_9", "k_bb_pct", "era", "whip", "is_starter",
+            "home_runs", "hits", "walks", "batters_faced", "games_started",
+            "games_played",
+        )],
+    ],
+)
+def test_current_record_selection_rejects_incomplete_history_stats(
+    role,
+    missing_field,
+):
+    common = {
+        "mlbam_id": 10,
+        "name": "Complete History Player",
+        "role": role,
+        "level": "AAA",
+        "age": 24,
+        "source_kind": "latest_milb_history",
+    }
+    complete = (
+        {
+            **common,
+            "position": "OF",
+            "plate_appearances": 180,
+            "iso": 0.180,
+            "k_pct": 20.0,
+            "bb_pct": 10.0,
+            "ops": 0.820,
+            "avg": 0.270,
+            "obp": 0.350,
+            "slg": 0.470,
+            "babip": 0.310,
+            "home_runs": 15,
+            "stolen_bases": 8,
+        }
+        if role == "hitter"
+        else {
+            **common,
+            "position": "P",
+            "innings_pitched": 55.0,
+            "k_per_9": 9.4,
+            "bb_per_9": 4.3,
+            "k_bb_pct": 12.6,
+            "era": 4.85,
+            "whip": 1.54,
+            "is_starter": True,
+            "home_runs": 8,
+            "hits": 72,
+            "walks": 31,
+            "batters_faced": 290,
+            "games_started": 13,
+            "games_played": 14,
+        }
+    )
+    incomplete = dict(complete)
+    incomplete["plate_appearances" if role == "hitter" else "innings_pitched"] = 300
+    incomplete.pop(missing_field)
+    current = {
+        **complete,
+        "source_kind": "current_season",
+        "plate_appearances" if role == "hitter" else "innings_pitched": 1,
+    }
+
+    selected = _select_current_records(
+        {"hitters" if role == "hitter" else "pitchers": [incomplete, current]},
+        role,
+    )
+
+    assert selected == []
+
+
+def test_history_only_incomplete_row_keeps_existing_fallback():
+    history = {
+        "mlbam_id": 10,
+        "name": "History Only Pitcher",
+        "role": "pitcher",
+        "position": "P",
+        "level": "AAA",
+        "age": 24,
+        "innings_pitched": 55.0,
+        "k_per_9": 9.4,
+        "bb_per_9": 4.3,
+        "k_bb_pct": 12.6,
+        "era": 4.85,
+        "whip": 1.54,
+        "is_starter": True,
+        "games_started": 13,
+        "source_kind": "latest_milb_history",
+    }
+
+    assert _select_current_records({"pitchers": [history]}, "pitcher") == [history]
+
+
+def test_complete_history_row_can_backfill_a_thin_current_sample():
+    history = {
+        "mlbam_id": 10,
+        "name": "Complete History Pitcher",
+        "role": "pitcher",
+        "position": "P",
+        "level": "AAA",
+        "age": 24,
+        "innings_pitched": 55.0,
+        "k_per_9": 9.4,
+        "bb_per_9": 4.3,
+        "k_bb_pct": 12.6,
+        "era": 4.85,
+        "whip": 1.54,
+        "is_starter": True,
+        "home_runs": 8,
+        "hits": 72,
+        "walks": 31,
+        "batters_faced": 290,
+        "games_started": 13,
+        "games_played": 14,
+        "source_kind": "latest_milb_history",
+    }
+    current = {
+        **history,
+        "innings_pitched": 1.0,
+        "source_kind": "current_season",
+    }
+
+    assert _select_current_records(
+        {"pitchers": [history, current]},
+        "pitcher",
+    ) == [history]
+
+
 def test_partial_season_features_regress_toward_training_mean():
     role_model = {"means": [0.15, 24.0, 9.0, 0.75, 0.0, 0.5]}
     raw = [0.30, 12.0, 18.0, 1.10, 2.0, 1.0]
@@ -659,6 +794,8 @@ def test_stale_current_correction_pulls_prior_only_when_current_is_worse():
             "mlbam_id": mid, "name": f"H{mid}", "normalized_name": f"h{mid}",
             "team": "Club", "role": "hitter", "position": "OF", "level": "AA",
             "age": 21, "iso": 0.20, "k_pct": 18.0, "bb_pct": 11.0, "ops": 0.880,
+            "avg": 0.270, "obp": 0.360, "slg": 0.470, "babip": 0.310,
+            "home_runs": 15, "stolen_bases": 8,
         }
         base.update(kw)
         return base
@@ -711,6 +848,8 @@ def test_stale_current_correction_skips_tiny_but_good_current_line():
             "mlbam_id": mid, "name": f"H{mid}", "normalized_name": f"h{mid}",
             "team": "Club", "role": "hitter", "position": "OF", "level": "AA",
             "age": 21, "iso": 0.20, "k_pct": 18.0, "bb_pct": 11.0, "ops": 0.880,
+            "avg": 0.270, "obp": 0.360, "slg": 0.470, "babip": 0.310,
+            "home_runs": 15, "stolen_bases": 8,
         }
         base.update(kw)
         return base
@@ -754,6 +893,8 @@ def test_stale_current_correction_pitcher_tiny_sample_guard():
             "team": "Club", "role": "pitcher", "position": "P", "level": "AA",
             "age": 22, "k_per_9": 10.0, "bb_per_9": 2.5, "k_bb_pct": 18.0,
             "era": 2.80, "whip": 1.10, "is_starter": True,
+            "home_runs": 5, "hits": 60, "walks": 22, "batters_faced": 350,
+            "games_started": 14, "games_played": 16,
         }
         base.update(kw)
         return base

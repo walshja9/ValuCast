@@ -170,6 +170,7 @@ def test_pr_ci_validates_artifacts_and_pins_first_party_actions():
     pytest = "run: python -m pytest -q"
     assert validate in tests_workflow
     assert tests_workflow.index(validate) < tests_workflow.index(pytest)
+    assert 'VALUCAST_FRESHNESS_MAX_AGE_DAYS: "2"' in tests_workflow
 
     action_ref = re.compile(
         r"uses:\s+actions/(checkout|setup-python)@([0-9a-f]{40})\s+#\s+(v5|v6)$"

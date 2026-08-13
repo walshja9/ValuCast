@@ -45,10 +45,11 @@ jobs:
           # with yesterday's committed artifacts; without this lag the
           # freshness step fails deterministically in that window and (under
           # the master ruleset's required pytest check) a single missed
-          # refresh day would block every merge. 1 day covers the rollover
-          # window; two-day-old data still fails. The publish workflow does
+          # refresh day would block every merge. 2 days also leaves one
+          # recovery window when a publication defect itself needs a PR;
+          # three-day-old data still fails. The publish workflow does
           # NOT set this — its gate stays exact same-day.
-          VALUCAST_FRESHNESS_MAX_AGE_DAYS: "1"
+          VALUCAST_FRESHNESS_MAX_AGE_DAYS: "2"
         run: python scripts/run_daily_public_build.py --only validate
 
       - name: Run test suite

@@ -45,12 +45,15 @@ class TestLaunchPolish(unittest.TestCase):
 
         nav = re.search(r'<nav class="site-nav".*?</nav>', html, re.S).group(0)
         for marker in (
-            'href="/" aria-current="page">Rankings</a>',
+            'href="/" class="site-nav-link" aria-current="page">Rankings</a>',
             'href="/board">Archives</a>',
             'href="/gaps">Disagreements</a>',
-            'href="/backfields">Farm Systems</a>',
+            'href="/ledger">The Ledger</a>',
+            'href="/glossary">Glossary</a>',
+            'href="/backfields" class="site-nav-link">Farm Systems</a>',
         ):
             self.assertIn(marker, nav)
+        self.assertIn("<summary>Research</summary>", nav)
         for old_label in (">Board</a>", ">The Archives</a>", ">Gaps</a>", ">Backfields</a>"):
             self.assertNotIn(old_label, nav)
 

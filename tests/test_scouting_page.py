@@ -293,47 +293,81 @@ def test_intelligence_hub_leads_with_user_facing_surfaces():
     assert "H+P model track" not in html
 
 
-def test_primary_nav_links_to_intelligence_surfaces():
+def test_primary_nav_is_proof_first_and_groups_research_routes():
+    import re
+
     client = app.test_client()
 
     response = client.get("/")
     html = response.data.decode("utf-8")
 
     assert response.status_code == 200
-    # Core surfaces stay in the primary nav. aria-current is wired for every
-    # primary-nav entry (not just Backfields) — "/" is current on the homepage.
-    assert 'href="/" aria-current="page">Rankings</a>' in html
-    assert 'href="/backfields"' in html and ">Farm Systems</a>" in html
-    assert 'href="/map">Map</a>' in html
-    assert 'href="/methodology">Methodology</a>' in html
-    # Intelligence Hub demoted out of the site-nav (7/14 declutter); the footer
-    # still links it on every page.
-    import re
+    # The proof trio leads; broad entry points follow; research utilities are
+    # grouped without removing their real links.
     site_nav = re.search(r'<nav class="site-nav".*?</nav>', html, re.S).group(0)
+    positions = [
+        site_nav.index(f'href="{path}"')
+        for path in ("/movers", "/buys", "/receipts", "/", "/backfields")
+    ]
+    assert positions == sorted(positions)
+    assert '<details class="site-nav-research">' in site_nav
+    for marker in (
+        'href="/gaps">Disagreements</a>',
+        'href="/ledger">The Ledger</a>',
+        'href="/glossary">Glossary</a>',
+        'href="/board">Archives</a>',
+        'href="/map">Map</a>',
+        'href="/methodology">Methodology</a>',
+    ):
+        assert marker in site_nav
     assert 'href="/intelligence"' not in site_nav
     assert 'href="/intelligence">Intelligence Hub</a>' in html
-    # Intelligence surfaces promoted into the primary nav (hold flags default off).
-    assert 'href="/movers">Movers</a>' in html
-    assert 'href="/buys">Buys</a>' in html
-    assert 'href="/receipts">Receipts</a>' in html
-    assert 'href="/gaps">Disagreements</a>' in html
-    # Scouting is consolidated into Backfields; still no top-nav item.
-    assert 'href="/scouting">Scouting</a>' not in html
+    # Intelligence Hub and Scouting remain contextual/footer destinations.
+    assert 'href="/scouting"' not in site_nav
+
+    ledger_nav = re.search(
+        r'<nav class="site-nav".*?</nav>',
+        client.get("/ledger").data.decode("utf-8"),
+        re.S,
+    ).group(0)
+    assert '<details class="site-nav-research has-current">' in ledger_nav
+    assert 'href="/ledger" aria-current="page">The Ledger</a>' in ledger_nav
 
 
-def test_primary_nav_hold_flags_hide_buys_and_receipts(monkeypatch):
-    # The nav guards must track the live hold constants: a held surface never
-    # advertises itself in the primary nav.
+def test_primary_nav_hold_flags_keep_honest_anchor_positions(monkeypatch):
+    import re
+
+    # A hold changes status, not the header's information architecture.
     import app as app_module
 
     monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", True)
     monkeypatch.setattr(app_module, "RECEIPTS_HOLD", True)
     html = app.test_client().get("/").data.decode("utf-8")
-    assert 'href="/buys">Buys</a>' not in html
-    assert 'href="/receipts">Receipts</a>' not in html
-    # Unheld promoted items stay.
-    assert 'href="/movers">Movers</a>' in html
-    assert 'href="/gaps">Disagreements</a>' in html
+    site_nav = re.search(r'<nav class="site-nav".*?</nav>', html, re.S).group(0)
+
+    for path, label in (("/buys", "Buys"), ("/receipts", "Receipts")):
+        anchor = re.search(rf'<a href="{path}"[^>]*>.*?</a>', site_nav, re.S).group(0)
+        assert "is-held" in anchor
+        assert f'aria-label="{label}, temporarily held"' in anchor
+        assert '<span class="site-nav-held" aria-hidden="true">Held</span>' in anchor
+
+    assert site_nav.index('href="/movers"') < site_nav.index('href="/buys"')
+    assert site_nav.index('href="/buys"') < site_nav.index('href="/receipts"')
+
+
+def test_primary_nav_research_menu_has_interaction_and_mobile_styles():
+    client = app.test_client()
+    html = client.get("/").data.decode("utf-8")
+    css = client.get("/static/style.css").data.decode("utf-8")
+
+    disclosure_selector = (
+        "details.graphic-menu[open], details.site-nav-research[open]"
+    )
+    assert html.count(disclosure_selector) == 2
+    assert ".site-nav-research-menu {" in css
+    assert ".site-nav-held {" in css
+    assert ".site-nav-research { position: static; }" in css
+    assert "grid-template-columns: repeat(2, minmax(0, 1fr));" in css
 
 
 def _arias_card_html():

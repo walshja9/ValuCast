@@ -111,6 +111,11 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
                     f"profiles[{index}] cannot be injured while active on an MLB roster"
                 )
             expected_statuses = set(EXPECTED_STATUS_BY_BASIS[risk_basis])
+            if row.get("active_mlb_roster") is True and risk_basis in {
+                "current_sample_size",
+                "sample_staleness",
+            }:
+                expected_statuses.add("available")
             if "official_mlb_rehab_override" in (row.get("signals") or []):
                 expected_statuses.add("rehab")
             if status not in expected_statuses:

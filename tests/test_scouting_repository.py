@@ -667,6 +667,49 @@ def test_scouting_repository_publishes_valid_llm_reports(tmp_path, monkeypatch):
     assert payload["reports"][0]["published_report_source"] == "llm"
 
 
+def test_scouting_repository_checkpoints_llm_before_later_interruption(
+    tmp_path, monkeypatch
+):
+    from scouting import report_generator, repository
+
+    calls = 0
+
+    def generate(_grounding, *, client):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise KeyboardInterrupt
+        return {
+            "text": "A checkpointed model-written read.",
+            "model": report_generator.DEFAULT_MODEL,
+            "valid": True,
+            "hard_ok": True,
+            "problems": {"ok": True, "hard_ok": True},
+        }
+
+    snapshot_path = _write_snapshot(tmp_path)
+    cache_path = Path(tmp_path) / "llm_cache.json"
+    monkeypatch.setenv("VALUCAST_SCOUTING_LLM", "1")
+    with (
+        patch.object(report_generator, "default_client", return_value=object()),
+        patch.object(report_generator, "generate_report", side_effect=generate),
+        patch.object(repository, "LLM_CACHE_PATH", cache_path),
+    ):
+        try:
+            build_scouting_repository(
+                snapshot_path=snapshot_path,
+                generated_at="2026-06-16T00:00:00+00:00",
+            )
+        except KeyboardInterrupt:
+            pass
+        else:
+            raise AssertionError("second generation should interrupt the build")
+
+    assert calls == 2
+    cache = json.loads(cache_path.read_text(encoding="utf-8"))
+    assert set(cache["entries"]) == {"1_hitter"}
+
+
 def test_scouting_repository_publishes_valid_llm_rows_with_row_level_fallback(
     tmp_path, monkeypatch
 ):

@@ -1552,6 +1552,27 @@ def test_thin_sample_penalty_has_no_boundary_cliffs():
     assert thin == 0.0 and moderate == 0.0
 
 
+def test_thin_sample_handoff_is_bounded_when_model_reliability_lags_sample():
+    before = sum(
+        _thin_penalty(
+            role="pitcher",
+            sample=44.9,
+            status="thin_current_sample",
+            blended_reliability=24.6,
+        )
+    )
+    after = sum(
+        _thin_penalty(
+            role="pitcher",
+            sample=45.0,
+            status="available",
+            blended_reliability=24.6,
+        )
+    )
+
+    assert abs(after - before) <= 2.6
+
+
 def test_thin_penalty_ignores_blended_reliability_at_served_sample():
     # 0.3.2: the thin penalty is always based on current_reliability (0.3.0
     # behavior). The 0.3.1 rebasing to full-history/blended reliability for

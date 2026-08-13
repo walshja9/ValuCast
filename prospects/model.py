@@ -1109,13 +1109,57 @@ def _eligible_current(record: dict, role: str) -> bool:
     return _sample(record, role) >= MIN_CURRENT_SAMPLE[role]
 
 
+def _history_feature_inputs_complete(record: dict, role: str) -> bool:
+    required = (
+        (
+            "iso",
+            "k_pct",
+            "bb_pct",
+            "ops",
+            "avg",
+            "obp",
+            "slg",
+            "babip",
+            "home_runs",
+            "stolen_bases",
+        )
+        if role == "hitter"
+        else (
+            "k_per_9",
+            "bb_per_9",
+            "k_bb_pct",
+            "era",
+            "whip",
+            "is_starter",
+            "home_runs",
+            "hits",
+            "walks",
+            "batters_faced",
+            "games_started",
+            "games_played",
+        )
+    )
+    return all(_num(record.get(field)) is not None for field in required)
+
+
 def _select_current_records(current: dict, role: str) -> list[dict]:
     group = "hitters" if role == "hitter" else "pitchers"
+    current_season_ids = {
+        int(record["mlbam_id"])
+        for record in current.get(group, [])
+        if record.get("mlbam_id") and record.get("source_kind") == "current_season"
+    }
     by_player = {}
     for record in current.get(group, []):
         if not record.get("mlbam_id") or not _eligible_current(record, role):
             continue
         key = int(record["mlbam_id"])
+        if (
+            record.get("source_kind") == "latest_milb_history"
+            and key in current_season_ids
+            and not _history_feature_inputs_complete(record, role)
+        ):
+            continue
         incumbent = by_player.get(key)
         if incumbent is None or _sample(record, role) > _sample(incumbent, role):
             by_player[key] = record

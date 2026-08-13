@@ -26,7 +26,7 @@ MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
-ARTIFACT_VERSION = "0.5.0"
+ARTIFACT_VERSION = "0.5.1"
 
 MAX_RISK_DISCOUNT = 0.12
 SEVERE_IL_DISCOUNT = 0.30
@@ -439,9 +439,15 @@ def _risk_level(discount: float) -> str:
     return "clear"
 
 
-def _status(signals: list[str], override_status: str | None) -> str:
+def _status(
+    signals: list[str],
+    override_status: str | None,
+    active_mlb_roster: bool = False,
+) -> str:
     if override_status:
         return override_status
+    if active_mlb_roster:
+        return "available"
     if any(signal.startswith("sample_stale") or signal == "prior_season_sample" for signal in signals):
         return "stale_or_inactive"
     if signals:
@@ -598,7 +604,11 @@ def _profile(
         "risk_discount": round(risk_discount, 4),
         "risk_basis": risk_basis,
         "risk_level": _risk_level(risk_discount),
-        "status": _status(signals, override_status or il_status or upstream_status),
+        "status": _status(
+            signals,
+            override_status or il_status or upstream_status,
+            active_mlb_roster,
+        ),
         "availability_note": override_note or il_note or upstream_note or (
             "; ".join(signals).replace("_", " ") if signals else "Current sample is active."
         ),

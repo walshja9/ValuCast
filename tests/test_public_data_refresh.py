@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 from urllib.error import URLError
 
@@ -512,6 +513,59 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "git push origin master" in workflow
     assert "git rebase" not in workflow
     assert "for attempt in" not in workflow
+
+    # A long/manual run may cross UTC midnight. Build, validation, and the
+    # marker commit must keep using the date captured for that one run.
+    pin_date = workflow.index("VALUCAST_REFRESH_DATE=$(date -u +%F)")
+    build = workflow.index("python scripts/run_daily_public_build.py --only build")
+    validate = workflow.index("python scripts/run_daily_public_build.py --only validate")
+    commit = workflow.index(
+        'git commit -m "data: daily public refresh $VALUCAST_REFRESH_DATE"'
+    )
+    assert pin_date < build < validate < commit
+
+
+def test_freshness_cli_uses_pinned_refresh_date(monkeypatch):
+    calls = []
+    monkeypatch.setenv("VALUCAST_REFRESH_DATE", "2026-08-06")
+    monkeypatch.delenv("VALUCAST_FRESHNESS_MAX_AGE_DAYS", raising=False)
+    monkeypatch.setattr(sys, "argv", ["validate_public_data_freshness.py"])
+    monkeypatch.setattr(
+        freshness,
+        "validate_public_data",
+        lambda expected_date, max_age_days=0: calls.append(
+            (expected_date, max_age_days)
+        ) or [],
+    )
+
+    assert freshness.main() == 0
+    assert calls == [("2026-08-06", 0)]
+
+
+def test_daily_public_workflow_retries_and_preserves_scouting_progress():
+    workflow = Path(".github/workflows/daily-public-data.yml").read_text(
+        encoding="utf-8"
+    )
+    cache_sha = "0400d5f644dc74513175e3cd8d07132dd4860809"
+    cache_path = "data/models/valucast_scouting_llm_cache.json"
+    restore_name = "- name: Restore LLM scouting cache"
+    build_name = "- name: Build ValuCast public snapshot gate"
+    save_name = "- name: Save LLM scouting cache"
+
+    assert '- cron: "30 11-19 * * *"' in workflow
+    assert workflow.count("- cron:") == 1
+    assert workflow.count(cache_path) >= 2
+    assert f"uses: actions/cache/restore@{cache_sha} # v4.2.4" in workflow
+    assert f"uses: actions/cache/save@{cache_sha} # v4.2.4" in workflow
+    assert "scouting-llm-v1-${{ runner.os }}-${{ github.run_id }}" in workflow
+    assert "key: ${{ steps.scouting-llm-cache.outputs.cache-primary-key }}" in workflow
+
+    restore = workflow.index(restore_name)
+    build = workflow.index(build_name)
+    save = workflow.index(save_name)
+    assert restore < build < save
+    save_step = workflow[save : workflow.find("\n      - name:", save + 1)]
+    assert "if: always()" in save_step
 
 
 def test_daily_public_build_orchestrator_has_no_duplicate_steps():

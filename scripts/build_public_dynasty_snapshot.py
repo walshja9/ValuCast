@@ -32,6 +32,7 @@ PROSPECT_PEAK_PROJECTION_PATH = (
 )
 BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
 BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
+MOVERS_PATH = ROOT / "data" / "models" / "valucast_prospect_movers.json"
 ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
 IDENTITY_PATH = ROOT / "projections" / "data" / "identity.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
@@ -1174,6 +1175,7 @@ def build_snapshot(
     prospect_peak_projection: dict | None = None,
     buy_signals: dict | None = None,
     buy_review: dict | None = None,
+    movers: dict | None = None,
     prospect_inputs: dict | None = None,
     milb_stat_freshness_audit: dict | None = None,
     actuals: list | None = None,
@@ -1428,6 +1430,7 @@ def build_snapshot(
         mlb_layer=mlb_layer,
         buy_signals=buy_signals,
         buy_review=buy_review,
+        movers=movers,
         milb_stat_freshness_audit=milb_stat_freshness_audit,
         generated_at=generated_at,
         graduated_prospect_ids=graduated_ids,
@@ -1544,6 +1547,7 @@ def main() -> None:
     )
     buy_signals = _load_json(BUY_SIGNALS_PATH) if BUY_SIGNALS_PATH.exists() else None
     buy_review = _load_json(BUY_REVIEW_PATH) if BUY_REVIEW_PATH.exists() else None
+    movers = _load_json(MOVERS_PATH) if MOVERS_PATH.exists() else None
     actuals = _load_json(ACTUALS_PATH) if ACTUALS_PATH.exists() else None
     identities = _load_json(IDENTITY_PATH) if IDENTITY_PATH.exists() else None
     payload = build_snapshot(
@@ -1556,6 +1560,7 @@ def main() -> None:
         prospect_peak_projection=prospect_peak_projection,
         buy_signals=buy_signals,
         buy_review=buy_review,
+        movers=movers,
         prospect_inputs=prospect_inputs,
         actuals=actuals,
         identities=identities,

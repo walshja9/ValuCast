@@ -199,29 +199,77 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     gap: .35rem;
     flex-wrap: wrap;
 }
-.site-nav a {
+.site-nav > a,
+.site-nav-research > summary {
     border: 1px solid rgba(255, 255, 255, .10);
     border-radius: 999px;
     background: rgba(255, 255, 255, .045);
     color: var(--c-text);
+    cursor: pointer;
     font-size: .76rem;
     font-weight: 600;
     letter-spacing: .02em;
+    line-height: 1.5;
+    list-style: none;
     padding: .34rem .58rem;
     text-decoration: none;
 }
-.site-nav a:hover {
+.site-nav-research { position: relative; }
+.site-nav-research > summary::-webkit-details-marker { display: none; }
+.site-nav-research > summary::after { content: " \25BE"; color: var(--c-muted); }
+.site-nav > a:hover,
+.site-nav-research > summary:hover {
     border-color: rgba(52, 226, 196, .38);
     color: var(--c-prospect);
+    text-decoration: none;
 }
-.site-nav a:focus-visible {
+.site-nav > a:focus-visible,
+.site-nav-research > summary:focus-visible {
     outline: 2px solid var(--c-blue-strong);
     outline-offset: 2px;
 }
-.site-nav a[aria-current="page"] {
+.site-nav > a[aria-current="page"],
+.site-nav-research.has-current > summary {
     border-color: rgba(52, 226, 196, .4);
     background: rgba(52, 226, 196, .12);
     color: var(--c-prospect);
+}
+.site-nav-held {
+    margin-left: .28rem;
+    color: var(--c-amber);
+    font-size: .56rem;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+.site-nav > a.is-held { border-color: rgba(251, 191, 36, .35); }
+.site-nav-research-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + .4rem);
+    z-index: 500;
+    display: grid;
+    min-width: 190px;
+    overflow: hidden;
+    border: 1px solid var(--c-border-strong);
+    border-radius: var(--radius);
+    background: var(--surface-panel-strong);
+    box-shadow: var(--shadow-soft);
+}
+.site-nav-research-menu a {
+    padding: .55rem .7rem;
+    color: var(--c-text);
+    text-decoration: none;
+}
+.site-nav-research-menu a:hover,
+.site-nav-research-menu a:focus-visible,
+.site-nav-research-menu a[aria-current="page"] {
+    background: var(--surface-2);
+    color: var(--c-prospect);
+    text-decoration: none;
+}
+.site-nav-research-menu a:focus-visible {
+    outline: 2px solid var(--c-blue-strong);
+    outline-offset: -2px;
 }
 
 main { max-width: 1600px; margin: 0 auto; padding: 1rem 1.5rem; }
@@ -1171,12 +1219,21 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 640px) {
     main { padding: 0.75rem; }
-    .site-header { padding: 0.75rem 1rem; flex-direction: column; gap: 0.25rem; }
+    .site-header { position: relative; z-index: 100; padding: 0.75rem 1rem; flex-direction: column; gap: 0.25rem; }
     .site-nav { width: 100%; margin-left: 0; gap: .28rem; justify-content: center; }
     /* flex: 0 1 auto (not 1 1 auto) so pills size to their own label instead of
        stretching to fill the row unevenly — keeps wrapping predictable as entries
        are added/removed (7/17 nav audit P1: uncapped growth had no guard rail). */
-    .site-nav a { flex: 0 1 auto; text-align: center; font-size: .68rem; padding: .3rem .4rem; }
+    .site-nav > a,
+    .site-nav-research > summary { flex: 0 1 auto; text-align: center; font-size: .68rem; padding: .3rem .4rem; }
+    .site-nav-research { position: static; }
+    .site-nav-research-menu {
+        left: 1rem;
+        right: 1rem;
+        top: calc(100% - .25rem);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        min-width: 0;
+    }
     .welcome-strip {
         display: block;
         padding: .6rem 2rem .65rem .7rem;
@@ -3184,7 +3241,8 @@ main {
         gap: .32rem;
     }
 
-    .site-nav a {
+    .site-nav > a,
+    .site-nav-research > summary {
         font-size: .72rem;
         padding: .28rem .44rem;
     }
