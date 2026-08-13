@@ -2,7 +2,7 @@
   "artifact": "valucast_stage1_outcome_proof",
   "schema_version": "1.0.0",
   "status": "research_only",
-  "generated_at": "2026-08-04T12:51:53.814841+00:00",
+  "generated_at": "2026-08-13T12:45:34.948241+00:00",
   "versions": {
     "stage1_model": "0.4.0",
     "backtest": "0.1.0",
@@ -27,11 +27,11 @@
     },
     "backtest": {
       "path": "data/models/valucast_prospect_dynasty_backtest.json",
-      "sha256": "28546fe7e43ee2f4a74d32e2bc0b344f847c97bf40d583367ad961562003e7ea"
+      "sha256": "ee315469309fbf82233885e9b5ca973a745eaf478203580a49961fc410e70535"
     },
     "scorecard": {
       "path": "data/models/valucast_ahead_of_consensus_scorecard.json",
-      "sha256": "7e19136277c9fa20b01e387185579e212a9491474d327c2a09292df3cb342010"
+      "sha256": "99fd9b62492ffe0664c39595fa3352238d85c4ff7aef9481588068d1d93fd03a"
     }
   },
   "evaluation": {
@@ -900,52 +900,52 @@
   },
   "disagreements": {
     "overall": {
-      "total": 230,
-      "open": 114,
-      "resolved": 27,
-      "censored": 8,
-      "retracted": 81,
-      "moved_toward": 65,
+      "total": 238,
+      "open": 113,
+      "resolved": 32,
+      "censored": 15,
+      "retracted": 78,
+      "moved_toward": 71,
       "moved_away": 33,
       "bins": {
         "200_plus": {
-          "total": 56,
-          "open": 35,
-          "resolved": 1,
-          "censored": 3,
-          "retracted": 17,
-          "moved_toward": 18,
+          "total": 57,
+          "open": 33,
+          "resolved": 4,
+          "censored": 6,
+          "retracted": 14,
+          "moved_toward": 21,
           "moved_away": 5,
           "evidence_label": "observed"
         },
+        "50_99": {
+          "total": 70,
+          "open": 38,
+          "resolved": 12,
+          "censored": 2,
+          "retracted": 18,
+          "moved_toward": 21,
+          "moved_away": 12,
+          "evidence_label": "observed"
+        },
         "100_199": {
-          "total": 53,
+          "total": 54,
           "open": 27,
           "resolved": 2,
           "censored": 5,
-          "retracted": 19,
-          "moved_toward": 11,
-          "moved_away": 6,
-          "evidence_label": "observed"
-        },
-        "50_99": {
-          "total": 65,
-          "open": 34,
-          "resolved": 8,
-          "censored": 0,
-          "retracted": 23,
-          "moved_toward": 15,
-          "moved_away": 11,
+          "retracted": 20,
+          "moved_toward": 13,
+          "moved_away": 7,
           "evidence_label": "observed"
         },
         "25_49": {
-          "total": 56,
-          "open": 18,
-          "resolved": 16,
-          "censored": 0,
-          "retracted": 22,
-          "moved_toward": 21,
-          "moved_away": 11,
+          "total": 57,
+          "open": 15,
+          "resolved": 14,
+          "censored": 2,
+          "retracted": 26,
+          "moved_toward": 16,
+          "moved_away": 9,
           "evidence_label": "observed"
         }
       },
@@ -953,51 +953,51 @@
     },
     "roles": {
       "hitter": {
-        "total": 133,
-        "open": 56,
-        "resolved": 20,
+        "total": 134,
+        "open": 54,
+        "resolved": 22,
         "censored": 3,
-        "retracted": 54,
-        "moved_toward": 44,
-        "moved_away": 12,
+        "retracted": 55,
+        "moved_toward": 42,
+        "moved_away": 13,
         "bins": {
           "200_plus": {
             "total": 30,
-            "open": 18,
-            "resolved": 1,
-            "censored": 1,
-            "retracted": 10,
-            "moved_toward": 14,
-            "moved_away": 2,
-            "evidence_label": "observed"
-          },
-          "100_199": {
-            "total": 27,
-            "open": 12,
+            "open": 19,
             "resolved": 2,
-            "censored": 2,
-            "retracted": 11,
-            "moved_toward": 5,
+            "censored": 1,
+            "retracted": 8,
+            "moved_toward": 15,
             "moved_away": 2,
             "evidence_label": "observed"
           },
           "50_99": {
-            "total": 35,
-            "open": 16,
-            "resolved": 5,
+            "total": 36,
+            "open": 18,
+            "resolved": 8,
             "censored": 0,
-            "retracted": 14,
-            "moved_toward": 9,
+            "retracted": 10,
+            "moved_toward": 12,
             "moved_away": 4,
+            "evidence_label": "observed"
+          },
+          "100_199": {
+            "total": 27,
+            "open": 10,
+            "resolved": 2,
+            "censored": 1,
+            "retracted": 14,
+            "moved_toward": 4,
+            "moved_away": 3,
             "evidence_label": "observed"
           },
           "25_49": {
             "total": 41,
-            "open": 10,
-            "resolved": 12,
-            "censored": 0,
-            "retracted": 19,
-            "moved_toward": 16,
+            "open": 7,
+            "resolved": 10,
+            "censored": 1,
+            "retracted": 23,
+            "moved_toward": 11,
             "moved_away": 4,
             "evidence_label": "observed"
           }
@@ -1005,52 +1005,52 @@
         "evidence_label": "observed"
       },
       "pitcher": {
-        "total": 97,
-        "open": 58,
-        "resolved": 7,
-        "censored": 5,
-        "retracted": 27,
-        "moved_toward": 21,
-        "moved_away": 21,
+        "total": 104,
+        "open": 59,
+        "resolved": 10,
+        "censored": 12,
+        "retracted": 23,
+        "moved_toward": 29,
+        "moved_away": 20,
         "bins": {
           "200_plus": {
-            "total": 26,
-            "open": 17,
-            "resolved": 0,
-            "censored": 2,
-            "retracted": 7,
-            "moved_toward": 4,
+            "total": 27,
+            "open": 14,
+            "resolved": 2,
+            "censored": 5,
+            "retracted": 6,
+            "moved_toward": 6,
             "moved_away": 3,
             "evidence_label": "observed"
           },
           "50_99": {
-            "total": 30,
-            "open": 18,
-            "resolved": 3,
-            "censored": 0,
-            "retracted": 9,
-            "moved_toward": 6,
-            "moved_away": 7,
+            "total": 34,
+            "open": 20,
+            "resolved": 4,
+            "censored": 2,
+            "retracted": 8,
+            "moved_toward": 9,
+            "moved_away": 8,
             "evidence_label": "observed"
           },
           "100_199": {
-            "total": 26,
-            "open": 15,
+            "total": 27,
+            "open": 17,
             "resolved": 0,
-            "censored": 3,
-            "retracted": 8,
-            "moved_toward": 6,
+            "censored": 4,
+            "retracted": 6,
+            "moved_toward": 9,
             "moved_away": 4,
             "evidence_label": "observed"
           },
           "25_49": {
-            "total": 15,
+            "total": 16,
             "open": 8,
             "resolved": 4,
-            "censored": 0,
+            "censored": 1,
             "retracted": 3,
             "moved_toward": 5,
-            "moved_away": 7,
+            "moved_away": 5,
             "evidence_label": "descriptive"
           }
         },
