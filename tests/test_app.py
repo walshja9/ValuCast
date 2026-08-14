@@ -3528,10 +3528,13 @@ class TestModelRegistryValidator(unittest.TestCase):
 
     def test_universal_model_verdict_resolution_structure(self):
         """8/13 owner resolution rule: removing PROVISIONAL means RESOLVED,
-        never reworded. The Stage 1 outcome proof resolved the hitter ordering
-        question (VALIDATED, evidence-cited); the pitcher question stays open
-        with its reason byte-identical to the pre-split entry and a REGISTERED
-        resolution condition so it terminates instead of hedging forever."""
+        never reworded. Terminal state after the registered maturation re-run
+        (registration-2026-08-14, rule 3, executed 2026-08-14): hitters
+        VALIDATED with support re-confirmed on the five-cohort pool; the
+        pitcher beyond-neighbors claim REJECTED — a published failure, not a
+        hidden one — with the prior-beating result stated alongside. The
+        executed resolution condition is gone; any future pitcher claim
+        needs a materially changed model and a new registration."""
         import json
         reg = json.loads(
             (Path(__file__).parent.parent / "data" / "models" /
@@ -3545,15 +3548,18 @@ class TestModelRegistryValidator(unittest.TestCase):
         self.assertEqual(
             hitters["evidence"], "data/validation/valucast_stage1_outcome_proof.json"
         )
-        self.assertEqual(pitchers["verdict"], "PROVISIONAL")
-        # Byte-identical to the pre-split reason — resolved-not-reworded.
-        self.assertEqual(
-            pitchers["verdict_reason"],
-            "Observed in shadow only — backtested but not promoted to a validated verdict.",
-        )
-        condition = pitchers.get("resolution_condition") or ""
-        self.assertIn("2020", condition)
-        self.assertIn("VALIDATED", condition)
+        # Citation refreshed to the regenerated artifact's figures.
+        self.assertIn("n=1,765 hitters, 5 closed cohorts", hitters["verdict_reason"])
+        self.assertIn("3,652 matured 2016–2021 outcomes", hitters["verdict_reason"])
+        self.assertEqual(pitchers["verdict"], "REJECTED")
+        reason = pitchers["verdict_reason"]
+        self.assertIn("registration-2026-08-14-stage1-maturation-rerun", reason)
+        self.assertIn("neighbors", reason)
+        # The honest split: the neighbors claim fell, the prior claim stands.
+        self.assertIn("beat the level/age prior", reason)
+        self.assertIn("new registration", reason)
+        # Executed and terminal — no lingering condition to hedge behind.
+        self.assertNotIn("resolution_condition", pitchers)
 
     def test_missing_evidence_fails(self):
         import json
