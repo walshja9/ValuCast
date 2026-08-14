@@ -17,11 +17,18 @@ from prospects.stage1_outcome_proof import (
     render_markdown,
 )
 
+# Frozen study inputs (registration 2026-08-14): the maturation OOF and
+# reliability artifacts plus run-day snapshots of the claim-time archives.
+# Pointing at frozen copies keeps the drift-safe reproduction tests live
+# permanently instead of skipping whenever a daily-mutable input advances.
 INPUTS = {
-    "oof": ROOT / "data/models/valucast_outcome_oof_scores.json",
-    "reliability": ROOT / "data/models/valucast_probability_reliability.json",
-    "backtest": ROOT / "data/models/valucast_prospect_dynasty_backtest.json",
-    "scorecard": ROOT / "data/models/valucast_ahead_of_consensus_scorecard.json",
+    "oof": ROOT / "data/validation/valucast_outcome_oof_scores_maturation2021.json",
+    "reliability": ROOT
+    / "data/validation/valucast_probability_reliability_maturation2021.json",
+    "backtest": ROOT
+    / "data/validation/valucast_prospect_dynasty_backtest_maturation2021.json",
+    "scorecard": ROOT
+    / "data/validation/valucast_ahead_of_consensus_scorecard_maturation2021.json",
 }
 OUTPUT_JSON = ROOT / "data/validation/valucast_stage1_outcome_proof.json"
 OUTPUT_REPORT = ROOT / "docs/stage1-outcome-proof.md"

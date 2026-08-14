@@ -2,7 +2,7 @@
   "artifact": "valucast_stage1_outcome_proof",
   "schema_version": "1.0.0",
   "status": "research_only",
-  "generated_at": "2026-08-13T12:45:34.948241+00:00",
+  "generated_at": "2026-08-14T03:38:46.947576+00:00",
   "versions": {
     "stage1_model": "0.4.0",
     "backtest": "0.1.0",
@@ -18,32 +18,33 @@
   },
   "sources": {
     "oof": {
-      "path": "data/models/valucast_outcome_oof_scores.json",
-      "sha256": "6d661c72bd1eecbf61f8458f4d068a635bca648ef7d4245e0686d911f93cd1d5"
+      "path": "data/validation/valucast_outcome_oof_scores_maturation2021.json",
+      "sha256": "5339ca75a85f29812d1106b6ae38bbe1bea1f395a20c70b29035d99983991c7c"
     },
     "reliability": {
-      "path": "data/models/valucast_probability_reliability.json",
-      "sha256": "9fc668efb2ce603aa2600fcd5540e9d6e3b7ab39a78b1d159f4c4a6d0a92fb1b"
+      "path": "data/validation/valucast_probability_reliability_maturation2021.json",
+      "sha256": "e22eb9fd50249170e073746e97cf089f5ebbcd659a0355f6de60ce67c3949313"
     },
     "backtest": {
-      "path": "data/models/valucast_prospect_dynasty_backtest.json",
+      "path": "data/validation/valucast_prospect_dynasty_backtest_maturation2021.json",
       "sha256": "ee315469309fbf82233885e9b5ca973a745eaf478203580a49961fc410e70535"
     },
     "scorecard": {
-      "path": "data/models/valucast_ahead_of_consensus_scorecard.json",
+      "path": "data/validation/valucast_ahead_of_consensus_scorecard_maturation2021.json",
       "sha256": "99fd9b62492ffe0664c39595fa3352238d85c4ff7aef9481588068d1d93fd03a"
     }
   },
   "evaluation": {
-    "mature_through_cohort": 2019,
+    "mature_through_cohort": 2021,
     "closed_cohorts": [
       2016,
       2017,
       2018,
-      2019
+      2019,
+      2021
     ],
-    "historical_rows": 2901,
-    "historical_resolved_rows": 2901,
+    "historical_rows": 3652,
+    "historical_resolved_rows": 3652,
     "historical_unresolved_rows": 0,
     "historical_censored_rows": 0
   },
@@ -59,38 +60,38 @@
   "historical": {
     "roles": {
       "hitter": {
-        "sample_size": 1379,
-        "cohort_count": 4,
-        "contributor_base_rate": 0.176215,
+        "sample_size": 1765,
+        "cohort_count": 5,
+        "contributor_base_rate": 0.180737,
         "metrics": {
           "spearman_rho": {
             "model": {
-              "point": 0.459024,
-              "low": 0.41752,
-              "high": 0.497479
+              "point": 0.462008,
+              "low": 0.425844,
+              "high": 0.496143
             },
             "level_age_prior": {
-              "point": 0.306327,
-              "low": 0.262752,
-              "high": 0.348551
+              "point": 0.266283,
+              "low": 0.224188,
+              "high": 0.306093
             },
             "historical_neighbors_25": {
-              "point": 0.410972,
-              "low": 0.36687,
-              "high": 0.452041
+              "point": 0.418418,
+              "low": 0.379862,
+              "high": 0.455604
             },
             "model_minus_baseline": {
               "level_age_prior": {
-                "point": 0.152697,
-                "low": 0.116865,
-                "high": 0.188567,
+                "point": 0.195725,
+                "low": 0.161731,
+                "high": 0.23035,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               },
               "historical_neighbors_25": {
-                "point": 0.048051,
-                "low": 0.02625,
-                "high": 0.071215,
+                "point": 0.043591,
+                "low": 0.024523,
+                "high": 0.063134,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               }
@@ -98,32 +99,32 @@
           },
           "kendall_tau_b": {
             "model": {
-              "point": 0.37628,
-              "low": 0.342591,
-              "high": 0.407793
+              "point": 0.378857,
+              "low": 0.349193,
+              "high": 0.406814
             },
             "level_age_prior": {
-              "point": 0.25114,
-              "low": 0.215819,
-              "high": 0.285823
+              "point": 0.217471,
+              "low": 0.183239,
+              "high": 0.250074
             },
             "historical_neighbors_25": {
-              "point": 0.346837,
-              "low": 0.30993,
-              "high": 0.381503
+              "point": 0.352931,
+              "low": 0.32075,
+              "high": 0.38415
             },
             "model_minus_baseline": {
               "level_age_prior": {
-                "point": 0.12514,
-                "low": 0.095678,
-                "high": 0.154703,
+                "point": 0.161386,
+                "low": 0.133587,
+                "high": 0.189853,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               },
               "historical_neighbors_25": {
-                "point": 0.029443,
-                "low": 0.011133,
-                "high": 0.049183,
+                "point": 0.025926,
+                "low": 0.009856,
+                "high": 0.042713,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               }
@@ -131,32 +132,32 @@
           },
           "roc_auc": {
             "model": {
-              "point": 0.84484,
-              "low": 0.817255,
-              "high": 0.869808
+              "point": 0.843426,
+              "low": 0.820136,
+              "high": 0.86598
             },
             "level_age_prior": {
-              "point": 0.731277,
-              "low": 0.699559,
-              "high": 0.761913
+              "point": 0.697836,
+              "low": 0.667192,
+              "high": 0.727626
             },
             "historical_neighbors_25": {
-              "point": 0.80766,
-              "low": 0.777362,
-              "high": 0.836411
+              "point": 0.809822,
+              "low": 0.784264,
+              "high": 0.835073
             },
             "model_minus_baseline": {
               "level_age_prior": {
-                "point": 0.113564,
-                "low": 0.087028,
-                "high": 0.140538,
+                "point": 0.14559,
+                "low": 0.120301,
+                "high": 0.171437,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               },
               "historical_neighbors_25": {
-                "point": 0.03718,
-                "low": 0.020636,
-                "high": 0.054905,
+                "point": 0.033604,
+                "low": 0.019126,
+                "high": 0.048433,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               }
@@ -247,269 +248,290 @@
                 "historical_neighbors_25": 0.820686
               }
             }
+          },
+          "2021": {
+            "sample_size": 386,
+            "contributor_base_rate": 0.196891,
+            "metrics": {
+              "spearman_rho": {
+                "model": 0.469416,
+                "level_age_prior": 0.170388,
+                "historical_neighbors_25": 0.447196
+              },
+              "kendall_tau_b": {
+                "model": 0.385668,
+                "level_age_prior": 0.146726,
+                "historical_neighbors_25": 0.377048
+              },
+              "roc_auc": {
+                "model": 0.836503,
+                "level_age_prior": 0.616511,
+                "historical_neighbors_25": 0.818357
+              }
+            }
           }
         },
         "bootstrap": {
-          "seed": 34041,
+          "seed": 36061,
           "resamples": 10000,
           "cluster": "mlbam_id"
         },
         "evidence_bands": [
           {
             "decile": 1,
-            "sample_size": 137,
+            "sample_size": 176,
             "score_min": 0.0,
             "score_max": 0.0,
             "outcome_counts": {
-              "bust": 135,
-              "role": 2,
+              "bust": 173,
+              "role": 3,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.985401,
-              "role": 0.014599,
+              "bust": 0.982955,
+              "role": 0.017045,
               "star": 0.0
             },
-            "contributor_rate": 0.014599,
+            "contributor_rate": 0.017045,
             "contributor_wilson95": {
-              "low": 0.004013,
-              "high": 0.051663
+              "low": 0.005814,
+              "high": 0.048909
             },
             "evidence_label": "observed"
           },
           {
             "decile": 2,
-            "sample_size": 138,
+            "sample_size": 177,
             "score_min": 0.0,
-            "score_max": 0.00784,
+            "score_max": 0.008583,
             "outcome_counts": {
-              "bust": 135,
-              "role": 3,
+              "bust": 175,
+              "role": 2,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.978261,
-              "role": 0.021739,
+              "bust": 0.988701,
+              "role": 0.011299,
               "star": 0.0
             },
-            "contributor_rate": 0.021739,
+            "contributor_rate": 0.011299,
             "contributor_wilson95": {
-              "low": 0.00742,
-              "high": 0.061963
+              "low": 0.003104,
+              "high": 0.040257
             },
             "evidence_label": "observed"
           },
           {
             "decile": 3,
-            "sample_size": 138,
-            "score_min": 0.008039,
-            "score_max": 0.027826,
+            "sample_size": 176,
+            "score_min": 0.008893,
+            "score_max": 0.030752,
             "outcome_counts": {
-              "bust": 137,
-              "role": 1,
+              "bust": 172,
+              "role": 4,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.992754,
-              "role": 0.007246,
+              "bust": 0.977273,
+              "role": 0.022727,
               "star": 0.0
             },
-            "contributor_rate": 0.007246,
+            "contributor_rate": 0.022727,
             "contributor_wilson95": {
-              "low": 0.00128,
-              "high": 0.039903
+              "low": 0.008873,
+              "high": 0.056971
             },
             "evidence_label": "observed"
           },
           {
             "decile": 4,
-            "sample_size": 138,
-            "score_min": 0.028062,
-            "score_max": 0.052955,
+            "sample_size": 177,
+            "score_min": 0.030858,
+            "score_max": 0.056982,
             "outcome_counts": {
-              "bust": 127,
-              "role": 11,
+              "bust": 164,
+              "role": 13,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.92029,
-              "role": 0.07971,
+              "bust": 0.926554,
+              "role": 0.073446,
               "star": 0.0
             },
-            "contributor_rate": 0.07971,
+            "contributor_rate": 0.073446,
             "contributor_wilson95": {
-              "low": 0.04509,
-              "high": 0.137096
+              "low": 0.043422,
+              "high": 0.121593
             },
             "evidence_label": "observed"
           },
           {
             "decile": 5,
-            "sample_size": 138,
-            "score_min": 0.05316,
-            "score_max": 0.077508,
+            "sample_size": 176,
+            "score_min": 0.057216,
+            "score_max": 0.082645,
             "outcome_counts": {
-              "bust": 129,
-              "role": 9,
+              "bust": 164,
+              "role": 12,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.934783,
-              "role": 0.065217,
+              "bust": 0.931818,
+              "role": 0.068182,
               "star": 0.0
             },
-            "contributor_rate": 0.065217,
+            "contributor_rate": 0.068182,
             "contributor_wilson95": {
-              "low": 0.034687,
-              "high": 0.119298
+              "low": 0.03943,
+              "high": 0.115381
             },
             "evidence_label": "observed"
           },
           {
             "decile": 6,
-            "sample_size": 138,
-            "score_min": 0.077564,
-            "score_max": 0.10676,
+            "sample_size": 177,
+            "score_min": 0.082654,
+            "score_max": 0.111025,
             "outcome_counts": {
-              "bust": 126,
-              "role": 11,
-              "star": 1
+              "bust": 155,
+              "role": 20,
+              "star": 2
             },
             "outcome_shares": {
-              "bust": 0.913043,
-              "role": 0.07971,
-              "star": 0.007246
+              "bust": 0.875706,
+              "role": 0.112994,
+              "star": 0.011299
             },
-            "contributor_rate": 0.086957,
+            "contributor_rate": 0.124294,
             "contributor_wilson95": {
-              "low": 0.050442,
-              "high": 0.145844
+              "low": 0.083533,
+              "high": 0.181017
             },
             "evidence_label": "observed"
           },
           {
             "decile": 7,
-            "sample_size": 138,
-            "score_min": 0.106773,
-            "score_max": 0.139016,
+            "sample_size": 176,
+            "score_min": 0.111034,
+            "score_max": 0.143036,
             "outcome_counts": {
-              "bust": 111,
-              "role": 24,
-              "star": 3
+              "bust": 147,
+              "role": 27,
+              "star": 2
             },
             "outcome_shares": {
-              "bust": 0.804348,
-              "role": 0.173913,
-              "star": 0.021739
+              "bust": 0.835227,
+              "role": 0.153409,
+              "star": 0.011364
             },
-            "contributor_rate": 0.195652,
+            "contributor_rate": 0.164773,
             "contributor_wilson95": {
-              "low": 0.138092,
-              "high": 0.269698
+              "low": 0.117244,
+              "high": 0.226623
             },
             "evidence_label": "observed"
           },
           {
             "decile": 8,
-            "sample_size": 138,
-            "score_min": 0.139046,
-            "score_max": 0.181002,
+            "sample_size": 177,
+            "score_min": 0.143088,
+            "score_max": 0.189509,
             "outcome_counts": {
-              "bust": 104,
-              "role": 28,
-              "star": 6
+              "bust": 126,
+              "role": 41,
+              "star": 10
             },
             "outcome_shares": {
-              "bust": 0.753623,
-              "role": 0.202899,
-              "star": 0.043478
+              "bust": 0.711864,
+              "role": 0.231638,
+              "star": 0.056497
             },
-            "contributor_rate": 0.246377,
+            "contributor_rate": 0.288136,
             "contributor_wilson95": {
-              "low": 0.182001,
-              "high": 0.32449
+              "low": 0.226475,
+              "high": 0.358797
             },
             "evidence_label": "observed"
           },
           {
             "decile": 9,
-            "sample_size": 138,
-            "score_min": 0.181264,
-            "score_max": 0.24795,
+            "sample_size": 176,
+            "score_min": 0.189756,
+            "score_max": 0.26594,
             "outcome_counts": {
-              "bust": 85,
-              "role": 43,
+              "bust": 109,
+              "role": 57,
               "star": 10
             },
             "outcome_shares": {
-              "bust": 0.615942,
-              "role": 0.311594,
-              "star": 0.072464
+              "bust": 0.619318,
+              "role": 0.323864,
+              "star": 0.056818
             },
-            "contributor_rate": 0.384058,
+            "contributor_rate": 0.380682,
             "contributor_wilson95": {
-              "low": 0.307095,
-              "high": 0.467301
+              "low": 0.31222,
+              "high": 0.454241
             },
             "evidence_label": "observed"
           },
           {
             "decile": 10,
-            "sample_size": 138,
-            "score_min": 0.248458,
-            "score_max": 0.955595,
+            "sample_size": 177,
+            "score_min": 0.267296,
+            "score_max": 0.95596,
             "outcome_counts": {
-              "bust": 47,
-              "role": 71,
-              "star": 20
+              "bust": 61,
+              "role": 88,
+              "star": 28
             },
             "outcome_shares": {
-              "bust": 0.34058,
-              "role": 0.514493,
-              "star": 0.144928
+              "bust": 0.344633,
+              "role": 0.497175,
+              "star": 0.158192
             },
-            "contributor_rate": 0.65942,
+            "contributor_rate": 0.655367,
             "contributor_wilson95": {
-              "low": 0.576994,
-              "high": 0.733212
+              "low": 0.582722,
+              "high": 0.721411
             },
             "evidence_label": "observed"
           }
         ]
       },
       "pitcher": {
-        "sample_size": 1522,
-        "cohort_count": 4,
-        "contributor_base_rate": 0.173456,
+        "sample_size": 1887,
+        "cohort_count": 5,
+        "contributor_base_rate": 0.169581,
         "metrics": {
           "spearman_rho": {
             "model": {
-              "point": 0.334966,
-              "low": 0.287424,
-              "high": 0.380592
+              "point": 0.352904,
+              "low": 0.310807,
+              "high": 0.393576
             },
             "level_age_prior": {
-              "point": 0.268444,
-              "low": 0.222341,
-              "high": 0.313723
+              "point": 0.261731,
+              "low": 0.221163,
+              "high": 0.301921
             },
             "historical_neighbors_25": {
-              "point": 0.355078,
-              "low": 0.310692,
-              "high": 0.398124
+              "point": 0.360407,
+              "low": 0.320458,
+              "high": 0.398797
             },
             "model_minus_baseline": {
               "level_age_prior": {
-                "point": 0.066522,
-                "low": 0.022093,
-                "high": 0.109422,
+                "point": 0.091173,
+                "low": 0.052415,
+                "high": 0.129913,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               },
               "historical_neighbors_25": {
-                "point": -0.020112,
-                "low": -0.059467,
-                "high": 0.018971,
+                "point": -0.007502,
+                "low": -0.040943,
+                "high": 0.024497,
                 "historical_support": false,
                 "evidence_status": "descriptive"
               }
@@ -517,32 +539,32 @@
           },
           "kendall_tau_b": {
             "model": {
-              "point": 0.276968,
-              "low": 0.237922,
-              "high": 0.314777
+              "point": 0.291105,
+              "low": 0.256603,
+              "high": 0.324901
             },
             "level_age_prior": {
-              "point": 0.22051,
-              "low": 0.182638,
-              "high": 0.25781
+              "point": 0.214464,
+              "low": 0.18124,
+              "high": 0.247607
             },
             "historical_neighbors_25": {
-              "point": 0.297503,
-              "low": 0.260556,
-              "high": 0.333649
+              "point": 0.301479,
+              "low": 0.268561,
+              "high": 0.333297
             },
             "model_minus_baseline": {
               "level_age_prior": {
-                "point": 0.056458,
-                "low": 0.0198,
-                "high": 0.09188,
+                "point": 0.076642,
+                "low": 0.044658,
+                "high": 0.108579,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               },
               "historical_neighbors_25": {
-                "point": -0.020535,
-                "low": -0.05321,
-                "high": 0.012106,
+                "point": -0.010373,
+                "low": -0.038076,
+                "high": 0.016329,
                 "historical_support": false,
                 "evidence_status": "descriptive"
               }
@@ -550,32 +572,32 @@
           },
           "roc_auc": {
             "model": {
-              "point": 0.751394,
-              "low": 0.717371,
-              "high": 0.785095
+              "point": 0.768093,
+              "low": 0.737917,
+              "high": 0.797477
             },
             "level_age_prior": {
-              "point": 0.702655,
-              "low": 0.668772,
-              "high": 0.736627
+              "point": 0.70007,
+              "low": 0.669658,
+              "high": 0.730226
             },
             "historical_neighbors_25": {
-              "point": 0.766497,
-              "low": 0.734844,
-              "high": 0.797645
+              "point": 0.773605,
+              "low": 0.745009,
+              "high": 0.801535
             },
             "model_minus_baseline": {
               "level_age_prior": {
-                "point": 0.04874,
-                "low": 0.015076,
-                "high": 0.08131,
+                "point": 0.068023,
+                "low": 0.038767,
+                "high": 0.097435,
                 "historical_support": true,
                 "evidence_status": "supported_retrospective"
               },
               "historical_neighbors_25": {
-                "point": -0.015103,
-                "low": -0.044713,
-                "high": 0.014309,
+                "point": -0.005512,
+                "low": -0.030783,
+                "high": 0.018927,
                 "historical_support": false,
                 "evidence_status": "descriptive"
               }
@@ -666,231 +688,252 @@
                 "historical_neighbors_25": 0.740829
               }
             }
+          },
+          "2021": {
+            "sample_size": 365,
+            "contributor_base_rate": 0.153425,
+            "metrics": {
+              "spearman_rho": {
+                "model": 0.452358,
+                "level_age_prior": 0.230598,
+                "historical_neighbors_25": 0.412453
+              },
+              "kendall_tau_b": {
+                "model": 0.371418,
+                "level_age_prior": 0.198954,
+                "historical_neighbors_25": 0.345167
+              },
+              "roc_auc": {
+                "model": 0.860148,
+                "level_age_prior": 0.68383,
+                "historical_neighbors_25": 0.828046
+              }
+            }
           }
         },
         "bootstrap": {
-          "seed": 34041,
+          "seed": 36061,
           "resamples": 10000,
           "cluster": "mlbam_id"
         },
         "evidence_bands": [
           {
             "decile": 1,
-            "sample_size": 152,
+            "sample_size": 188,
             "score_min": 0.0,
             "score_max": 0.0,
             "outcome_counts": {
-              "bust": 141,
-              "role": 8,
+              "bust": 175,
+              "role": 10,
               "star": 3
             },
             "outcome_shares": {
-              "bust": 0.927632,
-              "role": 0.052632,
-              "star": 0.019737
+              "bust": 0.930851,
+              "role": 0.053191,
+              "star": 0.015957
             },
-            "contributor_rate": 0.072368,
+            "contributor_rate": 0.069149,
             "contributor_wilson95": {
-              "low": 0.040887,
-              "high": 0.124932
+              "low": 0.040853,
+              "high": 0.1147
             },
             "evidence_label": "observed"
           },
           {
             "decile": 2,
-            "sample_size": 152,
+            "sample_size": 189,
             "score_min": 0.0,
             "score_max": 0.0,
             "outcome_counts": {
-              "bust": 142,
+              "bust": 179,
               "role": 8,
               "star": 2
             },
             "outcome_shares": {
-              "bust": 0.934211,
-              "role": 0.052632,
-              "star": 0.013158
+              "bust": 0.94709,
+              "role": 0.042328,
+              "star": 0.010582
             },
-            "contributor_rate": 0.065789,
+            "contributor_rate": 0.05291,
             "contributor_wilson95": {
-              "low": 0.036125,
-              "high": 0.116861
+              "low": 0.02899,
+              "high": 0.094642
             },
             "evidence_label": "observed"
           },
           {
             "decile": 3,
-            "sample_size": 152,
+            "sample_size": 189,
             "score_min": 0.0,
-            "score_max": 0.017456,
+            "score_max": 0.021946,
             "outcome_counts": {
-              "bust": 145,
-              "role": 7,
+              "bust": 179,
+              "role": 10,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.953947,
-              "role": 0.046053,
+              "bust": 0.94709,
+              "role": 0.05291,
               "star": 0.0
             },
-            "contributor_rate": 0.046053,
+            "contributor_rate": 0.05291,
             "contributor_wilson95": {
-              "low": 0.022484,
-              "high": 0.092
+              "low": 0.02899,
+              "high": 0.094642
             },
             "evidence_label": "observed"
           },
           {
             "decile": 4,
-            "sample_size": 152,
-            "score_min": 0.017573,
-            "score_max": 0.038897,
+            "sample_size": 188,
+            "score_min": 0.021976,
+            "score_max": 0.042781,
             "outcome_counts": {
-              "bust": 142,
-              "role": 10,
+              "bust": 174,
+              "role": 14,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.934211,
-              "role": 0.065789,
+              "bust": 0.925532,
+              "role": 0.074468,
               "star": 0.0
             },
-            "contributor_rate": 0.065789,
+            "contributor_rate": 0.074468,
             "contributor_wilson95": {
-              "low": 0.036125,
-              "high": 0.116861
+              "low": 0.044874,
+              "high": 0.121104
             },
             "evidence_label": "observed"
           },
           {
             "decile": 5,
-            "sample_size": 153,
-            "score_min": 0.038913,
-            "score_max": 0.064019,
+            "sample_size": 189,
+            "score_min": 0.042878,
+            "score_max": 0.067438,
             "outcome_counts": {
-              "bust": 135,
-              "role": 18,
+              "bust": 174,
+              "role": 15,
               "star": 0
             },
             "outcome_shares": {
-              "bust": 0.882353,
-              "role": 0.117647,
+              "bust": 0.920635,
+              "role": 0.079365,
               "star": 0.0
             },
-            "contributor_rate": 0.117647,
+            "contributor_rate": 0.079365,
             "contributor_wilson95": {
-              "low": 0.075727,
-              "high": 0.178297
+              "low": 0.048684,
+              "high": 0.126805
             },
             "evidence_label": "observed"
           },
           {
             "decile": 6,
-            "sample_size": 152,
-            "score_min": 0.064471,
-            "score_max": 0.095934,
+            "sample_size": 189,
+            "score_min": 0.067468,
+            "score_max": 0.099131,
             "outcome_counts": {
-              "bust": 136,
-              "role": 14,
+              "bust": 168,
+              "role": 19,
               "star": 2
             },
             "outcome_shares": {
-              "bust": 0.894737,
-              "role": 0.092105,
-              "star": 0.013158
+              "bust": 0.888889,
+              "role": 0.100529,
+              "star": 0.010582
             },
-            "contributor_rate": 0.105263,
+            "contributor_rate": 0.111111,
             "contributor_wilson95": {
-              "low": 0.065838,
-              "high": 0.164149
+              "low": 0.073831,
+              "high": 0.163885
             },
             "evidence_label": "observed"
           },
           {
             "decile": 7,
-            "sample_size": 152,
-            "score_min": 0.095935,
-            "score_max": 0.131541,
+            "sample_size": 188,
+            "score_min": 0.099143,
+            "score_max": 0.13474,
             "outcome_counts": {
-              "bust": 123,
-              "role": 26,
-              "star": 3
+              "bust": 160,
+              "role": 24,
+              "star": 4
             },
             "outcome_shares": {
-              "bust": 0.809211,
-              "role": 0.171053,
-              "star": 0.019737
+              "bust": 0.851064,
+              "role": 0.12766,
+              "star": 0.021277
             },
-            "contributor_rate": 0.190789,
+            "contributor_rate": 0.148936,
             "contributor_wilson95": {
-              "low": 0.136252,
-              "high": 0.26057
+              "low": 0.105098,
+              "high": 0.206834
             },
             "evidence_label": "observed"
           },
           {
             "decile": 8,
-            "sample_size": 152,
-            "score_min": 0.131594,
-            "score_max": 0.180408,
+            "sample_size": 189,
+            "score_min": 0.134977,
+            "score_max": 0.181796,
             "outcome_counts": {
-              "bust": 113,
-              "role": 32,
+              "bust": 140,
+              "role": 42,
               "star": 7
             },
             "outcome_shares": {
-              "bust": 0.743421,
-              "role": 0.210526,
-              "star": 0.046053
+              "bust": 0.740741,
+              "role": 0.222222,
+              "star": 0.037037
             },
-            "contributor_rate": 0.256579,
+            "contributor_rate": 0.259259,
             "contributor_wilson95": {
-              "low": 0.193747,
-              "high": 0.331411
+              "low": 0.202018,
+              "high": 0.326092
             },
             "evidence_label": "observed"
           },
           {
             "decile": 9,
-            "sample_size": 152,
-            "score_min": 0.180553,
-            "score_max": 0.248244,
+            "sample_size": 189,
+            "score_min": 0.181928,
+            "score_max": 0.251935,
             "outcome_counts": {
-              "bust": 108,
-              "role": 32,
-              "star": 12
+              "bust": 132,
+              "role": 44,
+              "star": 13
             },
             "outcome_shares": {
-              "bust": 0.710526,
-              "role": 0.210526,
-              "star": 0.078947
+              "bust": 0.698413,
+              "role": 0.232804,
+              "star": 0.068783
             },
-            "contributor_rate": 0.289474,
+            "contributor_rate": 0.301587,
             "contributor_wilson95": {
-              "low": 0.223271,
-              "high": 0.366055
+              "low": 0.240644,
+              "high": 0.370436
             },
             "evidence_label": "observed"
           },
           {
             "decile": 10,
-            "sample_size": 153,
-            "score_min": 0.248781,
-            "score_max": 0.793547,
+            "sample_size": 189,
+            "score_min": 0.252104,
+            "score_max": 0.894856,
             "outcome_counts": {
-              "bust": 73,
-              "role": 60,
-              "star": 20
+              "bust": 86,
+              "role": 78,
+              "star": 25
             },
             "outcome_shares": {
-              "bust": 0.477124,
-              "role": 0.392157,
-              "star": 0.130719
+              "bust": 0.455026,
+              "role": 0.412698,
+              "star": 0.132275
             },
-            "contributor_rate": 0.522876,
+            "contributor_rate": 0.544974,
             "contributor_wilson95": {
-              "low": 0.444145,
-              "high": 0.600486
+              "low": 0.473788,
+              "high": 0.614367
             },
             "evidence_label": "observed"
           }

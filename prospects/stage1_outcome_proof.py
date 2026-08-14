@@ -12,7 +12,10 @@ from prospects.probability_reliability import _wilson_interval
 from scripts.audit_consensus_decisions import gap_bin
 from scripts.build_ahead_of_consensus_scorecard import _classify_move
 
-BOOTSTRAP_SEED = 34041
+# 36061: the registered maturation re-run's fresh seed (registration
+# 2026-08-14); the committed artifact reproduces under this default. The
+# v1 seed 34041 is spent and forbidden for future studies.
+BOOTSTRAP_SEED = 36061
 BOOTSTRAP_RESAMPLES = 10_000
 ROLES = ("hitter", "pitcher")
 SCHEMA_VERSION = "1.0.0"
