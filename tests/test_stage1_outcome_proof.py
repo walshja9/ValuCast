@@ -599,3 +599,6 @@ def test_proof_module_and_artifact_have_no_production_importers():
         text = path.read_text(encoding="utf-8")
         assert "stage1_outcome_proof" not in text
         assert "valucast_stage1_outcome_proof" not in text
+        # The registered maturation re-run's research artifacts are equally
+        # off-limits to serving code (registration 2026-08-14).
+        assert "maturation2021" not in text

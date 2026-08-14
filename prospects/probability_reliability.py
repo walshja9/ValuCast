@@ -117,11 +117,15 @@ def _role_reliability(rows: list[dict]) -> dict:
     }
 
 
+DEFAULT_SOURCE_PATH = "data/models/valucast_outcome_oof_scores.json"
+
+
 def build_probability_reliability(
     oof_payload: dict,
     *,
     oof_sha256: str,
     generated_at: str | None = None,
+    source_path: str = DEFAULT_SOURCE_PATH,
 ) -> dict:
     problems = validate_outcome_oof_artifact(oof_payload)
     if problems:
@@ -138,7 +142,7 @@ def build_probability_reliability(
         "generated_at": _generated_at(generated_at),
         "source": {
             "artifact": "valucast_outcome_oof_scores",
-            "path": "data/models/valucast_outcome_oof_scores.json",
+            "path": source_path,
             "sha256": oof_sha256,
         },
         "method": {

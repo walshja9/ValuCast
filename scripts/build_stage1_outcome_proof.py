@@ -42,8 +42,12 @@ def run(
     seed: int = BOOTSTRAP_SEED,
     resamples: int = BOOTSTRAP_RESAMPLES,
     write: bool = True,
+    input_paths: dict[str, Path] | None = None,
 ) -> dict:
-    inputs = {key: _load(path) for key, path in INPUTS.items()}
+    paths = INPUTS if input_paths is None else input_paths
+    if set(paths) != set(INPUTS):
+        raise ValueError("input_paths must provide exactly the canonical input keys")
+    inputs = {key: _load(path) for key, path in paths.items()}
     generated_at = max(str(payload.get("generated_at") or "") for payload in inputs.values())
     payload = build_stage1_outcome_proof(
         oof_payload=inputs["oof"],
@@ -55,7 +59,7 @@ def run(
                 "path": str(path.relative_to(ROOT)).replace("\\", "/"),
                 "sha256": _sha(path),
             }
-            for key, path in INPUTS.items()
+            for key, path in paths.items()
         },
         generated_at=generated_at,
         seed=seed,

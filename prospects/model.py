@@ -937,7 +937,9 @@ def _walk_forward(
     }
 
 
-def outcome_oof_rows(role: str, dataset_rows: list[dict]) -> list[dict]:
+def outcome_oof_rows(
+    role: str, dataset_rows: list[dict], mature_through: int = MATURE_THROUGH
+) -> list[dict]:
     """Per-player, per-fold out-of-fold predictions for the outcome-score layer.
 
     R6 (senior-mathematician audit): the ``combined_gate`` in
@@ -949,8 +951,12 @@ def outcome_oof_rows(role: str, dataset_rows: list[dict]) -> list[dict]:
     same order in which ``_walk_forward`` appends predictions), so the exact
     pooled MAE gate is reproducible player-by-player. Reporting only: this does
     not touch the served model, the gate, or any score.
+
+    ``mature_through`` is a research parameter for registered studies only
+    (registration-2026-08-14-stage1-maturation-rerun); the default preserves
+    the served maturity window and the live ``MATURE_THROUGH`` constant.
     """
-    rows = _historical_rows(dataset_rows, role)
+    rows = _historical_rows(dataset_rows, role, mature_through)
     validation = _walk_forward(
         rows,
         OUTCOME_MODEL_KIND[role],

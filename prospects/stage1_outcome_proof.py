@@ -181,7 +181,10 @@ def _evidence_label(sample_size: int) -> str:
 
 
 def build_evidence_bands(rows: list[dict], reliability_role: dict) -> list[dict]:
-    ordered = sorted(rows, key=lambda row: (float(row["model_prediction"]), str(row["mlbam_id"])))
+    # Tie order must match _role_reliability's (score asc, then numeric
+    # mlbam_id) or a tie block straddling a decile boundary reconciles
+    # against different members and spuriously halts.
+    ordered = sorted(rows, key=lambda row: (float(row["model_prediction"]), int(row["mlbam_id"])))
     expected = reliability_role.get("bins") or []
     if len(ordered) < 10 or len(expected) != 10:
         raise ValueError("evidence bands require ten nonempty deciles")
