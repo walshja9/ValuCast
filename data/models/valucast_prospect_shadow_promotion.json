@@ -1,25 +1,25 @@
 {
   "artifact": "valucast_prospect_shadow_promotion",
-  "generated_at": "2026-08-14T12:16:20.859517+00:00",
+  "generated_at": "2026-08-15T12:07:23.247421+00:00",
   "generated_by": "valucast",
   "harness_version": "0.1.0",
   "models": [
     {
       "archive": "valucast_playing_time_role_tracker",
       "feeds_card": false,
-      "forecast_horizon_days": 57,
+      "forecast_horizon_days": 58,
       "gate": {
-        "activated_at": "2026-08-14T12:16:20.859517+00:00",
+        "activated_at": "2026-08-15T12:07:23.247421+00:00",
         "baseline": "v1_volume_point",
-        "baseline_score": 63.41,
+        "baseline_score": 63.86,
         "cv_method": "forward_archive_vs_realized_outcome",
-        "improvement_pct": 2.2552,
+        "improvement_pct": 2.2549,
         "metric": "volume_forecast_mae_vs_realized",
-        "model_score": 61.98,
-        "reason": "beats v1_volume_point by 2.26% OOS (volume_forecast_mae_vs_realized)",
+        "model_score": 62.42,
+        "reason": "beats v1_volume_point by 2.25% OOS (volume_forecast_mae_vs_realized)",
         "sample_size": 1136,
         "status": "active",
-        "validated_through": "2026-08-14"
+        "validated_through": "2026-08-15"
       },
       "gradeable_when": {
         "horizon_met": true,
@@ -29,19 +29,19 @@
       },
       "key": "playing_time_role_v2",
       "metric": "volume_forecast_mae_vs_realized",
-      "observation_count": 56,
+      "observation_count": 57,
       "observed_first": "2026-06-18",
-      "observed_last": "2026-08-14",
+      "observed_last": "2026-08-15",
       "promotion_target": "playing_time_role_tracker.role_v2 -> card",
       "realized_outcome_kind": "same_season_actuals",
       "realized_sample": 1136,
       "realized_status": "graded 1136 forecasts from 2026-06-18 vs actuals (pro-rated to season fraction 0.76); interim same-season proxy",
-      "span_days": 57
+      "span_days": 58
     },
     {
       "archive": "valucast_prospect_peak_projection_v1",
       "feeds_card": false,
-      "forecast_horizon_days": 57,
+      "forecast_horizon_days": 58,
       "gate": {
         "activated_at": null,
         "baseline": null,
@@ -53,7 +53,7 @@
         "reason": "sample_size 0 < min_sample 250",
         "sample_size": 0,
         "status": "insufficient_sample",
-        "validated_through": "2026-08-14"
+        "validated_through": "2026-08-15"
       },
       "gradeable_when": {
         "horizon_met": true,
@@ -63,19 +63,19 @@
       },
       "key": "peak_projection_v2",
       "metric": "peak_role_outcome_brier",
-      "observation_count": 56,
+      "observation_count": 57,
       "observed_first": "2026-06-18",
-      "observed_last": "2026-08-14",
+      "observed_last": "2026-08-15",
       "promotion_target": "peak_projection.peak_v2 -> card",
       "realized_outcome_kind": "multi_year_horizon",
       "realized_sample": 0,
       "realized_status": "realized peak/dynasty outcome accrues over the dynasty horizon; not yet available",
-      "span_days": 57
+      "span_days": 58
     },
     {
       "archive": "valucast_prospect_dynasty_layer",
       "feeds_card": null,
-      "forecast_horizon_days": 62,
+      "forecast_horizon_days": 63,
       "gate": {
         "activated_at": null,
         "baseline": null,
@@ -87,7 +87,7 @@
         "reason": "sample_size 0 < min_sample 250",
         "sample_size": 0,
         "status": "insufficient_sample",
-        "validated_through": "2026-08-14"
+        "validated_through": "2026-08-15"
       },
       "gradeable_when": {
         "horizon_met": true,
@@ -97,14 +97,14 @@
       },
       "key": "prospect_dynasty_layer",
       "metric": "bust_role_star_brier",
-      "observation_count": 61,
+      "observation_count": 62,
       "observed_first": "2026-06-13",
-      "observed_last": "2026-08-14",
+      "observed_last": "2026-08-15",
       "promotion_target": "prospect dynasty_signal -> live consumer",
       "realized_outcome_kind": "multi_year_horizon",
       "realized_sample": 0,
       "realized_status": "realized peak/dynasty outcome accrues over the dynasty horizon; not yet available",
-      "span_days": 62
+      "span_days": 63
     }
   ],
   "purpose": "Grade shadow models against realized outcomes and gate card promotion by evidence, not by date.",
