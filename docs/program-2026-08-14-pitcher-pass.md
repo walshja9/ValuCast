@@ -50,6 +50,16 @@ itself (MAE 0.1333→0.1317; ordering deficit roughly halves) and lifts the
 blend to Δ +0.0225 / +0.0097 / +0.0180. Consistent with 031's dry-run
 finding that strike% carries real signal.
 
+**2026-08-14 — independent audit (Sol).** The REJECTED verdict, protocol
+ordering, seed hygiene, fold-identity pins, freeze safety (served pitcher
+artifacts Git-blob identical across PRs #54–#56; all 1,545 pitcher rows
+unchanged), registry framing, and live rendering all PASSED independent
+re-derivation. Findings actioned: registry `generated_at` refreshed
+(was stale at 2026-07-19), and the dev harnesses committed as
+`scripts/dev_pitcher_pass_phase_a.py` /
+`scripts/dev_pitcher_pass_stacking.py` so the dev log's numbers are
+independently rerunnable from a clean checkout.
+
 **Current dev standing vs the eventual gate:** with registered-run CI
 half-widths (~±0.027 Kendall), Spearman and AUC margins would likely
 clear; Kendall (+0.010) would not. More headroom required — candidates:
