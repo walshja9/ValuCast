@@ -9,8 +9,9 @@ requires. **Scope approved: Phase A + Phase B.**
 **Standing constraints:** scoring freeze intact; all work is shadow /
 research-only; the five closed cohorts (2016–2019, 2021) are DEVELOPMENT
 data (unlimited looks, no claims); the confirmatory claim comes only from
-the Phase C registration whose pooled evidence includes the pristine 2022
-cohort (~Oct 2026 maturation, never touched by any look). Plan 031's held
+the Phase C registration whose pooled evidence includes the outcome-pristine
+2022 cohort (~Oct 2026 maturation). Its outcomes remain untouched; only
+covariate availability has been inspected. Plan 031's held
 look (seed 31013) is never spent; its re-arm condition names the same
 2022-maturation window — Phase C and the 031 successor registration are
 the same batch.
@@ -21,10 +22,12 @@ the same batch.
    0.1487) and wins the 200 largest disagreements 134–66, yet ties on
    rank metrics.
 2. The 390-row zero-tie block (21% of the pool; arrival-ridge clamp at
-   0.0) contains 23 contributors and a 3.5x within-block gradient that
-   neighbors capture.
-3. Feature ceiling: 35 features vs the baseline's 8 and still an ordering
-   tie — the box-score line alone is exhausted.
+   0.0) contains 23 contributors. Neighbors identify 5/190 contributors
+   at scores <=0.02 and 18/200 at >=0.04 (2.63% vs 9.00%, a 3.42x
+   within-block gradient).
+3. Feature ceiling: 35 varying/effective features (36 declared; one
+   constant) vs the baseline's 8 and still an ordering tie — the
+   box-score line alone is exhausted.
 
 ## Dev log (development cohorts; point estimates; NOT claims)
 
@@ -39,14 +42,15 @@ form cannot express, not the clamp per se.
 served hurdle with the neighbors score beats neighbors on ALL THREE
 ordering metrics on the dev pool (Δ +0.0221 Spearman / +0.0093 Kendall /
 +0.0178 AUC) while also beating the neighbors MAE (0.1403 vs 0.1487).
-Complementary errors; alpha=0.5 was best of {0.3, 0.5, 0.7}; rank-blends
-are worse; epsilon tie-breaking by neighbors fails.
+Complementary errors; alpha=0.5 produced the best ordering deltas of
+{0.3, 0.5, 0.7}, while alpha=0.7 had the lowest MAE. Rank-blends are
+worse; epsilon tie-breaking by neighbors fails.
 
 **2026-08-14 — strike% (Phase B signal #1).** `pitches`/`strikes` cover
 100% of pitcher rows in every cohort INCLUDING the 2022 holdout (raw
 dataset join; the input contract does not carry them). Adding Plan 031's
 reviewed `strike_pct_extra` features to the hurdle improves the model
-itself (MAE 0.1333→0.1317; ordering deficit roughly halves) and lifts the
+itself (MAE 0.1333→0.1317; ordering deficits shrink 32–44%) and lifts the
 blend to Δ +0.0225 / +0.0097 / +0.0180. Consistent with 031's dry-run
 finding that strike% carries real signal.
 
@@ -58,7 +62,8 @@ re-derivation. Findings actioned: registry `generated_at` refreshed
 (was stale at 2026-07-19), and the dev harnesses committed as
 `scripts/dev_pitcher_pass_phase_a.py` /
 `scripts/dev_pitcher_pass_stacking.py` so the dev log's numbers are
-independently rerunnable from a clean checkout.
+independently rerunnable from a clean checkout. The strike join now fails
+closed on missing coverage, and a focused test locks the printed receipts.
 
 **Current dev standing vs the eventual gate:** with registered-run CI
 half-widths (~±0.027 Kendall), Spearman and AUC margins would likely
@@ -80,7 +85,7 @@ third-party opinion — forbidden in the factual model.
   positive); further candidates above. Every feature must exist for
   2014–2022 cohorts or it cannot support the Phase C claim.
 - **C — new registration (~Oct 2026):** challenger frozen before the 2022
-  cohort matures; one look on the pooled evidence including pristine
+  cohort matures; one look on the pooled evidence including outcome-pristine
   2022, with a 2022-fold-positive side condition (joining the Plan 031 /
   C1 / E1 new-vintage batch); fresh seed (37083 remains reserved from the
   maturation registration's now-moot rule 4 — Phase C draws its own).
