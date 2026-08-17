@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-08-16",
+  "generated_at": "2026-08-17",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -1011,16 +1011,16 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Chicago Cubs sent RHP Daniel Palencia on a rehab assignment to Knoxville Smokies.",
-      "effective_date": "2026-08-11",
+      "description": "Chicago Cubs sent RHP Daniel Palencia on a rehab assignment to Iowa Cubs.",
+      "effective_date": "2026-08-16",
       "list_type": null,
       "mlbam_id": 694037,
       "name": "Daniel Palencia",
       "source": "official_mlb_statsapi_transactions",
       "status": "rehab",
-      "team": "Knoxville Smokies",
-      "transaction_date": "2026-08-11",
-      "transaction_id": 937132,
+      "team": "Iowa Cubs",
+      "transaction_date": "2026-08-16",
+      "transaction_id": 937796,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -1171,21 +1171,6 @@
       "team": "Reno Aces",
       "transaction_date": "2026-08-15",
       "transaction_id": 937759,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Chicago Cubs sent RHP Edward Cabrera on a rehab assignment to Knoxville Smokies.",
-      "effective_date": "2026-08-11",
-      "list_type": null,
-      "mlbam_id": 665795,
-      "name": "Edward Cabrera",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Knoxville Smokies",
-      "transaction_date": "2026-08-11",
-      "transaction_id": 937072,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -2211,16 +2196,16 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Athletics placed RHP Justin Sterner on the 15-day injured list. Right knee chondromalacia.",
-      "effective_date": "2026-07-18",
-      "list_type": "15-day injured list",
+      "description": "Athletics transferred RHP Justin Sterner from the 15-day injured list to the 60-day injured list. Right knee chondromalacia.",
+      "effective_date": "2026-08-16",
+      "list_type": "60-day injured list",
       "mlbam_id": 686993,
       "name": "Justin Sterner",
       "source": "official_mlb_statsapi_transactions",
       "status": "injured",
       "team": "Athletics",
-      "transaction_date": "2026-07-18",
-      "transaction_id": 928723,
+      "transaction_date": "2026-08-16",
+      "transaction_id": 937854,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -2238,6 +2223,21 @@
       "transaction_id": 915247,
       "type_code": "ASG",
       "type_description": "Assigned"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Los Angeles Dodgers placed LHP Justin Wrobleski on the 15-day injured list. Left forearm inflammation.",
+      "effective_date": "2026-08-16",
+      "list_type": "15-day injured list",
+      "mlbam_id": 680736,
+      "name": "Justin Wrobleski",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Los Angeles Dodgers",
+      "transaction_date": "2026-08-16",
+      "transaction_id": 937829,
+      "type_code": "SC",
+      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -3555,7 +3555,7 @@
       "status": "rehab",
       "team": "Buffalo Bisons",
       "transaction_date": "2026-08-06",
-      "transaction_id": 935854,
+      "transaction_id": 937797,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -3798,6 +3798,21 @@
       "transaction_id": 936598,
       "type_code": "ASG",
       "type_description": "Assigned"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Athletics placed LF Tyler Soderstrom on the 10-day injured list retroactive to August 15, 2026. Left hip impingement.",
+      "effective_date": "2026-08-15",
+      "list_type": "10-day injured list",
+      "mlbam_id": 691016,
+      "name": "Tyler Soderstrom",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Athletics",
+      "transaction_date": "2026-08-16",
+      "transaction_id": 937795,
+      "type_code": "SC",
+      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -5131,6 +5146,21 @@
       "team": "Atlanta Braves",
       "transaction_date": "2026-05-19",
       "transaction_id": 910174,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Chicago Cubs activated RHP Edward Cabrera from the 15-day injured list.",
+      "effective_date": "2026-08-16",
+      "list_type": "15-day injured list",
+      "mlbam_id": 665795,
+      "name": "Edward Cabrera",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Chicago Cubs",
+      "transaction_date": "2026-08-16",
+      "transaction_id": 937798,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -8241,21 +8271,6 @@
     },
     {
       "active_injury_risk": false,
-      "description": "Athletics activated LF Tyler Soderstrom from the 10-day injured list.",
-      "effective_date": "2026-07-08",
-      "list_type": "10-day injured list",
-      "mlbam_id": 691016,
-      "name": "Tyler Soderstrom",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Athletics",
-      "transaction_date": "2026-07-08",
-      "transaction_id": 926103,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
       "description": "New York Mets activated LF Tyrone Taylor from the 10-day injured list.",
       "effective_date": "2026-06-26",
       "list_type": "10-day injured list",
@@ -8496,7 +8511,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-08-16",
+    "end_date": "2026-08-17",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -8517,12 +8532,12 @@
     "available_after_il_count": 297,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 201,
-    "profile_count": 565,
+    "injured_count": 203,
+    "profile_count": 566,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 67,
-    "risk_profile_count": 268,
+    "rehab_count": 66,
+    "risk_profile_count": 269,
     "tracked_mlbam_count": 11013,
-    "transaction_count": 10464
+    "transaction_count": 10478
   }
 }
