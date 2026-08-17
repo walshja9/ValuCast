@@ -11,8 +11,10 @@ from pathlib import Path
 from statistics import mean
 
 import numpy as np
+from scipy.stats import rankdata
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 from prospects.level_translation_challenger import strike_pct_extra
 from prospects.model import (
     NEIGHBOR_K,
@@ -25,12 +27,40 @@ from prospects.model import (
 from prospects.stage1_outcome_proof import _metric
 from prospects.universal import INPUT_PATH, load_input_contract
 
-RAW = json.load(open(Path(__file__).resolve().parents[1] / "data/prospects/raw/valucast_universal_prospect_dataset.json"))
-BY_KEY = {
-    (int(r["mlbam_id"]), int(r["cohort_year"])): r
-    for r in RAW["rows"]
-    if r.get("role") == "pitcher" and r.get("mlbam_id")
-}
+RAW = json.loads(
+    (ROOT / "data/prospects/raw/valucast_universal_prospect_dataset.json").read_text(
+        encoding="utf-8"
+    )
+)
+RAW_PITCHERS = [
+    row for row in RAW["rows"]
+    if row.get("role") == "pitcher" and row.get("mlbam_id")
+]
+
+
+def _strike_key(row):
+    return int(row["mlbam_id"]), int(row["cohort_year"]), row["level"]
+
+
+BY_KEY = {_strike_key(row): row for row in RAW_PITCHERS}
+if len(BY_KEY) != len(RAW_PITCHERS):
+    raise ValueError("duplicate raw strike row for mlbam_id/cohort_year/level")
+
+
+def strike_coverage():
+    rows = [
+        row for row in RAW_PITCHERS
+        if 2014 <= int(row["cohort_year"]) <= 2022
+    ]
+    by_cohort = {}
+    for row in rows:
+        year = int(row["cohort_year"])
+        known, total = by_cohort.get(year, (0, 0))
+        by_cohort[year] = (known + int(strike_pct_extra(row)[1] == 1.0), total + 1)
+    incomplete = {year: counts for year, counts in by_cohort.items() if counts[0] != counts[1]}
+    if incomplete:
+        raise ValueError(f"incomplete raw strike coverage: {incomplete}")
+    return sum(known for known, _ in by_cohort.values()), len(rows), by_cohort
 
 
 def load_rows(with_strike=True):
@@ -40,8 +70,12 @@ def load_rows(with_strike=True):
         return rows
     out = []
     for r in rows:
-        rec = BY_KEY.get((r["mlbam_id"], r["cohort_year"]))
-        extra = strike_pct_extra(rec) if rec else [0.0, 0.0]
+        rec = BY_KEY.get(_strike_key(r))
+        if rec is None:
+            raise ValueError(f"missing raw strike row for {_strike_key(r)}")
+        extra = strike_pct_extra(rec)
+        if extra[1] != 1.0:
+            raise ValueError(f"invalid raw strike row for {_strike_key(r)}")
         out.append({**r, "features": r["features"] + list(extra)})
     return out
 
@@ -68,11 +102,31 @@ def hurdle_predict(model, feats):
     ])
 
 
+def metric_deltas(preds, targets, neighbors):
+    return tuple(
+        _metric(metric, preds, targets) - _metric(metric, neighbors, targets)
+        for metric in ("spearman_rho", "kendall_tau_b", "roc_auc")
+    )
+
+
+def print_deltas(name, preds, targets, neighbors):
+    spearman, kendall, auc = metric_deltas(preds, targets, neighbors)
+    print(f"{name:24s} d-sp {spearman:+.4f}  d-kt {kendall:+.4f}  d-auc {auc:+.4f}")
+
+
 def run():
+    known, total, coverage_by_cohort = strike_coverage()
+    cohort_text = " ".join(
+        f"{year}={counts[0]}/{counts[1]}"
+        for year, counts in sorted(coverage_by_cohort.items())
+    )
+    print(f"strike coverage: total {known}/{total}; 2022 {coverage_by_cohort[2022][0]}/{coverage_by_cohort[2022][1]}")
+    print(f"strike coverage by cohort: {cohort_text}")
+
     rows = load_rows(with_strike=True)
     cohorts = sorted({r["cohort_year"] for r in rows})
-    out = {k: [] for k in ("target", "hurdle", "neighbor", "stack_ridge",
-                           "stack_logit", "band_blend")}
+    out = {k: [] for k in ("target", "base_hurdle", "hurdle", "neighbor",
+                           "stack_ridge", "stack_logit", "band_blend")}
     for test_year in cohorts[2:]:
         train = [r for r in rows if r["cohort_year"] < test_year]
         test = [r for r in rows if r["cohort_year"] == test_year]
@@ -82,6 +136,11 @@ def run():
         te_y = [r["target"] for r in test]
 
         outer = _fit_prediction_model(train, "hurdle_ridge", RIDGE_LAMBDA)
+        base_train = [{**r, "features": r["features"][:-2]} for r in train]
+        base_outer = _fit_prediction_model(base_train, "hurdle_ridge", RIDGE_LAMBDA)
+        if not outer or not base_outer:
+            raise ValueError(f"could not fit outer models for cohort {test_year}")
+        te_base = hurdle_predict(base_outer, [r["features"][:-2] for r in test])
         te_h = hurdle_predict(outer, [r["features"] for r in test])
         te_n = knn_means(tr_can, tr_y, te_can)
 
@@ -147,6 +206,7 @@ def run():
             band = list(fallback)
 
         out["target"].extend(te_y)
+        out["base_hurdle"].extend(te_base)
         out["hurdle"].extend(te_h)
         out["neighbor"].extend(te_n)
         out["stack_ridge"].extend(stack_r)
@@ -159,18 +219,51 @@ def run():
     nk = _metric("kendall_tau_b", nb, t)
     na = _metric("roc_auc", nb, t)
     print(f"pooled n={len(t)}  neighbors: sp {ns:.4f} kt {nk:.4f} auc {na:.4f}")
+    mae = lambda preds: mean(abs(p - target) for p, target in zip(preds, t))
+    base_blend50 = [
+        0.5 * h + 0.5 * n for h, n in zip(out["base_hurdle"], out["neighbor"])
+    ]
+    print(
+        f"MAE: base hurdle {mae(out['base_hurdle']):.6f} -> "
+        f"strike hurdle {mae(out['hurdle']):.6f}"
+    )
+    print(f"MAE: base 50/50 {mae(base_blend50):.6f} vs neighbors {mae(nb):.6f}")
+
+    for alpha in (0.3, 0.5, 0.7):
+        blend = [
+            alpha * h + (1.0 - alpha) * n
+            for h, n in zip(out["base_hurdle"], out["neighbor"])
+        ]
+        print_deltas(f"base score alpha={alpha:.1f}", blend, t, nb)
+
+    base_ranks = ((rankdata(out["base_hurdle"], method="average") - 1) / (len(t) - 1)).tolist()
+    neighbor_ranks = ((rankdata(nb, method="average") - 1) / (len(t) - 1)).tolist()
+    for alpha in (0.3, 0.5, 0.7):
+        blend = [
+            alpha * h + (1.0 - alpha) * n
+            for h, n in zip(base_ranks, neighbor_ranks)
+        ]
+        print_deltas(f"base rank alpha={alpha:.1f}", blend, t, nb)
+
+    distinct_hurdle = sorted(set(out["base_hurdle"]))
+    min_gap = min(
+        right - left for left, right in zip(distinct_hurdle, distinct_hurdle[1:])
+    )
+    epsilon_scale = 0.5 * min_gap
+    epsilon = [
+        h + epsilon_scale * n for h, n in zip(out["base_hurdle"], neighbor_ranks)
+    ]
+    print_deltas("epsilon tie-break", epsilon, t, nb)
+
     blend50 = [0.5 * h + 0.5 * n for h, n in zip(out["hurdle"], out["neighbor"])]
     for name, preds in (
         ("hurdle(+strike%)", out["hurdle"]),
-        ("50/50 blend (ref)", blend50),
+        ("50/50 +strike", blend50),
         ("stack_ridge", out["stack_ridge"]),
         ("stack_contrib", out["stack_logit"]),
         ("band_blend", out["band_blend"]),
     ):
-        s = _metric("spearman_rho", preds, t) - ns
-        k = _metric("kendall_tau_b", preds, t) - nk
-        a = _metric("roc_auc", preds, t) - na
-        print(f"{name:20s} d-sp {s:+.4f}  d-kt {k:+.4f}  d-auc {a:+.4f}")
+        print_deltas(name, preds, t, nb)
 
 
 if __name__ == "__main__":
