@@ -1,7 +1,7 @@
 {
-  "candidate_count": 3024,
+  "candidate_count": 3023,
   "input_contract": {
-    "generated_at": "2026-08-17T00:00:00+00:00",
+    "generated_at": "2026-08-18T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -39897,103 +39897,6 @@
       "sample_reliability": 0.338,
       "sample_unit": "PA",
       "team": "Quad Cities River Bandits"
-    },
-    {
-      "age": 22,
-      "level": "AAA",
-      "mlbam_id": 699393,
-      "name": "Pedro Ram\u00edrez",
-      "normalized_name": "pedro ramirez",
-      "outcome_distribution": {
-        "bust_probability": 0.64,
-        "role_probability": 0.2,
-        "star_probability": 0.16
-      },
-      "outcomes": {
-        "established_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.36,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "probability"
-        },
-        "regular_probability": {
-          "conditional_on": null,
-          "gate_status": "active",
-          "prediction": 0.3348,
-          "prediction_source": "ridge",
-          "unit": "probability"
-        },
-        "representative_avg": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.2644,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "AVG"
-        },
-        "representative_hr_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 22.26,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "HR/600 PA"
-        },
-        "representative_k_pct": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 20.86,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "K%"
-        },
-        "representative_ops": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.7828,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "OPS"
-        },
-        "representative_pa": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 508.88,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "PA"
-        },
-        "representative_r_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 77.89,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "R/600 PA"
-        },
-        "representative_rbi_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 75.12,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "RBI/600 PA"
-        },
-        "representative_sb_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 14.27,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "SB/600 PA"
-        },
-        "star_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.16,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "probability"
-        }
-      },
-      "position": "3B",
-      "role": "hitter",
-      "sample": 196.0,
-      "sample_reliability": 0.495,
-      "sample_unit": "PA",
-      "team": "Iowa Cubs"
     },
     {
       "age": 22,
@@ -265164,7 +265067,7 @@
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 4.6584,
+          "prediction": 4.724,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "ERA"
         },
@@ -265178,21 +265081,21 @@
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 102.43,
+          "prediction": 103.23,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
         "representative_k_bb": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 2.6668,
+          "prediction": 2.656,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K:BB"
         },
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 7.97,
+          "prediction": 7.87,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -265206,35 +265109,35 @@
         "representative_qs_per_180": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 9.05,
+          "prediction": 8.83,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "QS/180 IP"
         },
         "representative_sv_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 2.77,
+          "prediction": 3.15,
           "prediction_source": "historical_neighbors_25",
           "unit": "SV+HLD/60 IP"
         },
         "representative_sv_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 1.03,
+          "prediction": 1.01,
           "prediction_source": "historical_neighbors_25",
           "unit": "SV/60 IP"
         },
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 1.3448,
+          "prediction": 1.3516,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "WHIP"
         },
         "rotation_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.0168,
+          "prediction": 0.016,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -315818,7 +315721,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-08-17T00:00:00+00:00",
+          "activated_at": "2026-08-18T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.033681,
           "cv_method": "walk_forward",
@@ -318604,7 +318507,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-08-17T00:00:00+00:00",
+          "activated_at": "2026-08-18T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.03029,
           "cv_method": "walk_forward",
