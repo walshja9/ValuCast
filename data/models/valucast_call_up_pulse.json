@@ -1,11 +1,21 @@
 {
   "artifact": "valucast_call_up_pulse",
   "by_identity": {
+    "679922_pitcher": {
+      "mlb_team": "KC",
+      "mlbam_id": "679922",
+      "name": "Carlos Duran",
+      "position": "P",
+      "prospect_rank": 460,
+      "role": "pitcher",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
     "682634_hitter": {
       "mlb_team": "CHC",
       "mlbam_id": "682634",
       "name": "Kevin Alc\u00e1ntara",
-      "position": "OF",
+      "position": "DH",
       "prospect_rank": 118,
       "role": "hitter",
       "status": "Active",
@@ -67,16 +77,6 @@
       "name": "Zach Maxwell",
       "position": "P",
       "prospect_rank": 888,
-      "role": "pitcher",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    "687273_pitcher": {
-      "mlb_team": "STL",
-      "mlbam_id": "687273",
-      "name": "Quinn Mathews",
-      "position": "P",
-      "prospect_rank": 79,
       "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
@@ -217,6 +217,16 @@
       "name": "Hayden Juenger",
       "position": "P",
       "prospect_rank": 1146,
+      "role": "pitcher",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    "699008_pitcher": {
+      "mlb_team": "PIT",
+      "mlbam_id": "699008",
+      "name": "Antwone Kelly",
+      "position": "P",
+      "prospect_rank": 379,
       "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
@@ -514,16 +524,6 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
     {
-      "mlb_team": "STL",
-      "mlbam_id": "687273",
-      "name": "Quinn Mathews",
-      "position": "P",
-      "prospect_rank": 79,
-      "role": "pitcher",
-      "status": "Active",
-      "usage": "call_up_pulse_context_not_live_rank_or_value"
-    },
-    {
       "mlb_team": "ATH",
       "mlbam_id": "695720",
       "name": "Tommy White",
@@ -547,7 +547,7 @@
       "mlb_team": "CHC",
       "mlbam_id": "682634",
       "name": "Kevin Alc\u00e1ntara",
-      "position": "OF",
+      "position": "DH",
       "prospect_rank": 118,
       "role": "hitter",
       "status": "Active",
@@ -670,6 +670,26 @@
       "position": "CF",
       "prospect_rank": 327,
       "role": "hitter",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
+      "mlb_team": "PIT",
+      "mlbam_id": "699008",
+      "name": "Antwone Kelly",
+      "position": "P",
+      "prospect_rank": 379,
+      "role": "pitcher",
+      "status": "Active",
+      "usage": "call_up_pulse_context_not_live_rank_or_value"
+    },
+    {
+      "mlb_team": "KC",
+      "mlbam_id": "679922",
+      "name": "Carlos Duran",
+      "position": "P",
+      "prospect_rank": 460,
+      "role": "pitcher",
       "status": "Active",
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     },
@@ -804,7 +824,7 @@
       "usage": "call_up_pulse_context_not_live_rank_or_value"
     }
   ],
-  "generated_at": "2026-08-18T12:18:52.255257+00:00",
+  "generated_at": "2026-08-18T20:10:17.000718+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
     "board_generated_at": "2026-08-18T00:00:00+00:00",
@@ -825,7 +845,7 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "call_up_count": 40
+    "call_up_count": 41
   },
   "validation": {
     "blockers": [],
