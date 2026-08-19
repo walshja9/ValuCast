@@ -1630,6 +1630,35 @@ def test_missing_audit_inputs_fail_closed_by_default():
     assert payload["surface_readiness"]["prospects"] is False
 
 
+def test_missing_audit_inputs_block_only_the_prospects_surface():
+    # Sol review (8/19): all three audit/report inputs are context-only for
+    # Buys and Movers. Failing closed on the prospects surface must NOT
+    # change dynasty, buys, or movers readiness — a missing context report
+    # can never brick the hard refresh gate.
+    from quality.valucast_governor import BUY_IRRELEVANT_BOARD_CHECK_IDS
+
+    for check_id in (
+        "milb_stat_freshness_audit",
+        "prospect_card_data_audit",
+        "recent_signal_report",
+    ):
+        assert check_id in BUY_IRRELEVANT_BOARD_CHECK_IDS
+
+    strict = _evaluate_quality_governor_strict([], prospect_rank=_prospect_rank([]))
+    relaxed = _evaluate_quality_governor_strict(
+        [], prospect_rank=_prospect_rank([]), require_audit_inputs=False
+    )
+    assert strict["ready_for_buys_promotion"] == relaxed["ready_for_buys_promotion"]
+    assert strict["ready_for_movers"] == relaxed["ready_for_movers"]
+    assert (
+        strict["surface_readiness"]["dynasty"]
+        == relaxed["surface_readiness"]["dynasty"]
+    )
+    assert strict["buy_blockers"] == relaxed["buy_blockers"]
+    assert strict["mover_blockers"] == relaxed["mover_blockers"]
+    assert strict["surface_readiness"]["prospects"] is False
+
+
 def test_missing_audit_inputs_relaxed_only_when_explicitly_requested():
     payload = _evaluate_quality_governor_strict(
         [], prospect_rank=_prospect_rank([]), require_audit_inputs=False

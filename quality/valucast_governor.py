@@ -68,6 +68,10 @@ BUY_IRRELEVANT_BOARD_CHECK_IDS = {
     "prospect_transition_continuity",
     "milb_stat_freshness_audit",
     "prospect_card_data_audit",
+    # Context-only report: feeds no buy score. Without this exclusion the
+    # plan 036 R3 fail-closed behavior would let a missing report block Buy
+    # promotion — and therefore the hard refresh gate (Sol review, 8/19).
+    "recent_signal_report",
 }
 
 MAX_TOP_MLB_VALUE_GAP = 18.0

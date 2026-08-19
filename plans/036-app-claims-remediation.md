@@ -77,14 +77,27 @@ default) — this is the bug's removal, stated plainly in the changelog.
 Tests: emitted form keys unique per role; +1 hitter BB / −0.5 pitcher BB
 round-trips distinctly; legacy-link behavior pinned.
 
-### R3 — One authoritative governor  [pipeline; no score change]
+### R3 — One authoritative governor  [pipeline; no score change] — IMPLEMENTED (PR #60, in Sol review)
 
-Build every audit before the snapshot; build the governor once; inject
-that exact artifact into the snapshot; hash-check equality between the
-embedded and standalone governor in the validator (fail the refresh on
-mismatch); missing audit inputs fail closed instead of reading as
-passing. Tests: workflow-wiring order assertions + embedded-hash
-equality.
+As-designed correction: "build every audit before the snapshot" is
+impossible — the card-data audit reads the finished snapshot AND feeds
+the governor. The implemented architecture is **inject-after**: the
+snapshot builds with a pending placeholder verdict (all surfaces held
+not-ready); the recent-signal report (no snapshot dependency) builds
+BEFORE the snapshot; the snapshot-reading audits build after it; the
+governor then evaluates exactly once with every input present and
+injects its exact artifact into the snapshot via a pure, idempotent
+merge. The validator fails the refresh on a pending placeholder, an
+embedded/validation-copy mismatch, or an embedded verdict that does not
+hash-match the committed artifact. Missing audit inputs fail closed on
+the prospects surface only — the three audit/report inputs are
+context-only for Buys/Movers (buy-exclusion set), so a missing context
+report can never brick the hard refresh gate. Full graduated-prospect
+id list persists in validation (the 12-row display sample silently
+shrank the graduated set on high-graduation days). First CI run on the
+PR empirically confirmed the two-verdicts divergence on committed data
+via the new hash check; both artifacts regenerated through the
+single-verdict path with identical surface readiness.
 
 ### R4 — Registry v2: separate claim rows from component rows  [registry design — needs owner sign-off]
 
@@ -136,12 +149,17 @@ Prospect-slots setting labeled as the board divider it is; methodology
 
 ## Sequencing
 
-R3 and R7 are safe immediately after review (no served scores move).
-R1 and R2 await owner authorization (product-claim changes). R5 starts
-with its read-only reproduction. R4 is a design sign-off then a PR. R6
+R3 is implemented (PR #60, held for Sol's pre-merge review). R5's
+read-only reproduction is complete (both defects confirmed on master:
+preset drift 776–824 of 915 MLB rows per preset, max mismatch 29.97;
+Now-$ invariant to roster size on all 915 rows; the replacement-aware
+allocator exists at `_compute_dynasty_dollars`). R7 is safe after
+normal review. R1 and R2 await owner authorization (product-claim
+changes); R5's fix likewise. R4 is a design sign-off then a PR. R6
 enters the registered-study queue behind the pitcher-pass program's
 Phase C window. Each item lands as its own PR with tests and a one-line
-rollback.
+rollback; every R-item PR holds for Sol's independent review before
+merge (process locked 2026-08-19: Fable implements, Sol reviews).
 
 ## Boundaries
 
