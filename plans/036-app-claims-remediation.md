@@ -1,8 +1,9 @@
 # Plan 036 — App Claims Remediation (canonical audit record, 2026-08-19)
 
-**Status: DRAFT — plan only. Nothing in this document is applied. Every
-item that changes a served output requires explicit owner authorization,
-item by item, before implementation.**
+**Status: PARTIALLY IMPLEMENTED — R3 implemented and pending merge
+(PR #60, Sol review); all other items remain plan-only. Every item that
+changes a served output requires explicit owner authorization, item by
+item, before implementation.**
 
 **Baseline:** GitHub master `64d95e6` (2026-08-19), the sole app-audit
 baseline by agreement. Findings below are the consensus canonical audit

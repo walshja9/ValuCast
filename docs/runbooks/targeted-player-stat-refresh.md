@@ -16,7 +16,7 @@ daily dataset was refreshed.
 ## Command
 
 ```powershell
-cd C:\Users\Alex\Documents\Codex\2026-05-18\league-values
+cd D:\ValuCast
 python scripts\refresh_milb_player_stats.py --mlbam-id 806198 --role hitter --season 2026 --fetched-date 2026-06-15
 ```
 
