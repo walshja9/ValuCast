@@ -68,6 +68,10 @@ BUY_IRRELEVANT_BOARD_CHECK_IDS = {
     "prospect_transition_continuity",
     "milb_stat_freshness_audit",
     "prospect_card_data_audit",
+    # Context-only report: feeds no buy score. Without this exclusion the
+    # plan 036 R3 fail-closed behavior would let a missing report block Buy
+    # promotion — and therefore the hard refresh gate (Sol review, 8/19).
+    "recent_signal_report",
 }
 
 MAX_TOP_MLB_VALUE_GAP = 18.0
@@ -1141,12 +1145,21 @@ def _prospect_current_stat_context_alignment(players: list[dict]) -> dict:
     )
 
 
-def _milb_stat_freshness_audit_check(audit: dict | None) -> dict:
+def _milb_stat_freshness_audit_check(
+    audit: dict | None, *, require_audit_inputs: bool = True
+) -> dict:
     if not audit:
+        # Plan 036 R3: a governor input that is absent fails CLOSED in the
+        # pipeline. Unit tests exercising unrelated checks may relax this via
+        # evaluate_quality_governor(require_audit_inputs=False).
         return _check(
             "milb_stat_freshness_audit",
-            True,
-            "MiLB stat freshness audit skipped because no audit artifact was provided.",
+            not require_audit_inputs,
+            (
+                "MiLB stat freshness audit artifact is missing; failing closed."
+                if require_audit_inputs
+                else "MiLB stat freshness audit skipped because no audit artifact was provided."
+            ),
             audit_present=False,
             max_allowed_blockers=MAX_MILB_STAT_FRESHNESS_BLOCKERS,
         )
@@ -1180,12 +1193,18 @@ def _milb_stat_freshness_audit_check(audit: dict | None) -> dict:
     )
 
 
-def _prospect_card_data_audit_check(audit: dict | None) -> dict:
+def _prospect_card_data_audit_check(
+    audit: dict | None, *, require_audit_inputs: bool = True
+) -> dict:
     if not audit:
         return _check(
             "prospect_card_data_audit",
-            True,
-            "Prospect card data audit skipped because no audit artifact was provided.",
+            not require_audit_inputs,
+            (
+                "Prospect card data audit artifact is missing; failing closed."
+                if require_audit_inputs
+                else "Prospect card data audit skipped because no audit artifact was provided."
+            ),
             audit_present=False,
         )
     metrics = audit.get("metrics") or {}
@@ -1212,12 +1231,18 @@ def _prospect_card_data_audit_check(audit: dict | None) -> dict:
     )
 
 
-def _recent_signal_report_check(report: dict | None) -> dict:
+def _recent_signal_report_check(
+    report: dict | None, *, require_audit_inputs: bool = True
+) -> dict:
     if not report:
         return _check(
             "recent_signal_report",
-            True,
-            "Recent signal report skipped because no report artifact was provided.",
+            not require_audit_inputs,
+            (
+                "Recent signal report artifact is missing; failing closed."
+                if require_audit_inputs
+                else "Recent signal report skipped because no report artifact was provided."
+            ),
             report_present=False,
         )
     summary = report.get("summary") or {}
@@ -1818,8 +1843,15 @@ def evaluate_quality_governor(
     recent_signal_report: dict | None = None,
     generated_at: str | None = None,
     graduated_prospect_ids: set[str] | None = None,
+    require_audit_inputs: bool = True,
 ) -> dict:
-    """Evaluate whether current ValuCast-owned outputs can power public surfaces."""
+    """Evaluate whether current ValuCast-owned outputs can power public surfaces.
+
+    Plan 036 R3: this is the SINGLE authoritative evaluation — the snapshot
+    builder no longer evaluates a second verdict; the committed artifact is
+    injected into the snapshot after all audits build. Missing audit inputs
+    fail closed unless ``require_audit_inputs=False`` (unit-test scope only).
+    """
     players = _player_rows(public_snapshot_or_rows)
     generated_at = generated_at or _generated_at(
         public_snapshot_or_rows if isinstance(public_snapshot_or_rows, dict) else None,
@@ -1830,16 +1862,26 @@ def evaluate_quality_governor(
         movers,
     )
     if graduated_prospect_ids is None and isinstance(public_snapshot_or_rows, dict):
-        graduated_prospect_ids = {
-            str(row.get("mlbam_id"))
-            for row in (
-                (public_snapshot_or_rows.get("validation") or {}).get(
-                    "prospects_excluded_by_mlb_identity_sample"
+        snapshot_validation = public_snapshot_or_rows.get("validation") or {}
+        # Prefer the full persisted id list (plan 036 R3); the display sample
+        # is truncated to 12 rows, which silently shrank this set on
+        # high-graduation days and made the verdict depend on who computed it.
+        full_ids = snapshot_validation.get("graduated_prospect_ids")
+        if isinstance(full_ids, list):
+            graduated_prospect_ids = {
+                str(value) for value in full_ids if value not in (None, "")
+            }
+        else:
+            graduated_prospect_ids = {
+                str(row.get("mlbam_id"))
+                for row in (
+                    snapshot_validation.get(
+                        "prospects_excluded_by_mlb_identity_sample"
+                    )
+                    or []
                 )
-                or []
-            )
-            if row.get("mlbam_id") not in (None, "")
-        }
+                if row.get("mlbam_id") not in (None, "")
+            }
 
     board_checks = [
         _surface_check(_top_mlb_value_gap(players), SURFACE_DYNASTY),
@@ -1879,15 +1921,24 @@ def evaluate_quality_governor(
             SURFACE_PROSPECTS,
         ),
         _surface_check(
-            _milb_stat_freshness_audit_check(milb_stat_freshness_audit),
+            _milb_stat_freshness_audit_check(
+                milb_stat_freshness_audit,
+                require_audit_inputs=require_audit_inputs,
+            ),
             SURFACE_PROSPECTS,
         ),
         _surface_check(
-            _prospect_card_data_audit_check(prospect_card_data_audit),
+            _prospect_card_data_audit_check(
+                prospect_card_data_audit,
+                require_audit_inputs=require_audit_inputs,
+            ),
             SURFACE_PROSPECTS,
         ),
         _surface_check(
-            _recent_signal_report_check(recent_signal_report),
+            _recent_signal_report_check(
+                recent_signal_report,
+                require_audit_inputs=require_audit_inputs,
+            ),
             SURFACE_PROSPECTS,
         ),
         _surface_check(_prospect_availability_coverage(players), SURFACE_PROSPECTS),

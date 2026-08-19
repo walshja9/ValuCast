@@ -478,3 +478,23 @@ def test_archive_current_features_noops_without_artifact(tmp_path):
     assert result["archive_written"] is False
     assert result["reason"] == "no features artifact"
     assert not (tmp_path / "archive").exists()
+
+
+def test_governor_builds_once_after_its_audit_inputs_and_before_observability():
+    # Plan 036 R3: one authoritative verdict. The recent-signal report (no
+    # snapshot dependency) builds BEFORE the snapshot; the snapshot-reading
+    # audits build after it; the governor then evaluates exactly once with
+    # every input present and injects its artifact back into the snapshot.
+    build = _build_commands()
+    snapshot = build.index("scripts/build_public_dynasty_snapshot.py")
+    governor_command = "scripts/build_valucast_quality_governor.py"
+    assert build.count(governor_command) == 1
+    governor = build.index(governor_command)
+    assert build.index("scripts/build_recent_signal_report.py") < snapshot
+    for audit in (
+        "scripts/build_milb_stat_freshness_audit.py",
+        "scripts/build_prospect_card_data_audit.py",
+    ):
+        assert snapshot < build.index(audit) < governor
+    # Pipeline observability reads the governor artifact.
+    assert governor < build.index("scripts/build_pipeline_observability.py")

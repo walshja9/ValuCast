@@ -8,9 +8,23 @@ import pytest
 from prospects.rank_v1 import _model_lookup, _model_score
 from quality.valucast_governor import (
     _prospect_transition_continuity,
-    evaluate_quality_governor,
     load_previous_prospect_rank,
 )
+from quality.valucast_governor import (
+    evaluate_quality_governor as _evaluate_quality_governor_strict,
+)
+
+
+def evaluate_quality_governor(*args, **kwargs):
+    """Unit-scope wrapper: relax the plan 036 R3 fail-closed audit gate.
+
+    These tests exercise individual checks with minimal fixtures and omit
+    the three audit artifacts; the fail-closed behavior itself has dedicated
+    tests (test_missing_audit_inputs_fail_closed*) that call the strict
+    import.
+    """
+    kwargs.setdefault("require_audit_inputs", False)
+    return _evaluate_quality_governor_strict(*args, **kwargs)
 
 QUALITY_GOVERNOR_PATH = Path("data/models/valucast_quality_governor.json")
 PROSPECT_TOP50_BUCKET_SHAPE_CHECK_ID = "prospect_top50_bucket_shape"
@@ -1595,3 +1609,97 @@ def test_public_quality_governor_prospect_top50_bucket_shape_guard_flags_breach(
         failed = True
 
     assert failed
+
+
+def _check_by_id(payload, check_id):
+    return next(check for check in payload["checks"] if check["id"] == check_id)
+
+
+def test_missing_audit_inputs_fail_closed_by_default():
+    # Plan 036 R3: an absent governor input is a blocked check, never a
+    # silent pass. The strict import is the production default.
+    payload = _evaluate_quality_governor_strict([], prospect_rank=_prospect_rank([]))
+    for check_id in (
+        "milb_stat_freshness_audit",
+        "prospect_card_data_audit",
+        "recent_signal_report",
+    ):
+        check = _check_by_id(payload, check_id)
+        assert check["status"] == "blocked"
+        assert "failing closed" in check["message"]
+    assert payload["surface_readiness"]["prospects"] is False
+
+
+def test_missing_audit_inputs_block_only_the_prospects_surface():
+    # Sol review (8/19): all three audit/report inputs are context-only for
+    # Buys and Movers. Failing closed on the prospects surface must NOT
+    # change dynasty, buys, or movers readiness — a missing context report
+    # can never brick the hard refresh gate.
+    from quality.valucast_governor import BUY_IRRELEVANT_BOARD_CHECK_IDS
+
+    for check_id in (
+        "milb_stat_freshness_audit",
+        "prospect_card_data_audit",
+        "recent_signal_report",
+    ):
+        assert check_id in BUY_IRRELEVANT_BOARD_CHECK_IDS
+
+    strict = _evaluate_quality_governor_strict([], prospect_rank=_prospect_rank([]))
+    relaxed = _evaluate_quality_governor_strict(
+        [], prospect_rank=_prospect_rank([]), require_audit_inputs=False
+    )
+    assert strict["ready_for_buys_promotion"] == relaxed["ready_for_buys_promotion"]
+    assert strict["ready_for_movers"] == relaxed["ready_for_movers"]
+    assert (
+        strict["surface_readiness"]["dynasty"]
+        == relaxed["surface_readiness"]["dynasty"]
+    )
+    assert strict["buy_blockers"] == relaxed["buy_blockers"]
+    assert strict["mover_blockers"] == relaxed["mover_blockers"]
+    assert strict["surface_readiness"]["prospects"] is False
+
+
+def test_missing_audit_inputs_relaxed_only_when_explicitly_requested():
+    payload = _evaluate_quality_governor_strict(
+        [], prospect_rank=_prospect_rank([]), require_audit_inputs=False
+    )
+    for check_id in (
+        "milb_stat_freshness_audit",
+        "prospect_card_data_audit",
+        "recent_signal_report",
+    ):
+        assert _check_by_id(payload, check_id)["status"] == "passed"
+
+
+def test_graduated_ids_prefer_full_persisted_list_over_truncated_sample():
+    # Plan 036 R3: the display sample truncates to 12 rows; the persisted
+    # full list is authoritative so the verdict cannot depend on who
+    # computed it on a high-graduation day.
+    sample = [{"mlbam_id": 100 + index} for index in range(12)]
+    full = [str(100 + index) for index in range(20)]
+    snapshot = {
+        "players": [],
+        "validation": {
+            "prospects_excluded_by_mlb_identity_sample": sample,
+            "graduated_prospect_ids": full,
+        },
+    }
+    captured = {}
+
+    import quality.valucast_governor as governor_module
+
+    original = governor_module._prospect_rank_surface_suppression
+
+    def capture(prospect_rank, players, graduated_ids):
+        captured["ids"] = graduated_ids
+        return original(prospect_rank, players, graduated_ids)
+
+    governor_module._prospect_rank_surface_suppression = capture
+    try:
+        governor_module.evaluate_quality_governor(
+            snapshot, prospect_rank=_prospect_rank([]), require_audit_inputs=False
+        )
+    finally:
+        governor_module._prospect_rank_surface_suppression = original
+
+    assert captured["ids"] == set(full)

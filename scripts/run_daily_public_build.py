@@ -106,12 +106,20 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     ("scripts/build_prospect_shadow_promotion.py",),
     ("scripts/build_front_office_failures.py",),
     ("scripts/build_raw_data_independence_audit.py",),
+    # Recent-signal report reads only rank/buys/archives (no snapshot
+    # dependency), so it builds BEFORE the snapshot as a governor input
+    # (plan 036 R3).
+    ("scripts/build_recent_signal_report.py",),
+    # Plan 036 R3 build order: the snapshot writes with a pending governor
+    # placeholder; the snapshot-reading audits build next; then the governor
+    # runs ONCE with every input present and injects its exact artifact back
+    # into the snapshot. No second evaluation exists.
     ("scripts/build_public_dynasty_snapshot.py",),
     # Comps read the snapshot's translated lines, so they build right after it.
     ("scripts/build_prospect_comps.py",),
     ("scripts/build_milb_stat_freshness_audit.py",),
     ("scripts/build_prospect_card_data_audit.py",),
-    ("scripts/build_recent_signal_report.py",),
+    ("scripts/build_valucast_quality_governor.py",),
     ("scripts/build_recent_form_signal.py",),
     ("scripts/build_sts_consensus_snapshot.py", "--write"),
     ("scripts/build_fangraphs_fv_snapshot.py", "--write"),
@@ -130,7 +138,6 @@ BUILD_STEPS: list[tuple[str, ...]] = [
     # here. Additive/observe-only: never a model/rank/value input.
     ("scripts/build_forward_scoreboard.py",),
     ("scripts/build_scouting_repository.py",),
-    ("scripts/build_valucast_quality_governor.py",),
     ("scripts/build_pipeline_observability.py",),
     ("scripts/build_front_office_report.py",),
 ]

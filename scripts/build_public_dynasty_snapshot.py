@@ -13,11 +13,35 @@ sys.path.insert(0, str(ROOT))
 
 from prospects.buys import PROSPECT_BUYS_EPOCH  # noqa: E402
 from prospects.milb_stat_freshness import build_milb_stat_freshness_audit  # noqa: E402
-from quality.valucast_governor import (  # noqa: E402
-    evaluate_quality_governor,
-    load_previous_prospect_rank,
-)
+from quality.valucast_governor import load_previous_prospect_rank  # noqa: E402
 from web.public_snapshot_store import required_field_problems  # noqa: E402
+
+# Plan 036 R3: the snapshot builder no longer evaluates a governor verdict of
+# its own. It writes with the pending placeholder below; the single
+# authoritative evaluation runs later in the pipeline
+# (scripts/build_valucast_quality_governor.py) once every audit input exists,
+# and that exact artifact is injected via inject_quality_governor().
+PENDING_GOVERNOR_MESSAGE = (
+    "Quality governor verdict has not been injected into this snapshot yet."
+)
+PENDING_QUALITY_GOVERNOR = {
+    "artifact": "valucast_quality_governor",
+    "status": "pending_injection",
+    "governor_version": "pending_injection",
+    "ready_for_public_snapshot": False,
+    "ready_for_buys_promotion": False,
+    "ready_for_movers": False,
+    "blockers": [PENDING_GOVERNOR_MESSAGE],
+    "buy_blockers": [PENDING_GOVERNOR_MESSAGE],
+    "mover_blockers": [PENDING_GOVERNOR_MESSAGE],
+    "surface_readiness": {"dynasty": False, "prospects": False, "buys": False},
+    "surface_blockers": {
+        "dynasty": [PENDING_GOVERNOR_MESSAGE],
+        "prospects": [PENDING_GOVERNOR_MESSAGE],
+        "buys": [PENDING_GOVERNOR_MESSAGE],
+    },
+}
+GOVERNOR_ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_quality_governor.json"
 
 PROSPECT_INPUTS_PATH = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
 MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
@@ -982,6 +1006,7 @@ def _validation(
     graduation_transition_floor_count: int = 0,
     active_mlb_callup_bridge_count: int = 0,
     active_mlb_callup_bridge_sample: list[dict] | None = None,
+    graduated_prospect_ids: list[str] | None = None,
 ) -> dict:
     players = payload.get("players") or []
     identity_keys = [key for row in players if (key := _identity_key(row))]
@@ -1036,11 +1061,7 @@ def _validation(
             buy_validation.get("blockers")
             or ["ValuCast buy signals are still shadow-only."]
         )
-    if not quality_governor.get("ready_for_buys_promotion"):
-        buy_blockers.extend(
-            quality_governor.get("buy_blockers")
-            or ["ValuCast quality governor has not approved Buy promotion."]
-        )
+    # (The governor's buy verdict merges in apply_quality_governor_validation.)
     date_values = [generated_date, rank_date]
     if mlb_layer:
         date_values.append(mlb_date)
@@ -1069,46 +1090,7 @@ def _validation(
             {"dynasty", "prospects"},
         )
 
-    quality_surface_readiness = quality_governor.get("surface_readiness") or {}
-    quality_blockers = []
-    if not quality_governor.get("ready_for_public_snapshot"):
-        quality_blockers = (
-            quality_governor.get("blockers")
-            or ["ValuCast quality governor has not approved public snapshot promotion."]
-        )
-    governor_surface_blockers = quality_governor.get("surface_blockers")
-    if isinstance(governor_surface_blockers, dict):
-        governor_dynasty_blockers = list(governor_surface_blockers.get("dynasty") or [])
-        governor_prospect_blockers = list(
-            governor_surface_blockers.get("prospects") or []
-        )
-    else:
-        governor_dynasty_blockers = list(quality_blockers)
-        governor_prospect_blockers = list(quality_blockers)
-
-    dynasty_blockers = list(
-        dict.fromkeys(local_surface_blockers["dynasty"] + governor_dynasty_blockers)
-    )
-    prospect_blockers = list(
-        dict.fromkeys(local_surface_blockers["prospects"] + governor_prospect_blockers)
-    )
-    blockers = list(dict.fromkeys(local_blockers + quality_blockers))
-    buy_blockers = list(dict.fromkeys(buy_blockers))
-    dynasty_ready = (
-        not dynasty_blockers
-        and bool(calibration_report.get("applied"))
-        and bool(quality_surface_readiness.get("dynasty"))
-    )
-    prospects_ready = (
-        not prospect_blockers
-        and bool(calibration_report.get("applied"))
-        and bool(quality_surface_readiness.get("prospects"))
-    )
-    buys_ready = dynasty_ready and bool(quality_surface_readiness.get("buys"))
-
-    return {
-        "ready_for_live_consumers": dynasty_ready and prospects_ready,
-        "ready_for_all_public_surfaces": dynasty_ready and prospects_ready and buys_ready,
+    local = {
         "same_day_freshness": same_day_freshness,
         "generated_dates": {
             "public_snapshot": generated_date,
@@ -1134,11 +1116,6 @@ def _validation(
         "valucast_buy_signals_ready": bool(
             buy_validation.get("ready_for_live_consumers")
         ),
-        "quality_governor_ready": bool(
-            quality_governor.get("ready_for_public_snapshot")
-        ),
-        "quality_governor_version": quality_governor.get("governor_version"),
-        "quality_governor_blockers": quality_governor.get("blockers") or [],
         "prospects_excluded_by_mlb_identity_count": prospects_excluded_by_mlb_identity_count,
         "prospects_excluded_by_mlb_identity_sample": prospects_excluded_by_mlb_identity_sample,
         "active_mlb_callup_bridge_count": active_mlb_callup_bridge_count,
@@ -1149,20 +1126,109 @@ def _validation(
         "cross_universe_value_scale_calibrated": False,
         "cross_universe_value_scale_compatibility_certified": bool(calibration_report.get("applied")),
         "cross_universe_calibration": calibration_report,
-        "quality_governor": quality_governor,
-        "surface_readiness": {
-            "dynasty": dynasty_ready,
-            "prospects": prospects_ready,
-            "buys": buys_ready,
+        # Plan 036 R3: the governor-independent inputs persist so the merged
+        # readiness fields can be recomputed purely from (this dict, verdict)
+        # at injection time — and re-injection stays idempotent.
+        "local_blockers": local_blockers,
+        "local_surface_blockers": {
+            "dynasty": list(local_surface_blockers["dynasty"]),
+            "prospects": list(local_surface_blockers["prospects"]),
         },
-        "surface_blockers": {
-            "dynasty": dynasty_blockers,
-            "prospects": prospect_blockers,
-            "buys": buy_blockers,
-        },
-        "buy_signal_blockers": buy_blockers,
-        "blockers": blockers,
+        "local_buy_blockers": buy_blockers,
+        "graduated_prospect_ids": graduated_prospect_ids or [],
     }
+    return apply_quality_governor_validation(local, quality_governor)
+
+
+def apply_quality_governor_validation(validation: dict, quality_governor: dict) -> dict:
+    """Merge a governor verdict into a snapshot validation block (pure).
+
+    Plan 036 R3: derives every governor-dependent field from the persisted
+    governor-independent inputs plus the verdict, so the committed governor
+    artifact can be injected after the audits build — and injected again —
+    without a second evaluation or drift.
+    """
+    merged = dict(validation)
+    local_blockers = list(validation.get("local_blockers") or [])
+    local_surface_blockers = validation.get("local_surface_blockers") or {}
+    buy_blockers = list(validation.get("local_buy_blockers") or [])
+    if not quality_governor.get("ready_for_buys_promotion"):
+        buy_blockers.extend(
+            quality_governor.get("buy_blockers")
+            or ["ValuCast quality governor has not approved Buy promotion."]
+        )
+    quality_surface_readiness = quality_governor.get("surface_readiness") or {}
+    quality_blockers = []
+    if not quality_governor.get("ready_for_public_snapshot"):
+        quality_blockers = (
+            quality_governor.get("blockers")
+            or ["ValuCast quality governor has not approved public snapshot promotion."]
+        )
+    governor_surface_blockers = quality_governor.get("surface_blockers")
+    if isinstance(governor_surface_blockers, dict):
+        governor_dynasty_blockers = list(governor_surface_blockers.get("dynasty") or [])
+        governor_prospect_blockers = list(
+            governor_surface_blockers.get("prospects") or []
+        )
+    else:
+        governor_dynasty_blockers = list(quality_blockers)
+        governor_prospect_blockers = list(quality_blockers)
+
+    dynasty_blockers = list(
+        dict.fromkeys(
+            list(local_surface_blockers.get("dynasty") or [])
+            + governor_dynasty_blockers
+        )
+    )
+    prospect_blockers = list(
+        dict.fromkeys(
+            list(local_surface_blockers.get("prospects") or [])
+            + governor_prospect_blockers
+        )
+    )
+    blockers = list(dict.fromkeys(local_blockers + quality_blockers))
+    buy_blockers = list(dict.fromkeys(buy_blockers))
+    calibration_applied = bool(
+        validation.get("cross_universe_value_scale_compatibility_certified")
+    )
+    dynasty_ready = (
+        not dynasty_blockers
+        and calibration_applied
+        and bool(quality_surface_readiness.get("dynasty"))
+    )
+    prospects_ready = (
+        not prospect_blockers
+        and calibration_applied
+        and bool(quality_surface_readiness.get("prospects"))
+    )
+    buys_ready = dynasty_ready and bool(quality_surface_readiness.get("buys"))
+    merged.update(
+        {
+            "ready_for_live_consumers": dynasty_ready and prospects_ready,
+            "ready_for_all_public_surfaces": (
+                dynasty_ready and prospects_ready and buys_ready
+            ),
+            "quality_governor_ready": bool(
+                quality_governor.get("ready_for_public_snapshot")
+            ),
+            "quality_governor_version": quality_governor.get("governor_version"),
+            "quality_governor_blockers": quality_governor.get("blockers") or [],
+            "quality_governor": quality_governor,
+            "surface_readiness": {
+                "dynasty": dynasty_ready,
+                "prospects": prospects_ready,
+                "buys": buys_ready,
+            },
+            "surface_blockers": {
+                "dynasty": dynasty_blockers,
+                "prospects": prospect_blockers,
+                "buys": buy_blockers,
+            },
+            "buy_signal_blockers": buy_blockers,
+            "blockers": blockers,
+        }
+    )
+    return merged
 
 
 def build_snapshot(
@@ -1422,19 +1488,13 @@ def build_snapshot(
             public_snapshot={"players": players},
             generated_at=generated_at,
         )
-    quality_governor = evaluate_quality_governor(
-        players,
-        prospect_rank=prospect_rank,
-        previous_prospect_rank=previous_prospect_rank,
-        prospect_coverage_audit=prospect_coverage_audit,
-        mlb_layer=mlb_layer,
-        buy_signals=buy_signals,
-        buy_review=buy_review,
-        movers=movers,
-        milb_stat_freshness_audit=milb_stat_freshness_audit,
-        generated_at=generated_at,
-        graduated_prospect_ids=graduated_ids,
-    )
+    # Plan 036 R3: no in-build evaluation. The snapshot ships with the pending
+    # placeholder (all surfaces held not-ready); the single authoritative
+    # verdict is evaluated after the audits build and injected via
+    # inject_quality_governor(). previous_prospect_rank / buy_review / movers
+    # remain parameters for compatibility — the governor now consumes them
+    # from disk in run_quality_governor.
+    quality_governor = PENDING_QUALITY_GOVERNOR
     payload = {
         "schema_version": SCHEMA_VERSION,
         "artifact": ARTIFACT_NAME,
@@ -1505,6 +1565,7 @@ def build_snapshot(
         graduation_transition_floor_count,
         len(callup_bridge_rows),
         active_callup_bridge_sample,
+        graduated_prospect_ids=sorted(str(value) for value in graduated_ids),
     )
     return payload
 
@@ -1515,6 +1576,28 @@ def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     os.replace(tmp, path)
     return path
+
+
+def inject_quality_governor(
+    snapshot_path: Path = OUTPUT_PATH,
+    governor_path: Path = GOVERNOR_ARTIFACT_PATH,
+) -> dict:
+    """Inject the committed governor artifact into the committed snapshot.
+
+    Plan 036 R3: the artifact written by the single authoritative evaluation
+    becomes the snapshot's embedded verdict byte-for-byte; the merged
+    validation fields are recomputed purely from the persisted
+    governor-independent inputs. Idempotent — re-injection reproduces the
+    same result.
+    """
+    payload = _load_json(snapshot_path)
+    governor = _load_json(governor_path)
+    payload["quality_governor"] = governor
+    payload["validation"] = apply_quality_governor_validation(
+        payload.get("validation") or {}, governor
+    )
+    write_snapshot(payload, snapshot_path)
+    return payload
 
 
 def main() -> None:
