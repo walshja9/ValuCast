@@ -504,7 +504,9 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
     assert payload["validation"]["valucast_buy_signal_count"] == 2
     assert payload["validation"]["valucast_buy_signals_ready"] is False
-    assert payload["validation"]["quality_governor_ready"] is True
+    # Plan 036 R3: at build time the verdict is the pending placeholder;
+    # readiness can only arrive by injection of the committed artifact.
+    assert payload["validation"]["quality_governor_ready"] is False
     assert payload["validation"]["required_fields_complete"] is True
     assert payload["validation"]["required_field_problem_count"] == 0
     assert payload["validation"]["surface_readiness"]["buys"] is False
@@ -516,6 +518,17 @@ def test_build_snapshot_certifies_compatibility_without_claiming_calibrated_unit
         _rank_payload(),
         mlb_layer=_ready_mlb_payload(),
         buy_signals=_buy_payload(),
+    )
+    # Plan 036 R3: readiness arrives by evaluate-once + inject-apply — the
+    # same path the pipeline takes (fixtures omit the audit artifacts).
+    from quality.valucast_governor import evaluate_quality_governor
+
+    verdict = evaluate_quality_governor(
+        payload, prospect_rank=_rank_payload(), require_audit_inputs=False
+    )
+    payload["quality_governor"] = verdict
+    payload["validation"] = snapshot_builder.apply_quality_governor_validation(
+        payload["validation"], verdict
     )
     problems = validate_public_snapshot_payload(payload)
 
@@ -597,35 +610,34 @@ def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked
 ):
     prospect_blocker = "Top prospect board is too pitcher-heavy for public promotion."
 
-    def fake_quality_governor(*args, **kwargs):
-        return {
-            "governor_version": "test",
-            "ready_for_public_snapshot": False,
-            "ready_for_buys_promotion": False,
-            "blockers": [prospect_blocker],
-            "buy_blockers": [prospect_blocker],
-            "surface_readiness": {
-                "dynasty": True,
-                "prospects": False,
-                "buys": False,
-            },
-            "surface_blockers": {
-                "dynasty": [],
-                "prospects": [prospect_blocker],
-                "buys": [prospect_blocker],
-            },
-        }
-
-    monkeypatch.setattr(
-        snapshot_builder,
-        "evaluate_quality_governor",
-        fake_quality_governor,
-    )
+    verdict = {
+        "governor_version": "test",
+        "ready_for_public_snapshot": False,
+        "ready_for_buys_promotion": False,
+        "blockers": [prospect_blocker],
+        "buy_blockers": [prospect_blocker],
+        "surface_readiness": {
+            "dynasty": True,
+            "prospects": False,
+            "buys": False,
+        },
+        "surface_blockers": {
+            "dynasty": [],
+            "prospects": [prospect_blocker],
+            "buys": [prospect_blocker],
+        },
+    }
 
     payload = build_snapshot(
         _rank_payload(),
         mlb_layer=_ready_mlb_payload(),
         buy_signals=_buy_payload(),
+    )
+    # Plan 036 R3: the verdict arrives by injection, never by a second
+    # in-build evaluation.
+    payload["quality_governor"] = verdict
+    payload["validation"] = snapshot_builder.apply_quality_governor_validation(
+        payload["validation"], verdict
     )
 
     assert payload["validation"]["ready_for_live_consumers"] is False
@@ -666,80 +678,138 @@ def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked
     assert compatibility["value_units_calibrated"] is False
 
 
-def test_build_snapshot_forwards_previous_prospect_rank_to_governor(monkeypatch):
-    previous = {"generated_at": "2026-06-12T12:00:00+00:00", "board": []}
-    captured = {}
+def _ready_verdict(**overrides):
+    verdict = {
+        "governor_version": "test",
+        "ready_for_public_snapshot": True,
+        "ready_for_buys_promotion": True,
+        "ready_for_movers": True,
+        "blockers": [],
+        "buy_blockers": [],
+        "mover_blockers": [],
+        "surface_readiness": {"dynasty": True, "prospects": True, "buys": True},
+        "surface_blockers": {"dynasty": [], "prospects": [], "buys": []},
+    }
+    verdict.update(overrides)
+    return verdict
 
-    def fake_quality_governor(*args, **kwargs):
-        captured["previous"] = kwargs.get("previous_prospect_rank")
-        return {
-            "governor_version": "test",
-            "ready_for_public_snapshot": True,
-            "ready_for_buys_promotion": False,
-            "blockers": [],
-            "buy_blockers": [],
-            "surface_readiness": {
-                "dynasty": True,
-                "prospects": True,
-                "buys": False,
-            },
-            "surface_blockers": {
-                "dynasty": [],
-                "prospects": [],
-                "buys": [],
-            },
-        }
 
-    monkeypatch.setattr(snapshot_builder, "evaluate_quality_governor", fake_quality_governor)
-
-    build_snapshot(
+def test_build_snapshot_embeds_pending_placeholder_and_holds_surfaces():
+    # Plan 036 R3: no in-build evaluation. Until injection, every surface is
+    # honestly not-ready with the pending blocker visible.
+    payload = build_snapshot(
         _rank_payload(),
         mlb_layer=_ready_mlb_payload(),
         buy_signals=_buy_payload(),
-        previous_prospect_rank=previous,
     )
 
-    assert captured["previous"] is previous
+    assert payload["quality_governor"]["status"] == "pending_injection"
+    validation = payload["validation"]
+    assert validation["ready_for_live_consumers"] is False
+    assert validation["surface_readiness"] == {
+        "dynasty": False,
+        "prospects": False,
+        "buys": False,
+    }
+    assert snapshot_builder.PENDING_GOVERNOR_MESSAGE in validation["blockers"]
+    # The governor-independent inputs persist for injection-time recompute.
+    assert "local_blockers" in validation
+    assert "local_surface_blockers" in validation
+    assert "local_buy_blockers" in validation
+    assert isinstance(validation["graduated_prospect_ids"], list)
 
 
-def test_build_snapshot_forwards_movers_to_governor(monkeypatch):
+def test_run_quality_governor_forwards_disk_inputs_once(tmp_path, monkeypatch):
+    import quality.valucast_governor as governor_module
+
     movers = {
         "generated_at": "2026-08-10T12:00:00+00:00",
         "source_policy": {"mode": "native_daily_history"},
         "validation": {"ready_for_live_consumers": True},
     }
+    recent_signal = {"generated_at": "2026-08-10T12:00:00+00:00", "summary": {}}
+    snapshot = {"players": [], "validation": {}}
+    paths = {}
+    for name, content in (
+        ("snapshot", snapshot),
+        ("rank", {"generated_at": "2026-08-10T12:00:00+00:00", "board": []}),
+        ("movers", movers),
+        ("recent_signal", recent_signal),
+    ):
+        paths[name] = tmp_path / f"{name}.json"
+        paths[name].write_text(json.dumps(content), encoding="utf-8")
+
     captured = {}
 
-    def fake_quality_governor(*args, **kwargs):
-        captured["movers"] = kwargs.get("movers")
-        return {
-            "governor_version": "test",
-            "ready_for_public_snapshot": True,
-            "ready_for_buys_promotion": False,
-            "blockers": [],
-            "buy_blockers": [],
-            "surface_readiness": {
-                "dynasty": True,
-                "prospects": True,
-                "buys": False,
-            },
-            "surface_blockers": {
-                "dynasty": [],
-                "prospects": [],
-                "buys": [],
-            },
-        }
+    def fake_evaluate(snapshot_payload, **kwargs):
+        captured.update(kwargs)
+        captured["snapshot"] = snapshot_payload
+        captured["calls"] = captured.get("calls", 0) + 1
+        return _ready_verdict()
 
-    monkeypatch.setattr(snapshot_builder, "evaluate_quality_governor", fake_quality_governor)
+    monkeypatch.setattr(governor_module, "evaluate_quality_governor", fake_evaluate)
 
-    build_snapshot(
+    artifact_path = tmp_path / "governor.json"
+    governor_module.run_quality_governor(
+        public_snapshot_path=paths["snapshot"],
+        prospect_rank_path=paths["rank"],
+        prospect_coverage_audit_path=tmp_path / "missing_coverage.json",
+        mlb_layer_path=tmp_path / "missing_mlb.json",
+        buy_signals_path=tmp_path / "missing_buys.json",
+        buy_review_path=tmp_path / "missing_review.json",
+        movers_path=paths["movers"],
+        milb_stat_freshness_audit_path=tmp_path / "missing_freshness.json",
+        prospect_card_data_audit_path=tmp_path / "missing_card.json",
+        recent_signal_report_path=paths["recent_signal"],
+        prospect_rank_archive_dir=tmp_path / "archive",
+        artifact_path=artifact_path,
+    )
+
+    assert captured["calls"] == 1
+    assert captured["movers"] == movers
+    assert captured["recent_signal_report"] == recent_signal
+    assert captured["snapshot"] == snapshot
+    assert json.loads(artifact_path.read_text(encoding="utf-8")) == _ready_verdict()
+
+
+def test_inject_quality_governor_is_exact_and_idempotent(tmp_path):
+    payload = build_snapshot(
         _rank_payload(),
         mlb_layer=_ready_mlb_payload(),
         buy_signals=_buy_payload(),
-        movers=movers,
+    )
+    snapshot_path = _write_snapshot(tmp_path, payload)
+    verdict = _ready_verdict()
+    governor_path = tmp_path / "governor.json"
+    governor_path.write_text(
+        json.dumps(verdict, indent=2, sort_keys=True), encoding="utf-8"
     )
 
-    assert captured["movers"] is movers
+    injected = snapshot_builder.inject_quality_governor(snapshot_path, governor_path)
+
+    assert injected["quality_governor"] == verdict
+    assert injected["validation"]["quality_governor"] == verdict
+    assert injected["validation"]["surface_readiness"]["dynasty"] is True
+    assert injected["validation"]["quality_governor_ready"] is True
+
+    again = snapshot_builder.inject_quality_governor(snapshot_path, governor_path)
+    assert again == injected
+
+    from scripts.validate_public_dynasty_snapshot import (
+        governor_consistency_problems,
+    )
+
+    assert governor_consistency_problems(injected, governor_path) == []
+    # A never-injected snapshot fails the refresh-time consistency check.
+    assert governor_consistency_problems(payload, governor_path) == [
+        "quality governor verdict was never injected into the snapshot"
+    ]
+    # A verdict that drifts from the committed artifact fails hash equality.
+    drifted = json.loads(json.dumps(injected))
+    drifted["quality_governor"]["governor_version"] = "tampered"
+    drifted["validation"]["quality_governor"] = drifted["quality_governor"]
+    problems = governor_consistency_problems(drifted, governor_path)
+    assert problems and "hash-match" in problems[0]
 
 
 def test_public_snapshot_preserves_prospect_handedness_for_scouting():
@@ -1021,6 +1091,17 @@ def test_quality_governor_blocks_public_snapshot_promotion():
         _rank_payload(),
         mlb_layer=mlb_layer,
         buy_signals=_buy_payload(),
+    )
+    # Plan 036 R3: evaluate once on the built snapshot, then inject-apply —
+    # the same path the pipeline takes.
+    from quality.valucast_governor import evaluate_quality_governor
+
+    verdict = evaluate_quality_governor(
+        payload, prospect_rank=_rank_payload(), require_audit_inputs=False
+    )
+    payload["quality_governor"] = verdict
+    payload["validation"] = snapshot_builder.apply_quality_governor_validation(
+        payload["validation"], verdict
     )
 
     assert payload["validation"]["ready_for_live_consumers"] is False
