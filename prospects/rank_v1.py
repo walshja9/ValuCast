@@ -149,7 +149,9 @@ MODEL_COMPONENT_WEIGHTS = {
 MODEL_SCORE_QUANTILE_NORMALIZATION_VERSION = "role_quantile_to_pooled_v0_1"
 MODEL_SCORE_QUANTILE_NORMALIZED_SUFFIX = "_role_quantile_normalized"
 MODEL_SCORE_QUANTILE_PERCENTILE_SUFFIX = "_role_percentile"
-MODEL_SCORE_SOURCES = frozenset({"prospect_model_v0_6", "prospect_model_v0_8"})
+MODEL_SCORE_SOURCES = frozenset({
+    "prospect_model_v0_6", "prospect_model_v0_8", "prospect_model_v0_9"
+})
 SCORE_WEIGHTS = {
     "prospect_model_v0_6": {
         "model_score": 0.76,

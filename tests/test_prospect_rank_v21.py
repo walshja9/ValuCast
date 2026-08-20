@@ -227,3 +227,87 @@ def test_reconstruct_fold_ladders_keeps_the_v1_hitter_score_and_v09_pitcher_scor
     assert result["candidate_pitchers"][0]["source_ladder_position"] == 1
     assert result["candidate_pitchers"][0]["target"] == 0.5
     assert result["candidate_pitchers"][0]["outcome"] == "role"
+
+
+def test_frozen_v09_reconstruction_uses_the_real_shared_candidate_contract():
+    generated_at = "2021-09-30T00:00:00+00:00"
+
+    def profile(mlbam_id, role, tier):
+        return {
+            "mlbam_id": mlbam_id,
+            "name": f"Player {mlbam_id}",
+            "normalized_name": f"player {mlbam_id}",
+            "role": role,
+            "position": "SS" if role == "hitter" else "SP",
+            "team": "Test Club",
+            "age": 20,
+            "level": "AA",
+            "sample": 200,
+            "sample_unit": "PA" if role == "hitter" else "IP",
+            "sample_reliability": 0.6,
+            "outcome_distribution": {
+                "bust_probability": 1.0 - tier,
+                "role_probability": tier,
+                "star_probability": 0.0,
+            },
+            "dynasty_signal": {
+                "bust_risk": 1.0 - tier,
+                "role_or_better_probability": tier,
+                "star_ceiling_probability": 0.0,
+                "expected_factual_outcome_tier": tier,
+                "outcome_uncertainty": 0.5,
+            },
+        }
+
+    hitter, pitcher = profile(1, "hitter", 0.8), profile(2, "pitcher", 0.7)
+    fold = {
+        "test_cohort": 2021,
+        "targets": {("1", "hitter"): 1.0, ("2", "pitcher"): 0.5},
+        "eligible_rows": [
+            {"mlbam_id": 1, "role": "hitter", "outcome": "star"},
+            {"mlbam_id": 2, "role": "pitcher", "outcome": "role"},
+        ],
+        "input_contract": {
+            "generated_at": generated_at,
+            "current": {
+                "hitters": [{"mlbam_id": 1, "name": "Player 1", "plate_appearances": 200, "source_kind": "current_season"}],
+                "pitchers": [{"mlbam_id": 2, "name": "Player 2", "innings_pitched": 100, "source_kind": "current_season"}],
+            },
+        },
+        "context": {
+            "prospect_universe": {
+                "schema_version": "1.0",
+                "artifact": "valucast_prospect_universe",
+                "generated_at": generated_at,
+                "candidate_count": 2,
+                "players": [
+                    {key: value for key, value in hitter.items() if key not in {"outcome_distribution", "dynasty_signal", "position", "team", "sample", "sample_unit"}},
+                    {key: value for key, value in pitcher.items() if key not in {"outcome_distribution", "dynasty_signal", "position", "team", "sample", "sample_unit"}},
+                ],
+            },
+            "dynasty_layer": {
+                "generated_at": generated_at,
+                "layer_version": "0.1.0",
+                "release_contract": {"consumer": "prospect_rank_v1", "feeds_live_valucast_rank": True},
+                "profiles": [hitter, pitcher],
+            },
+            "prospect_availability": None,
+            "mlb_roster_status": None,
+            "milb_history_by_key": None,
+            "investment_evidence": None,
+            "manual_graduated_ids": set(),
+            "consensus_snapshots": {key: {} for key in ("sts", "fangraphs", "prospectslive", "pipeline", "hkb")},
+            "incumbent_profiles": [
+                {"mlbam_id": 1, "name": "Player 1", "normalized_name": "player 1", "role": "hitter", "expected_outcome_score": 0.8, "expected_category_impact_score": 0.6, "sample_reliability": 0.6},
+                {"mlbam_id": 2, "name": "Player 2", "normalized_name": "player 2", "role": "pitcher", "expected_outcome_score": 0.7, "expected_category_impact_score": 0.5, "sample_reliability": 0.6},
+            ],
+        },
+    }
+
+    result = reconstruct_fold_ladders(
+        fold,
+        [{"mlbam_id": 2, "name": "Player 2", "normalized_name": "player 2", "role": "pitcher", "raw_composite": 0.7, "score_source": "prospect_model_v0_9", "sample_reliability": 0.6}],
+        2021,
+    )
+
+    assert result["candidate_pitchers"][0]["score_source"] == "prospect_model_v0_9"

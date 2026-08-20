@@ -29,6 +29,14 @@ LINEAGE_CONTRACTS = {
         "layer_feed": True,
     },
 }
+CANDIDATE_V09_LINEAGE = {
+    "model_version": "0.9.0",
+    "model_consumer": "prospect_rank_v2",
+    "layer_consumer": "prospect_rank_v2",
+    "score_source": "prospect_model_v0_9",
+    "model_feed": False,
+    "layer_feed": False,
+}
 ROLES = frozenset({"hitter", "pitcher"})
 
 
@@ -80,7 +88,10 @@ def build_stage1_contract(
         "model_feed": expected_model_feed,
         "layer_feed": expected_layer_feed,
     }
-    if registered is None or requested != registered:
+    if registered is None or (
+        requested != registered
+        and not (state == "candidate" and requested == CANDIDATE_V09_LINEAGE)
+    ):
         raise ValueError(f"Stage 1 state or lineage contract is invalid for {state!r}")
 
     model_release = prospect_model.get("release_contract") or {}
@@ -92,7 +103,7 @@ def build_stage1_contract(
     ):
         raise ValueError("Stage 1 model artifact is not authorized: wrong version, consumer, or feed")
     artifact_source = model_release.get("score_source")
-    if expected_score_source == "prospect_model_v0_8":
+    if expected_score_source in {"prospect_model_v0_8", "prospect_model_v0_9"}:
         if artifact_source != expected_score_source or any(
             row.get("score_source") != expected_score_source
             for row in prospect_model.get("ranked") or []

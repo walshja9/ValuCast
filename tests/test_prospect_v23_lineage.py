@@ -1,6 +1,9 @@
+import hashlib
 import json
 import subprocess
 from pathlib import Path
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,18 +42,91 @@ def test_frozen_phase_a_dependencies_have_registered_git_content():
         assert _git_blob(relative_path, path) == expected_blob
 
 
-def test_v23_output_state_is_consistent_before_or_after_execution():
-    if not RECEIPT_PATH.exists():
-        assert not MAP_PATH.exists()
+def _canonical_sha256(payload: dict) -> str:
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _sealed_map_sha256(path: Path) -> str:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    seal = payload.pop("artifact_sha256", None)
+    assert isinstance(seal, str) and len(seal) == 64
+    assert seal == _canonical_sha256(payload)
+    return seal
+
+
+def _assert_v23_output_state(
+    receipt_path: Path,
+    map_path: Path,
+    *,
+    is_tracked=lambda _path: False,
+):
+    if not receipt_path.exists():
+        assert not map_path.exists()
         return
 
-    receipt = json.loads(RECEIPT_PATH.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     assert receipt["status"] in {"qualified", "failed", "spent_error"}
     if receipt["status"] == "qualified":
         assert receipt["development_qualified"] is True
-        assert MAP_PATH.exists()
+        assert map_path.exists()
+        assert receipt["result"]["pooled_fit"]["map_artifact_sha256"] == _sealed_map_sha256(map_path)
     elif receipt["status"] == "failed":
         assert receipt["development_qualified"] is False
-        assert not MAP_PATH.exists()
+        assert not map_path.exists()
     else:
         assert receipt["development_qualified"] is False
+        assert receipt.get("result") is None
+        if map_path.exists():
+            assert not is_tracked(map_path), (
+                "spent_error may retain only an explicitly untrusted, untracked orphan map"
+            )
+
+
+def _is_tracked(path: Path) -> bool:
+    result = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", str(path.relative_to(ROOT))],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    return result.returncode == 0
+
+
+def test_v23_output_state_is_consistent_before_or_after_execution():
+    _assert_v23_output_state(RECEIPT_PATH, MAP_PATH, is_tracked=_is_tracked)
+
+
+def test_v23_terminal_output_contracts_are_fail_closed(tmp_path):
+    receipt_path = tmp_path / "receipt.json"
+    map_path = tmp_path / "map.json"
+    map_payload = {"artifact": "valucast_prospect_joint_ladder_calibrator_v5"}
+    map_payload["artifact_sha256"] = _canonical_sha256(map_payload)
+    map_path.write_text(json.dumps(map_payload), encoding="utf-8")
+
+    receipt_path.write_text(
+        json.dumps({
+            "status": "qualified",
+            "development_qualified": True,
+            "result": {"pooled_fit": {"map_artifact_sha256": map_payload["artifact_sha256"]}},
+        }),
+        encoding="utf-8",
+    )
+    _assert_v23_output_state(receipt_path, map_path)
+
+    receipt_path.write_text(
+        json.dumps({"status": "failed", "development_qualified": False}),
+        encoding="utf-8",
+    )
+    map_path.unlink()
+    _assert_v23_output_state(receipt_path, map_path)
+
+    map_path.write_text(json.dumps(map_payload), encoding="utf-8")
+    receipt_path.write_text(
+        json.dumps({"status": "spent_error", "development_qualified": False, "result": None}),
+        encoding="utf-8",
+    )
+    with pytest.raises(AssertionError, match="untracked orphan"):
+        _assert_v23_output_state(receipt_path, map_path, is_tracked=lambda _path: True)
+    _assert_v23_output_state(receipt_path, map_path, is_tracked=lambda _path: False)
