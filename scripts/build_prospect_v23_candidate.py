@@ -6,7 +6,10 @@ from copy import deepcopy
 
 from prospects.rank_v1 import _score_source_sort_order
 from prospects.rank_v2 import build_fold_contract, reconstruct_fold_ladders
-from prospects.role_slope_joint_calibration import score_role_slope_joint_ladders
+from prospects.role_slope_joint_calibration import (
+    fit_role_slope_joint_map,
+    score_role_slope_joint_ladders,
+)
 
 
 DEVELOPMENT_FOLDS = (2018, 2019, 2021)
@@ -157,12 +160,49 @@ def top25_target_sum(rows: list[dict], *, product: bool = False) -> float:
     return sum(_number(row, "target", "top-25") for row in selected)
 
 
+def _training_rows(year: int, ladders: dict[int, dict], prefix: str) -> list[dict]:
+    if year not in TRAINING_FOLDS_BY_TEST:
+        raise ValueError("unknown development fold")
+    rows = []
+    for training_year in TRAINING_FOLDS_BY_TEST[year]:
+        try:
+            source = ladders[training_year]
+            role_rows = [source[f"{prefix}_hitters"], source[f"{prefix}_pitchers"]]
+        except (KeyError, TypeError):
+            raise ValueError("development ladders are missing a training fold") from None
+        for row in [*role_rows[0], *role_rows[1]]:
+            try:
+                rows.append({
+                    "mlbam_id": row["mlbam_id"],
+                    "role": row["role"],
+                    "source_ladder_position": row["source_ladder_position"],
+                    "ladder_score": row["ladder_score"],
+                    "outcome": row["outcome"],
+                    "target": row["target"],
+                    "test_cohort": training_year,
+                })
+            except (KeyError, TypeError):
+                raise ValueError("development ladder has an invalid training row") from None
+    return rows
+
+
+def fit_fold_maps(year: int, ladders: dict[int, dict]) -> tuple[dict, dict]:
+    """Independently fit candidate and control maps on the exact fold complement."""
+    return (
+        fit_role_slope_joint_map(_training_rows(year, ladders, "candidate")),
+        fit_role_slope_joint_map(_training_rows(year, ladders, "incumbent")),
+    )
+
+
 def build_fold_result(
     year: int, ladders: dict[int, dict], candidate_map: dict, control_map: dict
 ) -> dict:
     """Score one held-out combined board and calculate its six independent gates."""
     if year not in DEVELOPMENT_FOLDS or year not in ladders:
         raise ValueError("unknown development fold")
+    expected_candidate_map, expected_control_map = fit_fold_maps(year, ladders)
+    if candidate_map != expected_candidate_map or control_map != expected_control_map:
+        raise ValueError("supplied maps do not match the exact fold-complement fits")
     ladder = ladders[year]
     candidate = score_role_slope_joint_ladders(
         ladder["candidate_hitters"], ladder["candidate_pitchers"], candidate_map

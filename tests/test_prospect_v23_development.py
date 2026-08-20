@@ -134,11 +134,63 @@ def test_fold_result_aligns_adversarial_input_and_cannot_mutate_fitted_maps(monk
     ]
     ladders = {2018: {"candidate_hitters": [row for row in base if row["role"] == "hitter"], "candidate_pitchers": [row for row in reversed(base) if row["role"] == "pitcher"], "incumbent_hitters": [row for row in base if row["role"] == "hitter"], "incumbent_pitchers": [row for row in base if row["role"] == "pitcher"]}}
     candidate_map, control_map = {"field": "candidate"}, {"field": "control"}
+    monkeypatch.setattr(candidate, "fit_fold_maps", lambda *_args: (candidate_map, control_map))
     before = copy.deepcopy((candidate_map, control_map))
     result = candidate.build_fold_result(2018, ladders, candidate_map, control_map)
     assert result["candidate_mae"] is not None
     assert result["product_mae"] is None
     assert (candidate_map, control_map) == before
+
+
+def _fit_ladders():
+    ladders = {}
+    for year in (2018, 2019, 2021):
+        fold = {}
+        for prefix, score in (("candidate", 3.0), ("incumbent", 2.0)):
+            for role, offset in (("hitter", 10_000), ("pitcher", 20_000)):
+                fold[f"{prefix}_{role}s"] = [
+                    {
+                        "mlbam_id": offset + year * 10 + position,
+                        "role": role,
+                        "source_ladder_position": position,
+                        "ladder_score": score - position,
+                        "outcome": outcome,
+                        "target": target,
+                        "test_cohort": year,
+                    }
+                    for position, (outcome, target) in enumerate(
+                        (("star", 1.0), ("role", 0.5), ("bust", 0.0)), 1
+                    )
+                ]
+        ladders[year] = fold
+    return ladders
+
+
+@requires_runner
+def test_fold_complement_maps_exclude_held_out_targets_and_bind_build_result(monkeypatch):
+    candidate = _runner()
+    ladders = _fit_ladders()
+    candidate_map, control_map = candidate.fit_fold_maps(2018, ladders)
+    before = (
+        candidate_map["artifact_sha256"], candidate_map["params"],
+        control_map["artifact_sha256"], control_map["params"],
+    )
+    training_rows = candidate._training_rows(2018, ladders, "candidate")
+    assert {row["test_cohort"] for row in training_rows} == {2019, 2021}
+    assert all(row["test_cohort"] != 2018 for row in training_rows)
+
+    ladders[2018]["candidate_hitters"][0]["target"] = 0.0
+    ladders[2018]["incumbent_pitchers"][0]["target"] = 0.0
+    repeated_candidate, repeated_control = candidate.fit_fold_maps(2018, ladders)
+    assert before == (
+        repeated_candidate["artifact_sha256"], repeated_candidate["params"],
+        repeated_control["artifact_sha256"], repeated_control["params"],
+    )
+
+    monkeypatch.setattr(candidate, "fit_fold_maps", lambda *_args: (candidate_map, control_map))
+    monkeypatch.setattr(candidate, "score_role_slope_joint_ladders", lambda *_args: [])
+    with pytest.raises(ValueError, match="fold-complement"):
+        candidate.build_fold_result(2018, ladders, {}, control_map)
 
 
 def _passing_fold():
