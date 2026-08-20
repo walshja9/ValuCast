@@ -2,7 +2,17 @@
 from __future__ import annotations
 
 import math
+import hashlib
+import json
+import os
+import platform
+import re
+import subprocess
+import sys
+import tempfile
 from copy import deepcopy
+from contextlib import contextmanager
+from pathlib import Path
 
 import numpy as np
 
@@ -12,7 +22,30 @@ from prospects.role_slope_joint_calibration import (
     fit_role_slope_joint_map,
     score_role_slope_joint_ladders,
 )
-from prospects.prospect_v2_target import canonical_sha256
+from prospects.prospect_v2_target import canonical_sha256, validate_development_contract
+
+
+ROOT = Path(__file__).resolve().parents[1]
+CANONICAL_READ_PATHS = (
+    "data/validation/valucast_prospect_rank_v2_3_registration.json",
+    "data/validation/valucast_prospect_v2_development_contract.json",
+    "data/models/valucast_prospect_model_v0_9.json",
+    "data/validation/valucast_prospect_rank_v2_1_development.json",
+    "data/validation/valucast_prospect_rank_v2_2_development.json",
+)
+REGISTRATION_PATH = ROOT / CANONICAL_READ_PATHS[0]
+RECEIPT_PATH = ROOT / "data" / "validation" / "valucast_prospect_rank_v2_3_development.json"
+CALIBRATOR_PATH = ROOT / "data" / "models" / "valucast_prospect_joint_ladder_calibrator_v5.json"
+# Tests replace this with a D: temporary common-dir token.  The production value is
+# resolved lazily so importing this pure evaluator never touches repository state.
+SPEND_TOKEN_PATH: Path | None = None
+_SHA256 = re.compile(r"[0-9a-f]{64}\Z")
+_SHA1 = re.compile(r"[0-9a-f]{40}\Z")
+_TERMINAL = {"qualified", "failed", "spent_error"}
+
+
+class ProtocolError(RuntimeError):
+    """A pre-spend or receipt-protocol refusal (always exit code 2)."""
 
 
 DEVELOPMENT_FOLDS = (2018, 2019, 2021)
@@ -790,3 +823,606 @@ def build_development_artifacts(
         "failed_structural": failed_structural, "pooled_fit": pooled_fit,
     }
     return result, pooled_map
+
+
+# The wrapper below intentionally stays separate from the pure evaluator above:
+# nothing in the evaluator decides whether an outcome-bearing payload may be read.
+def _head() -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True
+    )
+    value = result.stdout.strip()
+    if result.returncode or not _SHA1.fullmatch(value):
+        raise ProtocolError("cannot resolve a lowercase 40-character HEAD")
+    return value
+
+
+def _common_git_dir() -> Path:
+    result = subprocess.run(
+        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    value = result.stdout.strip()
+    if result.returncode or not value:
+        raise ProtocolError("cannot resolve Git common directory")
+    return Path(value).resolve()
+
+
+def _common_lock_path() -> Path:
+    return _common_git_dir() / "valucast-prospect-v23.lock"
+
+
+def _spend_path() -> Path:
+    return SPEND_TOKEN_PATH or (_common_git_dir() / "valucast-prospect-v23-spent.json")
+
+
+@contextmanager
+def _locked():
+    """Hold the repository-common one-byte nonblocking lock for this invocation."""
+    path = _common_lock_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = path.open("a+b")
+    try:
+        if not handle.read(1):
+            handle.write(b"0")
+            handle.flush()
+            os.fsync(handle.fileno())
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+
+            try:
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError as error:
+                raise ProtocolError("v2.3 lock is already held") from error
+            def unlock():
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except OSError as error:
+                raise ProtocolError("v2.3 lock is already held") from error
+            def unlock():
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        try:
+            yield
+        finally:
+            unlock()
+    finally:
+        handle.close()
+
+
+def _runtime_tuple() -> dict:
+    import scipy
+
+    return {
+        "implementation": platform.python_implementation(),
+        "compiler": platform.python_compiler(),
+        "platform": platform.platform(),
+        "machine": platform.machine(),
+        "python": list(sys.version_info[:3]),
+        "releaselevel": sys.version_info.releaselevel,
+        "serial": sys.version_info.serial,
+        "numpy": np.__version__,
+        "scipy": scipy.__version__,
+    }
+
+
+def _sealed(payload: dict) -> dict:
+    unsigned = dict(payload)
+    unsigned.pop("artifact_sha256", None)
+    return {**unsigned, "artifact_sha256": canonical_sha256(unsigned)}
+
+
+def _require_seal(payload: object, label: str) -> dict:
+    if not isinstance(payload, dict):
+        raise ProtocolError(f"{label} must be an object")
+    seal = payload.get("artifact_sha256")
+    if not isinstance(seal, str) or not _SHA256.fullmatch(seal):
+        raise ProtocolError(f"{label} has an invalid seal")
+    unsigned = dict(payload)
+    unsigned.pop("artifact_sha256")
+    if seal != canonical_sha256(unsigned):
+        raise ProtocolError(f"{label} seal does not match")
+    return payload
+
+
+def _relative(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError as error:
+        raise ProtocolError("application-data read escaped repository root") from error
+
+
+def _load_json(path: Path, *, outcome: bool = False) -> dict:
+    logical_paths = {
+        REGISTRATION_PATH: CANONICAL_READ_PATHS[0],
+        ROOT / CANONICAL_READ_PATHS[1]: CANONICAL_READ_PATHS[1],
+        ROOT / CANONICAL_READ_PATHS[2]: CANONICAL_READ_PATHS[2],
+        ROOT / CANONICAL_READ_PATHS[3]: CANONICAL_READ_PATHS[3],
+        ROOT / CANONICAL_READ_PATHS[4]: CANONICAL_READ_PATHS[4],
+        RECEIPT_PATH: "data/validation/valucast_prospect_rank_v2_3_development.json",
+        CALIBRATOR_PATH: "data/models/valucast_prospect_joint_ladder_calibrator_v5.json",
+    }
+    relative = logical_paths.get(path)
+    if relative is None:
+        relative = _relative(path)
+    allowed = set(CANONICAL_READ_PATHS)
+    if outcome:
+        allowed.update({
+            "data/validation/valucast_prospect_rank_v2_3_development.json",
+            "data/models/valucast_prospect_joint_ladder_calibrator_v5.json",
+        })
+    if relative not in allowed:
+        raise ProtocolError(f"application-data read is not allowlisted: {relative}")
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ProtocolError(f"cannot read {relative}") from error
+
+
+def _git_blob(relative: str, path: Path) -> str:
+    result = subprocess.run(
+        ["git", "hash-object", f"--path={relative}", str(path)],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    value = result.stdout.strip()
+    if result.returncode or not _SHA1.fullmatch(value):
+        raise ProtocolError(f"cannot resolve Git blob for {relative}")
+    return value
+
+
+def _normalized_source_sha256(path: Path) -> str:
+    try:
+        text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    except (OSError, UnicodeDecodeError) as error:
+        raise ProtocolError(f"cannot read source {path}") from error
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+_REGISTRATION_KEYS = {
+    "schema", "registration_id", "registration_status_at_seal", "candidate",
+    "predecessors", "inputs", "sources", "folds", "comparators", "metrics",
+    "bootstrap", "state_machine", "outputs", "forbidden_inputs", "forbidden_paths",
+    "feeds_live_rank", "feeds_value", "runtime", "execution", "artifact_sha256",
+}
+
+
+def _registration(registration: object) -> dict:
+    payload = _require_seal(registration, "registration")
+    if set(payload) != _REGISTRATION_KEYS:
+        raise ProtocolError("registration fields do not exactly match Plan 038")
+    if payload.get("schema") != "valucast_prospect_rank_v2_3_registration_v1":
+        raise ProtocolError("registration schema is invalid")
+    if payload.get("registration_id") != "plan_038_prospect_vnext_phase_a":
+        raise ProtocolError("registration id is invalid")
+    if payload.get("registration_status_at_seal") != "registered_unspent":
+        raise ProtocolError("registration is not an unspent registration")
+    if payload.get("feeds_live_rank") is not False or payload.get("feeds_value") is not False:
+        raise ProtocolError("registration must be non-serving")
+    if payload.get("runtime") != _runtime_tuple():
+        raise ProtocolError("runtime does not match registration")
+    if payload.get("execution") != {"approved_env": "VALUCAST_V23_APPROVED_EXECUTION_SHA"}:
+        raise ProtocolError("execution transport does not match registration")
+    if payload.get("outputs") != {
+        "receipt": "data/validation/valucast_prospect_rank_v2_3_development.json",
+        "calibrator": "data/models/valucast_prospect_joint_ladder_calibrator_v5.json",
+    }:
+        raise ProtocolError("output paths do not match registration")
+    if payload.get("state_machine") != {
+        "lock_file": "valucast-prospect-v23.lock",
+        "spent_token": "valucast-prospect-v23-spent.json",
+        "states": ["reserved", "outcome_access_spent", "qualified", "failed", "spent_error"],
+        "cli": ["", "--resume-reserved", "--seal-interrupted-spend", "--reproduce"],
+        "exit_codes": {"qualified": 0, "failed": 1, "spent_error": 2},
+    }:
+        raise ProtocolError("state-machine contract does not match registration")
+    if not all(isinstance(payload.get(key), dict) for key in (
+        "candidate", "predecessors", "folds", "comparators", "metrics", "bootstrap",
+    )) or not all(isinstance(payload.get(key), list) for key in ("forbidden_inputs", "forbidden_paths")):
+        raise ProtocolError("registration metadata shape is invalid")
+    _validate_bindings(payload)
+    return payload
+
+
+def _validate_bindings(registration: dict) -> None:
+    expected_inputs = set(CANONICAL_READ_PATHS[1:])
+    inputs, sources = registration.get("inputs"), registration.get("sources")
+    if not isinstance(inputs, dict) or set(inputs) != expected_inputs or not isinstance(sources, dict) or not sources:
+        raise ProtocolError("registration bindings are incomplete")
+    for relative, binding in inputs.items():
+        if not isinstance(binding, dict) or set(binding) != {
+            "git_blob", "canonical_sha256", "internal_field", "internal_sha256",
+        } or not all(_SHA256.fullmatch(str(binding.get(key))) for key in (
+            "canonical_sha256", "internal_sha256",
+        )) or not _SHA1.fullmatch(str(binding.get("git_blob"))) or not isinstance(binding.get("internal_field"), str):
+            raise ProtocolError(f"invalid input binding: {relative}")
+    for relative, binding in sources.items():
+        if not isinstance(binding, dict) or set(binding) != {"git_blob", "normalized_sha256"} or not _SHA1.fullmatch(str(binding.get("git_blob"))) or not _SHA256.fullmatch(str(binding.get("normalized_sha256"))):
+            raise ProtocolError(f"invalid source binding: {relative}")
+
+
+def _approved_sha(expected: str | None = None) -> str:
+    value = os.environ.get("VALUCAST_V23_APPROVED_EXECUTION_SHA", "")
+    if not _SHA1.fullmatch(value):
+        raise ProtocolError("approved execution SHA is missing or malformed")
+    if value != _head() or (expected is not None and value != expected):
+        raise ProtocolError("approved execution SHA does not match execution")
+    return value
+
+
+def _pre_marker(registration: dict, execution_sha: str, *, receipt: dict | None = None) -> None:
+    if _spend_path().exists():
+        raise ProtocolError("immutable spend token already exists")
+    if CALIBRATOR_PATH.exists() or (receipt is None and RECEIPT_PATH.exists()):
+        raise ProtocolError("canonical output already exists")
+    if receipt is not None:
+        _validate_receipt(receipt)
+        if receipt["status"] != "reserved" or receipt["execution_sha"] != execution_sha:
+            raise ProtocolError("receipt is not resumable for this execution SHA")
+        if receipt.get("registration_sha256") != registration["artifact_sha256"] or receipt.get("runtime") != _runtime_tuple() or receipt.get("execution_worktree") != str(ROOT.resolve()):
+            raise ProtocolError("receipt registration does not match")
+    for relative, binding in registration["inputs"].items():
+        if _git_blob(relative, ROOT / relative) != binding["git_blob"]:
+            raise ProtocolError(f"input Git blob changed: {relative}")
+    for relative, binding in registration["sources"].items():
+        path = ROOT / relative
+        if _git_blob(relative, path) != binding["git_blob"] or _normalized_source_sha256(path) != binding["normalized_sha256"]:
+            raise ProtocolError(f"source binding changed: {relative}")
+
+
+def _receipt(registration: dict, execution_sha: str, status: str, stage: str, **extra) -> dict:
+    terminal = status in _TERMINAL
+    if status not in {"reserved", "outcome_access_spent", *_TERMINAL}:
+        raise ProtocolError("unknown receipt status")
+    exit_code = {"qualified": 0, "failed": 1, "spent_error": 2}.get(status)
+    qualified = True if status == "qualified" else False if terminal else None
+    return _sealed({
+        "schema": "valucast_prospect_rank_v2_3_development_v1",
+        "registration_id": registration["registration_id"],
+        "registration_sha256": registration["artifact_sha256"],
+        "execution_sha": execution_sha,
+        "execution_worktree": str(ROOT.resolve()),
+        "runtime": _runtime_tuple(),
+        "status": status, "stage": stage,
+        "development_qualified": qualified, "cli_exit_code": exit_code,
+        "feeds_live_rank": False, "feeds_value": False,
+        **extra,
+    })
+
+
+def _validate_receipt(receipt: object) -> dict:
+    payload = _require_seal(receipt, "receipt")
+    required = {
+        "schema", "registration_id", "registration_sha256", "execution_sha", "execution_worktree",
+        "runtime", "status", "stage", "development_qualified", "cli_exit_code",
+        "feeds_live_rank", "feeds_value", "artifact_sha256",
+    }
+    if not required <= set(payload) or payload.get("schema") != "valucast_prospect_rank_v2_3_development_v1":
+        raise ProtocolError("receipt schema is invalid")
+    status = payload.get("status")
+    if status not in {"reserved", "outcome_access_spent", *_TERMINAL} or not _SHA1.fullmatch(str(payload.get("execution_sha"))):
+        raise ProtocolError("receipt state is invalid")
+    if payload.get("feeds_live_rank") is not False or payload.get("feeds_value") is not False:
+        raise ProtocolError("receipt must be non-serving")
+    terminal = status in _TERMINAL
+    expected_fields = set(required)
+    if status in {"qualified", "failed"}:
+        expected_fields.update({"spend_token_sha256", "result", "map_artifact_sha256"})
+    elif status == "spent_error":
+        expected_fields.update({"spend_token_sha256", "result", "error"})
+    elif status == "outcome_access_spent":
+        expected_fields.add("spend_token_sha256")
+    if set(payload) != expected_fields:
+        raise ProtocolError("receipt fields are invalid")
+    stages = {
+        "reserved": {"reserved"}, "outcome_access_spent": {"outcome_access_spent"},
+        "qualified": {"completed"}, "failed": {"completed"},
+        "spent_error": {"post_marker", "interrupted_spend"},
+    }
+    if payload.get("registration_id") != "plan_038_prospect_vnext_phase_a" or not _SHA256.fullmatch(str(payload.get("registration_sha256"))) or not isinstance(payload.get("execution_worktree"), str) or not Path(payload["execution_worktree"]).is_absolute() or not isinstance(payload.get("runtime"), dict) or payload.get("stage") not in stages[status]:
+        raise ProtocolError("receipt bindings or stage are invalid")
+    if terminal:
+        expected_exit = {"qualified": 0, "failed": 1, "spent_error": 2}[status]
+        expected_qualified = status == "qualified"
+        if payload.get("cli_exit_code") != expected_exit or payload.get("development_qualified") is not expected_qualified:
+            raise ProtocolError("terminal receipt exit or qualification is invalid")
+    elif payload.get("cli_exit_code") is not None or payload.get("development_qualified") is not None:
+        raise ProtocolError("non-terminal receipt has a result")
+    if status == "qualified" and (not _SHA256.fullmatch(str(payload["spend_token_sha256"])) or not _SHA256.fullmatch(str(payload["map_artifact_sha256"]))):
+        raise ProtocolError("qualified receipt hashes are invalid")
+    if status in {"failed", "spent_error", "outcome_access_spent"} and not _SHA256.fullmatch(str(payload["spend_token_sha256"])):
+        raise ProtocolError("receipt spend-token hash is invalid")
+    if status == "failed" and payload["map_artifact_sha256"] is not None:
+        raise ProtocolError("failed receipt must not bind a map")
+    if status in {"qualified", "failed"} and not isinstance(payload["result"], dict):
+        raise ProtocolError("completed receipt result is invalid")
+    if status == "spent_error" and (payload["result"] is not None or set(payload["error"]) != {"type", "message"} or not all(isinstance(payload["error"][key], str) for key in ("type", "message"))):
+        raise ProtocolError("spent error receipt payload is invalid")
+    return payload
+
+
+def _atomic_json(path: Path, payload: dict, *, expected_state: str | None | object = ... ) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        if expected_state is ...:
+            pass
+        elif expected_state is None:
+            if path.exists():
+                raise ProtocolError("expected absent receipt already exists")
+        else:
+            if not path.exists() or _validate_receipt(_load_json(path, outcome=True)).get("status") != expected_state:
+                raise ProtocolError("prior durable receipt state does not match")
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, prefix=f".{path.name}.", suffix=".tmp", delete=False) as handle:
+            temporary = Path(handle.name)
+            json.dump(payload, handle, sort_keys=True, separators=(",", ":"), allow_nan=False)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        temporary = None
+        try:
+            descriptor = os.open(path.parent, os.O_RDONLY)
+            try:
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+        except OSError:
+            pass
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink()
+            except OSError:
+                pass
+
+
+def _token(registration: dict, execution_sha: str) -> dict:
+    return _sealed({
+        "schema": "valucast_prospect_rank_v2_3_spend_v1",
+        "registration_id": registration["registration_id"],
+        "registration_sha256": registration["artifact_sha256"],
+        "execution_sha": execution_sha,
+        "execution_worktree": str(ROOT.resolve()),
+        "runtime": _runtime_tuple(),
+    })
+
+
+def _publish_token(token: dict) -> str:
+    path = _spend_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    encoded = json.dumps(token, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile("wb", dir=path.parent, prefix=f".{path.name}.", suffix=".tmp", delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(encoded)
+            handle.flush()
+            os.fsync(handle.fileno())
+        # link is an atomic create: unlike replace it can never weaken an existing
+        # immutable token, and the repository-common lock serializes cooperating runs.
+        os.link(temporary, path)
+    except FileExistsError as error:
+        raise ProtocolError("immutable spend token already exists") from error
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink()
+            except OSError:
+                pass
+    try:
+        descriptor = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+    except OSError:
+        pass
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _internal_value(payload: dict, dotted: str) -> object:
+    value: object = payload
+    for key in dotted.split("."):
+        if not isinstance(value, dict) or key not in value:
+            raise ProtocolError(f"registered internal field is absent: {dotted}")
+        value = value[key]
+    return value
+
+
+def _outcomes(registration: dict) -> tuple[dict, dict, dict, dict]:
+    """Open each frozen payload once, only after the durable receipt marker."""
+    payloads = {}
+    for relative, binding in registration["inputs"].items():
+        payload = _load_json(ROOT / relative, outcome=True)
+        if canonical_sha256(payload) != binding["canonical_sha256"]:
+            raise ProtocolError(f"canonical payload hash changed: {relative}")
+        if _internal_value(payload, binding["internal_field"]) != binding["internal_sha256"]:
+            raise ProtocolError(f"internal receipt hash changed: {relative}")
+        payloads[relative] = payload
+    contract = payloads[CANONICAL_READ_PATHS[1]]
+    errors = validate_development_contract(contract)
+    if errors != []:
+        raise ProtocolError(f"development contract is invalid: {errors[0]}")
+    for relative in CANONICAL_READ_PATHS[3:]:
+        predecessor = payloads[relative]
+        if predecessor.get("status") not in _TERMINAL or predecessor.get("feeds_live_rank") is not False or predecessor.get("feeds_value") is not False:
+            raise ProtocolError(f"predecessor is not terminal/non-serving: {relative}")
+    return (
+        contract,
+        payloads[CANONICAL_READ_PATHS[2]],
+        payloads[CANONICAL_READ_PATHS[3]],
+        payloads[CANONICAL_READ_PATHS[4]],
+    )
+
+
+def _terminal_failure(registration: dict, execution_sha: str, stage: str, error: BaseException, token_sha: str | None) -> int:
+    receipt = _receipt(
+        registration, execution_sha, "spent_error", stage,
+        spend_token_sha256=token_sha,
+        result=None,
+        error={"type": type(error).__name__, "message": str(error)},
+    )
+    _atomic_json(RECEIPT_PATH, receipt, expected_state="outcome_access_spent")
+    return 2
+
+
+def _spend_and_evaluate(registration: dict, execution_sha: str) -> int:
+    token_sha = _publish_token(_token(registration, execution_sha))
+    spent = _receipt(
+        registration, execution_sha, "outcome_access_spent", "outcome_access_spent",
+        spend_token_sha256=token_sha,
+    )
+    _atomic_json(RECEIPT_PATH, spent, expected_state="reserved")
+    try:
+        contract, model, _v21, _v22 = _outcomes(registration)
+        try:
+            result, pooled_map = build_development_artifacts(contract, model, registration)
+        except ValueError:
+            # Scientific/model contract failures are a completed negative result, not an
+            # infrastructure retry signal.
+            result, pooled_map = {"scientific_failure": "model_or_metric_contract"}, None
+        qualified = bool(pooled_map) and not result.get("failed_folds") and not result.get("failed_bootstrap") and not result.get("failed_structural")
+        if qualified:
+            if not isinstance(pooled_map, dict):
+                raise ProtocolError("qualified result is missing its pooled map")
+            _require_seal(pooled_map, "pooled map")
+            _atomic_json(CALIBRATOR_PATH, pooled_map, expected_state=...)
+            terminal = _receipt(
+                registration, execution_sha, "qualified", "completed",
+                spend_token_sha256=token_sha, result=result,
+                map_artifact_sha256=pooled_map["artifact_sha256"],
+            )
+            _atomic_json(RECEIPT_PATH, terminal, expected_state="outcome_access_spent")
+            return 0
+        terminal = _receipt(
+            registration, execution_sha, "failed", "completed",
+            spend_token_sha256=token_sha, result=result, map_artifact_sha256=None,
+        )
+        _atomic_json(RECEIPT_PATH, terminal, expected_state="outcome_access_spent")
+        return 1
+    except BaseException as error:
+        return _terminal_failure(registration, execution_sha, "post_marker", error, token_sha)
+
+
+def _read_registration() -> dict:
+    if not REGISTRATION_PATH.is_file():
+        raise ProtocolError("canonical registration is absent")
+    return _registration(_load_json(REGISTRATION_PATH))
+
+
+def _normal() -> int:
+    registration = _read_registration()
+    execution_sha = _approved_sha()
+    _pre_marker(registration, execution_sha)
+    _atomic_json(
+        RECEIPT_PATH,
+        _receipt(registration, execution_sha, "reserved", "reserved"),
+        expected_state=None,
+    )
+    return _spend_and_evaluate(registration, execution_sha)
+
+
+def _resume() -> int:
+    registration = _read_registration()
+    if not RECEIPT_PATH.is_file():
+        raise ProtocolError("reserved receipt is absent")
+    receipt = _validate_receipt(_load_json(RECEIPT_PATH, outcome=True))
+    execution_sha = _approved_sha(receipt.get("execution_sha"))
+    _pre_marker(registration, execution_sha, receipt=receipt)
+    return _spend_and_evaluate(registration, execution_sha)
+
+
+def _read_token() -> dict:
+    path = _spend_path()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ProtocolError("immutable spend token is unreadable") from error
+    token = _require_seal(payload, "spend token")
+    if set(token) != {
+        "schema", "registration_id", "registration_sha256", "execution_sha",
+        "execution_worktree", "runtime", "artifact_sha256",
+    } or token.get("schema") != "valucast_prospect_rank_v2_3_spend_v1" or not _SHA1.fullmatch(str(token.get("execution_sha"))) or not _SHA256.fullmatch(str(token.get("registration_sha256"))) or not isinstance(token.get("execution_worktree"), str) or not isinstance(token.get("runtime"), dict):
+        raise ProtocolError("spend token binding is invalid")
+    return token
+
+
+def _seal_interrupted() -> int:
+    registration = _read_registration()
+    token = _read_token()
+    if not RECEIPT_PATH.is_file():
+        raise ProtocolError("bound execution receipt is absent")
+    receipt = _validate_receipt(_load_json(RECEIPT_PATH, outcome=True))
+    execution_sha = _approved_sha(token.get("execution_sha"))
+    token_sha = hashlib.sha256(_spend_path().read_bytes()).hexdigest()
+    if token.get("registration_id") != registration["registration_id"] or token.get("registration_sha256") != registration["artifact_sha256"] or token.get("runtime") != _runtime_tuple() or token.get("execution_worktree") != str(ROOT.resolve()) or receipt.get("execution_sha") != execution_sha or receipt.get("execution_worktree") != token.get("execution_worktree") or receipt.get("runtime") != token.get("runtime") or receipt.get("status") not in {"reserved", "outcome_access_spent"} or (receipt["status"] == "outcome_access_spent" and receipt.get("spend_token_sha256") != token_sha):
+        raise ProtocolError("interrupted spend binding does not match")
+    terminal = _receipt(
+        registration, execution_sha, "spent_error", "interrupted_spend",
+        spend_token_sha256=token_sha, result=None,
+        error={"type": "InterruptedSpend", "message": "sealed without reopening outcomes"},
+    )
+    _atomic_json(RECEIPT_PATH, terminal, expected_state=receipt["status"])
+    return 2
+
+
+def _reproduce() -> int:
+    if not RECEIPT_PATH.is_file():
+        raise ProtocolError("terminal receipt is absent")
+    receipt = _validate_receipt(_load_json(RECEIPT_PATH, outcome=True))
+    if receipt["status"] not in {"qualified", "failed"}:
+        raise ProtocolError("only completed scientific receipts reproduce")
+    registration = _read_registration()
+    if receipt.get("registration_id") != registration["registration_id"] or receipt.get("registration_sha256") != registration["artifact_sha256"]:
+        raise ProtocolError("terminal receipt registration does not match")
+    _pre_marker_for_reproduction(registration, receipt)
+    contract, model, _v21, _v22 = _outcomes(registration)
+    result, pooled_map = build_development_artifacts(contract, model, registration)
+    if receipt.get("result") != result:
+        raise ProtocolError("reproduction result is not byte/payload exact")
+    if receipt["status"] == "qualified":
+        if not isinstance(pooled_map, dict) or not CALIBRATOR_PATH.is_file() or _load_json(CALIBRATOR_PATH, outcome=True) != pooled_map:
+            raise ProtocolError("reproduction pooled map is not byte/payload exact")
+    elif pooled_map is not None:
+        raise ProtocolError("failed receipt unexpectedly reproduces a pooled map")
+    return receipt["cli_exit_code"]
+
+
+def _pre_marker_for_reproduction(registration: dict, receipt: dict) -> None:
+    if receipt.get("runtime") != _runtime_tuple() or not _SHA1.fullmatch(str(receipt.get("execution_sha"))):
+        raise ProtocolError("terminal runtime/execution binding is invalid")
+    for relative, binding in registration["inputs"].items():
+        if _git_blob(relative, ROOT / relative) != binding["git_blob"]:
+            raise ProtocolError(f"reproduction input Git blob changed: {relative}")
+    for relative, binding in registration["sources"].items():
+        path = ROOT / relative
+        if _git_blob(relative, path) != binding["git_blob"] or _normalized_source_sha256(path) != binding["normalized_sha256"]:
+            raise ProtocolError(f"reproduction source binding changed: {relative}")
+
+
+def run(argv: list[str] | None = None) -> int:
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments not in ([], ["--resume-reserved"], ["--seal-interrupted-spend"], ["--reproduce"]):
+        return 2
+    try:
+        with _locked():
+            if not arguments:
+                return _normal()
+            if arguments[0] == "--resume-reserved":
+                return _resume()
+            if arguments[0] == "--seal-interrupted-spend":
+                return _seal_interrupted()
+            return _reproduce()
+    except (ProtocolError, OSError):
+        return 2
+
+
+def main(argv: list[str] | None = None) -> int:
+    return run(argv)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
