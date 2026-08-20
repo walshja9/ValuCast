@@ -155,7 +155,18 @@ def test_post_marker_exception_is_terminal_spent_error(monkeypatch, tmp_path):
     assert candidate.run([]) == 2
     receipt = json.loads(candidate.RECEIPT_PATH.read_text(encoding="utf-8"))
     assert receipt["status"] == "spent_error"
-    assert receipt["error"] == {"type": "OSError", "message": "disk fault"}
+    assert receipt["error"] == {"stage": "post_marker", "type": "OSError", "message": "disk fault"}
+
+
+@requires_runner
+def test_escaped_evaluator_value_error_is_spent_error_not_scientific_failure(monkeypatch, tmp_path):
+    candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
+    monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (_ for _ in ()).throw(ValueError("escaped")))
+
+    assert candidate.run([]) == 2
+    receipt = json.loads(candidate.RECEIPT_PATH.read_text(encoding="utf-8"))
+    assert receipt["status"] == "spent_error"
+    assert receipt["error"]["type"] == "ValueError"
 
 
 @requires_runner
@@ -193,6 +204,58 @@ def test_qualified_run_writes_map_before_terminal_receipt_and_reproduces_without
     assert candidate.run(["--reproduce"]) == 0
     assert candidate.RECEIPT_PATH.read_bytes() == receipt_before
     assert candidate.CALIBRATOR_PATH.read_bytes() == map_before
+
+
+@requires_runner
+def test_failed_reproduction_returns_zero_without_rewriting_receipt(monkeypatch, tmp_path):
+    candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
+    result = {"failed_folds": [2018], "failed_bootstrap": [], "failed_structural": []}
+    monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (result, None))
+    assert candidate.run([]) == 1
+    before = candidate.RECEIPT_PATH.read_bytes()
+    monkeypatch.setattr(candidate, "_atomic_json", lambda *_args, **_kwargs: pytest.fail("reproduction writes"))
+
+    assert candidate.run(["--reproduce"]) == 0
+    assert candidate.RECEIPT_PATH.read_bytes() == before
+
+
+@requires_runner
+def test_qualified_reproduction_refuses_receipt_map_hash_mismatch(monkeypatch, tmp_path):
+    candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
+    result = {"failed_folds": [], "failed_bootstrap": [], "failed_structural": []}
+    pooled = {"map": "synthetic"}
+    pooled["artifact_sha256"] = candidate.canonical_sha256(pooled)
+    monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (result, pooled))
+    assert candidate.run([]) == 0
+    receipt = json.loads(candidate.RECEIPT_PATH.read_text(encoding="utf-8"))
+    receipt["map_artifact_sha256"] = "f" * 64
+    receipt["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in receipt.items() if key != "artifact_sha256"})
+    candidate.RECEIPT_PATH.write_text(json.dumps(receipt), encoding="utf-8")
+
+    assert candidate.run(["--reproduce"]) == 2
+
+
+@requires_runner
+def test_late_atomic_cas_race_preserves_newer_prior_receipt(monkeypatch, tmp_path):
+    candidate, registration = _protocol_sandbox(monkeypatch, tmp_path)
+    candidate.RECEIPT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    reserved = candidate._receipt(registration, "a" * 40, "reserved", "reserved")
+    candidate.RECEIPT_PATH.write_text(json.dumps(reserved), encoding="utf-8")
+    newer = candidate._receipt(registration, "a" * 40, "spent_error", "post_marker", spend_token_sha256="e" * 64, result=None, error={"stage": "post_marker", "type": "Race", "message": "newer"})
+    original_fsync = candidate.os.fsync
+    raced = False
+
+    def race(descriptor):
+        nonlocal raced
+        original_fsync(descriptor)
+        if not raced:
+            raced = True
+            candidate.RECEIPT_PATH.write_text(json.dumps(newer), encoding="utf-8")
+
+    monkeypatch.setattr(candidate.os, "fsync", race)
+    with pytest.raises(candidate.ProtocolError, match="prior durable"):
+        candidate._atomic_json(candidate.RECEIPT_PATH, candidate._receipt(registration, "a" * 40, "outcome_access_spent", "outcome_access_spent", spend_token_sha256="e" * 64), expected_state="reserved")
+    assert json.loads(candidate.RECEIPT_PATH.read_text(encoding="utf-8"))["error"]["message"] == "newer"
 
 
 @requires_runner
@@ -343,6 +406,93 @@ def test_linked_worktrees_resolve_one_git_common_lock(monkeypatch, tmp_path):
 
     assert first == second
     assert first.name == "valucast-prospect-v23.lock"
+
+
+@requires_runner
+@pytest.mark.parametrize("approved", [None, "A" * 40, "b" * 40])
+def test_missing_malformed_or_wrong_head_approval_refuses_before_marker(monkeypatch, tmp_path, approved):
+    candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
+    if approved is None:
+        monkeypatch.delenv("VALUCAST_V23_APPROVED_EXECUTION_SHA")
+    else:
+        monkeypatch.setenv("VALUCAST_V23_APPROVED_EXECUTION_SHA", approved)
+    monkeypatch.setattr(candidate, "_outcomes", lambda *_args: pytest.fail("outcome access"))
+
+    assert candidate.run([]) == 2
+    assert not candidate.RECEIPT_PATH.exists()
+    assert not candidate.SPEND_TOKEN_PATH.exists()
+
+
+@requires_runner
+def test_recovery_refuses_wrong_registration_without_mutating_or_reopening(monkeypatch, tmp_path):
+    candidate, registration = _protocol_sandbox(monkeypatch, tmp_path)
+    token = candidate._token(registration, "a" * 40)
+    candidate.SPEND_TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
+    candidate.SPEND_TOKEN_PATH.write_text(json.dumps(token), encoding="utf-8")
+    token_sha = __import__("hashlib").sha256(candidate.SPEND_TOKEN_PATH.read_bytes()).hexdigest()
+    receipt = candidate._receipt(registration, "a" * 40, "outcome_access_spent", "outcome_access_spent", spend_token_sha256=token_sha)
+    receipt["registration_sha256"] = "f" * 64
+    receipt["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in receipt.items() if key != "artifact_sha256"})
+    candidate.RECEIPT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    candidate.RECEIPT_PATH.write_text(json.dumps(receipt), encoding="utf-8")
+    before = candidate.RECEIPT_PATH.read_bytes()
+    monkeypatch.setattr(candidate, "_outcomes", lambda *_args: pytest.fail("outcome reopen"))
+
+    assert candidate.run(["--seal-interrupted-spend"]) == 2
+    assert candidate.RECEIPT_PATH.read_bytes() == before
+
+
+@requires_runner
+def test_orphan_map_recovery_seals_error_without_reusing_map(monkeypatch, tmp_path):
+    candidate, registration = _protocol_sandbox(monkeypatch, tmp_path)
+    token = candidate._token(registration, "a" * 40)
+    candidate.SPEND_TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
+    candidate.SPEND_TOKEN_PATH.write_text(json.dumps(token), encoding="utf-8")
+    token_sha = __import__("hashlib").sha256(candidate.SPEND_TOKEN_PATH.read_bytes()).hexdigest()
+    candidate.RECEIPT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    candidate.RECEIPT_PATH.write_text(json.dumps(candidate._receipt(registration, "a" * 40, "outcome_access_spent", "outcome_access_spent", spend_token_sha256=token_sha)), encoding="utf-8")
+    candidate.CALIBRATOR_PATH.parent.mkdir(parents=True, exist_ok=True)
+    candidate.CALIBRATOR_PATH.write_text(json.dumps({"orphan": True}), encoding="utf-8")
+    before = candidate.CALIBRATOR_PATH.read_bytes()
+    monkeypatch.setattr(candidate, "_outcomes", lambda *_args: pytest.fail("outcome reopen"))
+
+    assert candidate.run(["--seal-interrupted-spend"]) == 2
+    assert json.loads(candidate.RECEIPT_PATH.read_text(encoding="utf-8"))["status"] == "spent_error"
+    assert candidate.CALIBRATOR_PATH.read_bytes() == before
+
+
+@requires_runner
+def test_each_receipt_state_requires_exact_schema_and_seal(monkeypatch):
+    candidate = _runner()
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: {"synthetic": True})
+    registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
+    rows = [
+        candidate._receipt(registration, "a" * 40, "reserved", "reserved"),
+        candidate._receipt(registration, "a" * 40, "outcome_access_spent", "outcome_access_spent", spend_token_sha256="c" * 64),
+        candidate._receipt(registration, "a" * 40, "qualified", "completed", spend_token_sha256="c" * 64, result={}, map_artifact_sha256="d" * 64),
+        candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result={}, map_artifact_sha256=None),
+        candidate._receipt(registration, "a" * 40, "spent_error", "post_marker", spend_token_sha256="c" * 64, result=None, error={"stage": "post_marker", "type": "Error", "message": "x"}),
+    ]
+    for receipt in rows:
+        assert candidate._validate_receipt(receipt) == receipt
+        malformed = dict(receipt)
+        malformed.pop("stage")
+        malformed["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in malformed.items() if key != "artifact_sha256"})
+        with pytest.raises(candidate.ProtocolError):
+            candidate._validate_receipt(malformed)
+
+
+@requires_runner
+def test_lock_file_is_initialized_at_byte_zero_and_truncated_to_one_byte(monkeypatch, tmp_path):
+    candidate = _runner()
+    lock = tmp_path / "common" / "lock"
+    lock.parent.mkdir(parents=True)
+    lock.write_bytes(b"stale")
+    monkeypatch.setattr(candidate, "_common_lock_path", lambda: lock)
+
+    with candidate._locked():
+        pass
+    assert lock.read_bytes() == b"s"
 
 
 @requires_runner

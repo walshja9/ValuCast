@@ -863,10 +863,16 @@ def _locked():
     path.parent.mkdir(parents=True, exist_ok=True)
     handle = path.open("a+b")
     try:
-        if not handle.read(1):
-            handle.write(b"0")
+        try:
+            handle.seek(0)
+            if not handle.read(1):
+                handle.seek(0)
+                handle.write(b"0")
+            handle.truncate(1)
             handle.flush()
             os.fsync(handle.fileno())
+        except OSError as error:
+            raise ProtocolError("v2.3 lock is already held") from error
         handle.seek(0)
         if os.name == "nt":
             import msvcrt
@@ -1139,7 +1145,7 @@ def _validate_receipt(receipt: object) -> dict:
         raise ProtocolError("failed receipt must not bind a map")
     if status in {"qualified", "failed"} and not isinstance(payload["result"], dict):
         raise ProtocolError("completed receipt result is invalid")
-    if status == "spent_error" and (payload["result"] is not None or set(payload["error"]) != {"type", "message"} or not all(isinstance(payload["error"][key], str) for key in ("type", "message"))):
+    if status == "spent_error" and (payload["result"] is not None or not isinstance(payload["error"], dict) or set(payload["error"]) != {"stage", "type", "message"} or not all(isinstance(payload["error"][key], str) for key in ("stage", "type", "message"))):
         raise ProtocolError("spent error receipt payload is invalid")
     return payload
 
@@ -1148,19 +1154,16 @@ def _atomic_json(path: Path, payload: dict, *, expected_state: str | None | obje
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = None
     try:
-        if expected_state is ...:
-            pass
-        elif expected_state is None:
-            if path.exists():
-                raise ProtocolError("expected absent receipt already exists")
-        else:
-            if not path.exists() or _validate_receipt(_load_json(path, outcome=True)).get("status") != expected_state:
-                raise ProtocolError("prior durable receipt state does not match")
         with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent, prefix=f".{path.name}.", suffix=".tmp", delete=False) as handle:
             temporary = Path(handle.name)
             json.dump(payload, handle, sort_keys=True, separators=(",", ":"), allow_nan=False)
             handle.flush()
             os.fsync(handle.fileno())
+        if expected_state is None and path.exists():
+            raise ProtocolError("expected absent receipt already exists")
+        if expected_state is not ... and expected_state is not None:
+            if not path.exists() or _validate_receipt(_load_json(path, outcome=True)).get("status") != expected_state:
+                raise ProtocolError("prior durable receipt state does not match")
         os.replace(temporary, path)
         temporary = None
         try:
@@ -1263,7 +1266,7 @@ def _terminal_failure(registration: dict, execution_sha: str, stage: str, error:
         registration, execution_sha, "spent_error", stage,
         spend_token_sha256=token_sha,
         result=None,
-        error={"type": type(error).__name__, "message": str(error)},
+        error={"stage": stage, "type": type(error).__name__, "message": str(error)},
     )
     _atomic_json(RECEIPT_PATH, receipt, expected_state="outcome_access_spent")
     return 2
@@ -1278,12 +1281,7 @@ def _spend_and_evaluate(registration: dict, execution_sha: str) -> int:
     _atomic_json(RECEIPT_PATH, spent, expected_state="reserved")
     try:
         contract, model, _v21, _v22 = _outcomes(registration)
-        try:
-            result, pooled_map = build_development_artifacts(contract, model, registration)
-        except ValueError:
-            # Scientific/model contract failures are a completed negative result, not an
-            # infrastructure retry signal.
-            result, pooled_map = {"scientific_failure": "model_or_metric_contract"}, None
+        result, pooled_map = build_development_artifacts(contract, model, registration)
         qualified = bool(pooled_map) and not result.get("failed_folds") and not result.get("failed_bootstrap") and not result.get("failed_structural")
         if qualified:
             if not isinstance(pooled_map, dict):
@@ -1358,12 +1356,12 @@ def _seal_interrupted() -> int:
     receipt = _validate_receipt(_load_json(RECEIPT_PATH, outcome=True))
     execution_sha = _approved_sha(token.get("execution_sha"))
     token_sha = hashlib.sha256(_spend_path().read_bytes()).hexdigest()
-    if token.get("registration_id") != registration["registration_id"] or token.get("registration_sha256") != registration["artifact_sha256"] or token.get("runtime") != _runtime_tuple() or token.get("execution_worktree") != str(ROOT.resolve()) or receipt.get("execution_sha") != execution_sha or receipt.get("execution_worktree") != token.get("execution_worktree") or receipt.get("runtime") != token.get("runtime") or receipt.get("status") not in {"reserved", "outcome_access_spent"} or (receipt["status"] == "outcome_access_spent" and receipt.get("spend_token_sha256") != token_sha):
+    if token.get("registration_id") != registration["registration_id"] or token.get("registration_sha256") != registration["artifact_sha256"] or token.get("runtime") != _runtime_tuple() or token.get("execution_worktree") != str(ROOT.resolve()) or receipt.get("registration_id") != token.get("registration_id") or receipt.get("registration_sha256") != token.get("registration_sha256") or receipt.get("execution_sha") != execution_sha or receipt.get("execution_worktree") != token.get("execution_worktree") or receipt.get("runtime") != token.get("runtime") or receipt.get("status") not in {"reserved", "outcome_access_spent"} or (receipt["status"] == "outcome_access_spent" and receipt.get("spend_token_sha256") != token_sha):
         raise ProtocolError("interrupted spend binding does not match")
     terminal = _receipt(
         registration, execution_sha, "spent_error", "interrupted_spend",
         spend_token_sha256=token_sha, result=None,
-        error={"type": "InterruptedSpend", "message": "sealed without reopening outcomes"},
+        error={"stage": "interrupted_spend", "type": "InterruptedSpend", "message": "sealed without reopening outcomes"},
     )
     _atomic_json(RECEIPT_PATH, terminal, expected_state=receipt["status"])
     return 2
@@ -1384,11 +1382,14 @@ def _reproduce() -> int:
     if receipt.get("result") != result:
         raise ProtocolError("reproduction result is not byte/payload exact")
     if receipt["status"] == "qualified":
-        if not isinstance(pooled_map, dict) or not CALIBRATOR_PATH.is_file() or _load_json(CALIBRATOR_PATH, outcome=True) != pooled_map:
+        if not isinstance(pooled_map, dict) or not CALIBRATOR_PATH.is_file():
             raise ProtocolError("reproduction pooled map is not byte/payload exact")
-    elif pooled_map is not None:
-        raise ProtocolError("failed receipt unexpectedly reproduces a pooled map")
-    return receipt["cli_exit_code"]
+        disk_map = _load_json(CALIBRATOR_PATH, outcome=True)
+        if disk_map.get("artifact_sha256") != receipt.get("map_artifact_sha256") or disk_map != pooled_map:
+            raise ProtocolError("reproduction pooled map is not byte/payload exact")
+    elif pooled_map is not None or CALIBRATOR_PATH.exists():
+        raise ProtocolError("failed receipt unexpectedly has a pooled map")
+    return 0
 
 
 def _pre_marker_for_reproduction(registration: dict, receipt: dict) -> None:
