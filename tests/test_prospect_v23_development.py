@@ -315,3 +315,205 @@ def test_pooled_fit_runs_once_only_after_fold_and_bootstrap_qualification(monkey
     assert len(map_calls) == 1
     assert pooled_map["artifact_sha256"] == "2" * 64
     assert result["pooled_fit"] == {"attempted": True, "status": "validated", "row_count": 2, "training_rows_sha256": "1" * 64, "map_artifact_sha256": "2" * 64}
+
+
+@requires_runner
+def test_fold_receipt_records_target_alignment_before_any_map_fit(monkeypatch):
+    candidate = _runner()
+    ladders = _fit_ladders()
+    ladders[2018]["incumbent_hitters"][0]["target"] = 0.0
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda *_args: pytest.fail("maps follow target parity"))
+
+    receipt, values = candidate._build_fold_receipt(2018, ladders)
+
+    assert values is None
+    assert receipt["failure_stage"] == "target_alignment"
+    assert receipt["structural_checks"] == {
+        "identity_sets_equal": True, "targets_equal": False,
+        "candidate_map_valid": None, "control_map_valid": None,
+        "product_rank_reproduced": None, "top25_complete": None,
+    }
+    assert all(value is not None for value in receipt["identity_count_by_role"].values())
+    assert receipt["target_sha256"]
+
+
+@requires_runner
+def test_top25_structural_failure_preserves_upstream_metrics_and_gates(monkeypatch):
+    candidate = _runner()
+    ladders = _fit_ladders()
+
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda *_args: {"map": "fixed"})
+    monkeypatch.setattr(candidate, "score_role_slope_joint_ladders", lambda hitters, pitchers, _map: [
+        {**row, "calibrated_expected_tier": row["target"]} for row in [*hitters, *pitchers]
+    ])
+    monkeypatch.setattr(candidate, "reconstruct_product_board", lambda hitters, pitchers: [
+        {**row, "score": row["target"], "rank": index}
+        for index, row in enumerate([*hitters, *pitchers], 1)
+    ])
+
+    receipt, values = candidate._build_fold_receipt(2018, ladders)
+
+    assert values is None
+    assert receipt["failure_stage"] == "top25_contract"
+    assert receipt["structural_checks"]["top25_complete"] is False
+    assert all(receipt["metrics"][name] is not None for name in (
+        "candidate_mae", "control_mae", "candidate_control_mae_delta",
+        "candidate_concordance", "control_concordance", "product_concordance",
+        "candidate_control_concordance_delta", "candidate_product_concordance_delta",
+    ))
+    assert all(receipt["gates"][name] is not None for name in candidate.FOLD_GATE_ORDER[:4])
+    assert receipt["metrics"]["candidate_top25_target_sum"] is None
+    assert receipt["gates"]["candidate_control_top25"] is None
+
+
+@requires_runner
+def test_bootstrap_default_stream_uses_registered_fold_role_and_sorted_id_choice_order(monkeypatch):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    for fold in folds.values():
+        fold["candidate"].reverse()
+    calls, seeds = [], []
+
+    class RNG:
+        def choice(self, ids, *, size, replace):
+            calls.append((list(ids), size, replace))
+            return [ids[0]] * size
+
+    monkeypatch.setattr(candidate.np.random, "default_rng", lambda seed: seeds.append(seed) or RNG())
+    candidate.build_bootstrap_summary(folds, replicates=1)
+
+    assert seeds == [39017]
+    assert calls == [
+        (sorted(row["mlbam_id"] for row in folds[year]["candidate"] if row["role"] == role), 13, True)
+        for year in candidate.DEVELOPMENT_FOLDS for role in candidate.ROLES
+    ]
+
+
+@requires_runner
+def test_bootstrap_reuses_one_multiplicity_plan_for_each_comparator_and_metric(monkeypatch):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    observed = []
+    original_metrics = candidate._bootstrap_metric_rows
+
+    class RNG:
+        def choice(self, ids, *, size, replace):
+            return [ids[0]] * size
+
+    def record(*boards):
+        observed.append([[row["mlbam_id"] for row in board] for board in boards])
+        return original_metrics(*boards)
+
+    monkeypatch.setattr(candidate.np.random, "default_rng", lambda _seed: RNG())
+    monkeypatch.setattr(candidate, "_bootstrap_metric_rows", record)
+    candidate.build_bootstrap_summary(folds, replicates=1)
+
+    for candidate_ids, control_ids, product_ids in observed[-3:]:
+        assert candidate_ids == control_ids == product_ids
+        assert candidate_ids.count(candidate_ids[0]) == 13
+
+
+@requires_runner
+@pytest.mark.parametrize("metric_index", range(3))
+def test_each_bootstrap_interval_bound_is_strict_and_independent(monkeypatch, metric_index):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    original_percentile = candidate.np.percentile
+    calls = []
+
+    def percentile(values, percentiles, *, method):
+        calls.append(method)
+        if len(calls) - 1 == metric_index:
+            return [0.0, 0.0]
+        return original_percentile(values, percentiles, method=method)
+
+    monkeypatch.setattr(candidate, "BOOTSTRAP_MINIMUM", 1)
+    monkeypatch.setattr(candidate.np, "percentile", percentile)
+    summary = candidate.build_bootstrap_summary(folds, replicates=2)
+
+    assert calls == ["linear"] * 3
+    failed = candidate.BOOTSTRAP_METRICS[metric_index]
+    assert summary["metrics"][failed]["gate_passed"] is False
+    assert all(summary["metrics"][name]["gate_passed"] is True for name in candidate.BOOTSTRAP_METRICS if name != failed)
+
+
+@requires_runner
+def test_bootstrap_valid_count_floor_is_independent_of_interval_bounds():
+    candidate = _runner()
+    summary = candidate.build_bootstrap_summary(
+        {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}, replicates=1
+    )
+
+    assert all(metric["valid_replicates"] == 1 for metric in summary["metrics"].values())
+    assert all(metric["gate_passed"] is False for metric in summary["metrics"].values())
+
+
+def _qualified_bootstrap(candidate):
+    return {
+        "status": "completed", "seed": 39017, "replicates": 10_000,
+        "minimum_valid_replicates": 9_900,
+        "interval": {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"},
+        "sample_plan_sha256": "0" * 64,
+        "metrics": {name: {"point": -0.1, "lower": -0.2 if name == "candidate_control_mae_delta" else 0.1, "upper": -0.05, "valid_replicates": 10_000, "gate_passed": True} for name in candidate.BOOTSTRAP_METRICS},
+    }
+
+
+@requires_runner
+def test_artifact_schema_and_bootstrap_attempt_semantics(monkeypatch):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    calls = []
+    completed = candidate._completed_fold_receipt(folds[2018])
+    failed_gate = copy.deepcopy(completed)
+    failed_gate["gates"]["candidate_control_mae"] = False
+    failed_gate["failed_gates"] = ["candidate_control_mae"]
+
+    monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: {year: {} for year in candidate.DEVELOPMENT_FOLDS})
+    monkeypatch.setattr(candidate, "_build_fold_receipt", lambda year, _ladders: (failed_gate if year == 2018 else completed, folds[year]))
+    monkeypatch.setattr(candidate, "build_bootstrap_summary", lambda _folds: calls.append(_folds) or _qualified_bootstrap(candidate))
+    result, pooled_map = candidate.build_development_artifacts({}, {}, {})
+
+    assert pooled_map is None
+    assert len(calls) == 1
+    assert set(result) == {"fold_order", "folds", "bootstrap", "failed_folds", "failed_bootstrap", "failed_structural", "pooled_fit"}
+    assert set(result["folds"][2018]) == {"status", "failure_stage", "identity_count_by_role", "identity_sha256_by_role", "target_sha256", "metrics", "gates", "structural_checks", "failed_gates", "failed_structural"}
+    assert result["bootstrap"]["status"] == "completed"
+    assert result["pooled_fit"]["status"] == "not_attempted_qualification_failure"
+
+
+@requires_runner
+def test_structural_fold_failure_skips_bootstrap_with_exact_null_summary(monkeypatch):
+    candidate = _runner()
+    structural = candidate._failed_fold_receipt("candidate_map", _bootstrap_fold(2018)["candidate"])
+
+    monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: {year: {} for year in candidate.DEVELOPMENT_FOLDS})
+    monkeypatch.setattr(candidate, "_build_fold_receipt", lambda year, _ladders: (structural, None))
+    monkeypatch.setattr(candidate, "build_bootstrap_summary", lambda *_args: pytest.fail("structural folds skip bootstrap"))
+    result, pooled_map = candidate.build_development_artifacts({}, {}, {})
+
+    assert pooled_map is None
+    assert result["bootstrap"]["status"] == "not_attempted_fold_failure"
+    assert result["bootstrap"]["sample_plan_sha256"] is None
+    assert all(metric == {"point": None, "lower": None, "upper": None, "valid_replicates": None, "gate_passed": None} for metric in result["bootstrap"]["metrics"].values())
+
+
+@requires_runner
+def test_pooled_value_error_is_scientific_failure_and_unexpected_error_propagates(monkeypatch):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    completed = candidate._completed_fold_receipt(folds[2018])
+
+    monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: {year: {} for year in candidate.DEVELOPMENT_FOLDS})
+    monkeypatch.setattr(candidate, "_build_fold_receipt", lambda year, _ladders: (completed, folds[year]))
+    monkeypatch.setattr(candidate, "build_bootstrap_summary", lambda _folds: _qualified_bootstrap(candidate))
+    monkeypatch.setattr(candidate, "_pooled_candidate_rows", lambda _ladders: [{"mlbam_id": 1, "role": "hitter", "source_ladder_position": 1, "ladder_score": 1.0, "outcome": "star", "target": 1.0, "test_cohort": 2018}])
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda _rows: (_ for _ in ()).throw(ValueError("optimizer")))
+
+    result, pooled_map = candidate.build_development_artifacts({}, {}, {})
+    assert pooled_map is None
+    assert result["pooled_fit"]["status"] == "failed"
+    assert result["failed_structural"] == ["pooled_final_fit"]
+
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda _rows: (_ for _ in ()).throw(RuntimeError("infrastructure")))
+    with pytest.raises(RuntimeError, match="infrastructure"):
+        candidate.build_development_artifacts({}, {}, {})

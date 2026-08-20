@@ -44,6 +44,7 @@ STRUCTURAL_STAGES = (
     "metric_contract",
     "top25_contract",
 )
+BOOTSTRAP_MINIMUM = 9_900
 
 
 def _identity(row: dict, label: str) -> tuple[str, str]:
@@ -431,43 +432,133 @@ def _completed_fold_receipt(values: dict) -> dict:
     }
 
 
+def _record_structural_failure(receipt: dict, stage: str) -> tuple[dict, None]:
+    receipt["status"] = "structural_failure"
+    receipt["failure_stage"] = stage
+    receipt["failed_structural"] = [stage]
+    return receipt, None
+
+
+def _raw_identity_and_target_checks(candidate_rows: list[dict], control_rows: list[dict]) -> str | None:
+    try:
+        candidate_keys = [_identity(row, "candidate") for row in candidate_rows]
+        control_keys = [_identity(row, "control") for row in control_rows]
+        if len(set(candidate_keys)) != len(candidate_keys) or len(set(control_keys)) != len(control_keys):
+            return "identity_alignment"
+        if set(candidate_keys) != set(control_keys):
+            return "identity_alignment"
+        control_by_key = dict(zip(control_keys, control_rows))
+        if any(
+            _number(row, "target", "candidate") != _number(control_by_key[key], "target", "control")
+            for key, row in zip(candidate_keys, candidate_rows)
+        ):
+            return "target_alignment"
+    except (KeyError, TypeError, ValueError):
+        return "identity_alignment"
+    return None
+
+
+def _upstream_metrics(values: dict) -> dict:
+    candidate = values["candidate"]
+    control = values["control"]
+    product = values["product"]
+    metrics = {
+        "candidate_mae": mae(candidate, "calibrated_expected_tier"),
+        "control_mae": mae(control, "calibrated_expected_tier"),
+        "candidate_concordance": cross_role_concordance(candidate, "calibrated_expected_tier"),
+        "control_concordance": cross_role_concordance(control, "calibrated_expected_tier"),
+        "product_concordance": cross_role_concordance(product, "score"),
+    }
+    if any(value is None or not math.isfinite(value) for value in metrics.values()):
+        raise ValueError("fold metric is undefined")
+    return {
+        **metrics,
+        "candidate_control_mae_delta": metrics["candidate_mae"] - metrics["control_mae"],
+        "candidate_control_concordance_delta": metrics["candidate_concordance"] - metrics["control_concordance"],
+        "candidate_product_concordance_delta": metrics["candidate_concordance"] - metrics["product_concordance"],
+    }
+
+
+def _upstream_gates(metrics: dict) -> dict:
+    return {
+        "candidate_control_mae": metrics["candidate_control_mae_delta"] < 0,
+        "candidate_control_concordance": metrics["candidate_control_concordance_delta"] > 0,
+        "candidate_concordance_floor": metrics["candidate_concordance"] > 0.5,
+        "candidate_product_concordance": metrics["candidate_product_concordance_delta"] > 0,
+    }
+
+
 def _build_fold_receipt(year: int, ladders: dict[int, dict]) -> tuple[dict, dict | None]:
     ladder = ladders[year]
     candidate_rows = [*ladder.get("candidate_hitters", []), *ladder.get("candidate_pitchers", [])]
     try:
-        _fold_provenance(candidate_rows)
+        receipt = _empty_fold_receipt(candidate_rows)
     except (KeyError, TypeError, ValueError):
         return _failed_fold_receipt("identity_alignment"), None
+    control_rows = [*ladder.get("incumbent_hitters", []), *ladder.get("incumbent_pitchers", [])]
+    stage = _raw_identity_and_target_checks(candidate_rows, control_rows)
+    if stage == "identity_alignment":
+        receipt["structural_checks"]["identity_sets_equal"] = False
+        return _record_structural_failure(receipt, stage)
+    receipt["structural_checks"]["identity_sets_equal"] = True
+    if stage == "target_alignment":
+        receipt["structural_checks"]["targets_equal"] = False
+        return _record_structural_failure(receipt, stage)
+    receipt["structural_checks"]["targets_equal"] = True
     try:
         candidate_map = fit_role_slope_joint_map(_training_rows(year, ladders, "candidate"))
         candidate = score_role_slope_joint_ladders(
             ladder["candidate_hitters"], ladder["candidate_pitchers"], candidate_map
         )
     except (KeyError, TypeError, ValueError):
-        return _failed_fold_receipt("candidate_map", candidate_rows), None
+        receipt["structural_checks"]["candidate_map_valid"] = False
+        return _record_structural_failure(receipt, "candidate_map")
+    receipt["structural_checks"]["candidate_map_valid"] = True
     try:
         control_map = fit_role_slope_joint_map(_training_rows(year, ladders, "incumbent"))
         control = score_role_slope_joint_ladders(
             ladder["incumbent_hitters"], ladder["incumbent_pitchers"], control_map
         )
     except (KeyError, TypeError, ValueError):
-        return _failed_fold_receipt("control_map", candidate_rows), None
+        receipt["structural_checks"]["control_map_valid"] = False
+        return _record_structural_failure(receipt, "control_map")
+    receipt["structural_checks"]["control_map_valid"] = True
     try:
         product = reconstruct_product_board(ladder["incumbent_hitters"], ladder["incumbent_pitchers"])
     except (KeyError, TypeError, ValueError):
-        return _failed_fold_receipt("product_reconstruction", candidate_rows), None
+        receipt["structural_checks"]["product_rank_reproduced"] = False
+        return _record_structural_failure(receipt, "product_reconstruction")
+    receipt["structural_checks"]["product_rank_reproduced"] = True
     try:
         control = align_by_identity(candidate, control, "control")
         product = align_by_identity(candidate, product, "product")
     except ValueError as error:
         stage = "target_alignment" if "target mismatch" in str(error) else "identity_alignment"
-        return _failed_fold_receipt(stage, candidate_rows), None
+        receipt["structural_checks"]["targets_equal" if stage == "target_alignment" else "identity_sets_equal"] = False
+        return _record_structural_failure(receipt, stage)
     values = {"year": year, "candidate": candidate, "control": control, "product": product}
     try:
-        receipt = _completed_fold_receipt(values)
-    except ValueError as error:
-        stage = "top25_contract" if "top-25" in str(error) else "metric_contract"
-        return _failed_fold_receipt(stage, candidate_rows), None
+        receipt["metrics"].update(_upstream_metrics(values))
+    except ValueError:
+        return _record_structural_failure(receipt, "metric_contract")
+    receipt["gates"].update(_upstream_gates(receipt["metrics"]))
+    try:
+        top_metrics = {
+            "candidate_top25_target_sum": top25_target_sum(candidate),
+            "control_top25_target_sum": top25_target_sum(control),
+            "product_top25_target_sum": top25_target_sum(product, product=True),
+        }
+    except ValueError:
+        receipt["structural_checks"]["top25_complete"] = False
+        return _record_structural_failure(receipt, "top25_contract")
+    receipt["metrics"].update(top_metrics)
+    receipt["gates"].update({
+        "candidate_control_top25": top_metrics["candidate_top25_target_sum"] >= top_metrics["control_top25_target_sum"],
+        "candidate_product_top25": top_metrics["candidate_top25_target_sum"] >= top_metrics["product_top25_target_sum"],
+    })
+    receipt["structural_checks"]["top25_complete"] = True
+    receipt["status"] = "completed"
+    receipt["failed_gates"] = [name for name in FOLD_GATE_ORDER if not receipt["gates"][name]]
     return receipt, values
 
 
@@ -551,7 +642,7 @@ def build_bootstrap_summary(
         for name in BOOTSTRAP_METRICS:
             if len(per_fold[name]) == len(DEVELOPMENT_FOLDS):
                 values[name].append(sum(per_fold[name]) / len(DEVELOPMENT_FOLDS))
-    minimum = 9_900
+    minimum = BOOTSTRAP_MINIMUM
     gates = {
         "candidate_control_mae_delta": lambda lower, upper: upper < 0,
         "candidate_control_concordance_delta": lambda lower, upper: lower > 0,
@@ -581,7 +672,7 @@ def build_bootstrap_summary(
 def _not_attempted_bootstrap() -> dict:
     return {
         "status": "not_attempted_fold_failure", "seed": 39017, "replicates": 10_000,
-        "minimum_valid_replicates": 9_900,
+        "minimum_valid_replicates": BOOTSTRAP_MINIMUM,
         "interval": {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"},
         "sample_plan_sha256": None,
         "metrics": {name: _bootstrap_empty_metric() for name in BOOTSTRAP_METRICS},
