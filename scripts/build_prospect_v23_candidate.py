@@ -171,6 +171,8 @@ def _training_rows(year: int, ladders: dict[int, dict], prefix: str) -> list[dic
         except (KeyError, TypeError):
             raise ValueError("development ladders are missing a training fold") from None
         for row in [*role_rows[0], *role_rows[1]]:
+            if row.get("test_cohort") != training_year:
+                raise ValueError("development training row cohort marker mismatch")
             try:
                 rows.append({
                     "mlbam_id": row["mlbam_id"],

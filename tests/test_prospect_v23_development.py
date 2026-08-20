@@ -193,6 +193,20 @@ def test_fold_complement_maps_exclude_held_out_targets_and_bind_build_result(mon
         candidate.build_fold_result(2018, ladders, {}, control_map)
 
 
+@requires_runner
+def test_fold_complement_rejects_swapped_or_aliased_cohort_markers():
+    candidate = _runner()
+    swapped = _fit_ladders()
+    swapped[2019]["candidate_hitters"][0]["test_cohort"] = 2018
+    with pytest.raises(ValueError, match="cohort marker"):
+        candidate.fit_fold_maps(2018, swapped)
+
+    aliased = _fit_ladders()
+    aliased[2019] = copy.deepcopy(aliased[2018])
+    with pytest.raises(ValueError, match="cohort marker"):
+        candidate.build_fold_result(2018, aliased, {}, {})
+
+
 def _passing_fold():
     return {
         "candidate_mae": 0.1,
