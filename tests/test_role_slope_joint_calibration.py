@@ -273,6 +273,18 @@ def test_score_rejects_resealed_cross_field_and_type_tampering(mutate):
         calibration.score_role_slope_joint_ladders([], [], mapping)
 
 
+def test_score_rejects_overflowed_log_gap_with_none_threshold_for_empty_and_nonempty_ladders():
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    mapping = calibration.fit_role_slope_joint_map(_fit_rows())
+    mapping["params"][1] = 1000.0
+    mapping["thresholds"]["role_star"] = None
+    _reseal(mapping)
+
+    for hitters in ([], _source_ladders()[0][:1]):
+        with pytest.raises(ValueError, match="invalid role-slope joint map"):
+            calibration.score_role_slope_joint_ladders(hitters, [], mapping)
+
+
 @pytest.mark.parametrize("probability", [[float("nan"), 0.0, 0.0], [0.0, 0.0, 0.0]])
 def test_score_rejects_source_inversions_and_invalid_probabilities(monkeypatch, probability):
     calibration = importlib.import_module("prospects.role_slope_joint_calibration")

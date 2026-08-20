@@ -150,9 +150,10 @@ def _map_problems(mapping: object, rows: list[dict] | None = None) -> list[str]:
         try:
             role_star = params[0] + math.exp(params[1])
         except OverflowError:
-            role_star = None
-        if not isinstance(thresholds, dict) or thresholds.get("bust_role") != params[0] or thresholds.get("role_star") != role_star:
-            problems.append("thresholds do not match params")
+            problems.append("role-star threshold overflows")
+        else:
+            if not isinstance(thresholds, dict) or thresholds.get("bust_role") != params[0] or thresholds.get("role_star") != role_star:
+                problems.append("thresholds do not match params")
         if not isinstance(slopes, dict) or slopes.get("hitter") != params[2] or slopes.get("pitcher") != params[3]:
             problems.append("role slopes do not match params")
         if mapping["pitcher_offset"] != params[4]:
