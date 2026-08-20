@@ -481,6 +481,29 @@ def test_each_receipt_state_requires_exact_schema_and_seal(monkeypatch):
         with pytest.raises(candidate.ProtocolError):
             candidate._validate_receipt(malformed)
 
+    spent = rows[-1]
+    mismatched_stage = dict(spent)
+    mismatched_stage["error"] = {**spent["error"], "stage": "interrupted_spend"}
+    mismatched_stage["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in mismatched_stage.items() if key != "artifact_sha256"})
+    with pytest.raises(candidate.ProtocolError, match="spent error"):
+        candidate._validate_receipt(mismatched_stage)
+
+    variants = [
+        {**rows[0], "schema": "wrong"},
+        {**rows[0], "status": "qualified", "stage": "reserved"},
+        {**rows[1], "development_qualified": False},
+        {**rows[2], "cli_exit_code": 1},
+        {**rows[3], "result": None},
+    ]
+    for malformed in variants:
+        malformed["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in malformed.items() if key != "artifact_sha256"})
+        with pytest.raises(candidate.ProtocolError):
+            candidate._validate_receipt(malformed)
+    bad_seal = dict(rows[2])
+    bad_seal["artifact_sha256"] = "0" * 64
+    with pytest.raises(candidate.ProtocolError, match="seal"):
+        candidate._validate_receipt(bad_seal)
+
 
 @requires_runner
 def test_lock_file_is_initialized_at_byte_zero_and_truncated_to_one_byte(monkeypatch, tmp_path):
@@ -493,6 +516,39 @@ def test_lock_file_is_initialized_at_byte_zero_and_truncated_to_one_byte(monkeyp
     with candidate._locked():
         pass
     assert lock.read_bytes() == b"s"
+
+
+@requires_runner
+def test_actual_linked_worktree_sibling_loses_lock_before_any_read(monkeypatch, tmp_path):
+    candidate = _runner()
+    repository, sibling = tmp_path / "repo", tmp_path / "sibling"
+    for command in (
+        ["git", "init", str(repository)],
+        ["git", "-C", str(repository), "config", "user.email", "tests@example.invalid"],
+        ["git", "-C", str(repository), "config", "user.name", "Protocol Test"],
+        ["git", "-C", str(repository), "commit", "--allow-empty", "-m", "init"],
+        ["git", "-C", str(repository), "worktree", "add", "-b", "sibling", str(sibling)],
+    ):
+        subprocess.run(command, check=True, capture_output=True, text=True)
+    ready = tmp_path / "linked-ready"
+    code = (
+        "from pathlib import Path; import time; import scripts.build_prospect_v23_candidate as c; "
+        f"c.ROOT=Path({str(repository)!r}); p=Path({str(ready)!r}); "
+        "\nwith c._locked(): p.write_text('locked'); time.sleep(5)"
+    )
+    process = subprocess.Popen([sys.executable, "-c", code], cwd=Path(__file__).resolve().parents[1])
+    try:
+        deadline = time.monotonic() + 3
+        while not ready.exists() and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert ready.exists(), "first linked worktree did not acquire lock"
+        monkeypatch.setattr(candidate, "ROOT", sibling)
+        monkeypatch.setattr(candidate, "_read_registration", lambda: pytest.fail("sibling read before lock refusal"))
+        assert candidate._common_lock_path() == repository / ".git" / "valucast-prospect-v23.lock"
+        assert candidate.run([]) == 2
+    finally:
+        process.terminate()
+        process.wait(timeout=5)
 
 
 @requires_runner

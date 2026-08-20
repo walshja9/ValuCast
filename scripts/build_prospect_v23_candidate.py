@@ -1145,7 +1145,7 @@ def _validate_receipt(receipt: object) -> dict:
         raise ProtocolError("failed receipt must not bind a map")
     if status in {"qualified", "failed"} and not isinstance(payload["result"], dict):
         raise ProtocolError("completed receipt result is invalid")
-    if status == "spent_error" and (payload["result"] is not None or not isinstance(payload["error"], dict) or set(payload["error"]) != {"stage", "type", "message"} or not all(isinstance(payload["error"][key], str) for key in ("stage", "type", "message"))):
+    if status == "spent_error" and (payload["result"] is not None or not isinstance(payload["error"], dict) or set(payload["error"]) != {"stage", "type", "message"} or not all(isinstance(payload["error"][key], str) for key in ("stage", "type", "message")) or payload["error"]["stage"] != payload["stage"]):
         raise ProtocolError("spent error receipt payload is invalid")
     return payload
 
