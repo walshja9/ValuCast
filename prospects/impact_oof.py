@@ -51,13 +51,16 @@ def _round(value: float) -> float:
     return round(float(value), 12)
 
 
-def _eligible_templates(dataset_rows: list[dict], role: str) -> list[dict]:
+def _eligible_templates(
+    dataset_rows: list[dict], role: str, mature_through: int
+) -> list[dict]:
     empty_references = _impact_references({})
     return _historical_impact_rows(
         dataset_rows,
         role,
         seasons_by_player={},
         references=empty_references,
+        mature_through=mature_through,
     )
 
 
@@ -113,9 +116,10 @@ def fold_local_impact_oof(
     dataset_rows: list[dict],
     seasons_by_player: dict,
     role: str,
+    mature_through: int = MATURE_THROUGH,
 ) -> dict:
     """Return player-aligned OOF evidence with training-only target references."""
-    templates = _eligible_templates(dataset_rows, role)
+    templates = _eligible_templates(dataset_rows, role, mature_through)
     cohorts = sorted({row["cohort_year"] for row in templates})
     model_kind = "hurdle_ridge"
     ridge_lambda = (
@@ -136,6 +140,7 @@ def fold_local_impact_oof(
             role,
             seasons_by_player,
             reference_contract["references"],
+            mature_through=mature_through,
         )
         train = [row for row in fold_rows if row["cohort_year"] < test_year]
         test = [row for row in fold_rows if row["cohort_year"] == test_year]

@@ -3,7 +3,32 @@ from copy import deepcopy
 from datetime import datetime
 
 CONTRACT_VERSION = "1.0.0"
-SERVED_STATES = frozenset({"incumbent", "promoted"})
+LINEAGE_CONTRACTS = {
+    "incumbent": {
+        "model_version": "0.6.1",
+        "model_consumer": "prospect_rank_v1",
+        "layer_consumer": "prospect_rank_v1",
+        "score_source": "prospect_model_v0_6",
+        "model_feed": True,
+        "layer_feed": True,
+    },
+    "candidate": {
+        "model_version": "0.8.0",
+        "model_consumer": "prospect_rank_v2",
+        "layer_consumer": "prospect_rank_v2",
+        "score_source": "prospect_model_v0_8",
+        "model_feed": False,
+        "layer_feed": False,
+    },
+    "promoted": {
+        "model_version": "0.8.0",
+        "model_consumer": "prospect_rank_v2",
+        "layer_consumer": "prospect_rank_v2",
+        "score_source": "prospect_model_v0_8",
+        "model_feed": False,
+        "layer_feed": True,
+    },
+}
 ROLES = frozenset({"hitter", "pitcher"})
 
 
@@ -39,13 +64,47 @@ def build_stage1_contract(
     expected_generated_at: str,
     *,
     state: str = "incumbent",
+    expected_model_version: str = "0.6.1",
+    expected_model_consumer: str = "prospect_rank_v1",
+    expected_layer_consumer: str = "prospect_rank_v1",
+    expected_score_source: str = "prospect_model_v0_6",
+    expected_model_feed: bool = True,
+    expected_layer_feed: bool = True,
 ) -> dict:
-    if state not in SERVED_STATES:
-        raise ValueError(f"Stage 1 state is not served: {state}")
-    for label, payload in (("model", prospect_model), ("layer", dynasty_layer)):
-        release = payload.get("release_contract") or {}
-        if release.get("consumer") != "prospect_rank_v1" or release.get("feeds_live_valucast_rank") is not True:
-            raise ValueError(f"Stage 1 {label} artifact is not authorized for Rank v1")
+    registered = LINEAGE_CONTRACTS.get(state)
+    requested = {
+        "model_version": expected_model_version,
+        "model_consumer": expected_model_consumer,
+        "layer_consumer": expected_layer_consumer,
+        "score_source": expected_score_source,
+        "model_feed": expected_model_feed,
+        "layer_feed": expected_layer_feed,
+    }
+    if registered is None or requested != registered:
+        raise ValueError(f"Stage 1 state or lineage contract is invalid for {state!r}")
+
+    model_release = prospect_model.get("release_contract") or {}
+    layer_release = dynasty_layer.get("release_contract") or {}
+    if (
+        prospect_model.get("model_version") != expected_model_version
+        or model_release.get("consumer") != expected_model_consumer
+        or model_release.get("feeds_live_valucast_rank") is not expected_model_feed
+    ):
+        raise ValueError("Stage 1 model artifact is not authorized: wrong version, consumer, or feed")
+    artifact_source = model_release.get("score_source")
+    if expected_score_source == "prospect_model_v0_8":
+        if artifact_source != expected_score_source or any(
+            row.get("score_source") != expected_score_source
+            for row in prospect_model.get("ranked") or []
+        ):
+            raise ValueError("Stage 1 v0.8 source is missing or mixed")
+    elif artifact_source not in (None, expected_score_source):
+        raise ValueError("Stage 1 legacy model claims the wrong score source")
+    if (
+        layer_release.get("consumer") != expected_layer_consumer
+        or layer_release.get("feeds_live_valucast_rank") is not expected_layer_feed
+    ):
+        raise ValueError("Stage 1 layer artifact is not authorized: wrong consumer or feed")
     expected_date = _date(expected_generated_at)
     model_date = _date((prospect_model.get("input_contract") or {}).get("generated_at"))
     layer_date = _date(dynasty_layer.get("generated_at"))
@@ -67,6 +126,9 @@ def build_stage1_contract(
         "state": state,
         "generated_date": expected_date,
         "model_version": prospect_model.get("model_version"),
+        "model_consumer": expected_model_consumer,
+        "layer_consumer": expected_layer_consumer,
+        "score_source": expected_score_source,
         "layer_version": dynasty_layer.get("layer_version"),
         "profiles_by_key": profiles,
     }

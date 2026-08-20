@@ -1050,13 +1050,58 @@ def train_impact_role(
     seasons_by_player: dict,
     references: dict,
     now: str | None = None,
+    *,
+    fold_local_evidence: bool = False,
+    mature_through: int | None = None,
 ) -> dict:
     rows = _historical_impact_rows(
         dataset_rows, role, seasons_by_player, references
     )
     model_kind = "hurdle_ridge"
     ridge_lambda = HITTER_IMPACT_RIDGE_LAMBDA if role == "hitter" else RIDGE_LAMBDA
-    validation = _walk_forward(rows, model_kind, ridge_lambda)
+    if fold_local_evidence:
+        from prospects import impact_oof
+
+        evidence = impact_oof.fold_local_impact_oof(
+            dataset_rows,
+            seasons_by_player,
+            role,
+            mature_through=(MATURE_THROUGH if mature_through is None else mature_through),
+        )
+        evidence_rows = evidence["rows"]
+        model_predictions = [row["model_prediction"] for row in evidence_rows]
+        prior_predictions = [row["prior_prediction"] for row in evidence_rows]
+        neighbor_predictions = [row["neighbor_prediction"] for row in evidence_rows]
+        canonical_neighbor_predictions = [
+            row["canonical_neighbor_prediction"] for row in evidence_rows
+        ]
+        targets = [row["target"] for row in evidence_rows]
+
+        def mae(predictions):
+            return (
+                mean(
+                    abs(prediction - target)
+                    for prediction, target in zip(predictions, targets)
+                )
+                if targets
+                else None
+            )
+
+        validation = {
+            "model_predictions": model_predictions,
+            "prior_predictions": prior_predictions,
+            "neighbor_predictions": neighbor_predictions,
+            "canonical_neighbor_predictions": canonical_neighbor_predictions,
+            "targets": targets,
+            "model_mae": mae(model_predictions),
+            "prior_mae": mae(prior_predictions),
+            "neighbor_mae": mae(neighbor_predictions),
+            "canonical_neighbor_mae": mae(canonical_neighbor_predictions),
+            "rank_concordance": _rank_concordance(model_predictions, targets),
+            "folds": evidence["folds"],
+        }
+    else:
+        validation = _walk_forward(rows, model_kind, ridge_lambda)
     now = now or datetime.now(timezone.utc).isoformat()
     gate = decide_gate(
         metric="category_impact_mae",

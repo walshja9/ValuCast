@@ -714,6 +714,39 @@ def test_impact_rows_train_on_rich_features_with_canonical_knn_baseline():
     assert len(rows[0]["baseline_features"]) < len(rows[0]["features"])
 
 
+def test_train_impact_role_uses_fold_local_evidence_only_when_requested(monkeypatch):
+    from prospects import impact_oof
+
+    contract = _contract()
+    references = _impact_references(contract["historical_mlb_seasons"])
+    calls = []
+    original = impact_oof.fold_local_impact_oof
+
+    def spy(*args, **kwargs):
+        calls.append(kwargs)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(impact_oof, "fold_local_impact_oof", spy)
+    train_impact_role(
+        "hitter",
+        contract["historical"]["rows"],
+        contract["historical_mlb_seasons"],
+        references,
+        now="2026-08-20T00:00:00+00:00",
+    )
+    assert calls == []
+    train_impact_role(
+        "hitter",
+        contract["historical"]["rows"],
+        contract["historical_mlb_seasons"],
+        references,
+        now="2026-08-20T00:00:00+00:00",
+        fold_local_evidence=True,
+        mature_through=2019,
+    )
+    assert calls == [{"mature_through": 2019}]
+
+
 def test_shadow_output_is_valucast_owned_and_service_gated():
     contract = _contract()
     contract["mlb_service"][1]["graduated"] = True

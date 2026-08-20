@@ -149,6 +149,7 @@ MODEL_COMPONENT_WEIGHTS = {
 MODEL_SCORE_QUANTILE_NORMALIZATION_VERSION = "role_quantile_to_pooled_v0_1"
 MODEL_SCORE_QUANTILE_NORMALIZED_SUFFIX = "_role_quantile_normalized"
 MODEL_SCORE_QUANTILE_PERCENTILE_SUFFIX = "_role_percentile"
+MODEL_SCORE_SOURCES = frozenset({"prospect_model_v0_6", "prospect_model_v0_8"})
 SCORE_WEIGHTS = {
     "prospect_model_v0_6": {
         "model_score": 0.76,
@@ -326,13 +327,18 @@ def _generated_date(payload: dict) -> str | None:
     return _date_part(payload.get("generated_at"))
 
 
-def _model_lookup(prospect_model: dict) -> dict[tuple[str, str], dict]:
+def _model_lookup(
+    prospect_model: dict,
+    *,
+    normalize_role_quantiles: bool = True,
+) -> dict[tuple[str, str], dict]:
     rows = []
     for row in prospect_model.get("ranked") or []:
         key = identity_key(row.get("mlbam_id"), row.get("role"))
         if key:
             rows.append(dict(row))
-    _apply_role_quantile_model_score_normalization(rows)
+    if normalize_role_quantiles:
+        _apply_role_quantile_model_score_normalization(rows)
     lookup = {}
     for row in rows:
         key = identity_key(row.get("mlbam_id"), row.get("role"))
@@ -353,6 +359,8 @@ def _layer_lookup(dynasty_layer: dict) -> dict[tuple[str, str], dict]:
 def _with_verified_investment_facts(
     input_contract: dict,
     investment_evidence: dict | None,
+    *,
+    expected_permitted_use: str,
 ) -> tuple[dict, dict]:
     audit = {
         "artifact": None,
@@ -376,8 +384,7 @@ def _with_verified_investment_facts(
         or policy.get("feeds_v06_model") is not False
         or policy.get("feeds_universal_model") is not False
         or policy.get("changes_ranks_or_values") is not True
-        or policy.get("permitted_use")
-        != "prospect_rank_v1_factual_investment_context_only"
+        or policy.get("permitted_use") != expected_permitted_use
     ):
         raise ValueError("invalid verified investment evidence policy")
 
@@ -967,9 +974,17 @@ def _model_score_normalization_component(model_profile: dict | None) -> dict | N
     }
 
 
-def _model_score(model_profile: dict | None) -> float | None:
+def _model_score(
+    model_profile: dict | None,
+    model_score_field: str | None = None,
+) -> float | None:
     if not model_profile:
         return None
+    if model_score_field is not None:
+        value = _clean_float(model_profile.get(model_score_field))
+        if value is None or not 0.0 <= value <= 1.0:
+            raise ValueError(f"invalid {model_score_field}")
+        return round(100.0 * value, 2)
     outcome = _model_score_component_value(model_profile, "expected_outcome_score")
     impact = _model_score_component_value(
         model_profile,
@@ -1219,8 +1234,14 @@ def _score_components(
     model_profile: dict | None,
     layer_profile: dict,
     input_row: dict | None,
+    *,
+    score_source: str = "prospect_model_v0_6",
+    model_score_field: str | None = None,
+    normalize_role_quantiles: bool = True,
 ) -> tuple[float, str, dict]:
-    model_score = _model_score(model_profile)
+    if score_source not in MODEL_SCORE_SOURCES:
+        raise ValueError(f"unsupported model score source {score_source!r}")
+    model_score = _model_score(model_profile, model_score_field)
     universal_score = _universal_outcome_index(layer_profile)
     investment_score = _factual_investment_score(input_row)
     reliability_score = _sample_reliability_score(layer_profile, model_profile)
@@ -1238,8 +1259,8 @@ def _score_components(
     )
 
     if model_score is not None:
-        source = "prospect_model_v0_6"
-        weights = SCORE_WEIGHTS[source]
+        source = score_source
+        weights = SCORE_WEIGHTS["prospect_model_v0_6"]
         score = (
             weights["model_score"] * model_score
             + weights["universal_outcome_index"] * universal_score
@@ -1283,7 +1304,7 @@ def _score_components(
         "sample_reliability": _round(reliability_score),
     }
     normalization_component = _model_score_normalization_component(model_profile)
-    if normalization_component:
+    if normalize_role_quantiles and normalization_component:
         components["model_score_normalization"] = normalization_component
     if current_context:
         components["factual_current_context"] = current_context
@@ -1547,7 +1568,7 @@ def _bucket_calibration_adjustment(
         else 0.0
     )
     if (
-        source in {"prospect_model_v0_6", PEDIGREE_SCORE_SOURCE}
+        (source in MODEL_SCORE_SOURCES or source == PEDIGREE_SCORE_SOURCE)
         and str(availability.get("status") or "") == "thin_current_sample"
         and reliability is not None
     ):
@@ -1576,7 +1597,7 @@ def _bucket_calibration_adjustment(
         continuity_floor = None
         continuity_prior_season = None
         if (
-            source == "prospect_model_v0_6"
+            source in MODEL_SCORE_SOURCES
             and sample is not None
             and sample < MODEL_MIN_CURRENT_SAMPLE.get(str(role or ""), 0.0)
             and career_entry
@@ -1646,7 +1667,7 @@ def _bucket_calibration_adjustment(
             )
 
     if (
-        source in {"prospect_model_v0_6", PEDIGREE_SCORE_SOURCE}
+        (source in MODEL_SCORE_SOURCES or source == PEDIGREE_SCORE_SOURCE)
         and str(availability.get("status") or "") != "thin_current_sample"
         and reliability is not None
         and reliability < MODERATE_THIN_RELIABILITY_FLOOR
@@ -1722,7 +1743,7 @@ def _bucket_calibration_adjustment(
     iso = _clean_float(factual.get("iso_milb"))
     ops = _clean_float(factual.get("ops_milb"))
     if (
-        source == "prospect_model_v0_6"
+        source in MODEL_SCORE_SOURCES
         and role == "hitter"
         and level in {"AA", "AAA"}
         and sample_unit == "PA"
@@ -1831,7 +1852,10 @@ def _uncertainty_component(
         else ""
     )
 
-    width = SCORE_SOURCE_UNCERTAINTY_WIDTH.get(source, 14.0)
+    width = SCORE_SOURCE_UNCERTAINTY_WIDTH.get(
+        "prospect_model_v0_6" if source in MODEL_SCORE_SOURCES else source,
+        14.0,
+    )
     width += CONFIDENCE_UNCERTAINTY_ADJUSTMENT.get(confidence, 2.0)
     if reliability is None:
         width += 3.0
@@ -1875,8 +1899,9 @@ def _uncertainty_component(
 
 
 def _score_source_sort_order(source: str | None) -> int:
+    if source in MODEL_SCORE_SOURCES:
+        return 0
     return {
-        "prospect_model_v0_6": 0,
         PEDIGREE_SCORE_SOURCE: 1,
         "universal_fallback": 2,
         "identity_only_fallback": 3,
@@ -2139,10 +2164,9 @@ def _validation(
     }
 
 
-def build_prospect_rank_v1(
+def build_prospect_rank_from_stage1(
     prospect_universe: dict,
-    dynasty_layer: dict,
-    prospect_model: dict,
+    stage1: dict,
     input_contract: dict,
     prospect_availability: dict | None = None,
     milb_history_by_key: dict | None = None,
@@ -2150,16 +2174,21 @@ def build_prospect_rank_v1(
     require_mlb_roster_status: bool = False,
     investment_evidence: dict | None = None,
     *,
-    stage1_state: str = "incumbent",
+    investment_permitted_use: str,
+    rank_name: str,
+    rank_version: str,
+    score_source: str,
+    model_score_field: str | None,
+    normalize_role_quantiles: bool,
+    manual_graduated_ids: set[str] | None = None,
+    consensus_snapshots: dict[str, dict] | None = None,
 ) -> dict:
-    stage1 = build_stage1_contract(
-        prospect_model,
-        dynasty_layer,
-        input_contract.get("generated_at"),
-        state=stage1_state,
-    )
+    if stage1.get("score_source") != score_source:
+        raise ValueError("Stage 1 score source does not match the requested rank lineage")
     input_contract, investment_evidence_audit = _with_verified_investment_facts(
-        input_contract, investment_evidence
+        input_contract,
+        investment_evidence,
+        expected_permitted_use=investment_permitted_use,
     )
     stage1_by_key = stage1["profiles_by_key"]
     model_by_key = _model_lookup(
@@ -2169,7 +2198,8 @@ def build_prospect_rank_v1(
                 for profile in stage1_by_key.values()
                 if profile["model_profile"] is not None
             ]
-        }
+        },
+        normalize_role_quantiles=normalize_role_quantiles,
     )
     layer_by_key = _layer_lookup(
         {
@@ -2187,12 +2217,27 @@ def build_prospect_rank_v1(
     availability_by_key = availability_lookup(prospect_availability)
     active_roster_by_mlbam = active_roster_lookup(mlb_roster_status)
     active_mlb_roster_ids = set(active_roster_by_mlbam)
-    manual_graduated_ids = _manual_graduated_ids()
-    sts_by_mlbam = _snapshot_by_mlbam(STS_CONSENSUS_PATH)
-    fg_by_mlbam = _snapshot_by_mlbam(FG_FV_SNAPSHOT_PATH)
-    pl_by_mlbam = _snapshot_by_mlbam(PROSPECTSLIVE_PATH)
-    pipeline_by_mlbam = _snapshot_by_mlbam(PIPELINE_PATH)
-    hkb_by_mlbam = _snapshot_by_mlbam(HKB_PATH)
+    manual_graduated_ids = (
+        _manual_graduated_ids()
+        if manual_graduated_ids is None
+        else set(manual_graduated_ids)
+    )
+    if consensus_snapshots is None:
+        consensus_snapshots = {
+            "sts": _snapshot_by_mlbam(STS_CONSENSUS_PATH),
+            "fangraphs": _snapshot_by_mlbam(FG_FV_SNAPSHOT_PATH),
+            "prospectslive": _snapshot_by_mlbam(PROSPECTSLIVE_PATH),
+            "pipeline": _snapshot_by_mlbam(PIPELINE_PATH),
+            "hkb": _snapshot_by_mlbam(HKB_PATH),
+        }
+    expected_consensus = {"sts", "fangraphs", "prospectslive", "pipeline", "hkb"}
+    if set(consensus_snapshots) != expected_consensus:
+        raise ValueError("consensus_snapshots must contain exactly the five registered sources")
+    sts_by_mlbam = consensus_snapshots["sts"]
+    fg_by_mlbam = consensus_snapshots["fangraphs"]
+    pl_by_mlbam = consensus_snapshots["prospectslive"]
+    pipeline_by_mlbam = consensus_snapshots["pipeline"]
+    hkb_by_mlbam = consensus_snapshots["hkb"]
     mlb_roster_status_ready = bool(
         (mlb_roster_status or {}).get("validation", {}).get("ready_for_public_snapshot")
     )
@@ -2206,17 +2251,18 @@ def build_prospect_rank_v1(
             for role in ("hitter", "pitcher")
         )
     }
-    _apply_role_quantile_model_score_normalization(
-        _board_model_score_normalization_rows(
-            rows,
-            model_by_key,
-            input_by_key,
-            # Item B: exclude only ids the board loop itself excludes, so the
-            # Pass-2 pool matches main-board membership exactly (retained
-            # rookie call-ups stay IN the pool).
-            graduated_active_mlb_ids | manual_graduated_ids,
+    if normalize_role_quantiles:
+        _apply_role_quantile_model_score_normalization(
+            _board_model_score_normalization_rows(
+                rows,
+                model_by_key,
+                input_by_key,
+                # Item B: exclude only ids the board loop itself excludes, so the
+                # Pass-2 pool matches main-board membership exactly (retained
+                # rookie call-ups stay IN the pool).
+                graduated_active_mlb_ids | manual_graduated_ids,
+            )
         )
-    )
     seen: set[tuple[str, str]] = set()
     duplicate_keys: list[tuple[str, str]] = []
     missing_mlbam_count = 0
@@ -2271,6 +2317,9 @@ def build_prospect_rank_v1(
                 model_profile,
                 layer_profile,
                 input_row,
+                score_source=score_source,
+                model_score_field=model_score_field,
+                normalize_role_quantiles=normalize_role_quantiles,
             )
         else:
             unmatched_layer_keys.add(key)
@@ -2369,9 +2418,13 @@ def build_prospect_rank_v1(
     for rank, row in enumerate(board, 1):
         row["rank"] = rank
 
+    dynasty_layer_context = {
+        "generated_at": stage1.get("generated_date"),
+        "layer_version": stage1.get("layer_version"),
+    }
     validation = _validation(
         prospect_universe,
-        dynasty_layer,
+        dynasty_layer_context,
         input_contract,
         rows,
         board,
@@ -2395,13 +2448,21 @@ def build_prospect_rank_v1(
     )
     generated_at = (
         prospect_universe.get("generated_at")
-        or dynasty_layer.get("generated_at")
+        or stage1.get("generated_date")
         or input_contract.get("generated_at")
     )
+    score_weights_payload = SCORE_WEIGHTS
+    if score_source != "prospect_model_v0_6":
+        score_weights_payload = {
+            key: dict(value)
+            for key, value in SCORE_WEIGHTS.items()
+            if key != "prospect_model_v0_6"
+        }
+        score_weights_payload[score_source] = dict(SCORE_WEIGHTS["prospect_model_v0_6"])
     return {
         "status": "candidate_ready" if not validation["blockers"] else "blocked",
-        "rank_name": RANK_NAME,
-        "rank_version": RANK_VERSION,
+        "rank_name": rank_name,
+        "rank_version": rank_version,
         "generated_at": generated_at,
         "candidate_count": len(rows),
         "ranked_count": len(board),
@@ -2412,7 +2473,7 @@ def build_prospect_rank_v1(
                 "ValuCast public snapshots after validation and governor gates pass."
             ),
             "score_range": [0.0, 100.0],
-            "score_weights": SCORE_WEIGHTS,
+            "score_weights": score_weights_payload,
             "model_component_weights": MODEL_COMPONENT_WEIGHTS,
             "fallback_score_cap": FALLBACK_SCORE_CAP,
             "identity_only_score_cap": IDENTITY_ONLY_SCORE_CAP,
@@ -2497,8 +2558,8 @@ def build_prospect_rank_v1(
             "prospect_universe_schema_version": prospect_universe.get("schema_version"),
             "prospect_universe_artifact": prospect_universe.get("artifact"),
             "prospect_universe_candidate_count": prospect_universe.get("candidate_count"),
-            "prospect_model_version": prospect_model.get("model_version"),
-            "dynasty_layer_version": dynasty_layer.get("layer_version"),
+            "prospect_model_version": stage1.get("model_version"),
+            "dynasty_layer_version": stage1.get("layer_version"),
             "stage1_contract_version": stage1["contract_version"],
             "stage1_state": stage1["state"],
             "stage1_profile_count": len(stage1_by_key),
@@ -2543,6 +2604,49 @@ def build_prospect_rank_v1(
         ],
         "board": board,
     }
+
+
+def build_prospect_rank_v1(
+    prospect_universe: dict,
+    dynasty_layer: dict,
+    prospect_model: dict,
+    input_contract: dict,
+    prospect_availability: dict | None = None,
+    milb_history_by_key: dict | None = None,
+    mlb_roster_status: dict | None = None,
+    require_mlb_roster_status: bool = False,
+    investment_evidence: dict | None = None,
+    *,
+    stage1_state: str = "incumbent",
+) -> dict:
+    stage1 = build_stage1_contract(
+        prospect_model,
+        dynasty_layer,
+        input_contract.get("generated_at"),
+        state=stage1_state,
+        expected_model_version="0.6.1",
+        expected_model_consumer="prospect_rank_v1",
+        expected_layer_consumer="prospect_rank_v1",
+        expected_score_source="prospect_model_v0_6",
+        expected_model_feed=True,
+        expected_layer_feed=True,
+    )
+    return build_prospect_rank_from_stage1(
+        prospect_universe,
+        stage1,
+        input_contract,
+        prospect_availability=prospect_availability,
+        milb_history_by_key=milb_history_by_key,
+        mlb_roster_status=mlb_roster_status,
+        require_mlb_roster_status=require_mlb_roster_status,
+        investment_evidence=investment_evidence,
+        investment_permitted_use="prospect_rank_v1_factual_investment_context_only",
+        rank_name=RANK_NAME,
+        rank_version=RANK_VERSION,
+        score_source="prospect_model_v0_6",
+        model_score_field=None,
+        normalize_role_quantiles=True,
+    )
 
 
 def archive_rank(

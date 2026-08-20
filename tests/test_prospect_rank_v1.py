@@ -1,10 +1,12 @@
 """Tests for the candidate shadow ValuCast Prospect Rank v1 artifact."""
+import hashlib
 import json
 
 import pytest
 import prospects.rank_v1 as rank_v1
 
 from prospects.rank_v1 import (
+    ARTIFACT_PATH,
     BUCKET_CALIBRATION_VERSION,
     FACTUAL_CURRENT_CONTEXT_VERSION,
     LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
@@ -19,9 +21,59 @@ from prospects.rank_v1 import (
     _sample_reliability_score,
     _universal_outcome_index,
     _with_verified_investment_facts,
+    build_prospect_rank_from_stage1,
     build_prospect_rank_v1,
     run_prospect_rank_v1,
 )
+
+
+def test_rank_v1_wrapper_equals_shared_core_exactly():
+    universe = _universe()
+    layer = _dynasty_layer()
+    model = _prospect_model()
+    contract = _input_contract()
+    wrapped = build_prospect_rank_v1(universe, layer, model, contract)
+    stage1 = rank_v1.build_stage1_contract(
+        model,
+        layer,
+        contract["generated_at"],
+        state="incumbent",
+        expected_model_version="0.6.1",
+        expected_model_consumer="prospect_rank_v1",
+        expected_layer_consumer="prospect_rank_v1",
+        expected_score_source="prospect_model_v0_6",
+        expected_model_feed=True,
+        expected_layer_feed=True,
+    )
+    shared = build_prospect_rank_from_stage1(
+        universe,
+        stage1,
+        contract,
+        investment_permitted_use="prospect_rank_v1_factual_investment_context_only",
+        rank_name="ValuCast Prospect Rank v1",
+        rank_version="0.2.9",
+        score_source="prospect_model_v0_6",
+        model_score_field=None,
+        normalize_role_quantiles=True,
+    )
+    assert shared == wrapped
+
+
+def test_rank_v1_full_refreshed_input_rebuild_matches_pre_refactor_hash(tmp_path):
+    rebuilt = tmp_path / "valucast_prospect_rank_v1.json"
+    run_prospect_rank_v1(artifact_path=rebuilt, archive_dir=tmp_path / "archive")
+    canonical = json.dumps(
+        json.loads(rebuilt.read_text(encoding="utf-8")), indent=2, sort_keys=True
+    ).encode()
+    # Task 2 refreshed factual inputs without republishing v1. This hash was
+    # independently derived from the pre-refactor d33b27ed scorer on those same
+    # refreshed inputs; the served artifact remains frozen at its prior bytes.
+    assert hashlib.sha256(canonical).hexdigest() == (
+        "552c9a9a9239b5c3cb3a61252458af737c3d71bfe97411bbaadda432c3f6f901"
+    )
+    assert hashlib.sha256(ARTIFACT_PATH.read_bytes()).hexdigest() == (
+        "c4d9abd6f96d7d86991a422b46ee3f5123531480588dfe8015322e6e052143a8"
+    )
 
 
 def test_layer_reliability_wins_over_model_profile():
@@ -106,7 +158,9 @@ def test_verified_investment_overlay_fills_missing_bonus_without_mutating_contra
     contract = _input_contract()
 
     corrected, audit = _with_verified_investment_facts(
-        contract, _investment_evidence()
+        contract,
+        _investment_evidence(),
+        expected_permitted_use="prospect_rank_v1_factual_investment_context_only",
     )
 
     assert corrected["current"]["hitters"][1]["signing_bonus"] == 950_000
@@ -121,7 +175,9 @@ def test_verified_investment_overlay_fills_missing_bonus_without_mutating_contra
 
 def test_verified_investment_overlay_accepts_identical_existing_bonus():
     corrected, audit = _with_verified_investment_facts(
-        _input_contract(), _investment_evidence(mlbam_id=1, signing_bonus=4_000_000)
+        _input_contract(),
+        _investment_evidence(mlbam_id=1, signing_bonus=4_000_000),
+        expected_permitted_use="prospect_rank_v1_factual_investment_context_only",
     )
 
     assert corrected["current"]["hitters"][0]["signing_bonus"] == 4_000_000
@@ -183,7 +239,11 @@ def test_verified_investment_overlay_changes_only_rank_input_component():
 )
 def test_verified_investment_overlay_fails_closed(evidence, message):
     with pytest.raises(ValueError, match=message):
-        _with_verified_investment_facts(_input_contract(), evidence())
+        _with_verified_investment_facts(
+            _input_contract(),
+            evidence(),
+            expected_permitted_use="prospect_rank_v1_factual_investment_context_only",
+        )
 
 
 def test_universal_outcome_index_excludes_star_ceiling():
@@ -389,7 +449,7 @@ def _dynasty_layer():
 def _prospect_model():
     return {
         "status": "shadow_only",
-        "model_version": "0.6.0",
+        "model_version": "0.6.1",
         "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
         "release_contract": {
             "consumer": "prospect_rank_v1",
@@ -1012,7 +1072,7 @@ def test_rank_v1_exposes_factual_current_context_for_pitcher_components():
         dynasty_layer,
         {
             "status": "shadow_only",
-            "model_version": "0.6.0",
+            "model_version": "0.6.1",
             "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
             "release_contract": {
                 "consumer": "prospect_rank_v1",
@@ -1390,7 +1450,7 @@ def test_rank_v1_bucket_adjusts_thin_upper_level_pitcher_model_samples():
     }
     prospect_model = {
         "status": "shadow_only",
-        "model_version": "0.6.0",
+        "model_version": "0.6.1",
         "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
         "release_contract": {
             "consumer": "prospect_rank_v1",
@@ -1687,7 +1747,7 @@ def _three_hitter_board(*, active_ids, graduated_ids):
     }
     prospect_model = {
         "status": "shadow_only",
-        "model_version": "0.6.0",
+        "model_version": "0.6.1",
         "input_contract": {"generated_at": "2026-06-13T12:00:00+00:00"},
         "release_contract": {
             "consumer": "prospect_rank_v1",
