@@ -147,7 +147,11 @@ def _map_problems(mapping: object, rows: list[dict] | None = None) -> list[str]:
     if not isinstance(counts, dict) or set(counts) != set(_ROLES):
         problems.append("role counts are invalid")
     if params is not None:
-        if not isinstance(thresholds, dict) or thresholds.get("bust_role") != params[0] or thresholds.get("role_star") != params[0] + math.exp(params[1]):
+        try:
+            role_star = params[0] + math.exp(params[1])
+        except OverflowError:
+            role_star = None
+        if not isinstance(thresholds, dict) or thresholds.get("bust_role") != params[0] or thresholds.get("role_star") != role_star:
             problems.append("thresholds do not match params")
         if not isinstance(slopes, dict) or slopes.get("hitter") != params[2] or slopes.get("pitcher") != params[3]:
             problems.append("role slopes do not match params")
@@ -170,10 +174,17 @@ def _map_problems(mapping: object, rows: list[dict] | None = None) -> list[str]:
                 problems.append(f"{role} standardization is invalid")
     if not isinstance(mapping["row_count"], int) or isinstance(mapping["row_count"], bool) or mapping["row_count"] <= 0:
         problems.append("row count is invalid")
-    if not isinstance(counts, dict) or any(
-        not isinstance(counts.get(role), int) or isinstance(counts[role], bool) or counts[role] <= 0
-        for role in _ROLES
-    ) or (isinstance(counts, dict) and mapping["row_count"] != sum(counts.values())):
+    counts_are_valid = (
+        isinstance(counts, dict)
+        and set(counts) == set(_ROLES)
+        and all(
+            isinstance(counts[role], int)
+            and not isinstance(counts[role], bool)
+            and counts[role] > 0
+            for role in _ROLES
+        )
+    )
+    if not counts_are_valid or mapping["row_count"] != sum(counts.values()):
         problems.append("role counts do not match row count")
     if not isinstance(mapping["training_rows_sha256"], str) or not re.fullmatch(r"[0-9a-f]{64}", mapping["training_rows_sha256"]):
         problems.append("training row hash is invalid")
@@ -278,6 +289,12 @@ def _score_ladder(rows: list[dict], role: str, mapping: dict) -> list[dict]:
                 "final_score": expected,
             }
         )
+    ordered = sorted(scored, key=lambda row: (row["source_ladder_position"], row["mlbam_id"]))
+    if any(
+        left["calibrated_expected_tier"] < right["calibrated_expected_tier"]
+        for left, right in zip(ordered, ordered[1:])
+    ):
+        raise ValueError("role-slope joint ladder inversion")
     return scored
 
 

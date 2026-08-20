@@ -2,6 +2,7 @@ import copy
 import importlib
 import math
 
+import numpy as np
 import pytest
 
 from prospects.prospect_v2_target import canonical_sha256
@@ -153,3 +154,141 @@ def test_role_slope_joint_map_contract_and_scoring():
     malformed["artifact_sha256"] = canonical_sha256({key: value for key, value in malformed.items() if key != "artifact_sha256"})
     with pytest.raises(ValueError, match="invalid role-slope joint map"):
         calibration.score_role_slope_joint_ladders(hitters, pitchers, malformed)
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda rows: rows[0].pop("target"),
+        lambda rows: rows[0].__setitem__("unexpected", True),
+        lambda rows: rows.__setitem__(slice(None), [row for row in rows if row["role"] == "hitter"]),
+        lambda rows: [
+            row.update({"outcome": "role", "target": 0.5})
+            for row in rows
+            if row["outcome"] == "star"
+        ],
+        lambda rows: rows[1].__setitem__("mlbam_id", rows[0]["mlbam_id"]),
+        lambda rows: rows[0].__setitem__("ladder_score", float("nan")),
+        lambda rows: [row.__setitem__("ladder_score", 0.0) for row in rows if row["role"] == "hitter"],
+    ],
+)
+def test_fit_rejects_registered_input_contract_violations(mutate):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    rows = _fit_rows()
+    mutate(rows)
+
+    with pytest.raises(ValueError):
+        calibration.fit_role_slope_joint_map(rows)
+
+
+def test_fit_uses_registered_sort_and_exact_role_design(monkeypatch):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    rows = _fit_rows()
+    first, second = rows[0], rows[1]
+    first["source_ladder_position"] = second["source_ladder_position"] = 1
+    first["mlbam_id"], second["mlbam_id"] = 999999, 1
+    captured = {}
+
+    def fit(design, outcomes):
+        captured["design"] = design.tolist()
+        captured["outcomes"] = outcomes.tolist()
+        return {
+            "params": np.asarray([-1.0, 0.5, 1.0, 1.0, 0.0]),
+            "iterations": 3,
+            "log_likelihood": -2.0,
+        }
+
+    monkeypatch.setattr(calibration, "_fit_ordered_logit", fit)
+    mapping = calibration.fit_role_slope_joint_map(list(reversed(rows)))
+    ordered = sorted(
+        rows,
+        key=lambda row: (
+            (2018, 2019, 2021).index(row["test_cohort"]),
+            ("hitter", "pitcher").index(row["role"]),
+            row["source_ladder_position"],
+            row["mlbam_id"],
+        ),
+    )
+
+    assert mapping["training_rows_sha256"] == canonical_sha256(ordered)
+    assert captured["outcomes"] == [
+        {"bust": 0, "role": 1, "star": 2}[row["outcome"]]
+        for row in ordered
+    ]
+    for row, design in zip(ordered, captured["design"]):
+        scores = [item["ladder_score"] for item in ordered if item["role"] == row["role"]]
+        z = (row["ladder_score"] - np.mean(scores)) / np.std(scores, ddof=0)
+        assert design == pytest.approx([z, 0.0, 0.0] if row["role"] == "hitter" else [0.0, z, 1.0])
+
+
+def test_fit_rejects_negative_optimizer_slopes(monkeypatch):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    monkeypatch.setattr(
+        calibration,
+        "_fit_ordered_logit",
+        lambda *_args: {
+            "params": np.asarray([-1.0, 0.5, -0.1, 1.0, 0.0]),
+            "iterations": 1,
+            "log_likelihood": -1.0,
+        },
+    )
+
+    with pytest.raises(ValueError, match="slopes must be positive"):
+        calibration.fit_role_slope_joint_map(_fit_rows())
+
+
+def _reseal(mapping):
+    mapping["artifact_sha256"] = canonical_sha256(
+        {key: value for key, value in mapping.items() if key != "artifact_sha256"}
+    )
+    return mapping
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda mapping: mapping.__setitem__("extra", True),
+        lambda mapping: mapping.pop("version"),
+        lambda mapping: mapping["thresholds"].__setitem__("extra", 1.0),
+        lambda mapping: mapping["thresholds"].__setitem__("role_star", 0.0),
+        lambda mapping: mapping["role_slopes"].__setitem__("extra", 1.0),
+        lambda mapping: mapping["role_slopes"].__setitem__("hitter", 0.0),
+        lambda mapping: mapping.__setitem__("pitcher_offset", 1.0),
+        lambda mapping: mapping["role_standardization"].pop("hitter"),
+        lambda mapping: mapping["role_standardization"]["hitter"].__setitem__("std", 0.0),
+        lambda mapping: mapping["role_standardization"]["pitcher"].__setitem__("mean", float("nan")),
+        lambda mapping: mapping["row_count_by_role"].__setitem__("hitter", "9"),
+        lambda mapping: mapping["row_count_by_role"].__setitem__("extra", 1),
+        lambda mapping: mapping["params"].__setitem__(1, 1000.0),
+        lambda mapping: mapping["params"].__setitem__(0, float("nan")),
+    ],
+)
+def test_score_rejects_resealed_cross_field_and_type_tampering(mutate):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    mapping = _reseal(copy.deepcopy(calibration.fit_role_slope_joint_map(_fit_rows())))
+    mutate(mapping)
+    _reseal(mapping)
+
+    with pytest.raises(ValueError, match="invalid role-slope joint map"):
+        calibration.score_role_slope_joint_ladders([], [], mapping)
+
+
+@pytest.mark.parametrize("probability", [[float("nan"), 0.0, 0.0], [0.0, 0.0, 0.0]])
+def test_score_rejects_source_inversions_and_invalid_probabilities(monkeypatch, probability):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    mapping = calibration.fit_role_slope_joint_map(_fit_rows())
+    inverted = [
+        {"mlbam_id": 1, "role": "hitter", "source_ladder_position": 1, "ladder_score": 1.0},
+        {"mlbam_id": 2, "role": "hitter", "source_ladder_position": 2, "ladder_score": 3.0},
+    ]
+
+    with pytest.raises(ValueError, match="inversion"):
+        calibration.score_role_slope_joint_ladders(inverted, [], mapping)
+
+    monkeypatch.setattr(
+        calibration,
+        "_ordered_probabilities",
+        lambda *_args: np.asarray([probability]),
+    )
+    with pytest.raises(ValueError, match="probabilities"):
+        calibration.score_role_slope_joint_ladders(_source_ladders()[0][:1], [], mapping)
