@@ -534,3 +534,71 @@ def test_pooled_value_error_is_scientific_failure_and_unexpected_error_propagate
     monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda _rows: (_ for _ in ()).throw(RuntimeError("infrastructure")))
     with pytest.raises(RuntimeError, match="infrastructure"):
         candidate.build_development_artifacts({}, {}, {})
+
+
+@requires_runner
+def test_invalid_candidate_target_keeps_identity_provenance_and_fails_target_alignment(monkeypatch):
+    candidate = _runner()
+    ladders = _fit_ladders()
+    ladders[2018]["candidate_hitters"][0]["target"] = float("nan")
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda *_args: pytest.fail("invalid target precedes fitting"))
+
+    receipt, values = candidate._build_fold_receipt(2018, ladders)
+
+    assert values is None
+    assert receipt["failure_stage"] == "target_alignment"
+    assert receipt["identity_count_by_role"] == {"hitter": 3, "pitcher": 3}
+    assert all(len(value) == 64 for value in receipt["identity_sha256_by_role"].values())
+    assert receipt["target_sha256"] is None
+
+
+@requires_runner
+def test_post_map_identity_failure_nulls_all_downstream_checks_metrics_and_gates(monkeypatch):
+    candidate = _runner()
+    ladders = _fit_ladders()
+    calls = []
+
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda *_args: {"map": "fixed"})
+    def score(hitters, pitchers, _map):
+        calls.append(True)
+        rows = [{**row, "calibrated_expected_tier": row["target"]} for row in [*hitters, *pitchers]]
+        return rows[:-1] if len(calls) == 1 else rows
+    monkeypatch.setattr(candidate, "score_role_slope_joint_ladders", score)
+    monkeypatch.setattr(candidate, "reconstruct_product_board", lambda hitters, pitchers: [
+        {**row, "score": row["target"], "rank": index}
+        for index, row in enumerate([*hitters, *pitchers], 1)
+    ])
+
+    receipt, values = candidate._build_fold_receipt(2018, ladders)
+
+    assert values is None
+    assert receipt["failure_stage"] == "identity_alignment"
+    assert receipt["structural_checks"] == {
+        "identity_sets_equal": False, "targets_equal": True,
+        "candidate_map_valid": None, "control_map_valid": None,
+        "product_rank_reproduced": None, "top25_complete": None,
+    }
+    assert all(value is None for value in receipt["metrics"].values())
+    assert all(value is None for value in receipt["gates"].values())
+
+
+@requires_runner
+def test_top25_structural_failure_keeps_upstream_failed_gates_in_registered_order(monkeypatch):
+    candidate = _runner()
+    ladders = _fit_ladders()
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda *_args: {"map": "fixed"})
+    monkeypatch.setattr(candidate, "score_role_slope_joint_ladders", lambda hitters, pitchers, _map: [
+        {**row, "calibrated_expected_tier": row["target"]} for row in [*hitters, *pitchers]
+    ])
+    monkeypatch.setattr(candidate, "reconstruct_product_board", lambda hitters, pitchers: [
+        {**row, "score": row["target"], "rank": index}
+        for index, row in enumerate([*hitters, *pitchers], 1)
+    ])
+
+    receipt, _ = candidate._build_fold_receipt(2018, ladders)
+
+    assert receipt["failure_stage"] == "top25_contract"
+    assert receipt["failed_gates"] == [
+        "candidate_control_mae", "candidate_control_concordance",
+        "candidate_product_concordance",
+    ]

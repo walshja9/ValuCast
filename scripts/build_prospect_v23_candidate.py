@@ -308,23 +308,35 @@ def _identity_rows(rows: list[dict], role: str) -> list[int]:
 
 
 def _fold_provenance(candidate_rows: list[dict]) -> tuple[dict, dict, str]:
-    ids = {role: _identity_rows(candidate_rows, role) for role in ROLES}
+    counts, hashes = _identity_provenance(candidate_rows)
     targets = sorted(
         [[int(row["mlbam_id"]), row["role"], _number(row, "target", "target hash")]
          for row in candidate_rows],
         key=lambda row: (row[0], row[1]),
     )
     return (
+        counts,
+        hashes,
+        canonical_sha256(targets),
+    )
+
+
+def _identity_provenance(candidate_rows: list[dict]) -> tuple[dict, dict]:
+    ids = {role: _identity_rows(candidate_rows, role) for role in ROLES}
+    return (
         {role: len(ids[role]) for role in ROLES},
         {role: canonical_sha256(ids[role]) for role in ROLES},
-        canonical_sha256(targets),
     )
 
 
 def _empty_fold_receipt(candidate_rows: list[dict] | None = None) -> dict:
     counts = hashes = target_hash = None
     if candidate_rows:
-        counts, hashes, target_hash = _fold_provenance(candidate_rows)
+        counts, hashes = _identity_provenance(candidate_rows)
+        try:
+            _, _, target_hash = _fold_provenance(candidate_rows)
+        except ValueError:
+            pass
     return {
         "status": "structural_failure",
         "failure_stage": None,
@@ -433,9 +445,26 @@ def _completed_fold_receipt(values: dict) -> dict:
 
 
 def _record_structural_failure(receipt: dict, stage: str) -> tuple[dict, None]:
+    downstream_checks = {
+        "identity_alignment": ("candidate_map_valid", "control_map_valid", "product_rank_reproduced", "top25_complete"),
+        "target_alignment": ("candidate_map_valid", "control_map_valid", "product_rank_reproduced", "top25_complete"),
+        "candidate_map": ("control_map_valid", "product_rank_reproduced", "top25_complete"),
+        "control_map": ("product_rank_reproduced", "top25_complete"),
+        "product_reconstruction": ("top25_complete",),
+        "metric_contract": ("top25_complete",),
+        "top25_contract": (),
+    }
+    for check in downstream_checks[stage]:
+        receipt["structural_checks"][check] = None
+    if stage != "top25_contract":
+        receipt["metrics"] = {name: None for name in receipt["metrics"]}
+        receipt["gates"] = {name: None for name in receipt["gates"]}
     receipt["status"] = "structural_failure"
     receipt["failure_stage"] = stage
     receipt["failed_structural"] = [stage]
+    receipt["failed_gates"] = [
+        name for name in FOLD_GATE_ORDER if receipt["gates"][name] is False
+    ]
     return receipt, None
 
 
@@ -448,13 +477,16 @@ def _raw_identity_and_target_checks(candidate_rows: list[dict], control_rows: li
         if set(candidate_keys) != set(control_keys):
             return "identity_alignment"
         control_by_key = dict(zip(control_keys, control_rows))
+    except (KeyError, TypeError, ValueError):
+        return "identity_alignment"
+    try:
         if any(
             _number(row, "target", "candidate") != _number(control_by_key[key], "target", "control")
             for key, row in zip(candidate_keys, candidate_rows)
         ):
             return "target_alignment"
     except (KeyError, TypeError, ValueError):
-        return "identity_alignment"
+        return "target_alignment"
     return None
 
 
