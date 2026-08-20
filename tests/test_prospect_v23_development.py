@@ -252,3 +252,66 @@ def test_each_fold_must_pass_without_pooled_or_majority_rescue():
     assert verdict["qualified"] is False
     assert verdict["folds"][2018]["qualified"] is False
     assert verdict["folds"][2019]["qualified"] is True
+
+
+def _bootstrap_fold(year):
+    rows = []
+    for role, offset in (("hitter", 0), ("pitcher", 10)):
+        for index in range(1, 14):
+            target = float(index % 2)
+            rows.append({
+                "mlbam_id": year * 100 + offset + index,
+                "role": role,
+                "target": target,
+                "calibrated_expected_tier": target,
+                "score": target,
+            })
+    candidate = [dict(row) for row in rows]
+    control = [{**row, "calibrated_expected_tier": 1.0 - row["target"]} for row in rows]
+    product = [{**row, "score": 1.0 - row["target"], "rank": index} for index, row in enumerate(rows, 1)]
+    return {"year": year, "candidate": candidate, "control": control, "product": product}
+
+
+@requires_runner
+def test_bootstrap_uses_one_deterministic_shared_sample_plan_without_refits(monkeypatch):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda *_args: pytest.fail("bootstrap must not fit maps"))
+
+    first = candidate.build_bootstrap_summary(folds, seed=17, replicates=12)
+    second = candidate.build_bootstrap_summary(copy.deepcopy(folds), seed=17, replicates=12)
+
+    assert first == second
+    assert first["sample_plan_sha256"]
+    assert first["metrics"]["candidate_control_mae_delta"]["valid_replicates"] == 12
+    assert first["metrics"]["candidate_control_concordance_delta"]["valid_replicates"] == 12
+    assert first["metrics"]["candidate_product_concordance_delta"]["valid_replicates"] == 12
+
+
+@requires_runner
+def test_pooled_fit_runs_once_only_after_fold_and_bootstrap_qualification(monkeypatch):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    map_calls = []
+
+    monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: {year: {} for year in candidate.DEVELOPMENT_FOLDS})
+    monkeypatch.setattr(candidate, "_build_fold_receipt", lambda year, _ladders: (candidate._completed_fold_receipt(folds[year]), folds[year]))
+    monkeypatch.setattr(candidate, "build_bootstrap_summary", lambda _folds: {
+        "status": "completed", "seed": 39017, "replicates": 10_000,
+        "minimum_valid_replicates": 9_900,
+        "interval": {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"},
+        "sample_plan_sha256": "0" * 64,
+        "metrics": {name: {"point": -0.1, "lower": -0.2 if name == "candidate_control_mae_delta" else 0.1, "upper": -0.05, "valid_replicates": 10_000, "gate_passed": True} for name in candidate.BOOTSTRAP_METRICS},
+    })
+    monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda rows: map_calls.append(rows) or {"training_rows_sha256": "1" * 64, "artifact_sha256": "2" * 64})
+    monkeypatch.setattr(candidate, "_validate_pooled_map", lambda mapping, rows: mapping)
+    monkeypatch.setattr(candidate, "_pooled_candidate_rows", lambda _ladders: [
+        {"mlbam_id": 1, "role": "hitter", "source_ladder_position": 1, "ladder_score": 1.0, "outcome": "star", "target": 1.0, "test_cohort": 2018},
+        {"mlbam_id": 2, "role": "pitcher", "source_ladder_position": 1, "ladder_score": 1.0, "outcome": "star", "target": 1.0, "test_cohort": 2018},
+    ])
+
+    result, pooled_map = candidate.build_development_artifacts({}, {}, {})
+
+    assert len(map_calls) == 1
+    assert pooled_map["artifact_sha256"] == "2" * 64
+    assert result["pooled_fit"] == {"attempted": True, "status": "validated", "row_count": 2, "training_rows_sha256": "1" * 64, "map_artifact_sha256": "2" * 64}
