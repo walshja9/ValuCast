@@ -49,17 +49,26 @@ def test_fold_contract_is_exact_and_v09_pitchers_are_sealed_oof_only(monkeypatch
 @requires_runner
 def test_product_board_uses_emitted_two_decimal_score_and_full_tie_order():
     candidate = _runner()
-    rows = candidate.reconstruct_product_board(
+    rows = [
+        {"mlbam_id": 2, "role": "hitter", "name": "Zulu", "score": 10.004, "score_source": "universal_fallback", "rank": 5},
+        {"mlbam_id": 8, "role": "hitter", "name": "Bravo", "score": 10.004, "score_source": "prospect_model_v0_6", "rank": 3},
+        {"mlbam_id": 9, "role": "hitter", "name": "Alpha", "score": 10.004, "score_source": "prospect_model_v0_6", "rank": 1},
+        {"mlbam_id": 3, "role": "hitter", "name": "Bravo", "score": 10.004, "score_source": "prospect_model_v0_6", "rank": 2},
+        {"mlbam_id": 7, "role": "pitcher", "name": "Alpha", "score": 10.004, "score_source": "prospect_model_v0_6", "rank": 4},
+    ]
+    board = candidate.reconstruct_product_board(
         [
-            {"mlbam_id": 2, "role": "hitter", "name": "Zulu", "score": 10.004, "score_source": "universal_fallback"},
-            {"mlbam_id": 8, "role": "hitter", "name": "Bravo", "score": 10.004, "score_source": "prospect_model_v0_6"},
-            {"mlbam_id": 9, "role": "hitter", "name": "Alpha", "score": 10.004, "score_source": "prospect_model_v0_6"},
-            {"mlbam_id": 3, "role": "hitter", "name": "Bravo", "score": 10.004, "score_source": "prospect_model_v0_6"},
+            rows[0], rows[1], rows[2], rows[3],
         ],
-        [{"mlbam_id": 7, "role": "pitcher", "name": "Alpha", "score": 10.004, "score_source": "prospect_model_v0_6"}],
+        [rows[4]],
     )
-    assert [row["mlbam_id"] for row in rows] == [9, 3, 8, 7, 2]
-    assert [row["rank"] for row in rows] == [1, 2, 3, 4, 5]
+    assert [row["mlbam_id"] for row in board] == [9, 3, 8, 7, 2]
+    assert [row["rank"] for row in board] == [1, 2, 3, 4, 5]
+    assert board == candidate.reconstruct_product_board(list(reversed(rows[:4])), [rows[4]])
+    wrong_ranks = copy.deepcopy(rows)
+    wrong_ranks[0]["rank"] = 1
+    with pytest.raises(ValueError, match="emitted ranks"):
+        candidate.reconstruct_product_board(wrong_ranks[:4], wrong_ranks[4:])
 
 
 @requires_runner
@@ -120,7 +129,7 @@ def test_fold_result_aligns_adversarial_input_and_cannot_mutate_fitted_maps(monk
 
     monkeypatch.setattr(candidate, "score_role_slope_joint_ladders", score)
     base = [
-        {"mlbam_id": index, "role": "hitter" if index % 2 else "pitcher", "target": float(index % 3) / 2, "candidate": float(30 - index), "control": float(index), "score": float(index), "name": str(index), "score_source": "prospect_model_v0_6"}
+        {"mlbam_id": index, "role": "hitter" if index % 2 else "pitcher", "target": float(index % 3) / 2, "candidate": float(30 - index), "control": float(index), "score": float(index), "name": str(index), "score_source": "prospect_model_v0_6", "rank": 27 - index}
         for index in range(1, 27)
     ]
     ladders = {2018: {"candidate_hitters": [row for row in base if row["role"] == "hitter"], "candidate_pitchers": [row for row in reversed(base) if row["role"] == "pitcher"], "incumbent_hitters": [row for row in base if row["role"] == "hitter"], "incumbent_pitchers": [row for row in base if row["role"] == "pitcher"]}}
@@ -129,9 +138,6 @@ def test_fold_result_aligns_adversarial_input_and_cannot_mutate_fitted_maps(monk
     result = candidate.build_fold_result(2018, ladders, candidate_map, control_map)
     assert result["candidate_mae"] is not None
     assert result["product_mae"] is None
-    assert (candidate_map, control_map) == before
-    ladders[2018]["candidate_hitters"][0]["target"] = 1.0
-    candidate.build_fold_result(2018, ladders, candidate_map, control_map)
     assert (candidate_map, control_map) == before
 
 

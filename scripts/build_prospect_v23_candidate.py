@@ -79,7 +79,10 @@ def reconstruct_product_board(
             int(row["mlbam_id"]),
         )
     )
-    return [{**row, "rank": rank} for rank, row in enumerate(rows, 1)]
+    ranks = [row.get("rank") for row in rows]
+    if any(type(rank) is not int for rank in ranks) or ranks != list(range(1, len(rows) + 1)):
+        raise ValueError("product board emitted ranks must be exactly 1..n")
+    return rows
 
 
 def align_by_identity(reference: list[dict], rows: list[dict], label: str) -> list[dict]:
