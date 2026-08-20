@@ -221,6 +221,48 @@ def test_fit_uses_registered_sort_and_exact_role_design(monkeypatch):
         assert design == pytest.approx([z, 0.0, 0.0] if row["role"] == "hitter" else [0.0, z, 1.0])
 
 
+@pytest.mark.parametrize("cohorts", [(2018, 2019), (2018, 2021), (2019, 2021)])
+def test_fit_accepts_each_two_fold_subset_deterministically(cohorts):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    rows = [row for row in _fit_rows() if row["test_cohort"] in cohorts]
+
+    mapping = calibration.fit_role_slope_joint_map(rows)
+
+    assert mapping == calibration.fit_role_slope_joint_map(list(reversed(rows)))
+    assert mapping["row_count"] == 12
+    assert mapping["training_rows_sha256"] == canonical_sha256(
+        sorted(
+            rows,
+            key=lambda row: (
+                (2018, 2019, 2021).index(row["test_cohort"]),
+                ("hitter", "pitcher").index(row["role"]),
+                row["source_ladder_position"],
+                row["mlbam_id"],
+            ),
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "cohorts, expected_count",
+    [((2018,), 6), ((2019,), 6), ((2021,), 6), ((2018, 2019, 2021), 18)],
+)
+def test_fit_accepts_one_or_three_registered_folds(cohorts, expected_count):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    rows = [row for row in _fit_rows() if row["test_cohort"] in cohorts]
+
+    assert calibration.fit_role_slope_joint_map(rows)["row_count"] == expected_count
+
+
+def test_fit_rejects_unregistered_cohort():
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    rows = _fit_rows()
+    rows[0]["test_cohort"] = 2020
+
+    with pytest.raises(ValueError, match="invalid role-slope joint fitting row"):
+        calibration.fit_role_slope_joint_map(rows)
+
+
 def test_fit_rejects_negative_optimizer_slopes(monkeypatch):
     calibration = importlib.import_module("prospects.role_slope_joint_calibration")
     monkeypatch.setattr(

@@ -109,8 +109,6 @@ def _sorted_fit_rows(rows: list[dict]) -> list[dict]:
                 "test_cohort": row["test_cohort"],
             }
         )
-    if set(row["test_cohort"] for row in projected) != set(_FOLDS):
-        raise ValueError("role-slope joint fit requires registered folds")
     if set(row["role"] for row in projected) != set(_ROLES):
         raise ValueError("role-slope joint fit requires both roles")
     if set(row["outcome"] for row in projected) != set(_OUTCOMES):
