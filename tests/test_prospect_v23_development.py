@@ -390,6 +390,23 @@ def test_bootstrap_default_stream_uses_registered_fold_role_and_sorted_id_choice
 
 
 @requires_runner
+def test_bootstrap_default_rng_plan_hash_matches_the_exact_registered_draws():
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    expected, rng = [], candidate.np.random.default_rng(39017)
+    replicate = []
+    for year in candidate.DEVELOPMENT_FOLDS:
+        for role in candidate.ROLES:
+            ids = sorted(row["mlbam_id"] for row in folds[year]["candidate"] if row["role"] == role)
+            replicate.append({"fold": year, "role": role, "mlbam_ids": [int(value) for value in rng.choice(ids, size=len(ids), replace=True)]})
+    expected.append(replicate)
+
+    summary = candidate.build_bootstrap_summary(folds, replicates=1)
+
+    assert summary["sample_plan_sha256"] == candidate.canonical_sha256(expected)
+
+
+@requires_runner
 def test_bootstrap_reuses_one_multiplicity_plan_for_each_comparator_and_metric(monkeypatch):
     candidate = _runner()
     folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
