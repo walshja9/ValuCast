@@ -79,6 +79,20 @@ STRUCTURAL_STAGES = (
 )
 BOOTSTRAP_MINIMUM = 9_900
 
+_REGISTRATION_CONTRACT = {
+    "static_sha256": "9b3cdab922af634d271e89fd12e6a12e284266c40162eed92b600f913078157e",
+    "source_binding_keys": {"git_blob", "normalized_sha256"},
+    "history_evidence_keys": {
+        "scope_tip", "standalone_pattern", "inventory_schema", "object_count",
+        "sorted_object_ids_sha256", "inventory_entry_count", "inventory_sha256",
+        "classification_schema", "classifications", "classification_sha256",
+        "result_artifact_entries", "runner_invocation_entries",
+    },
+    "classification_keys": {
+        "object_id", "path", "byte_offset", "line_sha256", "classification",
+    },
+}
+
 
 def _identity(row: dict, label: str) -> tuple[str, str]:
     try:
@@ -355,11 +369,36 @@ def _fold_provenance(candidate_rows: list[dict]) -> tuple[dict, dict, str]:
 
 
 def _identity_provenance(candidate_rows: list[dict]) -> tuple[dict, dict]:
-    ids = {role: _identity_rows(candidate_rows, role) for role in ROLES}
+    identities = {
+        role: [[mlbam_id, role] for mlbam_id in _identity_rows(candidate_rows, role)]
+        for role in ROLES
+    }
     return (
-        {role: len(ids[role]) for role in ROLES},
-        {role: canonical_sha256(ids[role]) for role in ROLES},
+        {role: len(identities[role]) for role in ROLES},
+        {role: canonical_sha256(identities[role]) for role in ROLES},
     )
+
+
+def _validate_registered_identities(ladders: dict[int, dict], registration: dict) -> None:
+    try:
+        expected = registration["folds"]["identity_receipts"]
+        for year in DEVELOPMENT_FOLDS:
+            for prefix in ("candidate", "incumbent"):
+                rows = [
+                    *ladders[year][f"{prefix}_hitters"],
+                    *ladders[year][f"{prefix}_pitchers"],
+                ]
+                counts, hashes = _identity_provenance(rows)
+                for role in ROLES:
+                    receipt = expected[str(year)][role]
+                    if receipt != {"count": counts[role], "sha256": hashes[role]}:
+                        raise ValueError(
+                            f"registered identity mismatch: {year} {prefix} {role}"
+                        )
+    except (KeyError, TypeError, ValueError) as error:
+        if isinstance(error, ValueError) and "registered identity" in str(error):
+            raise
+        raise ValueError("registered identity receipt is invalid") from None
 
 
 def _empty_fold_receipt(candidate_rows: list[dict] | None = None) -> dict:
@@ -773,8 +812,8 @@ def build_development_artifacts(
     contract: dict, model: dict, registration: dict,
 ) -> tuple[dict, dict | None]:
     """Build the deterministic scientific result and, only on qualification, its pooled map."""
-    del registration  # Phase A registration is consumed by the outer state machine.
     ladders = reconstruct_development_ladders(contract, model)
+    _validate_registered_identities(ladders, registration)
     receipts, bootstrap_folds = {}, {}
     for year in DEVELOPMENT_FOLDS:
         receipt, values = _build_fold_receipt(year, ladders)
@@ -985,6 +1024,94 @@ def _git_blob(relative: str, path: Path) -> str:
     return value
 
 
+def _git_blob_at(revision: str, relative: str) -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "--verify", f"{revision}:{relative}"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    value = result.stdout.strip()
+    if result.returncode or not _SHA1.fullmatch(value):
+        raise ProtocolError(f"cannot resolve {relative} at {revision}")
+    return value
+
+
+def _git_object_ids(tip: str) -> list[str]:
+    result = subprocess.run(
+        ["git", "rev-list", "--objects", "--no-object-names", tip],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    values = sorted(set(result.stdout.splitlines()))
+    if result.returncode or not values or any(not _SHA1.fullmatch(value) for value in values):
+        raise ProtocolError("cannot inventory registered Git object scope")
+    return values
+
+
+def _git_blob_inventory(
+    tip: str, token: int, *, exclude_tip: str | None = None,
+) -> tuple[list[list], list[list], bool]:
+    command = ["git", "rev-list", "--objects", tip, *([f"^{exclude_tip}"] if exclude_tip else [])]
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+    if result.returncode:
+        raise ProtocolError("cannot enumerate registered Git history")
+    objects = [
+        (object_id, path)
+        for line in result.stdout.splitlines()
+        for object_id, _, path in [line.partition(" ")]
+        if _SHA1.fullmatch(object_id) and path
+    ]
+    pattern = re.compile(rf"(?<![0-9]){token}(?![0-9])".encode())
+    process = subprocess.Popen(
+        ["git", "cat-file", "--batch"], cwd=ROOT, stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    rows, structured, forbidden_membership = [], [], False
+    try:
+        if process.stdin is None or process.stdout is None:
+            raise ProtocolError("cannot open Git object reader")
+        for object_id, path in objects:
+            process.stdin.write(f"{object_id}\n".encode())
+            process.stdin.flush()
+            header = process.stdout.readline().decode("ascii", errors="strict").strip().split()
+            if len(header) != 3 or header[0] != object_id or not header[2].isdigit():
+                raise ProtocolError("Git object inventory is malformed")
+            size = int(header[2])
+            payload = process.stdout.read(size)
+            if len(payload) != size or process.stdout.read(1) != b"\n":
+                raise ProtocolError("Git object inventory is truncated")
+            if header[1] != "blob":
+                continue
+            for match in pattern.finditer(payload):
+                line_start = payload.rfind(b"\n", 0, match.start()) + 1
+                line_end = payload.find(b"\n", match.end())
+                if line_end < 0:
+                    line_end = len(payload)
+                line = payload[line_start:line_end]
+                row = [object_id, path.replace("\\", "/"), match.start(), hashlib.sha256(line).hexdigest()]
+                rows.append(row)
+                if re.search(rb"seed", line, flags=re.IGNORECASE):
+                    structured.append(row)
+                    forbidden_membership |= bool(re.search(
+                        rb"forbidden|held|spent|reserved", line, flags=re.IGNORECASE
+                    ))
+    finally:
+        if process.stdin is not None:
+            process.stdin.close()
+        process.terminate()
+        process.wait()
+    return sorted(rows), sorted(structured), forbidden_membership
+
+
+def _git_blob_bytes(object_id: str) -> bytes:
+    if not _SHA1.fullmatch(str(object_id)):
+        raise ProtocolError("Git blob id is malformed")
+    result = subprocess.run(
+        ["git", "cat-file", "blob", object_id], cwd=ROOT, capture_output=True,
+    )
+    if result.returncode:
+        raise ProtocolError("cannot read registered Git blob")
+    return result.stdout
+
+
 def _normalized_source_sha256(path: Path) -> str:
     try:
         text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
@@ -993,66 +1120,287 @@ def _normalized_source_sha256(path: Path) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-_REGISTRATION_KEYS = {
-    "schema", "registration_id", "registration_status_at_seal", "candidate",
-    "predecessors", "inputs", "sources", "folds", "comparators", "metrics",
-    "bootstrap", "state_machine", "outputs", "forbidden_inputs", "forbidden_paths",
-    "feeds_live_rank", "feeds_value", "runtime", "execution", "artifact_sha256",
-}
+def _verify_source_bindings(registration: dict) -> str:
+    implementation = registration["candidate"]["implementation_commit"]
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", implementation, "HEAD"], cwd=ROOT
+    )
+    if ancestor.returncode:
+        raise ProtocolError("final implementation commit is not an ancestor of HEAD")
+    changed = subprocess.run(
+        ["git", "diff", "--name-only", f"{implementation}..HEAD"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    allowed = {
+        "plans/031-pitcher-strike-pct-gate.md",
+        "plans/034-post-2026-prospect-challenger-epoch.md",
+        "plans/038-prospect-vnext-phase-a.md",
+        "plans/README.md",
+        "data/validation/valucast_prospect_rank_v2_3_registration.json",
+        "tests/test_prospect_v23_development.py",
+    }
+    if changed.returncode or any(
+        path.replace("\\", "/") not in allowed for path in changed.stdout.splitlines()
+    ):
+        raise ProtocolError("post-implementation changes escaped Task 7")
+    for relative, binding in registration["sources"].items():
+        expected = binding["git_blob"]
+        if (
+            _git_blob_at(implementation, relative) != expected
+            or _git_blob_at("HEAD", relative) != expected
+            or _git_blob(relative, ROOT / relative) != expected
+            or _normalized_source_sha256(ROOT / relative) != binding["normalized_sha256"]
+        ):
+            raise ProtocolError(f"source binding changed: {relative}")
+    return implementation
+
+
+def _verify_predecessor_bindings(registration: dict, implementation: str) -> None:
+    object_ids = _git_object_ids(implementation)
+    object_digest = canonical_sha256(object_ids)
+    for name in ("plan_031", "plan_034"):
+        row = registration["predecessors"][name]
+        relative = row["plan_path"]
+        before = _git_blob_bytes(row["pre_transition_blob"])
+        try:
+            current = (ROOT / relative).read_bytes()
+        except OSError as error:
+            raise ProtocolError(f"cannot read predecessor plan: {relative}") from error
+        if (
+            _git_blob_at(implementation, relative) != row["pre_transition_blob"]
+            or len(before) != row["append_only_prefix_bytes"]
+            or not current.startswith(before)
+            or _git_blob(relative, ROOT / relative) != row["post_transition_blob"]
+            or _git_blob_at("HEAD", relative) != row["post_transition_blob"]
+        ):
+            raise ProtocolError(f"predecessor plan binding changed: {relative}")
+        evidence = row["history_evidence"]
+        inventory, _structured, _forbidden = _git_blob_inventory(
+            implementation, row["held_seed"]
+        )
+        classifications = evidence["classifications"]
+        classified_keys = sorted([
+            [
+                item["object_id"], item["path"], item["byte_offset"],
+                item["line_sha256"],
+            ]
+            for item in classifications
+        ])
+        if (
+            evidence["object_count"] != len(object_ids)
+            or evidence["sorted_object_ids_sha256"] != object_digest
+            or evidence["inventory_entry_count"] != len(inventory)
+            or evidence["inventory_sha256"] != canonical_sha256(inventory)
+            or classified_keys != inventory
+            or any(
+                item["classification"] in {"result_artifact", "runner_invocation"}
+                for item in classifications
+            )
+        ):
+            raise ProtocolError(f"predecessor history evidence changed: {name}")
+
+
+def _verify_seed_hygiene(registration: dict, implementation: str) -> None:
+    hygiene = registration["bootstrap"]["seed_hygiene"]
+    pre_design = hygiene["pre_design"]
+    object_ids = _git_object_ids(hygiene["pre_design_tip"])
+    if (
+        pre_design["object_count"] != len(object_ids)
+        or pre_design["sorted_object_ids_sha256"] != canonical_sha256(object_ids)
+        or pre_design["match_count"] != 0
+    ):
+        raise ProtocolError("pre-design seed-hygiene evidence changed")
+    inventory, structured, forbidden = _git_blob_inventory(
+        implementation, hygiene["token"], exclude_tip=hygiene["pre_design_tip"]
+    )
+    post_design = hygiene["post_design"]
+    if (
+        post_design["entry_count"] != len(inventory)
+        or post_design["inventory_sha256"] != canonical_sha256(inventory)
+        or any(row[1] not in post_design["allowed_paths"] for row in inventory)
+        or post_design["unexpected_path_count"] != 0
+        or hygiene["structured_seed_fields"]["inventory_sha256"]
+        != canonical_sha256(structured)
+        or hygiene["structured_seed_fields"]["pre_design_match_count"] != 0
+        or hygiene["structured_seed_fields"][
+            "forbidden_held_spent_reserved_membership"
+        ] is not False
+        or forbidden
+    ):
+        raise ProtocolError("post-design seed-hygiene evidence changed")
+    current, _structured, _forbidden = _git_blob_inventory(
+        "HEAD", hygiene["token"], exclude_tip=implementation
+    )
+    if any(
+        row[1] not in hygiene["post_registration_policy"]["allowed_paths"]
+        for row in current
+    ):
+        raise ProtocolError("post-registration seed occurrence escaped allowlist")
+
+
+def _verify_dynamic_registration(registration: dict) -> None:
+    implementation = _verify_source_bindings(registration)
+    _verify_predecessor_bindings(registration, implementation)
+    _verify_seed_hygiene(registration, implementation)
+
+
+def _registration_static_view(payload: dict) -> tuple[dict, dict]:
+    static = deepcopy(payload)
+    try:
+        implementation = static["candidate"]["implementation_commit"]
+        static["candidate"]["implementation_commit"] = None
+        sources = payload["sources"]
+        static["sources"] = {
+            path: {key: None for key in binding}
+            for path, binding in sources.items()
+        }
+        predecessors = {}
+        for name in ("plan_031", "plan_034"):
+            row = static["predecessors"][name]
+            evidence = payload["predecessors"][name]["history_evidence"]
+            predecessors[name] = payload["predecessors"][name]
+            row["pre_transition_blob"] = None
+            row["post_transition_blob"] = None
+            row["append_only_prefix_bytes"] = None
+            row["history_evidence"] = {key: None for key in evidence}
+        hygiene = static["bootstrap"]["seed_hygiene"]
+        pre_design = hygiene["pre_design"]
+        post_design = hygiene["post_design"]
+        structured = hygiene["structured_seed_fields"]
+        for key in ("object_count", "sorted_object_ids_sha256", "match_count"):
+            pre_design[key] = None
+        for key in (
+            "scope_tip", "entry_count", "inventory_sha256", "unexpected_path_count",
+        ):
+            post_design[key] = None
+        for key in (
+            "inventory_sha256", "pre_design_match_count",
+            "forbidden_held_spent_reserved_membership",
+        ):
+            structured[key] = None
+        static["artifact_sha256"] = None
+    except (KeyError, TypeError, AttributeError):
+        raise ProtocolError("registration dynamic structure is invalid") from None
+    return static, {
+        "implementation": implementation,
+        "sources": sources,
+        "predecessors": predecessors,
+        "seed_hygiene": payload["bootstrap"]["seed_hygiene"],
+    }
+
+
+def _validate_dynamic_fields(dynamic: dict) -> None:
+    implementation = dynamic["implementation"]
+    if not _SHA1.fullmatch(str(implementation)):
+        raise ProtocolError("registration implementation commit is invalid")
+    sources = dynamic["sources"]
+    if not isinstance(sources, dict) or not sources:
+        raise ProtocolError("registration source bindings are invalid")
+    for relative, binding in sources.items():
+        if (
+            not isinstance(relative, str)
+            or not isinstance(binding, dict)
+            or set(binding) != _REGISTRATION_CONTRACT["source_binding_keys"]
+            or not _SHA1.fullmatch(str(binding.get("git_blob")))
+            or not _SHA256.fullmatch(str(binding.get("normalized_sha256")))
+        ):
+            raise ProtocolError("registration source bindings are invalid")
+    for name, row in dynamic["predecessors"].items():
+        if not isinstance(row, dict):
+            raise ProtocolError("registration predecessor evidence is invalid")
+        for key in ("pre_transition_blob", "post_transition_blob"):
+            if not _SHA1.fullmatch(str(row.get(key))):
+                raise ProtocolError("registration predecessor evidence is invalid")
+        prefix = row.get("append_only_prefix_bytes")
+        evidence = row.get("history_evidence")
+        if (
+            not isinstance(prefix, int)
+            or isinstance(prefix, bool)
+            or prefix <= 0
+            or not isinstance(evidence, dict)
+            or set(evidence) != _REGISTRATION_CONTRACT["history_evidence_keys"]
+            or evidence.get("scope_tip") != implementation
+            or evidence.get("standalone_pattern")
+            != rf"(^|[^0-9]){row.get('held_seed')}([^0-9]|$)"
+            or evidence.get("inventory_schema") != "git_blob_path_offset_v1"
+            or evidence.get("classification_schema")
+            != "git_blob_path_offset_line_sha256_classification_v1"
+            or not isinstance(evidence.get("object_count"), int)
+            or isinstance(evidence.get("object_count"), bool)
+            or evidence["object_count"] <= 0
+            or not _SHA256.fullmatch(str(evidence.get("sorted_object_ids_sha256")))
+            or not isinstance(evidence.get("inventory_entry_count"), int)
+            or isinstance(evidence.get("inventory_entry_count"), bool)
+            or evidence["inventory_entry_count"] < 0
+            or not _SHA256.fullmatch(str(evidence.get("inventory_sha256")))
+        ):
+            raise ProtocolError("registration predecessor evidence is invalid")
+        classifications = evidence.get("classifications")
+        if not isinstance(classifications, list) or any(
+            not isinstance(item, dict)
+            or set(item) != _REGISTRATION_CONTRACT["classification_keys"]
+            or not _SHA1.fullmatch(str(item.get("object_id")))
+            or not isinstance(item.get("path"), str)
+            or not isinstance(item.get("byte_offset"), int)
+            or isinstance(item.get("byte_offset"), bool)
+            or item["byte_offset"] < 0
+            or not _SHA256.fullmatch(str(item.get("line_sha256")))
+            or not isinstance(item.get("classification"), str)
+            or not item["classification"]
+            for item in classifications
+        ):
+            raise ProtocolError("registration predecessor classifications are invalid")
+        if (
+            evidence["inventory_entry_count"] != len(classifications)
+            or not _SHA256.fullmatch(str(evidence.get("classification_sha256")))
+            or evidence["classification_sha256"] != canonical_sha256(classifications)
+            or evidence.get("result_artifact_entries") != []
+            or evidence.get("runner_invocation_entries") != []
+            or any(
+                item["classification"] in {"result_artifact", "runner_invocation"}
+                for item in classifications
+            )
+        ):
+            raise ProtocolError("registration predecessor classifications are invalid")
+    hygiene = dynamic["seed_hygiene"]
+    try:
+        pre_design = hygiene["pre_design"]
+        post_design = hygiene["post_design"]
+        structured = hygiene["structured_seed_fields"]
+        valid = (
+            isinstance(pre_design["object_count"], int)
+            and not isinstance(pre_design["object_count"], bool)
+            and pre_design["object_count"] > 0
+            and _SHA256.fullmatch(str(pre_design["sorted_object_ids_sha256"]))
+            and type(pre_design["match_count"]) is int
+            and pre_design["match_count"] == 0
+            and post_design["scope_tip"] == implementation
+            and isinstance(post_design["entry_count"], int)
+            and not isinstance(post_design["entry_count"], bool)
+            and post_design["entry_count"] >= 0
+            and _SHA256.fullmatch(str(post_design["inventory_sha256"]))
+            and type(post_design["unexpected_path_count"]) is int
+            and post_design["unexpected_path_count"] == 0
+            and _SHA256.fullmatch(str(structured["inventory_sha256"]))
+            and type(structured["pre_design_match_count"]) is int
+            and structured["pre_design_match_count"] == 0
+            and structured["forbidden_held_spent_reserved_membership"] is False
+        )
+    except (KeyError, TypeError):
+        valid = False
+    if not valid:
+        raise ProtocolError("registration seed-hygiene evidence is invalid")
 
 
 def _registration(registration: object) -> dict:
     payload = _require_seal(registration, "registration")
-    if set(payload) != _REGISTRATION_KEYS:
-        raise ProtocolError("registration fields do not exactly match Plan 038")
-    if payload.get("schema") != "valucast_prospect_rank_v2_3_registration_v1":
-        raise ProtocolError("registration schema is invalid")
-    if payload.get("registration_id") != "plan_038_prospect_vnext_phase_a":
-        raise ProtocolError("registration id is invalid")
-    if payload.get("registration_status_at_seal") != "registered_unspent":
-        raise ProtocolError("registration is not an unspent registration")
-    if payload.get("feeds_live_rank") is not False or payload.get("feeds_value") is not False:
-        raise ProtocolError("registration must be non-serving")
+    static, dynamic = _registration_static_view(payload)
+    _validate_dynamic_fields(dynamic)
     if payload.get("runtime") != _runtime_tuple():
         raise ProtocolError("runtime does not match registration")
-    if payload.get("execution") != {"approved_env": "VALUCAST_V23_APPROVED_EXECUTION_SHA"}:
-        raise ProtocolError("execution transport does not match registration")
-    if payload.get("outputs") != {
-        "receipt": "data/validation/valucast_prospect_rank_v2_3_development.json",
-        "calibrator": "data/models/valucast_prospect_joint_ladder_calibrator_v5.json",
-    }:
-        raise ProtocolError("output paths do not match registration")
-    if payload.get("state_machine") != {
-        "lock_file": "valucast-prospect-v23.lock",
-        "spent_token": "valucast-prospect-v23-spent.json",
-        "states": ["reserved", "outcome_access_spent", "qualified", "failed", "spent_error"],
-        "cli": ["", "--resume-reserved", "--seal-interrupted-spend", "--reproduce"],
-        "exit_codes": {"qualified": 0, "failed": 1, "spent_error": 2},
-    }:
-        raise ProtocolError("state-machine contract does not match registration")
-    if not all(isinstance(payload.get(key), dict) for key in (
-        "candidate", "predecessors", "folds", "comparators", "metrics", "bootstrap",
-    )) or not all(isinstance(payload.get(key), list) for key in ("forbidden_inputs", "forbidden_paths")):
-        raise ProtocolError("registration metadata shape is invalid")
-    _validate_bindings(payload)
+    if canonical_sha256(static) != _REGISTRATION_CONTRACT["static_sha256"]:
+        raise ProtocolError("registration does not exactly match Plan 038")
     return payload
-
-
-def _validate_bindings(registration: dict) -> None:
-    expected_inputs = set(CANONICAL_READ_PATHS[1:])
-    inputs, sources = registration.get("inputs"), registration.get("sources")
-    if not isinstance(inputs, dict) or set(inputs) != expected_inputs or not isinstance(sources, dict) or not sources:
-        raise ProtocolError("registration bindings are incomplete")
-    for relative, binding in inputs.items():
-        if not isinstance(binding, dict) or set(binding) != {
-            "git_blob", "canonical_sha256", "internal_field", "internal_sha256",
-        } or not all(_SHA256.fullmatch(str(binding.get(key))) for key in (
-            "canonical_sha256", "internal_sha256",
-        )) or not _SHA1.fullmatch(str(binding.get("git_blob"))) or not isinstance(binding.get("internal_field"), str):
-            raise ProtocolError(f"invalid input binding: {relative}")
-    for relative, binding in sources.items():
-        if not isinstance(binding, dict) or set(binding) != {"git_blob", "normalized_sha256"} or not _SHA1.fullmatch(str(binding.get("git_blob"))) or not _SHA256.fullmatch(str(binding.get("normalized_sha256"))):
-            raise ProtocolError(f"invalid source binding: {relative}")
 
 
 def _approved_sha(expected: str | None = None) -> str:
@@ -1075,13 +1423,10 @@ def _pre_marker(registration: dict, execution_sha: str, *, receipt: dict | None 
             raise ProtocolError("receipt is not resumable for this execution SHA")
         if receipt.get("registration_sha256") != registration["artifact_sha256"] or receipt.get("runtime") != _runtime_tuple() or receipt.get("execution_worktree") != str(ROOT.resolve()):
             raise ProtocolError("receipt registration does not match")
+    _verify_dynamic_registration(registration)
     for relative, binding in registration["inputs"].items():
         if _git_blob(relative, ROOT / relative) != binding["git_blob"]:
             raise ProtocolError(f"input Git blob changed: {relative}")
-    for relative, binding in registration["sources"].items():
-        path = ROOT / relative
-        if _git_blob(relative, path) != binding["git_blob"] or _normalized_source_sha256(path) != binding["normalized_sha256"]:
-            raise ProtocolError(f"source binding changed: {relative}")
 
 
 def _receipt(registration: dict, execution_sha: str, status: str, stage: str, **extra) -> dict:

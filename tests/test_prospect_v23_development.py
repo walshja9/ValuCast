@@ -18,6 +18,66 @@ def _runner():
     return importlib.import_module(RUNNER)
 
 
+def _exact_registration(candidate, runtime, monkeypatch=None):
+    implementation, empty_hash = "e" * 40, candidate.canonical_sha256([])
+    object_hash = candidate.canonical_sha256(["a" * 40])
+    history = {
+        "scope_tip": implementation, "standalone_pattern": "",
+        "inventory_schema": "git_blob_path_offset_v1", "object_count": 1,
+        "sorted_object_ids_sha256": object_hash, "inventory_entry_count": 0,
+        "inventory_sha256": empty_hash,
+        "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
+        "classifications": [], "classification_sha256": empty_hash,
+        "result_artifact_entries": [], "runner_invocation_entries": [],
+    }
+
+    def predecessor(name, seed):
+        evidence = {**history, "standalone_pattern": rf"(^|[^0-9]){seed}([^0-9]|$)"}
+        return {
+            "plan_path": f"plans/{name}.md", "track": "model",
+            "transition": "superseded_by_plan_038", "held_seed": seed,
+            "seed_status": "retired_unspent_never_execute",
+            "pre_transition_blob": "1" * 40, "post_transition_blob": "2" * 40,
+            "append_only_prefix_bytes": 1, "history_evidence": evidence,
+        }
+
+    hygiene = {
+        "token": 39017, "pre_design_tip": "d" * 40,
+        "pre_design": {"object_count": 1, "sorted_object_ids_sha256": object_hash, "match_count": 0},
+        "post_design": {"scope_tip": implementation, "entry_count": 0, "inventory_sha256": empty_hash, "unexpected_path_count": 0, "allowed_paths": ["runner.py"]},
+        "structured_seed_fields": {"inventory_sha256": empty_hash, "pre_design_match_count": 0, "forbidden_held_spent_reserved_membership": False},
+        "post_registration_policy": {"allowed_paths": []},
+    }
+    identities = {
+        str(year): {
+            role: {"count": 1, "sha256": str(index) * 64}
+            for index, role in enumerate(("hitter", "pitcher"), 1)
+        }
+        for year in (2018, 2019, 2021)
+    }
+    registration = {
+        "schema": "synthetic",
+        "candidate": {"implementation_commit": implementation, "map": {"parameter_order": ["a", "b"]}},
+        "predecessors": {"plan_031": predecessor("031", 31013), "plan_034": predecessor("034", 34021)},
+        "inputs": {candidate.CANONICAL_READ_PATHS[1]: {"git_blob": "3" * 40, "canonical_sha256": "4" * 64, "internal_field": "input_sha256", "internal_sha256": "5" * 64}},
+        "sources": {"prospects/rank_v2.py": {"git_blob": "1" * 40, "normalized_sha256": "2" * 64}},
+        "folds": {"order": [2018, 2019, 2021], "identity_receipts": identities},
+        "comparators": {"product": {"sort": ["score"]}},
+        "metrics": {"per_fold_gates": [{"operator": "<"}]},
+        "bootstrap": {"replicates": 10_000, "seed_hygiene": hygiene},
+        "state_machine": {"cli": [""]}, "outputs": {"receipt": "receipt.json"},
+        "forbidden_inputs": ["market_rank"], "forbidden_paths": ["app.py"],
+        "feeds_live_rank": False, "feeds_value": False, "runtime": runtime,
+        "execution": {"sha_semantics": {"recovery": "bound"}},
+    }
+    registration["artifact_sha256"] = candidate.canonical_sha256(registration)
+    if monkeypatch is not None:
+        static, _dynamic = candidate._registration_static_view(registration)
+        monkeypatch.setattr(candidate, "_REGISTRATION_CONTRACT", {
+            **candidate._REGISTRATION_CONTRACT,
+            "static_sha256": candidate.canonical_sha256(static),
+        })
+    return registration
 def _terminal_result(candidate, *, qualified: bool, map_sha: str | None = None):
     metrics = {
         "candidate_mae": 0.125, "control_mae": 0.25, "candidate_control_mae_delta": -0.125,
@@ -85,6 +145,146 @@ def test_protocol_refuses_missing_registration_before_reservation(monkeypatch, t
     assert candidate.run([]) == 2
     assert not receipt.exists()
     assert opened == []
+
+
+@requires_runner
+def test_registration_rejects_every_resealed_nested_contract_mutation(monkeypatch):
+    candidate = _runner()
+    runtime = {"runtime": "synthetic"}
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: runtime)
+    valid = _exact_registration(candidate, runtime, monkeypatch)
+    assert candidate._registration(valid) == valid
+
+    mutations = {
+        "candidate": lambda row: row["candidate"]["map"]["parameter_order"].reverse(),
+        "predecessors": lambda row: row["predecessors"]["plan_031"].__setitem__("track", "changed"),
+        "folds": lambda row: row["folds"]["order"].reverse(),
+        "comparators": lambda row: row["comparators"]["product"]["sort"].pop(),
+        "metrics": lambda row: row["metrics"]["per_fold_gates"][0].__setitem__("operator", "<="),
+        "bootstrap": lambda row: row["bootstrap"].__setitem__("replicates", 9_999),
+        "inputs": lambda row: row["inputs"][candidate.CANONICAL_READ_PATHS[1]].__setitem__("canonical_sha256", "f" * 64),
+        "sources": lambda row: row["sources"].update({"extra.py": copy.deepcopy(next(iter(row["sources"].values())))}),
+        "state_machine": lambda row: row["state_machine"]["cli"].pop(),
+        "outputs": lambda row: row["outputs"].__setitem__("receipt", "wrong.json"),
+        "runtime": lambda row: row["runtime"].__setitem__("runtime", "changed"),
+        "execution": lambda row: row["execution"]["sha_semantics"].pop("recovery"),
+        "forbidden_inputs": lambda row: row["forbidden_inputs"].pop(),
+        "forbidden_paths": lambda row: row["forbidden_paths"].pop(),
+    }
+    for label, mutate in mutations.items():
+        changed = copy.deepcopy(valid)
+        mutate(changed)
+        changed["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in changed.items() if key != "artifact_sha256"})
+        with pytest.raises(candidate.ProtocolError, match="registration"):
+            candidate._registration(changed)
+
+
+@requires_runner
+def test_dynamic_source_binding_rejects_altered_hash_or_implementation(monkeypatch):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+
+    def git_run(args, **_kwargs):
+        return subprocess.CompletedProcess(args, int("merge-base" in args and "f" * 40 in args), stdout="")
+
+    monkeypatch.setattr(candidate.subprocess, "run", git_run)
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda *_args: "1" * 40)
+    monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "1" * 40)
+    monkeypatch.setattr(candidate, "_normalized_source_sha256", lambda *_args: "2" * 64)
+    assert candidate._verify_source_bindings(registration) == "e" * 40
+    changed = copy.deepcopy(registration)
+    changed["sources"]["prospects/rank_v2.py"]["git_blob"] = "f" * 40
+    with pytest.raises(candidate.ProtocolError, match="source binding"):
+        candidate._verify_source_bindings(changed)
+    changed = copy.deepcopy(registration)
+    changed["candidate"]["implementation_commit"] = "f" * 40
+    with pytest.raises(candidate.ProtocolError, match="implementation commit"):
+        candidate._verify_source_bindings(changed)
+
+
+@requires_runner
+def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp_path):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+    monkeypatch.setattr(candidate, "ROOT", tmp_path)
+    for name in ("plan_031", "plan_034"):
+        path = tmp_path / registration["predecessors"][name]["plan_path"]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"x")
+    monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
+    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], [], False))
+    monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
+    monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
+    candidate._verify_predecessor_bindings(registration, "e" * 40)
+    registration["predecessors"]["plan_031"]["history_evidence"]["inventory_sha256"] = "f" * 64
+    with pytest.raises(candidate.ProtocolError, match="history evidence"):
+        candidate._verify_predecessor_bindings(registration, "e" * 40)
+    registration["predecessors"]["plan_031"]["history_evidence"]["classification_sha256"] = "f" * 64
+    _static, dynamic = candidate._registration_static_view(registration)
+    with pytest.raises(candidate.ProtocolError, match="classifications"):
+        candidate._validate_dynamic_fields(dynamic)
+
+
+@requires_runner
+def test_dynamic_seed_evidence_rejects_altered_inventory(monkeypatch):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+    monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
+    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], [], False))
+    candidate._verify_seed_hygiene(registration, "e" * 40)
+    registration["bootstrap"]["seed_hygiene"]["post_design"]["inventory_sha256"] = "f" * 64
+    with pytest.raises(candidate.ProtocolError, match="seed-hygiene"):
+        candidate._verify_seed_hygiene(registration, "e" * 40)
+
+
+@requires_runner
+def test_identity_receipt_hashes_exact_sorted_mlbam_role_pairs():
+    candidate = _runner()
+    rows = [{"mlbam_id": 2, "role": "hitter"}, {"mlbam_id": 1, "role": "hitter"}, {"mlbam_id": 3, "role": "pitcher"}]
+    counts, hashes = candidate._identity_provenance(rows)
+    assert counts == {"hitter": 2, "pitcher": 1}
+    assert hashes == {"hitter": candidate.canonical_sha256([[1, "hitter"], [2, "hitter"]]), "pitcher": candidate.canonical_sha256([[3, "pitcher"]])}
+
+
+@requires_runner
+@pytest.mark.parametrize("year", ["2018", "2019", "2021"])
+@pytest.mark.parametrize("role", ["hitter", "pitcher"])
+@pytest.mark.parametrize("field", ["count", "sha256"])
+def test_registration_rejects_each_identity_cell_literal(monkeypatch, year, role, field):
+    candidate = _runner()
+    runtime = {"runtime": "synthetic"}
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: runtime)
+    registration = _exact_registration(candidate, runtime, monkeypatch)
+    receipt = registration["folds"]["identity_receipts"][year][role]
+    receipt[field] = receipt[field] + 1 if field == "count" else "f" * 64
+    registration["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in registration.items() if key != "artifact_sha256"})
+    with pytest.raises(candidate.ProtocolError, match="registration"):
+        candidate._registration(registration)
+
+
+def _bypass_registered_identities(monkeypatch, candidate):
+    monkeypatch.setattr(candidate, "_validate_registered_identities", lambda *_args: None)
+
+
+@requires_runner
+def test_registered_identity_receipts_fail_before_any_map_or_metric(monkeypatch):
+    candidate = _runner()
+    ladders = _fit_ladders()
+    receipts = {}
+    for year in candidate.DEVELOPMENT_FOLDS:
+        receipts[str(year)] = {
+            role: {"count": len(pairs), "sha256": candidate.canonical_sha256(pairs)}
+            for role in candidate.ROLES
+            for pairs in [sorted([[int(row["mlbam_id"]), str(row["role"])] for row in ladders[year][f"candidate_{role}s"]])]
+        }
+    registration = {"folds": {"identity_receipts": receipts}}
+    registration["folds"]["identity_receipts"]["2019"]["pitcher"]["sha256"] = "f" * 64
+    monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: ladders)
+    monkeypatch.setattr(candidate, "_build_fold_receipt", lambda *_args: pytest.fail("map or metric stage reached"))
+
+    with pytest.raises(ValueError, match="registered identity"):
+        candidate.build_development_artifacts({}, {}, registration)
 
 
 @requires_runner
@@ -354,6 +554,8 @@ def _protocol_sandbox(monkeypatch, tmp_path):
     candidate.REGISTRATION_PATH.parent.mkdir(parents=True, exist_ok=True)
     candidate.REGISTRATION_PATH.write_text(json.dumps(registration), encoding="utf-8")
     monkeypatch.setattr(candidate, "_git_blob", lambda relative, _path: inputs.get(relative, {"git_blob": "2" * 40})["git_blob"])
+    monkeypatch.setattr(candidate, "_read_registration", lambda: registration)
+    monkeypatch.setattr(candidate, "_verify_dynamic_registration", lambda _registration: None)
     return candidate, registration
 
 
@@ -1070,6 +1272,7 @@ def test_bootstrap_uses_one_deterministic_shared_sample_plan_without_refits(monk
 @requires_runner
 def test_pooled_fit_runs_once_only_after_fold_and_bootstrap_qualification(monkeypatch):
     candidate = _runner()
+    _bypass_registered_identities(monkeypatch, candidate)
     folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
     map_calls = []
 
@@ -1257,6 +1460,7 @@ def _qualified_bootstrap(candidate):
 @requires_runner
 def test_artifact_schema_and_bootstrap_attempt_semantics(monkeypatch):
     candidate = _runner()
+    _bypass_registered_identities(monkeypatch, candidate)
     folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
     calls = []
     completed = candidate._completed_fold_receipt(folds[2018])
@@ -1278,6 +1482,7 @@ def test_artifact_schema_and_bootstrap_attempt_semantics(monkeypatch):
 @requires_runner
 def test_development_result_uses_json_stable_fold_keys(monkeypatch):
     candidate = _runner()
+    _bypass_registered_identities(monkeypatch, candidate)
     folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
     completed = candidate._completed_fold_receipt(folds[2018])
     failed = _failed_gate_fold(completed)
@@ -1294,6 +1499,7 @@ def test_development_result_uses_json_stable_fold_keys(monkeypatch):
 @pytest.mark.parametrize("qualified", [False, True])
 def test_persisted_actual_result_shape_reproduces_without_writes(monkeypatch, tmp_path, qualified):
     candidate = _runner()
+    _bypass_registered_identities(monkeypatch, candidate)
     folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
     completed = candidate._completed_fold_receipt(folds[2018])
     failed = _failed_gate_fold(completed)
@@ -1324,6 +1530,7 @@ def test_persisted_actual_result_shape_reproduces_without_writes(monkeypatch, tm
 @requires_runner
 def test_structural_fold_failure_skips_bootstrap_with_exact_null_summary(monkeypatch):
     candidate = _runner()
+    _bypass_registered_identities(monkeypatch, candidate)
     structural = candidate._failed_fold_receipt("candidate_map", _bootstrap_fold(2018)["candidate"])
 
     monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: {year: {} for year in candidate.DEVELOPMENT_FOLDS})
@@ -1340,6 +1547,7 @@ def test_structural_fold_failure_skips_bootstrap_with_exact_null_summary(monkeyp
 @requires_runner
 def test_pooled_value_error_is_scientific_failure_and_unexpected_error_propagates(monkeypatch):
     candidate = _runner()
+    _bypass_registered_identities(monkeypatch, candidate)
     folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
     completed = candidate._completed_fold_receipt(folds[2018])
 
