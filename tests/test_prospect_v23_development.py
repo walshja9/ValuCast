@@ -162,6 +162,9 @@ def test_committed_static_registration_preimage_matches_production_hash():
     preimage = json.loads(path.read_text(encoding="utf-8"))
 
     assert candidate.canonical_sha256(preimage) == candidate._REGISTRATION_CONTRACT["static_sha256"]
+    assert path.relative_to(Path(__file__).parents[1]).as_posix() in preimage[
+        "bootstrap"
+    ]["seed_hygiene"]["post_design"]["allowed_paths"]
 
 
 @requires_runner

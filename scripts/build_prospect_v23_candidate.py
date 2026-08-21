@@ -80,7 +80,7 @@ STRUCTURAL_STAGES = (
 BOOTSTRAP_MINIMUM = 9_900
 
 _REGISTRATION_CONTRACT = {
-    "static_sha256": "8861b442dbe0f420164af2b08fe2473a8ab5412cf98cded95621d2ef97384ace",
+    "static_sha256": "3c5e02cb97fd09af4dfe676e572b16445aa4c7ad93c1a325472c4f37019ae0e1",
     "source_binding_keys": {"git_blob", "normalized_sha256"},
     "history_evidence_keys": {
         "scope_tip", "standalone_pattern", "inventory_schema", "object_count",
