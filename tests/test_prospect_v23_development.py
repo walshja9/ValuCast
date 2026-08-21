@@ -281,6 +281,27 @@ def test_receipt_preserves_earliest_structural_provenance_variants(monkeypatch):
         assert candidate._validate_receipt(receipt) == receipt
 
 
+@requires_runner
+def test_receipt_accepts_emitted_post_map_identity_failure(monkeypatch):
+    candidate = _runner()
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: {"test": "runtime"})
+    registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
+    result = _terminal_result(candidate, qualified=True, map_sha="f" * 64)
+    fold, _values = candidate._record_structural_failure(result["folds"]["2018"], "identity_alignment")
+    fold["structural_checks"]["identity_sets_equal"] = False
+    result.update(
+        folds={str(year): copy.deepcopy(fold) for year in candidate.DEVELOPMENT_FOLDS},
+        bootstrap=candidate._not_attempted_bootstrap(),
+        failed_folds=list(candidate.DEVELOPMENT_FOLDS),
+        failed_bootstrap=[],
+        failed_structural=[f"{year}:identity_alignment" for year in candidate.DEVELOPMENT_FOLDS],
+        pooled_fit={"attempted": False, "status": "not_attempted_qualification_failure", "row_count": 0, "training_rows_sha256": None, "map_artifact_sha256": None},
+    )
+    receipt = candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result=result, map_artifact_sha256=None)
+
+    assert candidate._validate_receipt(receipt) == receipt
+
+
 def _protocol_sandbox(monkeypatch, tmp_path):
     """Synthetic D: files only; never call the canonical wrapper paths."""
     candidate = _runner()

@@ -1253,6 +1253,10 @@ def _validate_result(result: object, *, qualified: bool, map_sha: object) -> Non
                     continue
                 index = STRUCTURAL_STAGES.index(check_stage)
                 expected_checks[check] = None if check is None else (False if index == stage_index else True if index < stage_index else None)
+            if stage == "identity_alignment" and fold["structural_checks"]["targets_equal"] is True:
+                if not valid_provenance(fold, required=True):
+                    raise ProtocolError("completed receipt structural fold state is invalid")
+                expected_checks["targets_equal"] = True
             if fold["structural_checks"] != expected_checks:
                 raise ProtocolError("completed receipt structural fold state is invalid")
             if stage == "top25_contract":
