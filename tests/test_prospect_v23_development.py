@@ -144,6 +144,7 @@ def test_protocol_refuses_missing_registration_before_reservation(monkeypatch, t
     opened = []
     monkeypatch.setattr(candidate, "RECEIPT_PATH", receipt)
     monkeypatch.setattr(candidate, "CALIBRATOR_PATH", tmp_path / "data" / "models" / "map.json")
+    monkeypatch.setattr(candidate, "REGISTRATION_PATH", tmp_path / "missing-registration.json")
     monkeypatch.setattr(candidate, "SPEND_TOKEN_PATH", tmp_path / "common" / "spent.json")
     monkeypatch.setattr(candidate, "_common_lock_path", lambda: tmp_path / "common" / "lock")
     monkeypatch.setattr(candidate, "_load_json", lambda path, **_kwargs: opened.append(path) or {})
@@ -168,6 +169,66 @@ def test_committed_static_registration_preimage_matches_production_hash():
     assert Path(__file__).relative_to(Path(__file__).parents[1]).as_posix() in preimage[
         "bootstrap"
     ]["seed_hygiene"]["post_registration_policy"]["allowed_paths"]
+
+
+@requires_runner
+def test_committed_registration_matches_plan_038_and_predecessor_transitions():
+    candidate = _runner()
+    root = Path(__file__).parents[1]
+    registration_path = (
+        root / "data/validation/valucast_prospect_rank_v2_3_registration.json"
+    )
+    plan_path = root / "plans/038-prospect-vnext-phase-a.md"
+    registration = json.loads(registration_path.read_text(encoding="utf-8"))
+    plan = plan_path.read_text(encoding="utf-8")
+    fenced = plan.split(
+        "<!-- prospect-vnext-phase-a-registration:start -->\n```json\n", 1
+    )[1].split("\n```\n<!-- prospect-vnext-phase-a-registration:end -->", 1)[0]
+
+    assert fenced + "\n" == registration_path.read_text(encoding="utf-8")
+    assert json.loads(fenced) == registration
+    assert candidate._registration(registration) == registration
+    static, _dynamic = candidate._registration_static_view(registration)
+    static_path = (
+        Path(__file__).parent
+        / "fixtures/prospect_v23_registration_static_preimage.json"
+    )
+    assert static == json.loads(static_path.read_text(encoding="utf-8"))
+
+    for name in ("plan_031", "plan_034"):
+        predecessor = registration["predecessors"][name]
+        before = candidate._git_blob_bytes(predecessor["pre_transition_blob"])
+        current = (root / predecessor["plan_path"]).read_bytes()
+        assert len(before) == predecessor["append_only_prefix_bytes"]
+        assert current.startswith(before)
+        assert candidate._git_blob(predecessor["plan_path"], root / predecessor["plan_path"]) == predecessor["post_transition_blob"]
+
+    historical_034 = candidate._git_blob_bytes(
+        registration["predecessors"]["plan_034"]["pre_transition_blob"]
+    ).decode("utf-8")
+    historical_registration = json.loads(
+        historical_034.split(
+            "<!-- post-2026-challenger-registration:start -->\n```json\n", 1
+        )[1].split("\n```\n<!-- post-2026-challenger-registration:end -->", 1)[0]
+    )
+    for name, registered in registration["predecessors"]["plan_034"][
+        "active_tracks"
+    ].items():
+        value = historical_registration["decision_tracks"][name]
+        assert registered == {
+            "value": value,
+            "canonical_sha256": candidate.canonical_sha256(value),
+        }
+
+
+@requires_runner
+def test_committed_registration_passes_dynamic_verification():
+    candidate = _runner()
+    path = (
+        Path(__file__).parents[1]
+        / "data/validation/valucast_prospect_rank_v2_3_registration.json"
+    )
+    candidate._verify_dynamic_registration(json.loads(path.read_text(encoding="utf-8")))
 
 
 @requires_runner

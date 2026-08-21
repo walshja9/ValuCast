@@ -290,3 +290,20 @@ taken on two sessions' code-reading authority (consistent with all observed
 sds); strike_pct_dev↔K/BB collinearity is unmeasured; the cause of 2021's
 generosity (incumbent weakness vs cohort composition vs era effects) is not
 established by any artifact.
+
+## Append-only model-track transition (2026-08-21)
+
+The Plan 031 model track is superseded by Plan 038. Its held seed `31013` was
+never executed and is retired forever as `retired_unspent_never_execute`.
+Nothing in this transition changes the dark implementation or reports a model
+result.
+
+The reviewed Git-history receipt is bound in the sealed Plan 038 registration:
+scope tip `e1229bacc1c64d651609a5e621de0ec528a79a78`, 25,964 reachable objects
+with sorted-object digest
+`338ecf8463398b9702b9963475a99cb18d160f6a730d64d8a66fcc621484a35c`, and
+94 raw standalone-token occurrences with inventory digest
+`450ddd925a4b37f85dac7e1d939d63c710d4471a69c4ecf2004031561e0c42ae`.
+The one-to-one reviewed classification list has digest
+`987530729f55cbeffb732243c37631a8ff3ddbd250ee8d0ae126311ac19f3411`;
+its `result_artifact_entries` and `runner_invocation_entries` are both empty.

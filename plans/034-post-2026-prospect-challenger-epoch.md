@@ -290,3 +290,26 @@ Until the registered challenger epoch becomes executable:
 
 Until then, Plan 034 is a protocol and seed reservation only. It changes no
 model, rank, value, public surface, or workflow.
+
+## Append-only model-selection transition (2026-08-21)
+
+Plan 038 supersedes only Plan 034's model-selection track. Held seed `34021`
+was never executed and is retired forever as
+`retired_unspent_never_execute`. This transition records no scientific result
+and authorizes no execution.
+
+The reviewed Git-history receipt is bound in the sealed Plan 038 registration:
+scope tip `e1229bacc1c64d651609a5e621de0ec528a79a78`, 25,964 reachable objects
+with sorted-object digest
+`338ecf8463398b9702b9963475a99cb18d160f6a730d64d8a66fcc621484a35c`, and
+25 raw standalone-token occurrences with inventory digest
+`6fffbff002d1d2582317a12820d5e65beec9c5416e2754139a948f121127e0f2`.
+The one-to-one reviewed classification list has digest
+`bbf86755a4e072587c2dc804120b394d183627f11c2b333ec9a000d2b8937b23`;
+its `result_artifact_entries` and `runner_invocation_entries` are both empty.
+
+The separately registered decision tracks remain active and byte-for-byte
+unchanged: buy momentum (seed `34027`, canonical subobject SHA-256
+`ecca3d3964da2daac195d2825d6f5850ff1956f8800e4cbd4f37a540aa6053b7`)
+and cross-universe mapping (seed `34031`, canonical subobject SHA-256
+`0076afb20765bfc44d5f1f58f726b68cafa872397ba3f0efedbe1a8bef783412`).
