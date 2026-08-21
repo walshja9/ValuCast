@@ -58,7 +58,15 @@ def _exact_registration(candidate, runtime, monkeypatch=None):
     registration = {
         "schema": "synthetic",
         "candidate": {"implementation_commit": implementation, "map": {"parameter_order": ["a", "b"]}},
-        "predecessors": {"plan_031": predecessor("031", 31013), "plan_034": predecessor("034", 34021)},
+        "predecessors": {
+            "plan_031": predecessor("031", 31013),
+            "plan_034": predecessor("034", 34021),
+            "plan_index": {
+                "plan_path": "plans/README.md",
+                "transition": "update_plan_031_plan_034_model_track_status_and_add_plan_038",
+                "pre_transition_blob": "1" * 40, "post_transition_blob": "2" * 40,
+            },
+        },
         "inputs": {candidate.CANONICAL_READ_PATHS[1]: {"git_blob": "3" * 40, "canonical_sha256": "4" * 64, "internal_field": "input_sha256", "internal_sha256": "5" * 64}},
         "sources": {"prospects/rank_v2.py": {"git_blob": "1" * 40, "normalized_sha256": "2" * 64}},
         "folds": {"order": [2018, 2019, 2021], "identity_receipts": identities},
@@ -148,6 +156,15 @@ def test_protocol_refuses_missing_registration_before_reservation(monkeypatch, t
 
 
 @requires_runner
+def test_committed_static_registration_preimage_matches_production_hash():
+    candidate = _runner()
+    path = Path(__file__).parent / "fixtures" / "prospect_v23_registration_static_preimage.json"
+    preimage = json.loads(path.read_text(encoding="utf-8"))
+
+    assert candidate.canonical_sha256(preimage) == candidate._REGISTRATION_CONTRACT["static_sha256"]
+
+
+@requires_runner
 def test_registration_rejects_every_resealed_nested_contract_mutation(monkeypatch):
     candidate = _runner()
     runtime = {"runtime": "synthetic"}
@@ -158,6 +175,7 @@ def test_registration_rejects_every_resealed_nested_contract_mutation(monkeypatc
     mutations = {
         "candidate": lambda row: row["candidate"]["map"]["parameter_order"].reverse(),
         "predecessors": lambda row: row["predecessors"]["plan_031"].__setitem__("track", "changed"),
+        "plan_index": lambda row: row["predecessors"]["plan_index"].__setitem__("transition", "changed"),
         "folds": lambda row: row["folds"]["order"].reverse(),
         "comparators": lambda row: row["comparators"]["product"]["sort"].pop(),
         "metrics": lambda row: row["metrics"]["per_fold_gates"][0].__setitem__("operator", "<="),
@@ -211,6 +229,8 @@ def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp
         path = tmp_path / registration["predecessors"][name]["plan_path"]
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"x")
+    index_path = tmp_path / registration["predecessors"]["plan_index"]["plan_path"]
+    index_path.write_bytes(b"index")
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
     monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], [], False))
     monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
@@ -224,6 +244,35 @@ def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp
     _static, dynamic = candidate._registration_static_view(registration)
     with pytest.raises(candidate.ProtocolError, match="classifications"):
         candidate._validate_dynamic_fields(dynamic)
+
+
+@requires_runner
+def test_plan_index_blobs_are_dynamic_and_mechanically_verified(monkeypatch, tmp_path):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+    static, dynamic = candidate._registration_static_view(registration)
+    index = static["predecessors"]["plan_index"]
+    assert index["pre_transition_blob"] is None
+    assert index["post_transition_blob"] is None
+    candidate._validate_dynamic_fields(dynamic)
+
+    monkeypatch.setattr(candidate, "ROOT", tmp_path)
+    for name in ("plan_031", "plan_034"):
+        predecessor = tmp_path / registration["predecessors"][name]["plan_path"]
+        predecessor.parent.mkdir(parents=True, exist_ok=True)
+        predecessor.write_bytes(b"x")
+    path = tmp_path / registration["predecessors"]["plan_index"]["plan_path"]
+    path.write_bytes(b"index")
+    monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
+    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], [], False))
+    monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
+    monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
+    candidate._verify_predecessor_bindings(registration, "e" * 40)
+
+    registration["predecessors"]["plan_index"]["post_transition_blob"] = "f" * 40
+    with pytest.raises(candidate.ProtocolError, match="plan index"):
+        candidate._verify_predecessor_bindings(registration, "e" * 40)
 
 
 @requires_runner

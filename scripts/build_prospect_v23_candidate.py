@@ -80,7 +80,7 @@ STRUCTURAL_STAGES = (
 BOOTSTRAP_MINIMUM = 9_900
 
 _REGISTRATION_CONTRACT = {
-    "static_sha256": "9b3cdab922af634d271e89fd12e6a12e284266c40162eed92b600f913078157e",
+    "static_sha256": "8861b442dbe0f420164af2b08fe2473a8ab5412cf98cded95621d2ef97384ace",
     "source_binding_keys": {"git_blob", "normalized_sha256"},
     "history_evidence_keys": {
         "scope_tip", "standalone_pattern", "inventory_schema", "object_count",
@@ -1198,6 +1198,14 @@ def _verify_predecessor_bindings(registration: dict, implementation: str) -> Non
             )
         ):
             raise ProtocolError(f"predecessor history evidence changed: {name}")
+    index = registration["predecessors"]["plan_index"]
+    relative = index["plan_path"]
+    if (
+        _git_blob_at(implementation, relative) != index["pre_transition_blob"]
+        or _git_blob_at("HEAD", relative) != index["post_transition_blob"]
+        or _git_blob(relative, ROOT / relative) != index["post_transition_blob"]
+    ):
+        raise ProtocolError("plan index binding changed")
 
 
 def _verify_seed_hygiene(registration: dict, implementation: str) -> None:
@@ -1263,6 +1271,10 @@ def _registration_static_view(payload: dict) -> tuple[dict, dict]:
             row["post_transition_blob"] = None
             row["append_only_prefix_bytes"] = None
             row["history_evidence"] = {key: None for key in evidence}
+        index = static["predecessors"]["plan_index"]
+        predecessors["plan_index"] = payload["predecessors"]["plan_index"]
+        index["pre_transition_blob"] = None
+        index["post_transition_blob"] = None
         hygiene = static["bootstrap"]["seed_hygiene"]
         pre_design = hygiene["pre_design"]
         post_design = hygiene["post_design"]
@@ -1305,7 +1317,8 @@ def _validate_dynamic_fields(dynamic: dict) -> None:
             or not _SHA256.fullmatch(str(binding.get("normalized_sha256")))
         ):
             raise ProtocolError("registration source bindings are invalid")
-    for name, row in dynamic["predecessors"].items():
+    for name in ("plan_031", "plan_034"):
+        row = dynamic["predecessors"][name]
         if not isinstance(row, dict):
             raise ProtocolError("registration predecessor evidence is invalid")
         for key in ("pre_transition_blob", "post_transition_blob"):
@@ -1362,6 +1375,19 @@ def _validate_dynamic_fields(dynamic: dict) -> None:
             )
         ):
             raise ProtocolError("registration predecessor classifications are invalid")
+    index = dynamic["predecessors"].get("plan_index")
+    if (
+        not isinstance(index, dict)
+        or set(index) != {
+            "plan_path", "transition", "pre_transition_blob", "post_transition_blob",
+        }
+        or index.get("plan_path") != "plans/README.md"
+        or index.get("transition")
+        != "update_plan_031_plan_034_model_track_status_and_add_plan_038"
+        or not _SHA1.fullmatch(str(index.get("pre_transition_blob")))
+        or not _SHA1.fullmatch(str(index.get("post_transition_blob")))
+    ):
+        raise ProtocolError("registration plan index evidence is invalid")
     hygiene = dynamic["seed_hygiene"]
     try:
         pre_design = hygiene["pre_design"]

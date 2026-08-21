@@ -1,0 +1,703 @@
+{
+  "schema": "valucast_prospect_rank_v2_3_registration_v1",
+  "registration_id": "plan_038_prospect_vnext_phase_a",
+  "registration_status_at_seal": "registered_unspent",
+  "candidate": {
+    "approved_design_commit": "1737468b16717ee6f7d24ea08b8444fdde3442f2",
+    "implementation_commit": null,
+    "family": "shared_threshold_role_slope_joint_ordered_logit",
+    "parameter_order": [
+      "tau_bust_role",
+      "log_gap",
+      "beta_hitter",
+      "beta_pitcher",
+      "gamma"
+    ],
+    "threshold_formula": {
+      "tau_bust_role": "params[0]",
+      "tau_role_star": "tau_bust_role + exp(log_gap)"
+    },
+    "standardization": {
+      "fit_scope": "training_only_by_role",
+      "centers": "finite",
+      "scales": "finite_and_strictly_positive"
+    },
+    "linear_predictor": "beta_hitter*z*is_hitter + beta_pitcher*z*is_pitcher + gamma*is_pitcher",
+    "fit_helper": {
+      "module": "prospects.ordinal_calibration_power",
+      "functions": [
+        "_fit_ordered_logit",
+        "_ordered_probabilities",
+        "_expected_tier"
+      ],
+      "reuse_existing_objective_bounds_optimizer_tolerance_initialization_and_max_iterations": true
+    },
+    "fit_requirements": {
+      "beta_hitter": "finite_and_strictly_positive",
+      "beta_pitcher": "finite_and_strictly_positive",
+      "gamma": "finite",
+      "thresholds": "finite",
+      "role_centers": "finite",
+      "role_scales": "finite_and_strictly_positive"
+    },
+    "ladders": {
+      "hitter": "frozen_v1_hitter",
+      "pitcher": "frozen_v0_9_pitcher"
+    },
+    "board_order": [
+      "unrounded_expected_tier_desc",
+      "source_ladder_position_asc",
+      "numeric_mlbam_id_asc"
+    ],
+    "fatal_checks": [
+      "identity_mismatch",
+      "within_role_inversion"
+    ],
+    "targets": {
+      "values": {
+        "bust": 0,
+        "role": 0.5,
+        "star": 1
+      },
+      "window": "cohort_year_plus_1_through_plus_4",
+      "hitter_role": {
+        "pa_at_least_in_one_season": 300
+      },
+      "hitter_star": {
+        "pa_at_least_in_one_season": 450,
+        "ops_at_least_same_season": 0.8
+      },
+      "pitcher_role": {
+        "ip_at_least_in_one_season": 50
+      },
+      "pitcher_star": {
+        "ip_at_least_in_one_season": 120,
+        "era_at_most_same_season": 3.75
+      }
+    },
+    "pooled_fit": {
+      "scope": "candidate_only_2018_2019_2021",
+      "timing": "after_all_fold_and_bootstrap_gates_pass",
+      "rescue": false,
+      "failure": "terminal_nonqualified",
+      "serving_status": "non_serving"
+    }
+  },
+  "predecessors": {
+    "scientific_dependencies": {
+      "v0_9_model": "immutable_input",
+      "v2_1_receipt": "immutable_input",
+      "v2_2_receipt": "immutable_input"
+    },
+    "plan_031": {
+      "plan_path": "plans/031-pitcher-strike-pct-gate.md",
+      "track": "model_track",
+      "transition": "superseded_by_plan_038",
+      "held_seed": 31013,
+      "seed_status": "retired_unspent_never_execute",
+      "originating_transition_commit": "55123a4786bf91b756f64b055f7972d5500884eb",
+      "pre_transition_blob": null,
+      "post_transition_blob": null,
+      "append_only_prefix_bytes": null,
+      "history_evidence": {
+        "scope_tip": null,
+        "standalone_pattern": null,
+        "inventory_schema": null,
+        "object_count": null,
+        "sorted_object_ids_sha256": null,
+        "inventory_entry_count": null,
+        "inventory_sha256": null,
+        "classification_schema": null,
+        "classifications": null,
+        "classification_sha256": null,
+        "result_artifact_entries": null,
+        "runner_invocation_entries": null
+      }
+    },
+    "plan_034": {
+      "plan_path": "plans/034-post-2026-prospect-challenger-epoch.md",
+      "track": "model_track",
+      "transition": "superseded_by_plan_038",
+      "held_seed": 34021,
+      "seed_status": "retired_unspent_never_execute",
+      "pre_transition_blob": null,
+      "post_transition_blob": null,
+      "append_only_prefix_bytes": null,
+      "originating_latest_commit": "b6172e2912f6a7b46af55c6417c8af66eb8c2586",
+      "registered_json_raw_body_sha256": "c36e9656ba7126e41b81ebbf854785ce3f978582912b99e496ca76be0f108dd9",
+      "parsed_registration_canonical_sha256": "a7fbb5912ae5620563ea4493db6cac0679730da5e69b0a5d37e6eb616b919ec4",
+      "active_tracks": {
+        "buy_momentum": {
+          "value": {
+            "status": "registered_family_not_executable",
+            "hypothesis": "audit_asymmetric_buy_momentum_prior",
+            "primary": "forward_registered_buy_decision_regret",
+            "must_use_preexisting_forward_cohorts": true,
+            "cannot_change_rank_or_value_in_this_protocol": true,
+            "seed": 34027
+          },
+          "canonical_sha256": "ecca3d3964da2daac195d2825d6f5850ff1956f8800e4cbd4f37a540aa6053b7"
+        },
+        "cross_universe_mapping": {
+          "value": {
+            "status": "registered_family_not_executable",
+            "hypothesis": "genuine_empirical_mlb_to_prospect_value_mapping",
+            "control": "compatibility_only_no_unit_mapping",
+            "primary": "forward_format_specific_trade_decision_regret",
+            "minimum_completed_cohorts": 4,
+            "cannot_change_display_or_value_in_this_protocol": true,
+            "seed": 34031
+          },
+          "canonical_sha256": "0076afb20765bfc44d5f1f58f726b68cafa872397ba3f0efedbe1a8bef783412"
+        }
+      },
+      "history_evidence": {
+        "scope_tip": null,
+        "standalone_pattern": null,
+        "inventory_schema": null,
+        "object_count": null,
+        "sorted_object_ids_sha256": null,
+        "inventory_entry_count": null,
+        "inventory_sha256": null,
+        "classification_schema": null,
+        "classifications": null,
+        "classification_sha256": null,
+        "result_artifact_entries": null,
+        "runner_invocation_entries": null
+      }
+    },
+    "old_local_v2_3": {
+      "design_commit": {
+        "commit": "027a6efa7d432a6a466d2ca4d37c28e7abd9da1c",
+        "status": "superseded_unspent",
+        "execution_status": "retired_never_execute"
+      },
+      "plan_commit": {
+        "commit": "1201b799eb4c73f69d5191167cb7a0494fadceca",
+        "status": "superseded_unspent",
+        "execution_status": "retired_never_execute"
+      }
+    },
+    "plan_index": {
+      "plan_path": "plans/README.md",
+      "transition": "update_plan_031_plan_034_model_track_status_and_add_plan_038",
+      "pre_transition_blob": null,
+      "post_transition_blob": null
+    }
+  },
+  "inputs": {
+    "data/validation/valucast_prospect_v2_development_contract.json": {
+      "git_blob": "2bd549347227235061c51444fdd709bd69153dee",
+      "canonical_sha256": "df573b47d652eed14b8289919dbe2696cd7c9b96bd68c678fc124dabfa5a92b3",
+      "internal_field": "input_sha256",
+      "internal_sha256": "df573b47d652eed14b8289919dbe2696cd7c9b96bd68c678fc124dabfa5a92b3"
+    },
+    "data/models/valucast_prospect_model_v0_9.json": {
+      "git_blob": "788ba04a054474430a4cdb01e3ac783795cfa088",
+      "canonical_sha256": "90b8c303f011c48a4806aa8300d949e85ecb82999bf975ce5d3d3320c7f59663",
+      "internal_field": "artifact_sha256",
+      "internal_sha256": "048876c0f64365ae9960a3b1987558c9e190f4c2eec87b743bb52f2fd4146c4e"
+    },
+    "data/validation/valucast_prospect_rank_v2_1_development.json": {
+      "git_blob": "195febb61a0867da213d2fca096d02e58289a218",
+      "canonical_sha256": "a0b1fd17a08aa4b6d64854ee5a9ef92df79f6e76fd1aa4ae2de6a4d3d81dd7ba",
+      "internal_field": "artifact_sha256",
+      "internal_sha256": "cb2c518da530acf20d50766d1925eff6da52193227e15569c7479120e2c998db"
+    },
+    "data/validation/valucast_prospect_rank_v2_2_development.json": {
+      "git_blob": "44e7d8a26259f06cdc9b5cfa5c48c9b5c9c4b214",
+      "canonical_sha256": "fa9b58a55a3d950c52b8a23aeeb14ebf6d3731b873e9c4b2028ffd23f66b4178",
+      "internal_field": "artifact_sha256",
+      "internal_sha256": "9fc70d71e8d3cefa76506748c5dc9caa46ac083692320d2164ac137a95855191"
+    }
+  },
+  "sources": {
+    "mlb/availability.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "mlb/__init__.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "mlb/roster_status.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/__init__.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/ahead_of_consensus.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/availability.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/cross_role_calibration.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/dynasty.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/dynasty_backtest.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/gate.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/impact_oof.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/input_contract.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/level_translation_challenger.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/milb_translation.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/model.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/ordinal_calibration_power.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/outcome_oof.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/pitcher_challenger.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/probability_reliability.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/prospect_v09.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/prospect_v2_candidate.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/prospect_v2_target.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/rank_backtest.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/rank_v1.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/rank_v2.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/role_slope_joint_calibration.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/stage1_contract.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/stage1_outcome_proof.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/universal.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "prospects/universe.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "scripts/audit_consensus_decisions.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "scripts/build_ahead_of_consensus_scorecard.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    },
+    "scripts/build_prospect_v23_candidate.py": {
+      "git_blob": null,
+      "normalized_sha256": null
+    }
+  },
+  "folds": {
+    "order": [
+      2018,
+      2019,
+      2021
+    ],
+    "training_by_test": {
+      "2018": [
+        2019,
+        2021
+      ],
+      "2019": [
+        2018,
+        2021
+      ],
+      "2021": [
+        2018,
+        2019
+      ]
+    },
+    "identity_hash_formula": "canonical_sha256(sorted([[int(mlbam_id),str(role)]...]))",
+    "identity_receipts": {
+      "2018": {
+        "hitter": {
+          "count": 345,
+          "sha256": "6169bf1c3de6430b74e1d3b425aac491bfcbd364a13afe12abcbc8b2b7c838d0"
+        },
+        "pitcher": {
+          "count": 352,
+          "sha256": "d5214fdfc761a84dc21702aa76aee7c302ea635c9d722235f1de3b5631dd5b76"
+        }
+      },
+      "2019": {
+        "hitter": {
+          "count": 360,
+          "sha256": "fccc74b819ff48c03402e0d8b791a18bef43a67470b749dd26de3f651b7d059a"
+        },
+        "pitcher": {
+          "count": 410,
+          "sha256": "e49cf8d1b6419bb7b1ce989223f51ae5a96178ef10f2616a42d41ce411462958"
+        }
+      },
+      "2021": {
+        "hitter": {
+          "count": 386,
+          "sha256": "f0b4610897c4d5564259aa06c19c394b03a7f72d11e992028588eb4b6efbf21d"
+        },
+        "pitcher": {
+          "count": 365,
+          "sha256": "55f9a77380bcf8159b32dd54b7b17c1fbd3bff9a9e59e57c994060b3c85ccd27"
+        }
+      }
+    },
+    "same_held_out_identities_and_targets": [
+      "candidate",
+      "control",
+      "product"
+    ]
+  },
+  "comparators": {
+    "candidate": {
+      "ladders": {
+        "hitter": "v1",
+        "pitcher": "v0_9"
+      },
+      "map": "independent_five_parameter_fold_fit",
+      "standardization": "own_training_role_means_and_standard_deviations",
+      "order": "unrounded_candidate_board_order"
+    },
+    "control": {
+      "ladders": {
+        "hitter": "v1",
+        "pitcher": "v1"
+      },
+      "map": "independent_five_parameter_fold_fit",
+      "standardization": "own_training_role_means_and_standard_deviations",
+      "order": "unrounded_control_board_order"
+    },
+    "product": {
+      "source": "reconstructed_v1_product_logic",
+      "score": "emitted_two_decimal_score",
+      "rank": "original_emitted_rank",
+      "order": [
+        "score_desc",
+        "score_source_order",
+        "role",
+        "name",
+        "numeric_mlbam_id"
+      ],
+      "rank_reproduction": "exact_1_through_n",
+      "concordance_input": "emitted_score",
+      "top25_input": "original_ranks_1_through_25",
+      "mae": "forbidden_undefined"
+    },
+    "held_out_target_dependency": false
+  },
+  "metrics": {
+    "rules": [
+      {
+        "name": "candidate_control_mae_delta",
+        "expression": "candidate_mae-control_mae",
+        "operator": "<",
+        "threshold": 0
+      },
+      {
+        "name": "candidate_control_concordance_delta",
+        "expression": "candidate_concordance-control_concordance",
+        "operator": ">",
+        "threshold": 0
+      },
+      {
+        "name": "candidate_concordance_above_chance",
+        "expression": "candidate_concordance",
+        "operator": ">",
+        "threshold": 0.5
+      },
+      {
+        "name": "candidate_product_concordance_delta",
+        "expression": "candidate_concordance-product_concordance",
+        "operator": ">",
+        "threshold": 0
+      },
+      {
+        "name": "candidate_control_top25_target_sum",
+        "expression": "candidate_top25_target_sum-control_top25_target_sum",
+        "operator": ">=",
+        "threshold": 0
+      },
+      {
+        "name": "candidate_product_top25_target_sum",
+        "expression": "candidate_top25_target_sum-product_top25_target_sum",
+        "operator": ">=",
+        "threshold": 0
+      }
+    ],
+    "mae": "arithmetic_mean(abs(expected_tier-target))_over_exact_held_out_universe",
+    "cross_role_concordance": {
+      "pairs": "hitter_pitcher_with_unequal_targets_only",
+      "agreement": 1,
+      "reverse": 0,
+      "exact_score_tie": 0.5,
+      "equal_targets": "excluded",
+      "no_eligible_pairs": "undefined"
+    },
+    "top25": {
+      "minimum_universe_rows": 25,
+      "candidate_control": "first_25_in_unrounded_registered_order",
+      "product": "emitted_ranks_1_through_25",
+      "value": "sum_same_registered_targets"
+    },
+    "fold_policy": "every_fold_passes_no_pooled_or_majority_rescue",
+    "fail_closed_checks": [
+      "finite_values",
+      "probabilities",
+      "positive_slopes",
+      "role_order",
+      "identity",
+      "target",
+      "leakage",
+      "forbidden_inputs"
+    ]
+  },
+  "bootstrap": {
+    "rng": "numpy.random.default_rng",
+    "seed": 39017,
+    "replicates": 10000,
+    "minimum_valid_replicates": 9900,
+    "fold_order": [
+      2018,
+      2019,
+      2021
+    ],
+    "role_order": [
+      "hitter",
+      "pitcher"
+    ],
+    "identity_input_order": "ascending_numeric_mlbam_id",
+    "sampling": "paired_replacement_within_each_fold_and_role",
+    "sample_plan": "one_shared_plan_for_all_metrics_and_comparators",
+    "map_refit": false,
+    "fold_aggregation": "equal_weight_three_fold_deltas",
+    "interval": {
+      "method": "linear",
+      "percentiles": [
+        2.5,
+        97.5
+      ]
+    },
+    "pooled_rules": [
+      {
+        "name": "candidate_control_mae_delta",
+        "bound": "upper",
+        "operator": "<",
+        "threshold": 0
+      },
+      {
+        "name": "candidate_control_concordance_delta",
+        "bound": "lower",
+        "operator": ">",
+        "threshold": 0
+      },
+      {
+        "name": "candidate_product_concordance_delta",
+        "bound": "lower",
+        "operator": ">",
+        "threshold": 0
+      }
+    ],
+    "seed_hygiene": {
+      "token": 39017,
+      "standalone_pattern": "(^|[^0-9])39017([^0-9]|$)",
+      "approved_design_commit": "1737468b16717ee6f7d24ea08b8444fdde3442f2",
+      "pre_design_tip": "e48360faddab5504638324f70cddae25f7b7bc65",
+      "pre_design": {
+        "scan_domain": "all_raw_git_object_payloads_reachable_from_tip",
+        "object_count": null,
+        "sorted_object_ids_sha256": null,
+        "match_count": null,
+        "scan_contract": "git_rev_list_cat_file_batch_rg_bytes_v1"
+      },
+      "post_design": {
+        "scope_tip": null,
+        "inventory_schema": "git_blob_path_offset_v1",
+        "entry_count": null,
+        "inventory_sha256": null,
+        "allowed_paths": [
+          "docs/superpowers/specs/2026-08-20-prospect-rank-vnext-current-board-design.md",
+          "docs/superpowers/plans/2026-08-20-prospect-rank-vnext-phase-a.md",
+          "scripts/build_prospect_v23_candidate.py",
+          "tests/test_prospect_v23_development.py"
+        ],
+        "unexpected_path_count": null
+      },
+      "structured_seed_fields": {
+        "inventory_sha256": null,
+        "pre_design_match_count": null,
+        "forbidden_held_spent_reserved_membership": null
+      },
+      "post_registration_policy": {
+        "allowed_paths": [
+          "plans/038-prospect-vnext-phase-a.md",
+          "data/validation/valucast_prospect_rank_v2_3_registration.json",
+          "data/validation/valucast_prospect_rank_v2_3_development.json"
+        ],
+        "verify_current_head": true
+      }
+    }
+  },
+  "state_machine": {
+    "lock_file": "valucast-prospect-v23.lock",
+    "spent_token": "valucast-prospect-v23-spent.json",
+    "states": [
+      "reserved",
+      "outcome_access_spent",
+      "qualified",
+      "failed",
+      "spent_error"
+    ],
+    "cli": [
+      "",
+      "--resume-reserved",
+      "--seal-interrupted-spend",
+      "--reproduce"
+    ],
+    "exit_codes": {
+      "qualified": 0,
+      "failed": 1,
+      "spent_error": 2
+    }
+  },
+  "outputs": {
+    "receipt": "data/validation/valucast_prospect_rank_v2_3_development.json",
+    "calibrator": "data/models/valucast_prospect_joint_ladder_calibrator_v5.json"
+  },
+  "forbidden_inputs": [
+    "2022_outcomes_or_confirmation",
+    "current_public_rank_or_value",
+    "consensus_rank",
+    "market_rank_or_value",
+    "governor_result",
+    "player_name",
+    "role_quota"
+  ],
+  "forbidden_paths": [
+    "prospects/current_rank.py",
+    "data/models/valucast_prospect_rank_v1.json",
+    "data/prediction_archive/valucast_prospect_rank_v1/**",
+    "data/validation/valucast_prospect_2022_confirmation_manifest.json",
+    "data/models/valucast_model_registry.json",
+    "data/public/public_dynasty_snapshot.json",
+    "data/models/valucast_quality_governor.json",
+    "scripts/build_public_dynasty_snapshot.py",
+    "scripts/build_valucast_quality_governor.py",
+    ".github/workflows/daily-public-data.yml",
+    "app.py",
+    "templates/**",
+    "static/**"
+  ],
+  "feeds_live_rank": false,
+  "feeds_value": false,
+  "runtime": {
+    "compiler": "MSC v.1944 64 bit (AMD64)",
+    "implementation": "CPython",
+    "machine": "AMD64",
+    "numpy": "1.26.4",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": [
+      3,
+      14,
+      3
+    ],
+    "releaselevel": "final",
+    "scipy": "1.17.1",
+    "serial": 0
+  },
+  "execution": {
+    "approved_sha_environment": "VALUCAST_V23_APPROVED_EXECUTION_SHA",
+    "lock_scope": "repository_common_directory",
+    "lock_acquisition": "nonblocking_lifetime_lock",
+    "normal": "lifetime_lock_and_lowercase_40hex_environment_equals_head",
+    "resume": "lifetime_lock_and_environment_equals_head_and_reserved_receipt_execution_sha",
+    "recovery": "lifetime_lock_and_environment_equals_head_and_immutable_token_and_receipt_execution_sha_no_outcome_open",
+    "reproduction": "lifetime_lock_and_terminal_receipt_execution_sha_no_knobs_no_writes",
+    "spend_order": [
+      "durable_immutable_token",
+      "receipt_outcome_access_spent",
+      "first_outcome_open"
+    ],
+    "pre_marker_error": "resumable_only_with_all_bindings_unchanged",
+    "post_marker_error": "terminal_spent_error",
+    "terminal_states": [
+      "qualified",
+      "failed",
+      "spent_error"
+    ],
+    "map_only_when": "qualified",
+    "invalid_unlisted_cli_or_exit": true,
+    "application_data_read_allowlist": {
+      "pre_spend": [
+        "data/validation/valucast_prospect_rank_v2_3_registration.json"
+      ],
+      "post_spend": [
+        "data/validation/valucast_prospect_v2_development_contract.json",
+        "data/models/valucast_prospect_model_v0_9.json",
+        "data/validation/valucast_prospect_rank_v2_1_development.json",
+        "data/validation/valucast_prospect_rank_v2_2_development.json"
+      ],
+      "reproduce_additional": {
+        "receipt": "data/validation/valucast_prospect_rank_v2_3_development.json",
+        "calibrator": "data/models/valucast_prospect_joint_ladder_calibrator_v5.json",
+        "calibrator_condition": "qualification_only"
+      }
+    }
+  },
+  "artifact_sha256": null
+}
