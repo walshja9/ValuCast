@@ -238,7 +238,7 @@ def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp
     index_path = tmp_path / registration["predecessors"]["plan_index"]["plan_path"]
     index_path.write_bytes(b"index")
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
-    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], [], False))
+    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], []))
     monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
     monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
     monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
@@ -270,7 +270,7 @@ def test_plan_index_blobs_are_dynamic_and_mechanically_verified(monkeypatch, tmp
     path = tmp_path / registration["predecessors"]["plan_index"]["plan_path"]
     path.write_bytes(b"index")
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
-    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], [], False))
+    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], []))
     monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
     monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
     monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
@@ -286,9 +286,39 @@ def test_dynamic_seed_evidence_rejects_altered_inventory(monkeypatch):
     candidate = _runner()
     registration = _exact_registration(candidate, {"runtime": "synthetic"})
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
-    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], [], False))
+    monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], []))
     candidate._verify_seed_hygiene(registration, "e" * 40)
     registration["bootstrap"]["seed_hygiene"]["post_design"]["inventory_sha256"] = "f" * 64
+    with pytest.raises(candidate.ProtocolError, match="seed-hygiene"):
+        candidate._verify_seed_hygiene(registration, "e" * 40)
+
+
+@requires_runner
+def test_seed_hygiene_uses_the_reviewed_structured_inventory(monkeypatch):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+    hygiene = registration["bootstrap"]["seed_hygiene"]
+    row = ["b" * 40, "runner.py", 7, "c" * 64]
+    hygiene["post_design"].update(
+        entry_count=1,
+        inventory_sha256=candidate.canonical_sha256([row]),
+    )
+    hygiene["structured_seed_fields"]["inventory_sha256"] = candidate.canonical_sha256([row])
+
+    monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
+    monkeypatch.setattr(
+        candidate,
+        "_git_blob_inventory",
+        lambda tip, *_args, **_kwargs: ([row], [row]) if tip == "e" * 40 else ([], []),
+    )
+    candidate._verify_seed_hygiene(registration, "e" * 40)
+
+    changed = [*row[:2], row[2] + 1, row[3]]
+    monkeypatch.setattr(
+        candidate,
+        "_git_blob_inventory",
+        lambda tip, *_args, **_kwargs: ([row], [changed]) if tip == "e" * 40 else ([], []),
+    )
     with pytest.raises(candidate.ProtocolError, match="seed-hygiene"):
         candidate._verify_seed_hygiene(registration, "e" * 40)
 

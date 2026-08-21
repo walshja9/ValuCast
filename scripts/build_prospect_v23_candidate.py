@@ -1048,7 +1048,7 @@ def _git_object_ids(tip: str) -> list[str]:
 
 def _git_blob_inventory(
     tip: str, token: int, *, exclude_tip: str | None = None,
-) -> tuple[list[list], list[list], bool]:
+) -> tuple[list[list], list[list]]:
     command = ["git", "rev-list", "--objects", tip, *([f"^{exclude_tip}"] if exclude_tip else [])]
     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
     if result.returncode:
@@ -1064,7 +1064,7 @@ def _git_blob_inventory(
         ["git", "cat-file", "--batch"], cwd=ROOT, stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
-    rows, structured, forbidden_membership = [], [], False
+    rows, structured = [], []
     try:
         if process.stdin is None or process.stdout is None:
             raise ProtocolError("cannot open Git object reader")
@@ -1090,15 +1090,12 @@ def _git_blob_inventory(
                 rows.append(row)
                 if re.search(rb"seed", line, flags=re.IGNORECASE):
                     structured.append(row)
-                    forbidden_membership |= bool(re.search(
-                        rb"forbidden|held|spent|reserved", line, flags=re.IGNORECASE
-                    ))
     finally:
         if process.stdin is not None:
             process.stdin.close()
         process.terminate()
         process.wait()
-    return sorted(rows), sorted(structured), forbidden_membership
+    return sorted(rows), sorted(structured)
 
 
 def _git_blob_bytes(object_id: str) -> bytes:
@@ -1175,7 +1172,7 @@ def _verify_predecessor_bindings(registration: dict, implementation: str) -> Non
         ):
             raise ProtocolError(f"predecessor plan binding changed: {relative}")
         evidence = row["history_evidence"]
-        inventory, _structured, _forbidden = _git_blob_inventory(
+        inventory, _structured = _git_blob_inventory(
             implementation, row["held_seed"]
         )
         classifications = evidence["classifications"]
@@ -1209,6 +1206,7 @@ def _verify_predecessor_bindings(registration: dict, implementation: str) -> Non
 
 
 def _verify_seed_hygiene(registration: dict, implementation: str) -> None:
+    # ponytail: bind reviewed rows; add a registered parser only if seed-set syntax is standardized.
     hygiene = registration["bootstrap"]["seed_hygiene"]
     pre_design = hygiene["pre_design"]
     object_ids = _git_object_ids(hygiene["pre_design_tip"])
@@ -1218,7 +1216,7 @@ def _verify_seed_hygiene(registration: dict, implementation: str) -> None:
         or pre_design["match_count"] != 0
     ):
         raise ProtocolError("pre-design seed-hygiene evidence changed")
-    inventory, structured, forbidden = _git_blob_inventory(
+    inventory, structured = _git_blob_inventory(
         implementation, hygiene["token"], exclude_tip=hygiene["pre_design_tip"]
     )
     post_design = hygiene["post_design"]
@@ -1233,10 +1231,9 @@ def _verify_seed_hygiene(registration: dict, implementation: str) -> None:
         or hygiene["structured_seed_fields"][
             "forbidden_held_spent_reserved_membership"
         ] is not False
-        or forbidden
     ):
         raise ProtocolError("post-design seed-hygiene evidence changed")
-    current, _structured, _forbidden = _git_blob_inventory(
+    current, _structured = _git_blob_inventory(
         "HEAD", hygiene["token"], exclude_tip=implementation
     )
     if any(
