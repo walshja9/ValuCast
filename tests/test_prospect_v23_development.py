@@ -165,6 +165,9 @@ def test_committed_static_registration_preimage_matches_production_hash():
     assert path.relative_to(Path(__file__).parents[1]).as_posix() in preimage[
         "bootstrap"
     ]["seed_hygiene"]["post_design"]["allowed_paths"]
+    assert Path(__file__).relative_to(Path(__file__).parents[1]).as_posix() in preimage[
+        "bootstrap"
+    ]["seed_hygiene"]["post_registration_policy"]["allowed_paths"]
 
 
 @requires_runner
