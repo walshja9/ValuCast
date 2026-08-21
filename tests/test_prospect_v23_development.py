@@ -18,6 +18,39 @@ def _runner():
     return importlib.import_module(RUNNER)
 
 
+def _terminal_result(candidate, *, qualified: bool, map_sha: str | None = None):
+    metrics = {
+        "candidate_mae": 0.0, "control_mae": 0.0, "candidate_control_mae_delta": 0.0,
+        "candidate_concordance": 0.0, "control_concordance": 0.0, "product_concordance": 0.0,
+        "candidate_control_concordance_delta": 0.0, "candidate_product_concordance_delta": 0.0,
+        "candidate_top25_target_sum": 0.0, "control_top25_target_sum": 0.0, "product_top25_target_sum": 0.0,
+    }
+    if qualified:
+        fold = {
+            "status": "completed", "failure_stage": None,
+            "identity_count_by_role": {"hitter": 1, "pitcher": 1},
+            "identity_sha256_by_role": {"hitter": "a" * 64, "pitcher": "b" * 64}, "target_sha256": "c" * 64,
+            "metrics": metrics, "gates": {name: True for name in candidate.FOLD_GATE_ORDER},
+            "structural_checks": {"identity_sets_equal": True, "targets_equal": True, "candidate_map_valid": True, "control_map_valid": True, "product_rank_reproduced": True, "top25_complete": True},
+            "failed_gates": [], "failed_structural": [],
+        }
+        bootstrap = {"status": "completed", "seed": 39017, "replicates": 10_000, "minimum_valid_replicates": candidate.BOOTSTRAP_MINIMUM, "interval": {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"}, "sample_plan_sha256": "d" * 64, "metrics": {name: {"point": 0.0, "lower": 0.1, "upper": 0.2, "valid_replicates": 10_000, "gate_passed": True} for name in candidate.BOOTSTRAP_METRICS}}
+        pooled = {"attempted": True, "status": "validated", "row_count": 2, "training_rows_sha256": "e" * 64, "map_artifact_sha256": map_sha}
+        failed = ([], [], [])
+    else:
+        fold = {
+            "status": "structural_failure", "failure_stage": "identity_alignment",
+            "identity_count_by_role": None, "identity_sha256_by_role": None, "target_sha256": None,
+            "metrics": {name: None for name in metrics}, "gates": {name: None for name in candidate.FOLD_GATE_ORDER},
+            "structural_checks": {"identity_sets_equal": False, "targets_equal": None, "candidate_map_valid": None, "control_map_valid": None, "product_rank_reproduced": None, "top25_complete": None},
+            "failed_gates": [], "failed_structural": ["identity_alignment"],
+        }
+        bootstrap = candidate._not_attempted_bootstrap()
+        pooled = {"attempted": False, "status": "not_attempted_qualification_failure", "row_count": 0, "training_rows_sha256": None, "map_artifact_sha256": None}
+        failed = (list(candidate.DEVELOPMENT_FOLDS), [], [f"{year}:identity_alignment" for year in candidate.DEVELOPMENT_FOLDS])
+    return {"fold_order": list(candidate.DEVELOPMENT_FOLDS), "folds": {str(year): copy.deepcopy(fold) for year in candidate.DEVELOPMENT_FOLDS}, "bootstrap": bootstrap, "failed_folds": failed[0], "failed_bootstrap": failed[1], "failed_structural": failed[2], "pooled_fit": pooled}
+
+
 def test_fold_runner_import_is_the_registered_red_gate():
     _runner()
 
@@ -47,13 +80,60 @@ def test_terminal_receipt_schema_and_seal_rejects_undeclared_fields(monkeypatch)
     runtime = {"test": "runtime"}
     registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
     monkeypatch.setattr(candidate, "_runtime_tuple", lambda: runtime)
-    receipt = candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result={}, map_artifact_sha256=None)
+    receipt = candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result=_terminal_result(candidate, qualified=False), map_artifact_sha256=None)
 
     assert candidate._validate_receipt(receipt) == receipt
     malformed = {**receipt, "unexpected": True}
     malformed["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in malformed.items() if key != "artifact_sha256"})
     with pytest.raises(candidate.ProtocolError, match="fields"):
         candidate._validate_receipt(malformed)
+
+
+@requires_runner
+def test_completed_receipt_rejects_empty_result(monkeypatch):
+    candidate = _runner()
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: {"test": "runtime"})
+    registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
+    receipt = candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result={}, map_artifact_sha256=None)
+
+    with pytest.raises(candidate.ProtocolError, match="result"):
+        candidate._validate_receipt(receipt)
+
+
+@requires_runner
+def test_completed_receipt_rejects_nested_result_schema_and_structural_state(monkeypatch):
+    candidate = _runner()
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: {"test": "runtime"})
+    registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
+    base = candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result=_terminal_result(candidate, qualified=False), map_artifact_sha256=None)
+    variants = []
+    missing = copy.deepcopy(base)
+    missing["result"].pop("bootstrap")
+    variants.append(missing)
+    extra = copy.deepcopy(base)
+    extra["result"]["unexpected"] = None
+    variants.append(extra)
+    fold_missing = copy.deepcopy(base)
+    fold_missing["result"]["folds"]["2018"].pop("metrics")
+    variants.append(fold_missing)
+    bootstrap_extra = copy.deepcopy(base)
+    bootstrap_extra["result"]["bootstrap"]["unexpected"] = True
+    variants.append(bootstrap_extra)
+    bootstrap_metric_extra = copy.deepcopy(base)
+    bootstrap_metric_extra["result"]["bootstrap"]["metrics"][candidate.BOOTSTRAP_METRICS[0]]["unexpected"] = True
+    variants.append(bootstrap_metric_extra)
+    invalid_null_order = copy.deepcopy(base)
+    invalid_null_order["result"]["folds"]["2018"]["status"] = "completed"
+    invalid_null_order["result"]["folds"]["2018"]["failure_stage"] = None
+    invalid_null_order["result"]["folds"]["2018"]["failed_structural"] = []
+    variants.append(invalid_null_order)
+    invalid_pooled = copy.deepcopy(base)
+    invalid_pooled["result"]["pooled_fit"]["status"] = "validated"
+    variants.append(invalid_pooled)
+    for receipt in variants:
+        receipt["artifact_sha256"] = candidate.canonical_sha256({key: value for key, value in receipt.items() if key != "artifact_sha256"})
+        with pytest.raises(candidate.ProtocolError):
+            candidate._validate_receipt(receipt)
 
 
 def _protocol_sandbox(monkeypatch, tmp_path):
@@ -187,9 +267,9 @@ def test_interrupted_spend_seals_without_reopening_outcomes(monkeypatch, tmp_pat
 @requires_runner
 def test_qualified_run_writes_map_before_terminal_receipt_and_reproduces_without_writing(monkeypatch, tmp_path):
     candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
-    result = {"failed_folds": [], "failed_bootstrap": [], "failed_structural": []}
     pooled = {"map": "synthetic"}
     pooled["artifact_sha256"] = candidate.canonical_sha256(pooled)
+    result = _terminal_result(candidate, qualified=True, map_sha=pooled["artifact_sha256"])
     monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (result, pooled))
     original = candidate._atomic_json
     writes = []
@@ -209,7 +289,7 @@ def test_qualified_run_writes_map_before_terminal_receipt_and_reproduces_without
 @requires_runner
 def test_failed_reproduction_returns_zero_without_rewriting_receipt(monkeypatch, tmp_path):
     candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
-    result = {"failed_folds": [2018], "failed_bootstrap": [], "failed_structural": []}
+    result = _terminal_result(candidate, qualified=False)
     monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (result, None))
     assert candidate.run([]) == 1
     before = candidate.RECEIPT_PATH.read_bytes()
@@ -222,9 +302,9 @@ def test_failed_reproduction_returns_zero_without_rewriting_receipt(monkeypatch,
 @requires_runner
 def test_qualified_reproduction_refuses_receipt_map_hash_mismatch(monkeypatch, tmp_path):
     candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
-    result = {"failed_folds": [], "failed_bootstrap": [], "failed_structural": []}
     pooled = {"map": "synthetic"}
     pooled["artifact_sha256"] = candidate.canonical_sha256(pooled)
+    result = _terminal_result(candidate, qualified=True, map_sha=pooled["artifact_sha256"])
     monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (result, pooled))
     assert candidate.run([]) == 0
     receipt = json.loads(candidate.RECEIPT_PATH.read_text(encoding="utf-8"))
@@ -469,8 +549,8 @@ def test_each_receipt_state_requires_exact_schema_and_seal(monkeypatch):
     rows = [
         candidate._receipt(registration, "a" * 40, "reserved", "reserved"),
         candidate._receipt(registration, "a" * 40, "outcome_access_spent", "outcome_access_spent", spend_token_sha256="c" * 64),
-        candidate._receipt(registration, "a" * 40, "qualified", "completed", spend_token_sha256="c" * 64, result={}, map_artifact_sha256="d" * 64),
-        candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result={}, map_artifact_sha256=None),
+        candidate._receipt(registration, "a" * 40, "qualified", "completed", spend_token_sha256="c" * 64, result=_terminal_result(candidate, qualified=True, map_sha="d" * 64), map_artifact_sha256="d" * 64),
+        candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result=_terminal_result(candidate, qualified=False), map_artifact_sha256=None),
         candidate._receipt(registration, "a" * 40, "spent_error", "post_marker", spend_token_sha256="c" * 64, result=None, error={"stage": "post_marker", "type": "Error", "message": "x"}),
     ]
     for receipt in rows:
@@ -1026,9 +1106,57 @@ def test_artifact_schema_and_bootstrap_attempt_semantics(monkeypatch):
     assert pooled_map is None
     assert len(calls) == 1
     assert set(result) == {"fold_order", "folds", "bootstrap", "failed_folds", "failed_bootstrap", "failed_structural", "pooled_fit"}
-    assert set(result["folds"][2018]) == {"status", "failure_stage", "identity_count_by_role", "identity_sha256_by_role", "target_sha256", "metrics", "gates", "structural_checks", "failed_gates", "failed_structural"}
+    assert set(result["folds"]["2018"]) == {"status", "failure_stage", "identity_count_by_role", "identity_sha256_by_role", "target_sha256", "metrics", "gates", "structural_checks", "failed_gates", "failed_structural"}
     assert result["bootstrap"]["status"] == "completed"
     assert result["pooled_fit"]["status"] == "not_attempted_qualification_failure"
+
+
+@requires_runner
+def test_development_result_uses_json_stable_fold_keys(monkeypatch):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    completed = candidate._completed_fold_receipt(folds[2018])
+    failed = copy.deepcopy(completed)
+    failed["gates"]["candidate_control_mae"] = False
+    failed["failed_gates"] = ["candidate_control_mae"]
+    monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: {year: {} for year in candidate.DEVELOPMENT_FOLDS})
+    monkeypatch.setattr(candidate, "_build_fold_receipt", lambda year, _ladders: (failed if year == 2018 else completed, folds[year]))
+    monkeypatch.setattr(candidate, "build_bootstrap_summary", lambda _folds: _qualified_bootstrap(candidate))
+
+    result, _map = candidate.build_development_artifacts({}, {}, {})
+
+    assert set(result["folds"]) == {"2018", "2019", "2021"}
+
+
+@requires_runner
+@pytest.mark.parametrize("qualified", [False, True])
+def test_persisted_actual_result_shape_reproduces_without_writes(monkeypatch, tmp_path, qualified):
+    candidate = _runner()
+    folds = {year: _bootstrap_fold(year) for year in candidate.DEVELOPMENT_FOLDS}
+    completed = candidate._completed_fold_receipt(folds[2018])
+    failed = copy.deepcopy(completed)
+    failed["gates"]["candidate_control_mae"] = False
+    failed["failed_gates"] = ["candidate_control_mae"]
+    monkeypatch.setattr(candidate, "reconstruct_development_ladders", lambda *_args: {year: {} for year in candidate.DEVELOPMENT_FOLDS})
+    monkeypatch.setattr(candidate, "_build_fold_receipt", lambda year, _ladders: (completed if qualified or year != 2018 else failed, folds[year]))
+    monkeypatch.setattr(candidate, "build_bootstrap_summary", lambda _folds: _qualified_bootstrap(candidate))
+    pooled = None
+    if qualified:
+        pooled = {"training_rows_sha256": "a" * 64}
+        pooled["artifact_sha256"] = candidate.canonical_sha256(pooled)
+        monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda _rows: pooled)
+        monkeypatch.setattr(candidate, "_validate_pooled_map", lambda mapping, _rows: mapping)
+        monkeypatch.setattr(candidate, "_pooled_candidate_rows", lambda _ladders: [{"mlbam_id": 1, "role": "hitter", "source_ladder_position": 1, "ladder_score": 1.0, "outcome": "star", "target": 1.0, "test_cohort": 2018}])
+    result, built_map = candidate.build_development_artifacts({}, {}, {})
+    assert set(result["folds"]) == {"2018", "2019", "2021"}
+    candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
+    monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (result, built_map))
+
+    assert candidate.run([]) == (0 if qualified else 1)
+    receipt_before = candidate.RECEIPT_PATH.read_bytes()
+    monkeypatch.setattr(candidate, "_atomic_json", lambda *_args, **_kwargs: pytest.fail("reproduction writes"))
+    assert candidate.run(["--reproduce"]) == 0
+    assert candidate.RECEIPT_PATH.read_bytes() == receipt_before
 
 
 @requires_runner

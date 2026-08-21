@@ -822,7 +822,7 @@ def build_development_artifacts(
         "failed_folds": failed_folds, "failed_bootstrap": failed_bootstrap,
         "failed_structural": failed_structural, "pooled_fit": pooled_fit,
     }
-    return result, pooled_map
+    return _json_stable(result), pooled_map
 
 
 # The wrapper below intentionally stays separate from the pure evaluator above:
@@ -920,6 +920,11 @@ def _sealed(payload: dict) -> dict:
     unsigned = dict(payload)
     unsigned.pop("artifact_sha256", None)
     return {**unsigned, "artifact_sha256": canonical_sha256(unsigned)}
+
+
+def _json_stable(payload: dict) -> dict:
+    """Freeze the exact JSON object that a receipt will later reload."""
+    return json.loads(json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False))
 
 
 def _require_seal(payload: object, label: str) -> dict:
@@ -1143,11 +1148,69 @@ def _validate_receipt(receipt: object) -> dict:
         raise ProtocolError("receipt spend-token hash is invalid")
     if status == "failed" and payload["map_artifact_sha256"] is not None:
         raise ProtocolError("failed receipt must not bind a map")
-    if status in {"qualified", "failed"} and not isinstance(payload["result"], dict):
-        raise ProtocolError("completed receipt result is invalid")
+    if status in {"qualified", "failed"}:
+        _validate_result(payload["result"], qualified=status == "qualified", map_sha=payload["map_artifact_sha256"])
     if status == "spent_error" and (payload["result"] is not None or not isinstance(payload["error"], dict) or set(payload["error"]) != {"stage", "type", "message"} or not all(isinstance(payload["error"][key], str) for key in ("stage", "type", "message")) or payload["error"]["stage"] != payload["stage"]):
         raise ProtocolError("spent error receipt payload is invalid")
     return payload
+
+
+def _validate_result(result: object, *, qualified: bool, map_sha: object) -> None:
+    if not isinstance(result, dict) or set(result) != {
+        "fold_order", "folds", "bootstrap", "failed_folds", "failed_bootstrap",
+        "failed_structural", "pooled_fit",
+    } or result.get("fold_order") != list(DEVELOPMENT_FOLDS):
+        raise ProtocolError("completed receipt result is invalid")
+    folds = result["folds"]
+    if not isinstance(folds, dict) or set(folds) != {str(year) for year in DEVELOPMENT_FOLDS}:
+        raise ProtocolError("completed receipt result folds are invalid")
+    fold_keys = {
+        "status", "failure_stage", "identity_count_by_role", "identity_sha256_by_role",
+        "target_sha256", "metrics", "gates", "structural_checks", "failed_gates",
+        "failed_structural",
+    }
+    metric_keys = {
+        "candidate_mae", "control_mae", "candidate_control_mae_delta",
+        "candidate_concordance", "control_concordance", "product_concordance",
+        "candidate_control_concordance_delta", "candidate_product_concordance_delta",
+        "candidate_top25_target_sum", "control_top25_target_sum", "product_top25_target_sum",
+    }
+    check_keys = {
+        "identity_sets_equal", "targets_equal", "candidate_map_valid", "control_map_valid",
+        "product_rank_reproduced", "top25_complete",
+    }
+    for fold in folds.values():
+        if not isinstance(fold, dict) or set(fold) != fold_keys or fold.get("status") not in {"completed", "structural_failure"} or not isinstance(fold.get("metrics"), dict) or set(fold["metrics"]) != metric_keys or not isinstance(fold.get("gates"), dict) or set(fold["gates"]) != set(FOLD_GATE_ORDER) or not isinstance(fold.get("structural_checks"), dict) or set(fold["structural_checks"]) != check_keys or not isinstance(fold.get("failed_gates"), list) or not isinstance(fold.get("failed_structural"), list):
+            raise ProtocolError("completed receipt fold schema is invalid")
+        if fold["status"] == "completed":
+            if fold["failure_stage"] is not None or fold["failed_structural"] or any(type(value) is not bool for value in fold["gates"].values()) or any(value is not True for value in fold["structural_checks"].values()) or any(not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value) for value in fold["metrics"].values()):
+                raise ProtocolError("completed receipt fold state is invalid")
+        elif fold["failure_stage"] not in STRUCTURAL_STAGES or fold["failed_structural"] != [fold["failure_stage"]] or fold["failed_gates"] != [name for name in FOLD_GATE_ORDER if fold["gates"][name] is False]:
+            raise ProtocolError("completed receipt structural fold state is invalid")
+    bootstrap = result["bootstrap"]
+    bootstrap_keys = {"status", "seed", "replicates", "minimum_valid_replicates", "interval", "sample_plan_sha256", "metrics"}
+    if not isinstance(bootstrap, dict) or set(bootstrap) != bootstrap_keys or bootstrap.get("status") not in {"completed", "not_attempted_fold_failure"} or bootstrap.get("seed") != 39017 or bootstrap.get("replicates") != 10_000 or bootstrap.get("minimum_valid_replicates") != BOOTSTRAP_MINIMUM or bootstrap.get("interval") != {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"} or not isinstance(bootstrap.get("metrics"), dict) or set(bootstrap["metrics"]) != set(BOOTSTRAP_METRICS):
+        raise ProtocolError("completed receipt bootstrap schema is invalid")
+    metric_keys = {"point", "lower", "upper", "valid_replicates", "gate_passed"}
+    for metric in bootstrap["metrics"].values():
+        if not isinstance(metric, dict) or set(metric) != metric_keys:
+            raise ProtocolError("completed receipt bootstrap metric schema is invalid")
+    if bootstrap["status"] == "completed":
+        if not _SHA256.fullmatch(str(bootstrap["sample_plan_sha256"])) or any(type(metric["gate_passed"]) is not bool or type(metric["valid_replicates"]) is not int or any(not isinstance(metric[key], (int, float)) or isinstance(metric[key], bool) or not math.isfinite(metric[key]) for key in ("point", "lower", "upper")) for metric in bootstrap["metrics"].values()):
+            raise ProtocolError("completed receipt bootstrap state is invalid")
+    elif bootstrap["sample_plan_sha256"] is not None or any(metric != _bootstrap_empty_metric() for metric in bootstrap["metrics"].values()):
+        raise ProtocolError("not-attempted bootstrap state is invalid")
+    pooled = result["pooled_fit"]
+    if not isinstance(pooled, dict) or set(pooled) != {"attempted", "status", "row_count", "training_rows_sha256", "map_artifact_sha256"} or pooled.get("status") not in {"not_attempted_qualification_failure", "failed", "validated"}:
+        raise ProtocolError("completed receipt pooled-fit schema is invalid")
+    failed_lists = (result["failed_folds"], result["failed_bootstrap"], result["failed_structural"])
+    if any(not isinstance(value, list) for value in failed_lists):
+        raise ProtocolError("completed receipt failure lists are invalid")
+    if qualified:
+        if any(failed_lists) or bootstrap["status"] != "completed" or pooled["status"] != "validated" or pooled.get("map_artifact_sha256") != map_sha or not _SHA256.fullmatch(str(map_sha)):
+            raise ProtocolError("qualified receipt result is invalid")
+    elif map_sha is not None or pooled["status"] == "validated":
+        raise ProtocolError("failed receipt result is invalid")
 
 
 def _atomic_json(path: Path, payload: dict, *, expected_state: str | None | object = ... ) -> None:
