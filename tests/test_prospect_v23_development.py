@@ -35,9 +35,9 @@ def _terminal_result(candidate, *, qualified: bool, map_sha: str | None = None):
             "failed_gates": [], "failed_structural": [],
         }
         bootstrap_metrics = {
-            "candidate_control_mae_delta": {"point": -0.1, "lower": -0.2, "upper": -0.05, "valid_replicates": 10_000, "gate_passed": True},
-            "candidate_control_concordance_delta": {"point": 0.2, "lower": 0.05, "upper": 0.3, "valid_replicates": 10_000, "gate_passed": True},
-            "candidate_product_concordance_delta": {"point": 0.3, "lower": 0.05, "upper": 0.4, "valid_replicates": 10_000, "gate_passed": True},
+            "candidate_control_mae_delta": {"point": -0.125, "lower": -0.2, "upper": -0.05, "valid_replicates": 10_000, "gate_passed": True},
+            "candidate_control_concordance_delta": {"point": 0.25, "lower": 0.05, "upper": 0.3, "valid_replicates": 10_000, "gate_passed": True},
+            "candidate_product_concordance_delta": {"point": 0.5, "lower": 0.05, "upper": 0.4, "valid_replicates": 10_000, "gate_passed": True},
         }
         bootstrap = {"status": "completed", "seed": 39017, "replicates": 10_000, "minimum_valid_replicates": candidate.BOOTSTRAP_MINIMUM, "interval": {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"}, "sample_plan_sha256": "d" * 64, "metrics": bootstrap_metrics}
         pooled = {"attempted": True, "status": "validated", "row_count": 2, "training_rows_sha256": "e" * 64, "map_artifact_sha256": map_sha}
@@ -209,6 +209,76 @@ def test_structural_top25_receipt_preserves_only_valid_upstream_arithmetic(monke
 
     with pytest.raises(candidate.ProtocolError):
         candidate._validate_receipt(receipt)
+
+
+@requires_runner
+def test_receipt_rejects_structural_provenance_and_bootstrap_point_contradictions(monkeypatch):
+    candidate = _runner()
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: {"test": "runtime"})
+    registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
+    candidate_map = candidate._failed_fold_receipt("candidate_map")
+    structural = _terminal_result(candidate, qualified=False)
+    structural["folds"] = {str(year): copy.deepcopy(candidate_map) for year in candidate.DEVELOPMENT_FOLDS}
+    structural.update(
+        failed_folds=list(candidate.DEVELOPMENT_FOLDS),
+        failed_structural=[f"{year}:candidate_map" for year in candidate.DEVELOPMENT_FOLDS],
+    )
+    impossible_identity = _terminal_result(candidate, qualified=False)
+    impossible_identity["folds"]["2018"]["target_sha256"] = "1" * 64
+    wrong_point = _terminal_result(candidate, qualified=True, map_sha="f" * 64)
+    wrong_point["bootstrap"]["metrics"]["candidate_control_mae_delta"]["point"] = 999.0
+    for status, result, map_sha in (
+        ("failed", structural, None),
+        ("failed", impossible_identity, None),
+        ("qualified", wrong_point, "f" * 64),
+    ):
+        receipt = candidate._receipt(registration, "a" * 40, status, "completed", spend_token_sha256="c" * 64, result=result, map_artifact_sha256=map_sha)
+        with pytest.raises(candidate.ProtocolError):
+            candidate._validate_receipt(receipt)
+
+
+@requires_runner
+def test_receipt_rejects_non_string_nested_hashes(monkeypatch):
+    candidate = _runner()
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: {"test": "runtime"})
+    registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
+    variants = []
+    identity = _terminal_result(candidate, qualified=True, map_sha="f" * 64)
+    identity["folds"]["2018"]["identity_sha256_by_role"]["hitter"] = int("1" * 64)
+    variants.append((identity, "f" * 64))
+    target = _terminal_result(candidate, qualified=True, map_sha="f" * 64)
+    target["folds"]["2018"]["target_sha256"] = int("2" * 64)
+    variants.append((target, "f" * 64))
+    bootstrap = _terminal_result(candidate, qualified=True, map_sha="f" * 64)
+    bootstrap["bootstrap"]["sample_plan_sha256"] = int("3" * 64)
+    variants.append((bootstrap, "f" * 64))
+    training = _terminal_result(candidate, qualified=True, map_sha="f" * 64)
+    training["pooled_fit"]["training_rows_sha256"] = int("4" * 64)
+    variants.append((training, "f" * 64))
+    artifact = _terminal_result(candidate, qualified=True, map_sha=int("5" * 64))
+    artifact["pooled_fit"]["map_artifact_sha256"] = int("5" * 64)
+    variants.append((artifact, int("5" * 64)))
+    for result, map_sha in variants:
+        receipt = candidate._receipt(registration, "a" * 40, "qualified", "completed", spend_token_sha256="c" * 64, result=result, map_artifact_sha256=map_sha)
+        with pytest.raises(candidate.ProtocolError):
+            candidate._validate_receipt(receipt)
+
+
+@requires_runner
+def test_receipt_preserves_earliest_structural_provenance_variants(monkeypatch):
+    candidate = _runner()
+    monkeypatch.setattr(candidate, "_runtime_tuple", lambda: {"test": "runtime"})
+    registration = {"registration_id": "plan_038_prospect_vnext_phase_a", "artifact_sha256": "b" * 64}
+    for stage, rows in (("identity_alignment", None), ("target_alignment", _bootstrap_fold(2018)["candidate"])):
+        fold = candidate._failed_fold_receipt(stage, rows)
+        result = _terminal_result(candidate, qualified=False)
+        result["folds"] = {str(year): copy.deepcopy(fold) for year in candidate.DEVELOPMENT_FOLDS}
+        result.update(
+            failed_folds=list(candidate.DEVELOPMENT_FOLDS),
+            failed_structural=[f"{year}:{stage}" for year in candidate.DEVELOPMENT_FOLDS],
+        )
+        receipt = candidate._receipt(registration, "a" * 40, "failed", "completed", spend_token_sha256="c" * 64, result=result, map_artifact_sha256=None)
+        assert candidate._validate_receipt(receipt) == receipt
 
 
 def _protocol_sandbox(monkeypatch, tmp_path):
@@ -989,7 +1059,7 @@ def test_pooled_fit_runs_once_only_after_fold_and_bootstrap_qualification(monkey
         "minimum_valid_replicates": 9_900,
         "interval": {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"},
         "sample_plan_sha256": "0" * 64,
-        "metrics": {name: {"point": -0.1, "lower": -0.2 if name == "candidate_control_mae_delta" else 0.1, "upper": -0.05 if name == "candidate_control_mae_delta" else 0.2, "valid_replicates": 10_000, "gate_passed": True} for name in candidate.BOOTSTRAP_METRICS},
+        "metrics": {name: {"point": -1.0 if name == "candidate_control_mae_delta" else 1.0, "lower": -0.2 if name == "candidate_control_mae_delta" else 0.1, "upper": -0.05 if name == "candidate_control_mae_delta" else 0.2, "valid_replicates": 10_000, "gate_passed": True} for name in candidate.BOOTSTRAP_METRICS},
     })
     monkeypatch.setattr(candidate, "fit_role_slope_joint_map", lambda rows: map_calls.append(rows) or {"training_rows_sha256": "1" * 64, "artifact_sha256": "2" * 64})
     monkeypatch.setattr(candidate, "_validate_pooled_map", lambda mapping, rows: mapping)
@@ -1159,7 +1229,7 @@ def _qualified_bootstrap(candidate):
         "minimum_valid_replicates": 9_900,
         "interval": {"lower_percentile": 2.5, "upper_percentile": 97.5, "method": "linear"},
         "sample_plan_sha256": "0" * 64,
-        "metrics": {name: {"point": -0.1, "lower": -0.2 if name == "candidate_control_mae_delta" else 0.1, "upper": -0.05 if name == "candidate_control_mae_delta" else 0.2, "valid_replicates": 10_000, "gate_passed": True} for name in candidate.BOOTSTRAP_METRICS},
+        "metrics": {name: {"point": -1.0 if name == "candidate_control_mae_delta" else 1.0, "lower": -0.2 if name == "candidate_control_mae_delta" else 0.1, "upper": -0.05 if name == "candidate_control_mae_delta" else 0.2, "valid_replicates": 10_000, "gate_passed": True} for name in candidate.BOOTSTRAP_METRICS},
     }
 
 
@@ -1218,6 +1288,8 @@ def test_persisted_actual_result_shape_reproduces_without_writes(monkeypatch, tm
         monkeypatch.setattr(candidate, "_pooled_candidate_rows", lambda _ladders: [{"mlbam_id": 1, "role": "hitter", "source_ladder_position": 1, "ladder_score": 1.0, "outcome": "star", "target": 1.0, "test_cohort": 2018}])
     result, built_map = candidate.build_development_artifacts({}, {}, {})
     assert set(result["folds"]) == {"2018", "2019", "2021"}
+    if not qualified:
+        result["bootstrap"]["metrics"]["candidate_control_mae_delta"]["point"] = -1 / 3
     candidate, _registration = _protocol_sandbox(monkeypatch, tmp_path)
     monkeypatch.setattr(candidate, "build_development_artifacts", lambda *_args: (result, built_map))
 

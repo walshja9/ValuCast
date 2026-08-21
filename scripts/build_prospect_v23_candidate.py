@@ -1182,15 +1182,22 @@ def _validate_result(result: object, *, qualified: bool, map_sha: object) -> Non
     def finite(value: object) -> bool:
         return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
-    def valid_provenance(fold: dict, *, required: bool) -> bool:
+    def hash_string(value: object) -> bool:
+        return isinstance(value, str) and bool(_SHA256.fullmatch(value))
+
+    def valid_provenance(fold: dict, *, required: bool, stage: str | None = None) -> bool:
         counts, hashes, target = (fold["identity_count_by_role"], fold["identity_sha256_by_role"], fold["target_sha256"])
         if required and (counts is None or hashes is None or target is None):
             return False
-        return (
-            (counts is None or (isinstance(counts, dict) and set(counts) == set(ROLES) and all(type(value) is int and value > 0 for value in counts.values())))
-            and (hashes is None or (isinstance(hashes, dict) and set(hashes) == set(ROLES) and all(_SHA256.fullmatch(str(value)) for value in hashes.values())))
-            and (target is None or _SHA256.fullmatch(str(target)))
-        )
+        if (counts is None) != (hashes is None):
+            return False
+        if counts is None:
+            return not required and stage == "identity_alignment" and target is None
+        if not (isinstance(counts, dict) and set(counts) == set(ROLES) and all(type(value) is int and value > 0 for value in counts.values())):
+            return False
+        if not (isinstance(hashes, dict) and set(hashes) == set(ROLES) and all(hash_string(value) for value in hashes.values())):
+            return False
+        return hash_string(target) if required or stage in STRUCTURAL_STAGES[2:] else target is None or hash_string(target)
 
     structural_checks = (
         ("identity_sets_equal", "identity_alignment"),
@@ -1237,7 +1244,7 @@ def _validate_result(result: object, *, qualified: bool, map_sha: object) -> Non
                 raise ProtocolError("completed receipt fold state is invalid")
         else:
             stage = fold["failure_stage"]
-            if stage not in STRUCTURAL_STAGES or fold["failed_structural"] != [stage] or not valid_provenance(fold, required=False):
+            if stage not in STRUCTURAL_STAGES or fold["failed_structural"] != [stage] or not valid_provenance(fold, required=False, stage=stage):
                 raise ProtocolError("completed receipt structural fold state is invalid")
             stage_index = STRUCTURAL_STAGES.index(stage)
             expected_checks = {}
@@ -1278,7 +1285,7 @@ def _validate_result(result: object, *, qualified: bool, map_sha: object) -> Non
             raise ProtocolError("completed receipt bootstrap metric schema is invalid")
     all_completed = all(fold["status"] == "completed" for fold in folds.values())
     if bootstrap["status"] == "completed":
-        if not all_completed or not _SHA256.fullmatch(str(bootstrap["sample_plan_sha256"])):
+        if not all_completed or not hash_string(bootstrap["sample_plan_sha256"]):
             raise ProtocolError("completed receipt bootstrap state is invalid")
         for name, metric in bootstrap["metrics"].items():
             valid = metric["valid_replicates"]
@@ -1293,7 +1300,10 @@ def _validate_result(result: object, *, qualified: bool, map_sha: object) -> Non
                 raise ProtocolError("completed receipt bootstrap state is invalid")
             else:
                 gate = False
-            if metric["gate_passed"] != (valid >= BOOTSTRAP_MINIMUM and gate):
+            point = 0.0
+            for year in DEVELOPMENT_FOLDS:
+                point += folds[str(year)]["metrics"][name] / len(DEVELOPMENT_FOLDS)
+            if metric["point"] != point or metric["gate_passed"] != (valid >= BOOTSTRAP_MINIMUM and gate):
                 raise ProtocolError("completed receipt bootstrap state is invalid")
     elif all_completed or bootstrap != _not_attempted_bootstrap():
         raise ProtocolError("not-attempted bootstrap state is invalid")
@@ -1319,11 +1329,11 @@ def _validate_result(result: object, *, qualified: bool, map_sha: object) -> Non
         if pooled != expected_pooled:
             raise ProtocolError("completed receipt pooled-fit state is invalid")
     elif pooled["status"] == "failed":
-        if not pooled["attempted"] or pooled["row_count"] <= 0 or not _SHA256.fullmatch(str(pooled["training_rows_sha256"])) or pooled["map_artifact_sha256"] is not None:
+        if not pooled["attempted"] or pooled["row_count"] <= 0 or not hash_string(pooled["training_rows_sha256"]) or pooled["map_artifact_sha256"] is not None:
             raise ProtocolError("completed receipt pooled-fit state is invalid")
         failed_structural.append("pooled_final_fit")
     elif pooled["status"] == "validated":
-        if not pooled["attempted"] or pooled["row_count"] <= 0 or not _SHA256.fullmatch(str(pooled["training_rows_sha256"])) or not _SHA256.fullmatch(str(pooled["map_artifact_sha256"])):
+        if not pooled["attempted"] or pooled["row_count"] <= 0 or not hash_string(pooled["training_rows_sha256"]) or not hash_string(pooled["map_artifact_sha256"]):
             raise ProtocolError("completed receipt pooled-fit state is invalid")
     else:
         raise ProtocolError("completed receipt pooled-fit state is invalid")
