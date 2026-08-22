@@ -20,8 +20,8 @@ concurrency:
 jobs:
   pytest:
     runs-on: ubuntu-latest
-    # Validation plus the full suite now exceeds 20 minutes on hosted runners.
-    timeout-minutes: 30
+    # Validation plus the full suite can exceed 30 minutes on hosted runners.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
