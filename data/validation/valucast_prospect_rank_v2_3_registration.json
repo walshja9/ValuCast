@@ -4,7 +4,7 @@
   "registration_status_at_seal": "registered_unspent",
   "candidate": {
     "approved_design_commit": "1737468b16717ee6f7d24ea08b8444fdde3442f2",
-    "implementation_commit": "68303f930713e0933efc1643133493159e5fc580",
+    "implementation_commit": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
     "family": "shared_threshold_role_slope_joint_ordered_logit",
     "parameter_order": [
       "tau_bust_role",
@@ -100,13 +100,13 @@
       "post_transition_blob": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
       "append_only_prefix_bytes": 18006,
       "history_evidence": {
-        "scope_tip": "68303f930713e0933efc1643133493159e5fc580",
+        "scope_tip": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
         "standalone_pattern": "(^|[^0-9])31013([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
         "object_count": 26302,
-        "sorted_object_ids_sha256": "3235d56c99b03a2a7e006a289dbcf935c30afe6e356ed8c0ef19dd6c9ffcc5e4",
+        "sorted_object_ids_sha256": "5a1a4307ada23ebe0321a055629d2ff66dd86a1289f20e3cb851c6842145e0d8",
         "inventory_entry_count": 96,
-        "inventory_sha256": "2023cccc01bcb5b46a94369cded3af4c614d6072208f2d2e48a801c2d9fc22a8",
+        "inventory_sha256": "3311c6ebbac5be759eb470b74416fde5936199706554d5fb03c14f26de2b23f7",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -775,14 +775,14 @@
             "classification": "unrelated_numeric_data"
           },
           {
-            "object_id": "60737da83c251f4d4c1d47952c72927001b4834c",
+            "object_id": "bad1761f81b24bd166ee50eee266c928e34fb22b",
             "path": "tests/test_prospect_v23_development.py",
             "byte_offset": 2617,
             "line_sha256": "fa505acbf58f65b881a4af07ce308fa5366af9e003f8843c383410af7048048c",
             "classification": "test_guard_or_fixture"
           }
         ],
-        "classification_sha256": "6fea4bea0ac328f129f91e7aabf42f6cf41b1227062b9f643a72f35c097be8b6",
+        "classification_sha256": "4ebfc699ff7a67219f053f4ba8e0e4faef3b38f751e0c7a9704674976a528db9",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -825,13 +825,13 @@
         }
       },
       "history_evidence": {
-        "scope_tip": "68303f930713e0933efc1643133493159e5fc580",
+        "scope_tip": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
         "standalone_pattern": "(^|[^0-9])34021([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
         "object_count": 26302,
-        "sorted_object_ids_sha256": "3235d56c99b03a2a7e006a289dbcf935c30afe6e356ed8c0ef19dd6c9ffcc5e4",
+        "sorted_object_ids_sha256": "5a1a4307ada23ebe0321a055629d2ff66dd86a1289f20e3cb851c6842145e0d8",
         "inventory_entry_count": 27,
-        "inventory_sha256": "082805dbce8a728a2b6bb1f240cb95204a32ef8fbe06a874210d666dfbe3e83b",
+        "inventory_sha256": "58ab38a05291d03e862503241c43c67eac8315ecec5b0f4e7e59eb5b0cf3c72b",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -1017,14 +1017,14 @@
             "classification": "test_guard_or_fixture"
           },
           {
-            "object_id": "60737da83c251f4d4c1d47952c72927001b4834c",
+            "object_id": "bad1761f81b24bd166ee50eee266c928e34fb22b",
             "path": "tests/test_prospect_v23_development.py",
             "byte_offset": 2668,
             "line_sha256": "ca5ba6bc1d42d68b01ecebe3299486acb80b9647e4ea3f9245eb57976a72b690",
             "classification": "test_guard_or_fixture"
           }
         ],
-        "classification_sha256": "3473d223b9600f0f299540d8dc5111d67d02b47517e2fb3a979f75bdf8930b4b",
+        "classification_sha256": "edef1796bdc7037f8f5a200106e85f52c74ea5134ae532f62942171f1b9f34a2",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -1204,8 +1204,8 @@
       "normalized_sha256": "d9ac9d55b2a363a3148b1da02ddc3cd6dba146629ff5baab57286b41f36e26b8"
     },
     "scripts/build_prospect_v23_candidate.py": {
-      "git_blob": "d8aae1626cd421359591b2d0027d2d4a39ad9c28",
-      "normalized_sha256": "2586fc91d08a491fe109131d05b1bf288408a3da0d3354643d8758e7a6a83925"
+      "git_blob": "59aa85906998e65ab1dd4b5209d70d872b96688d",
+      "normalized_sha256": "3ca0b7c5c34d28c6aaa20cee64b13837b646e1802ec86c853ea534bc00ba1a08"
     }
   },
   "folds": {
@@ -1429,10 +1429,10 @@
         "scan_contract": "git_rev_list_cat_file_batch_rg_bytes_v1"
       },
       "post_design": {
-        "scope_tip": "68303f930713e0933efc1643133493159e5fc580",
+        "scope_tip": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
         "inventory_schema": "git_blob_path_offset_v1",
         "entry_count": 146,
-        "inventory_sha256": "5a12f18f2f00117e4e2359a2a60ab226c22854a12ab2e9aba8c02ed292df7185",
+        "inventory_sha256": "19352f5ad7f885f3e511d1200512981ac0c128dd64e098f2f11b27e3fb49e494",
         "allowed_paths": [
           "docs/superpowers/specs/2026-08-20-prospect-rank-vnext-current-board-design.md",
           "docs/superpowers/plans/2026-08-20-prospect-rank-vnext-phase-a.md",
@@ -1443,7 +1443,7 @@
         "unexpected_path_count": 0
       },
       "structured_seed_fields": {
-        "inventory_sha256": "4006f61a9f51d39970eb7a91516ba85e8883e11dab7db0a899a5bef0796bde21",
+        "inventory_sha256": "2aab8f4bd4f88889b7931a7e1ac9d0a6d94ded4ba60b17350efbcf16599c2f8e",
         "pre_design_match_count": 0,
         "forbidden_held_spent_reserved_membership": false
       },
@@ -1564,5 +1564,5 @@
       }
     }
   },
-  "artifact_sha256": "c04261eb9f73bbf6728860665c0617f7d79a93927edda939ae14ca0c26e8f496"
+  "artifact_sha256": "8b6edf9f5b03ac302da11884ed33d4400df8208f82bc21f233dab5db6b0a8161"
 }
