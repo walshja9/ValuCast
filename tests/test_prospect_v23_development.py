@@ -249,6 +249,27 @@ def test_dynamic_source_binding_allows_unrelated_merge_parent_changes(monkeypatc
 
 
 @requires_runner
+def test_dynamic_source_binding_rejects_unregistered_python_drift(monkeypatch):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+
+    def git_run(args, **_kwargs):
+        if args[:3] == ["git", "merge-base", "--is-ancestor"]:
+            return subprocess.CompletedProcess(args, 0, stdout="")
+        if args[:3] == ["git", "diff", "--name-only"]:
+            return subprocess.CompletedProcess(args, 0, stdout="scripts/json.py\n")
+        raise AssertionError(args)
+
+    monkeypatch.setattr(candidate.subprocess, "run", git_run)
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda *_args: "1" * 40)
+    monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "1" * 40)
+    monkeypatch.setattr(candidate, "_normalized_source_sha256", lambda *_args: "2" * 64)
+
+    with pytest.raises(candidate.ProtocolError, match="post-implementation code"):
+        candidate._verify_source_bindings(registration)
+
+
+@requires_runner
 def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp_path):
     candidate = _runner()
     registration = _exact_registration(candidate, {"runtime": "synthetic"})
@@ -342,6 +363,39 @@ def test_seed_hygiene_uses_the_reviewed_structured_inventory(monkeypatch):
         lambda tip, *_args, **_kwargs: ([row], [changed]) if tip == "e" * 40 else ([], []),
     )
     with pytest.raises(candidate.ProtocolError, match="seed-hygiene"):
+        candidate._verify_seed_hygiene(registration, "e" * 40)
+
+
+@requires_runner
+def test_seed_hygiene_allows_only_exact_reviewed_superseded_rows(monkeypatch):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+    reviewed = [
+        "660d69986baa81a259f0794df28d712da9be1952",
+        "tests/fixtures/prospect_v23_registration_static_preimage.json",
+        15868,
+        "ce1bd7ec0b6feed55d327eefa8d7d80fcf304fe4f64c6918d042513d4c6ae127",
+    ]
+    monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
+    monkeypatch.setattr(
+        candidate,
+        "_git_blob_inventory",
+        lambda tip, *_args, **_kwargs: ([], [])
+        if tip == "e" * 40
+        else ([reviewed], []),
+    )
+
+    candidate._verify_seed_hygiene(registration, "e" * 40)
+
+    changed = [*reviewed[:2], reviewed[2] + 1, reviewed[3]]
+    monkeypatch.setattr(
+        candidate,
+        "_git_blob_inventory",
+        lambda tip, *_args, **_kwargs: ([], [])
+        if tip == "e" * 40
+        else ([changed], []),
+    )
+    with pytest.raises(candidate.ProtocolError, match="seed occurrence"):
         candidate._verify_seed_hygiene(registration, "e" * 40)
 
 

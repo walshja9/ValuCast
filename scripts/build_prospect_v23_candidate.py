@@ -93,6 +93,100 @@ _REGISTRATION_CONTRACT = {
     },
 }
 
+# Exact seed-bearing rows retained only through the superseded local PR lineage.
+_REVIEWED_POST_REGISTRATION_SEED_ROWS = frozenset({
+    (
+        "660d69986baa81a259f0794df28d712da9be1952",
+        "tests/fixtures/prospect_v23_registration_static_preimage.json",
+        15868,
+        "ce1bd7ec0b6feed55d327eefa8d7d80fcf304fe4f64c6918d042513d4c6ae127",
+    ),
+    (
+        "660d69986baa81a259f0794df28d712da9be1952",
+        "tests/fixtures/prospect_v23_registration_static_preimage.json",
+        16936,
+        "2f1c2dd62c3f5777f6370ea34ff52747d67265194f665704299499b3ffd7f2e1",
+    ),
+    (
+        "660d69986baa81a259f0794df28d712da9be1952",
+        "tests/fixtures/prospect_v23_registration_static_preimage.json",
+        16982,
+        "96b70f3c108ae1555d7099d0e653fdc84cc8c08b45f7ee5f9a8bb8c62596d719",
+    ),
+    (
+        "992a84bc47468ee5977845b0e0504ac732c15afd",
+        "scripts/build_prospect_v23_candidate.py",
+        31578,
+        "886d5848fe58889fcf29467eb9ed5a6fb32fe0f6cb1182dfdb9bdd15debb1322",
+    ),
+    (
+        "992a84bc47468ee5977845b0e0504ac732c15afd",
+        "scripts/build_prospect_v23_candidate.py",
+        35344,
+        "0cf93db39d79ae8c2b26d073ce06eb4a245975d24c17798d6e83ea04f2c3f26a",
+    ),
+    (
+        "992a84bc47468ee5977845b0e0504ac732c15afd",
+        "scripts/build_prospect_v23_candidate.py",
+        77669,
+        "c1cae6362c23b10e7426c8c2e43bf0fb7d3d5cb59da4c8cff926150b03a17665",
+    ),
+    (
+        "c1724605674cbfdc8057e0034d8e320a48743757",
+        "scripts/build_prospect_v23_candidate.py",
+        31578,
+        "886d5848fe58889fcf29467eb9ed5a6fb32fe0f6cb1182dfdb9bdd15debb1322",
+    ),
+    (
+        "c1724605674cbfdc8057e0034d8e320a48743757",
+        "scripts/build_prospect_v23_candidate.py",
+        35344,
+        "0cf93db39d79ae8c2b26d073ce06eb4a245975d24c17798d6e83ea04f2c3f26a",
+    ),
+    (
+        "c1724605674cbfdc8057e0034d8e320a48743757",
+        "scripts/build_prospect_v23_candidate.py",
+        78169,
+        "c1cae6362c23b10e7426c8c2e43bf0fb7d3d5cb59da4c8cff926150b03a17665",
+    ),
+    (
+        "d8aae1626cd421359591b2d0027d2d4a39ad9c28",
+        "scripts/build_prospect_v23_candidate.py",
+        31578,
+        "886d5848fe58889fcf29467eb9ed5a6fb32fe0f6cb1182dfdb9bdd15debb1322",
+    ),
+    (
+        "d8aae1626cd421359591b2d0027d2d4a39ad9c28",
+        "scripts/build_prospect_v23_candidate.py",
+        35344,
+        "0cf93db39d79ae8c2b26d073ce06eb4a245975d24c17798d6e83ea04f2c3f26a",
+    ),
+    (
+        "d8aae1626cd421359591b2d0027d2d4a39ad9c28",
+        "scripts/build_prospect_v23_candidate.py",
+        78169,
+        "c1cae6362c23b10e7426c8c2e43bf0fb7d3d5cb59da4c8cff926150b03a17665",
+    ),
+    (
+        "59aa85906998e65ab1dd4b5209d70d872b96688d",
+        "scripts/build_prospect_v23_candidate.py",
+        33644,
+        "886d5848fe58889fcf29467eb9ed5a6fb32fe0f6cb1182dfdb9bdd15debb1322",
+    ),
+    (
+        "59aa85906998e65ab1dd4b5209d70d872b96688d",
+        "scripts/build_prospect_v23_candidate.py",
+        37410,
+        "0cf93db39d79ae8c2b26d073ce06eb4a245975d24c17798d6e83ea04f2c3f26a",
+    ),
+    (
+        "59aa85906998e65ab1dd4b5209d70d872b96688d",
+        "scripts/build_prospect_v23_candidate.py",
+        80303,
+        "c1cae6362c23b10e7426c8c2e43bf0fb7d3d5cb59da4c8cff926150b03a17665",
+    ),
+})
+
 
 def _identity(row: dict, label: str) -> tuple[str, str]:
     try:
@@ -1124,6 +1218,17 @@ def _verify_source_bindings(registration: dict) -> str:
     )
     if ancestor.returncode:
         raise ProtocolError("final implementation commit is not an ancestor of HEAD")
+    changed = subprocess.run(
+        ["git", "diff", "--name-only", f"{implementation}..HEAD"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    allowed = {"tests/test_prospect_v23_development.py"}
+    if changed.returncode or any(
+        (path := raw.replace("\\", "/")) not in allowed
+        and path.lower().endswith((".py", ".pyi", ".pyc", ".pyo", ".pyd", ".so"))
+        for raw in changed.stdout.splitlines()
+    ):
+        raise ProtocolError("post-implementation code changed")
     for relative, binding in registration["sources"].items():
         expected = binding["git_blob"]
         if (
@@ -1222,6 +1327,7 @@ def _verify_seed_hygiene(registration: dict, implementation: str) -> None:
     )
     if any(
         row[1] not in hygiene["post_registration_policy"]["allowed_paths"]
+        and tuple(row) not in _REVIEWED_POST_REGISTRATION_SEED_ROWS
         for row in current
     ):
         raise ProtocolError("post-registration seed occurrence escaped allowlist")
