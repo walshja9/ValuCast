@@ -149,6 +149,42 @@ _REVIEWED_POST_REGISTRATION_SEED_ROWS = frozenset({
         78169,
         "c1cae6362c23b10e7426c8c2e43bf0fb7d3d5cb59da4c8cff926150b03a17665",
     ),
+    (
+        "d8aae1626cd421359591b2d0027d2d4a39ad9c28",
+        "scripts/build_prospect_v23_candidate.py",
+        31578,
+        "886d5848fe58889fcf29467eb9ed5a6fb32fe0f6cb1182dfdb9bdd15debb1322",
+    ),
+    (
+        "d8aae1626cd421359591b2d0027d2d4a39ad9c28",
+        "scripts/build_prospect_v23_candidate.py",
+        35344,
+        "0cf93db39d79ae8c2b26d073ce06eb4a245975d24c17798d6e83ea04f2c3f26a",
+    ),
+    (
+        "d8aae1626cd421359591b2d0027d2d4a39ad9c28",
+        "scripts/build_prospect_v23_candidate.py",
+        78169,
+        "c1cae6362c23b10e7426c8c2e43bf0fb7d3d5cb59da4c8cff926150b03a17665",
+    ),
+    (
+        "59aa85906998e65ab1dd4b5209d70d872b96688d",
+        "scripts/build_prospect_v23_candidate.py",
+        33644,
+        "886d5848fe58889fcf29467eb9ed5a6fb32fe0f6cb1182dfdb9bdd15debb1322",
+    ),
+    (
+        "59aa85906998e65ab1dd4b5209d70d872b96688d",
+        "scripts/build_prospect_v23_candidate.py",
+        37410,
+        "0cf93db39d79ae8c2b26d073ce06eb4a245975d24c17798d6e83ea04f2c3f26a",
+    ),
+    (
+        "59aa85906998e65ab1dd4b5209d70d872b96688d",
+        "scripts/build_prospect_v23_candidate.py",
+        80303,
+        "c1cae6362c23b10e7426c8c2e43bf0fb7d3d5cb59da4c8cff926150b03a17665",
+    ),
 })
 
 
