@@ -279,11 +279,45 @@ def test_fit_rejects_negative_optimizer_slopes(monkeypatch):
         calibration.fit_role_slope_joint_map(_fit_rows())
 
 
+def test_fit_translates_optimizer_runtime_failure_to_value_error(monkeypatch):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    monkeypatch.setattr(
+        calibration,
+        "_fit_ordered_logit",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("optimizer failed")),
+    )
+
+    with pytest.raises(ValueError, match="optimizer failed"):
+        calibration.fit_role_slope_joint_map(_fit_rows())
+
+
 def _reseal(mapping):
     mapping["artifact_sha256"] = canonical_sha256(
         {key: value for key, value in mapping.items() if key != "artifact_sha256"}
     )
     return mapping
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda mapping: mapping["thresholds"].__setitem__("bust_role", False),
+        lambda mapping: mapping["thresholds"].__setitem__("role_star", True),
+        lambda mapping: mapping.__setitem__("pitcher_offset", False),
+    ],
+)
+def test_score_rejects_boolean_thresholds_and_offset(mutate):
+    calibration = importlib.import_module("prospects.role_slope_joint_calibration")
+    mapping = calibration.fit_role_slope_joint_map(_fit_rows())
+    mapping["params"] = [0.0, 0.0, 1.0, 1.0, 0.0]
+    mapping["thresholds"] = {"bust_role": 0.0, "role_star": 1.0}
+    mapping["role_slopes"] = {"hitter": 1.0, "pitcher": 1.0}
+    mapping["pitcher_offset"] = 0.0
+    mutate(mapping)
+    _reseal(mapping)
+
+    with pytest.raises(ValueError, match="invalid role-slope joint map"):
+        calibration.score_role_slope_joint_ladders([], [], mapping)
 
 
 @pytest.mark.parametrize(

@@ -136,7 +136,14 @@ def _map_problems(mapping: object, rows: list[dict] | None = None) -> list[str]:
     slopes = mapping["role_slopes"]
     standardization = mapping["role_standardization"]
     counts = mapping["row_count_by_role"]
-    if not isinstance(thresholds, dict) or set(thresholds) != {"bust_role", "role_star"}:
+    if (
+        not isinstance(thresholds, dict)
+        or set(thresholds) != {"bust_role", "role_star"}
+        or any(
+            type(thresholds.get(key)) is not float or not math.isfinite(thresholds[key])
+            for key in ("bust_role", "role_star")
+        )
+    ):
         problems.append("thresholds are invalid")
     if not isinstance(slopes, dict) or set(slopes) != set(_ROLES):
         problems.append("role slopes are invalid")
@@ -161,6 +168,8 @@ def _map_problems(mapping: object, rows: list[dict] | None = None) -> list[str]:
         for role in _ROLES
     ):
         problems.append("role slopes must be positive")
+    if type(mapping["pitcher_offset"]) is not float or not math.isfinite(mapping["pitcher_offset"]):
+        problems.append("pitcher offset is invalid")
     if not isinstance(standardization, dict):
         pass
     else:
@@ -221,7 +230,12 @@ def fit_role_slope_joint_map(rows: list[dict]) -> dict:
         z = (row["ladder_score"] - standardization[role]["mean"]) / standardization[role]["std"]
         design.append([z, 0.0, 0.0] if role == "hitter" else [0.0, z, 1.0])
         outcomes.append(_OUTCOMES[row["outcome"]])
-    fitted = _fit_ordered_logit(np.asarray(design, dtype=float), np.asarray(outcomes, dtype=int))
+    try:
+        fitted = _fit_ordered_logit(
+            np.asarray(design, dtype=float), np.asarray(outcomes, dtype=int)
+        )
+    except RuntimeError as error:
+        raise ValueError(str(error)) from error
     params = [float(value) for value in fitted["params"]]
     if params[2] <= 0 or params[3] <= 0:
         raise ValueError("role-slope joint slopes must be positive")
