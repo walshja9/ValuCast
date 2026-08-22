@@ -1124,6 +1124,17 @@ def _verify_source_bindings(registration: dict) -> str:
     )
     if ancestor.returncode:
         raise ProtocolError("final implementation commit is not an ancestor of HEAD")
+    changed = subprocess.run(
+        ["git", "diff", "--name-only", f"{implementation}..HEAD"],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    allowed = {"tests/test_prospect_v23_development.py"}
+    if changed.returncode or any(
+        (path := raw.replace("\\", "/")) not in allowed
+        and path.lower().endswith((".py", ".pyi", ".pyc", ".pyo", ".pyd", ".so"))
+        for raw in changed.stdout.splitlines()
+    ):
+        raise ProtocolError("post-implementation code changed")
     for relative, binding in registration["sources"].items():
         expected = binding["git_blob"]
         if (
