@@ -7,13 +7,17 @@ development screen. The earlier local registration at
 `8684cec8cef5f12482feaef57430d2ae05c5f9b1`, seal
 `6d1b0fe42887b4dff3f4b37bc0774c789b349ab38eab869233eebbc0f2217aec`, is
 `superseded_unspent / never_execute`; it never reached master or opened an
-outcome-bearing input. This document records a frozen protocol, not a metric
+outcome-bearing input. The subsequent local replacement at
+`d4dbb145954f23cf99e407073cfd06acef5c0876`, seal
+`1051c582c17728bf1945379244b289f43d42578f520a070bae50c3e1d2017ea2`, is
+likewise `superseded_unspent / never_execute`; it also never reached master or
+opened an outcome-bearing input. This document records a frozen protocol, not a metric
 result, model promotion, board change, valuation change, publication claim, or
 authorization to open outcome-bearing inputs.
 
 The approved design is bound at
 `1737468b16717ee6f7d24ea08b8444fdde3442f2`; the replacement implementation is
-bound at `01f6ace4f50e9652db1fdb7d8123f054560576e2`. Execution requires a later,
+bound at `8417135a6399b79faf779057c89b3f0f5ecf4aaa`. Execution requires a later,
 explicit owner approval naming the exact merged execution SHA and satisfying
 every registered pre-marker check.
 
@@ -37,7 +41,7 @@ and an append-only transition below this registered block.
   "registration_status_at_seal": "registered_unspent",
   "candidate": {
     "approved_design_commit": "1737468b16717ee6f7d24ea08b8444fdde3442f2",
-    "implementation_commit": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
+    "implementation_commit": "8417135a6399b79faf779057c89b3f0f5ecf4aaa",
     "family": "shared_threshold_role_slope_joint_ordered_logit",
     "parameter_order": [
       "tau_bust_role",
@@ -133,13 +137,13 @@ and an append-only transition below this registered block.
       "post_transition_blob": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
       "append_only_prefix_bytes": 18006,
       "history_evidence": {
-        "scope_tip": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
+        "scope_tip": "8417135a6399b79faf779057c89b3f0f5ecf4aaa",
         "standalone_pattern": "(^|[^0-9])31013([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
-        "object_count": 25973,
-        "sorted_object_ids_sha256": "a141d7967314a50d37d1ab0b1c1ddb39e62e827ffa9225c30bded717dadcae81",
-        "inventory_entry_count": 95,
-        "inventory_sha256": "889b86c17a8f12b18811528d748c113b0dc412720764c59b5ff95680b6cef180",
+        "object_count": 26327,
+        "sorted_object_ids_sha256": "c4bf6b1bfa6e0436384bb9f2b796a664c3248c8c26803f46262645f583100200",
+        "inventory_entry_count": 120,
+        "inventory_sha256": "dd2da797b32119c3c1bd392674ac87332e99d39b651bffc9bad80e900e28eef4",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -806,9 +810,184 @@ and an append-only transition below this registered block.
             "byte_offset": 1055270,
             "line_sha256": "cdc4c60ef9f21628d8e93919685919e92c43276e8e0d69ad7c8a1107d261ebef",
             "classification": "unrelated_numeric_data"
+          },
+          {
+            "object_id": "0d01a581a77d009fe2a3fc08624e5f2a726f9ba6",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 2927,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0d01a581a77d009fe2a3fc08624e5f2a726f9ba6",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 3393,
+            "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0d5bbd6c6f16ee0838e5ea75fdbe806db6ccf500",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 2927,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0d5bbd6c6f16ee0838e5ea75fdbe806db6ccf500",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 3393,
+            "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "19becf8fdb324646428ce3d41bcac712326ac632",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2617,
+            "line_sha256": "fa505acbf58f65b881a4af07ce308fa5366af9e003f8843c383410af7048048c",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "3e02c0192aec8dd2ed3326b08258c1b4fe7714f0",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 4617,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "3e02c0192aec8dd2ed3326b08258c1b4fe7714f0",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 5083,
+            "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 134,
+            "line_sha256": "d317685b5d962633e5f58bace45ea8eed422e92a53422b1abc477b25f5eaf363",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 534,
+            "line_sha256": "a507a4b05ec5a535b8a3600beaeb33475cfd0d1463f86918cedd46548d617bf4",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 7640,
+            "line_sha256": "811e3b0cd996db5883fc1a9f799f3517a0f2005ae987138767aba7028b5ec22f",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 7921,
+            "line_sha256": "29a45febb61080c441460adfef6d1bb124a2c20329476e57a8301f51daa5c143",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 8079,
+            "line_sha256": "a4568c8df6a298853189d43d88004544147f550e0fa44ddb34f5b5c42dd31b21",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 10030,
+            "line_sha256": "f201587929a20b387c07aeb19e5fc3e29b28bd30ecb1d7243a7bf0638b940773",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 12085,
+            "line_sha256": "043b2cbabfd46f9a436fc726c435859576dad0febf4b3c6358c31fa7c33d92a5",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 15849,
+            "line_sha256": "fdd40d9682b79faec0f7081e000d38e60567944a3f9bb0914edc213ac1a33e4b",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 16809,
+            "line_sha256": "c8fa682a15c6e2fdee66b8cf29db5dd0ac1eafefa4c43a6acf3a4f1d5f48364b",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 17232,
+            "line_sha256": "5a2e741228c20e701cebd6bd89f52956d050b8bf33d8beb0cad24f827316c1fa",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
+            "path": "plans/031-pitcher-strike-pct-gate.md",
+            "byte_offset": 18126,
+            "line_sha256": "f5bbf2b0e08f08ce83b3fb13f44bc10b614d38d4dd99af89fab0feb88bfdefd2",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "660d69986baa81a259f0794df28d712da9be1952",
+            "path": "tests/fixtures/prospect_v23_registration_static_preimage.json",
+            "byte_offset": 2889,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "82ccadd6417642fa8e322129dc9dea67554ffa3d",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2617,
+            "line_sha256": "fa505acbf58f65b881a4af07ce308fa5366af9e003f8843c383410af7048048c",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "86cf6b0b6a41ac8504b2ace98a011fb68217ffa3",
+            "path": "plans/034-post-2026-prospect-challenger-epoch.md",
+            "byte_offset": 7330,
+            "line_sha256": "bbeb5aa19613503d4b43b0d9109f4c8bca6b3d2d56e093b2613f3793499298d5",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "96f08a63ddf345f55e5bb5fa1dd746e787a32b41",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 4356,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "96f08a63ddf345f55e5bb5fa1dd746e787a32b41",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 4822,
+            "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "afd9c58efa37f2a6b495e3de6909ebdd69d332f0",
+            "path": "plans/README.md",
+            "byte_offset": 29859,
+            "line_sha256": "6c9dcc5c35816734aee25f0319250cc47560bf81c856a9a236465c622dda557e",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "dea327a9153d2ef0df326af4a976233b397ee835",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2617,
+            "line_sha256": "fa505acbf58f65b881a4af07ce308fa5366af9e003f8843c383410af7048048c",
+            "classification": "test_guard_or_fixture"
           }
         ],
-        "classification_sha256": "b5db9f9472aaaa300513a235cd68569dbeb2b7b34da531b1d6876e3b7f67ff0e",
+        "classification_sha256": "d0fd2d3f5ac64765d30d6781b43e6670394d62e9214872c242221032148d3dd1",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -851,13 +1030,13 @@ and an append-only transition below this registered block.
         }
       },
       "history_evidence": {
-        "scope_tip": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
+        "scope_tip": "8417135a6399b79faf779057c89b3f0f5ecf4aaa",
         "standalone_pattern": "(^|[^0-9])34021([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
-        "object_count": 25973,
-        "sorted_object_ids_sha256": "a141d7967314a50d37d1ab0b1c1ddb39e62e827ffa9225c30bded717dadcae81",
-        "inventory_entry_count": 26,
-        "inventory_sha256": "e7d5fdfdddbc1b058bf5a399f48155dca4af5b1f324d7d41aa27908864769f1b",
+        "object_count": 26327,
+        "sorted_object_ids_sha256": "c4bf6b1bfa6e0436384bb9f2b796a664c3248c8c26803f46262645f583100200",
+        "inventory_entry_count": 41,
+        "inventory_sha256": "5329373bba66b248e5c16a87ae26772760effe839e130613dbb08cca1d232880",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -1041,9 +1220,114 @@ and an append-only transition below this registered block.
             "byte_offset": 2668,
             "line_sha256": "ca5ba6bc1d42d68b01ecebe3299486acb80b9647e4ea3f9245eb57976a72b690",
             "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "0d01a581a77d009fe2a3fc08624e5f2a726f9ba6",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 36537,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0d01a581a77d009fe2a3fc08624e5f2a726f9ba6",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 38346,
+            "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0d5bbd6c6f16ee0838e5ea75fdbe806db6ccf500",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 36199,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0d5bbd6c6f16ee0838e5ea75fdbe806db6ccf500",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 38008,
+            "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "19becf8fdb324646428ce3d41bcac712326ac632",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2668,
+            "line_sha256": "ca5ba6bc1d42d68b01ecebe3299486acb80b9647e4ea3f9245eb57976a72b690",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "3e02c0192aec8dd2ed3326b08258c1b4fe7714f0",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 38227,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "3e02c0192aec8dd2ed3326b08258c1b4fe7714f0",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 40036,
+            "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "660d69986baa81a259f0794df28d712da9be1952",
+            "path": "tests/fixtures/prospect_v23_registration_static_preimage.json",
+            "byte_offset": 3807,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "82ccadd6417642fa8e322129dc9dea67554ffa3d",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2668,
+            "line_sha256": "ca5ba6bc1d42d68b01ecebe3299486acb80b9647e4ea3f9245eb57976a72b690",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "86cf6b0b6a41ac8504b2ace98a011fb68217ffa3",
+            "path": "plans/034-post-2026-prospect-challenger-epoch.md",
+            "byte_offset": 7259,
+            "line_sha256": "0a0474ee34f584c85db6dd6fda4ef60261b7828eb4412a1732ec139bb84c5dad",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "86cf6b0b6a41ac8504b2ace98a011fb68217ffa3",
+            "path": "plans/034-post-2026-prospect-challenger-epoch.md",
+            "byte_offset": 11974,
+            "line_sha256": "7b8138e3e790a0ecb99a06a495949d2b0e7ba476cd382afe2fcabdb20244dca5",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "96f08a63ddf345f55e5bb5fa1dd746e787a32b41",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 37628,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "96f08a63ddf345f55e5bb5fa1dd746e787a32b41",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 39437,
+            "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "afd9c58efa37f2a6b495e3de6909ebdd69d332f0",
+            "path": "plans/README.md",
+            "byte_offset": 32546,
+            "line_sha256": "c619f7f452a7397ec35b727fe11fd91c3f5876595cf21abfc7633a392cb11763",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "dea327a9153d2ef0df326af4a976233b397ee835",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2668,
+            "line_sha256": "ca5ba6bc1d42d68b01ecebe3299486acb80b9647e4ea3f9245eb57976a72b690",
+            "classification": "test_guard_or_fixture"
           }
         ],
-        "classification_sha256": "466bb7be247d7a2601447cd05523fdb3212f2529a0d13dc4f1a737c309139c84",
+        "classification_sha256": "4c060ac0dad354e882ec080b8a391938cb9f21f0e87306642b7300cae3bff72e",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -1223,8 +1507,8 @@ and an append-only transition below this registered block.
       "normalized_sha256": "d9ac9d55b2a363a3148b1da02ddc3cd6dba146629ff5baab57286b41f36e26b8"
     },
     "scripts/build_prospect_v23_candidate.py": {
-      "git_blob": "992a84bc47468ee5977845b0e0504ac732c15afd",
-      "normalized_sha256": "bf4ebfd55e1dbdbf49f291361d43d499c7ebf7f6c4e29e0899aa9b1f052a55f2"
+      "git_blob": "c1724605674cbfdc8057e0034d8e320a48743757",
+      "normalized_sha256": "15ddd6d8ff769d74406728f907fcf2c59206f2c00282054bc731aa5366e045ae"
     }
   },
   "folds": {
@@ -1448,21 +1732,23 @@ and an append-only transition below this registered block.
         "scan_contract": "git_rev_list_cat_file_batch_rg_bytes_v1"
       },
       "post_design": {
-        "scope_tip": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
+        "scope_tip": "8417135a6399b79faf779057c89b3f0f5ecf4aaa",
         "inventory_schema": "git_blob_path_offset_v1",
-        "entry_count": 137,
-        "inventory_sha256": "f67135982bd49f556981a3bdb5f6ca23462d03c446b52157d4ef64d49c33e12c",
+        "entry_count": 173,
+        "inventory_sha256": "fc83f1a9f816e4f346ab3409df0c2df3eab4794e86bc37eb5ea3196eb1ee8f92",
         "allowed_paths": [
           "docs/superpowers/specs/2026-08-20-prospect-rank-vnext-current-board-design.md",
           "docs/superpowers/plans/2026-08-20-prospect-rank-vnext-phase-a.md",
           "scripts/build_prospect_v23_candidate.py",
           "tests/test_prospect_v23_development.py",
-          "tests/fixtures/prospect_v23_registration_static_preimage.json"
+          "tests/fixtures/prospect_v23_registration_static_preimage.json",
+          "plans/038-prospect-vnext-phase-a.md",
+          "data/validation/valucast_prospect_rank_v2_3_registration.json"
         ],
         "unexpected_path_count": 0
       },
       "structured_seed_fields": {
-        "inventory_sha256": "d87c24067f406bcffa375bedb59d054f4556e9ef87ce654c24a5954de67b04d2",
+        "inventory_sha256": "142e0d42c3a46c7ad1b3d4ed38dd67d67c5003119dc53aa518924f5220247af2",
         "pre_design_match_count": 0,
         "forbidden_held_spent_reserved_membership": false
       },
@@ -1583,7 +1869,7 @@ and an append-only transition below this registered block.
       }
     }
   },
-  "artifact_sha256": "1051c582c17728bf1945379244b289f43d42578f520a070bae50c3e1d2017ea2"
+  "artifact_sha256": "723a869d5588859f2bd1953b0b6ff776d9d3ce344c315ae93cb1100b78321319"
 }
 ```
 <!-- prospect-vnext-phase-a-registration:end -->
