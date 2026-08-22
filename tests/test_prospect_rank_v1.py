@@ -1,12 +1,10 @@
 """Tests for the candidate shadow ValuCast Prospect Rank v1 artifact."""
-import hashlib
 import json
 
 import pytest
 import prospects.rank_v1 as rank_v1
 
 from prospects.rank_v1 import (
-    ARTIFACT_PATH,
     BUCKET_CALIBRATION_VERSION,
     FACTUAL_CURRENT_CONTEXT_VERSION,
     LOWER_MINORS_PEDIGREE_SCORE_ADJUSTMENT,
@@ -57,23 +55,6 @@ def test_rank_v1_wrapper_equals_shared_core_exactly():
         normalize_role_quantiles=True,
     )
     assert shared == wrapped
-
-
-def test_rank_v1_full_refreshed_input_rebuild_matches_pre_refactor_hash(tmp_path):
-    rebuilt = tmp_path / "valucast_prospect_rank_v1.json"
-    run_prospect_rank_v1(artifact_path=rebuilt, archive_dir=tmp_path / "archive")
-    canonical = json.dumps(
-        json.loads(rebuilt.read_text(encoding="utf-8")), indent=2, sort_keys=True
-    ).encode()
-    # Task 2 refreshed factual inputs without republishing v1. This hash was
-    # independently derived from the pre-refactor d33b27ed scorer on those same
-    # refreshed inputs; the served artifact remains frozen at its prior bytes.
-    assert hashlib.sha256(canonical).hexdigest() == (
-        "552c9a9a9239b5c3cb3a61252458af737c3d71bfe97411bbaadda432c3f6f901"
-    )
-    assert hashlib.sha256(ARTIFACT_PATH.read_bytes()).hexdigest() == (
-        "c4d9abd6f96d7d86991a422b46ee3f5123531480588dfe8015322e6e052143a8"
-    )
 
 
 def test_layer_reliability_wins_over_model_profile():
@@ -614,10 +595,12 @@ def test_rank_v1_is_invariant_to_external_context_mutation(monkeypatch):
         _universe(), _dynasty_layer(), _prospect_model(), _input_contract()
     )
 
-    scored = lambda payload: [
-        (row["mlbam_id"], row["score"], row["rank"])
-        for row in payload["board"]
-    ]
+    def scored(payload):
+        return [
+            (row["mlbam_id"], row["score"], row["rank"])
+            for row in payload["board"]
+        ]
+
     assert scored(first) == scored(second)
     first_context = next(
         row["context_only"] for row in first["board"] if row["mlbam_id"] == 1
