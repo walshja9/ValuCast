@@ -437,6 +437,39 @@ def test_seed_hygiene_uses_the_reviewed_structured_inventory(monkeypatch):
 
 
 @requires_runner
+def test_seed_hygiene_allows_only_exact_reviewed_superseded_rows(monkeypatch):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+    reviewed = [
+        "660d69986baa81a259f0794df28d712da9be1952",
+        "tests/fixtures/prospect_v23_registration_static_preimage.json",
+        15868,
+        "ce1bd7ec0b6feed55d327eefa8d7d80fcf304fe4f64c6918d042513d4c6ae127",
+    ]
+    monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
+    monkeypatch.setattr(
+        candidate,
+        "_git_blob_inventory",
+        lambda tip, *_args, **_kwargs: ([], [])
+        if tip == "e" * 40
+        else ([reviewed], []),
+    )
+
+    candidate._verify_seed_hygiene(registration, "e" * 40)
+
+    changed = [*reviewed[:2], reviewed[2] + 1, reviewed[3]]
+    monkeypatch.setattr(
+        candidate,
+        "_git_blob_inventory",
+        lambda tip, *_args, **_kwargs: ([], [])
+        if tip == "e" * 40
+        else ([changed], []),
+    )
+    with pytest.raises(candidate.ProtocolError, match="seed occurrence"):
+        candidate._verify_seed_hygiene(registration, "e" * 40)
+
+
+@requires_runner
 def test_identity_receipt_hashes_exact_sorted_mlbam_role_pairs():
     candidate = _runner()
     rows = [{"mlbam_id": 2, "role": "hitter"}, {"mlbam_id": 1, "role": "hitter"}, {"mlbam_id": 3, "role": "pitcher"}]
