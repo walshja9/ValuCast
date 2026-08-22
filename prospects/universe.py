@@ -215,6 +215,8 @@ def build_universe(
     dynasty_layer: dict,
     universal_model: dict | None = None,
     generated_at: str | None = None,
+    *,
+    current_orgs: dict | None = None,
 ) -> dict:
     """Build the ValuCast-owned prospect candidate universe."""
     universal_keys = _universal_keys(universal_model)
@@ -225,7 +227,7 @@ def build_universe(
         or datetime.now(timezone.utc).isoformat()
     )
 
-    current_orgs = _load_current_orgs()
+    current_orgs = _load_current_orgs() if current_orgs is None else dict(current_orgs)
     seen: set[tuple[str, str]] = set()
     duplicate_keys: list[tuple[str, str]] = []
     missing_identity_count = 0

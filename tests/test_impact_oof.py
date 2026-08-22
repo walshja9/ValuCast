@@ -5,6 +5,7 @@ from copy import deepcopy
 from prospects.impact_oof import (
     build_impact_oof_report,
     cohort_player_bootstrap,
+    fold_local_impact_oof,
     validate_impact_oof_report,
 )
 
@@ -164,6 +165,34 @@ def test_oof_rows_preserve_exact_role_and_test_cohort_identities():
     }
     assert actual == expected
     assert len(actual) == len(report["rows"])
+
+
+def test_fold_local_oof_can_extend_maturity_without_changing_default():
+    contract = _contract()
+    for role, offset in (("hitter", 0), ("pitcher", 1000)):
+        mlbam_id = offset + 999
+        contract["historical"]["rows"].append(_row(role, 2021, mlbam_id))
+        contract["historical_mlb_seasons"][f"{mlbam_id}_{role}"] = [
+            _season(role, 2022, strength=10)
+        ]
+
+    assert not any(
+        row["test_cohort"] == 2021
+        for row in fold_local_impact_oof(
+            contract["historical"]["rows"],
+            contract["historical_mlb_seasons"],
+            "hitter",
+        )["rows"]
+    )
+    assert any(
+        row["test_cohort"] == 2021
+        for row in fold_local_impact_oof(
+            contract["historical"]["rows"],
+            contract["historical_mlb_seasons"],
+            "hitter",
+            mature_through=2021,
+        )["rows"]
+    )
 
 
 def test_cohort_then_player_bootstrap_is_deterministic_and_cohort_weighted():

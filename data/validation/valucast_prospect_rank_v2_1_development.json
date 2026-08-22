@@ -1,0 +1,147 @@
+{
+  "artifact_sha256": "cb2c518da530acf20d50766d1925eff6da52193227e15569c7479120e2c998db",
+  "calibration_only_folds": [
+    2018,
+    2019
+  ],
+  "code_sha256": {
+    "prospects/ladder_calibration.py": "b5406fad7a77592711631c0ff79c33d7288a843a197423b149f859a84737703b",
+    "prospects/prospect_v09.py": "da56390d9c53c577cdf6ea070f16f106616da44874b8ea32b678210a35450dad",
+    "prospects/prospect_v2_candidate.py": "7baa179c66fa6855272b3e0419ccbf1f8990450c87fc5f31990a2983c8fdcacc",
+    "prospects/rank_v1.py": "ab8c44102b7750bd174f4080099ad1926950e38c88ad0ff609c25540328f4f1d",
+    "prospects/rank_v2.py": "8f8435217fce43e77ae6b64115b04b36413d89cea53daab29a49108eb70261f2",
+    "scripts/build_prospect_v21_candidate.py": "b1bbc29eaed6e425bd79f89d342808347e1f90509ff86babac59c420447799f5"
+  },
+  "decision_folds": [
+    2021
+  ],
+  "decision_points": {
+    "combined_expected_tier_mae_delta": 0.002319959929532933,
+    "cross_role_concordance_delta": -0.04064356990694018,
+    "pitcher_ladder_auc_delta": 0.11354838709677428,
+    "pitcher_ladder_kendall_delta": 0.11471816474465363,
+    "pitcher_ladder_spearman_delta": 0.1403006742863751,
+    "pitcher_raw_auc_delta": 0.04143695014662763,
+    "pitcher_raw_kendall_delta": 0.029519603552964235,
+    "pitcher_raw_mae_delta": -0.007907813060358926,
+    "pitcher_raw_spearman_delta": 0.048995570363609964
+  },
+  "failed_metrics": [
+    "combined_expected_tier_mae_delta",
+    "cross_role_concordance_delta"
+  ],
+  "failed_structural": [],
+  "feeds_live_rank": false,
+  "feeds_value": false,
+  "fold_weighting": "single_decision_fold_2021",
+  "folds": {
+    "2021": {
+      "combined_expected_tier_mae_delta": 0.002319959929532933,
+      "cross_role_concordance_delta": -0.04064356990694018,
+      "hitter_identity_match": true,
+      "hitter_map_byte_match": true,
+      "hitter_pair_inversions": 0,
+      "identity_sha256": {
+        "candidate_hitter": "8ece5c1a4d2cf4fe4a39640daa598470243f45f9ddc831a4f995210765523c2a",
+        "candidate_pitcher": "2e0499f31a72fb631fc686b73c76c1f7ec84bd4fc1f949b9c805c5fc6c9ffcfe",
+        "incumbent_hitter": "8ece5c1a4d2cf4fe4a39640daa598470243f45f9ddc831a4f995210765523c2a",
+        "incumbent_pitcher": "ef88dc8018650a04f2ed7340a9dfd58ee37ea398bebb89314b6b4217c1c10023"
+      },
+      "metric_points": {
+        "combined_expected_tier_mae": {
+          "candidate": 0.10431282135637814,
+          "comparator": 0.1019928614268452,
+          "delta": 0.002319959929532933
+        },
+        "cross_role_concordance": {
+          "candidate": 0.7176252943155063,
+          "comparator": 0.7582688642224464,
+          "delta": -0.04064356990694018
+        },
+        "pitcher_ladder_vs_v1": {
+          "auc": {
+            "candidate": 0.860058651026393,
+            "comparator": 0.7465102639296187,
+            "delta": 0.11354838709677428
+          },
+          "kendall": {
+            "candidate": 0.36592644315150424,
+            "comparator": 0.2512082784068506,
+            "delta": 0.11471816474465363
+          },
+          "spearman": {
+            "candidate": 0.4483209874876223,
+            "comparator": 0.3080203132012472,
+            "delta": 0.1403006742863751
+          }
+        },
+        "pitcher_raw_vs_neighbors": {
+          "auc": {
+            "candidate": 0.8443401759530792,
+            "comparator": 0.8029032258064516,
+            "delta": 0.04143695014662763
+          },
+          "kendall": {
+            "candidate": 0.3526211486849515,
+            "comparator": 0.32310154513198724,
+            "delta": 0.029519603552964235
+          },
+          "mae": {
+            "candidate": 0.11899629652868218,
+            "comparator": 0.1269041095890411,
+            "delta": -0.007907813060358926
+          },
+          "spearman": {
+            "candidate": 0.42944058195123297,
+            "comparator": 0.380445011587623,
+            "delta": 0.048995570363609964
+          }
+        }
+      },
+      "pitcher_ladder_auc_delta": 0.11354838709677428,
+      "pitcher_ladder_kendall_delta": 0.11471816474465363,
+      "pitcher_ladder_spearman_delta": 0.1403006742863751,
+      "pitcher_raw_auc_delta": 0.04143695014662763,
+      "pitcher_raw_kendall_delta": 0.029519603552964235,
+      "pitcher_raw_mae_delta": -0.007907813060358926,
+      "pitcher_raw_spearman_delta": 0.048995570363609964,
+      "positive_finite_slopes": true,
+      "sample_size": 751,
+      "selected_weights": {
+        "auc_delta": 0.025016613384101438,
+        "kendall_delta": 0.011542769304578898,
+        "mae_delta": -0.006305548460428481,
+        "positive_weight": 0.6,
+        "row_count": 1522,
+        "row_sha256": "792d8db664a7d0c2fd398bb241feb0166d90ab7a33fde4f522dd260a49195163",
+        "selection_cohorts": [
+          2016,
+          2017,
+          2018,
+          2019
+        ],
+        "spearman_delta": 0.024733935506368765,
+        "zero_weight": 0.5
+      }
+    }
+  },
+  "gate_rules": {
+    "combined_expected_tier_mae_delta": "lt",
+    "cross_role_concordance_delta": "gt",
+    "pitcher_ladder_auc_delta": "gt",
+    "pitcher_ladder_kendall_delta": "gt",
+    "pitcher_ladder_spearman_delta": "gt",
+    "pitcher_raw_auc_delta": "gt",
+    "pitcher_raw_kendall_delta": "gt",
+    "pitcher_raw_mae_delta": "le",
+    "pitcher_raw_spearman_delta": "gt"
+  },
+  "input_sha256": "df573b47d652eed14b8289919dbe2696cd7c9b96bd68c678fc124dabfa5a92b3",
+  "prior_attempt": {
+    "artifacts_written": false,
+    "reason": "fold_2016_no_eligible_training_cohorts",
+    "scientific_result": false
+  },
+  "schema": "valucast_prospect_rank_v2_1_development",
+  "status": "failed"
+}

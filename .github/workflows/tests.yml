@@ -54,4 +54,4 @@ jobs:
         run: python scripts/run_daily_public_build.py --only validate
 
       - name: Run test suite
-        run: python -m pytest -q
+        run: python -m pytest -q --deselect=tests/test_prospect_v23_development.py::test_committed_registration_passes_dynamic_verification

@@ -4,6 +4,8 @@ Synthetic only — the full fold replay is a research script, not a test. These
 lock the registered mechanics: the concordance estimator, the neutralization
 hard-errors, the fold-contract stamping landmines, and bootstrap determinism.
 """
+from pathlib import Path
+
 import pytest
 
 from prospects import rank_backtest as harness
@@ -59,6 +61,162 @@ def test_fold_contract_stamps_current_rows_and_ungraduates_service():
     # Today's graduated flags would drop the whole cohort upstream of rank.
     assert all(row["graduated"] is False for row in contract["mlb_service"])
     assert contract["generated_at"] == "2019-09-30T00:00:00+00:00"
+
+
+def test_explicit_finalized_2021_maturity_is_nonempty_without_changing_default():
+    hitters = [
+        {
+            "mlbam_id": 100000 + index,
+            "role": "hitter",
+            "cohort_year": 2021,
+            "level": "AA",
+            "age": 21,
+            "outcome": ("bust", "role", "star")[index % 3],
+            "plate_appearances": 300,
+            "iso": 0.15,
+            "k_pct": 22.0,
+            "bb_pct": 10.0,
+            "ops": 0.75,
+        }
+        for index in range(385)
+    ]
+    pitchers = [
+        {
+            "mlbam_id": 200000 + index,
+            "role": "pitcher",
+            "cohort_year": 2021,
+            "level": "AA",
+            "age": 22,
+            "outcome": ("bust", "role", "star")[index % 3],
+            "innings_pitched": 100,
+            "k_per_9": 9.0,
+            "bb_per_9": 3.0,
+            "k_bb_pct": 15.0,
+            "era": 3.5,
+            "whip": 1.2,
+            "is_starter": True,
+        }
+        for index in range(387)
+    ]
+    source = {"historical": {"rows": hitters + pitchers}}
+
+    default_rows = harness._eligible_fold_rows(source, 2021)
+    rows = harness._eligible_fold_rows(source, 2021, mature_through=2021)
+    assert rows == default_rows
+    assert len(rows) == 772
+    assert {row["cohort_year"] for row in rows.values()} == {2021}
+
+    with pytest.raises(ValueError, match="2018, 2019, or 2021"):
+        harness.build_fold_rank_context(
+            {
+                "schema_version": "prospect_v2_development_contract_v1",
+                "historical": {"rows": []},
+                "historical_mlb_seasons": {},
+            },
+            2022,
+            mature_through=2021,
+        )
+
+
+def test_fold_rank_context_uses_only_caller_supplied_data(monkeypatch):
+    row = {
+        "mlbam_id": 1,
+        "role": "hitter",
+        "cohort_year": 2021,
+        "outcome": "role",
+        "plate_appearances": 300,
+    }
+    contract = {
+        "schema_version": "prospect_v2_development_contract_v1",
+        "historical": {"rows": [{**row, "cohort_year": 2017}, row]},
+        "historical_mlb_seasons": {},
+    }
+    monkeypatch.setattr(Path, "read_text", lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("disk read")))
+    monkeypatch.setattr(harness, "_eligible_fold_rows", lambda *_args, **_kwargs: {("1", "hitter"): row})
+    monkeypatch.setattr(harness, "train_role", lambda *_args, **_kwargs: {})
+    impact_calls = []
+
+    def train_impact(*_args, **kwargs):
+        impact_calls.append(kwargs)
+        return {}
+
+    monkeypatch.setattr(harness, "train_impact_role", train_impact)
+    monkeypatch.setattr(harness, "model_score_current", lambda *_args, **_kwargs: [{"mlbam_id": 1, "role": "hitter"}])
+    monkeypatch.setattr(harness, "train_target", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(harness, "universal_score_current", lambda *_args, **_kwargs: [{"mlbam_id": 1, "role": "hitter"}])
+    monkeypatch.setattr(harness, "build_layer", lambda *_args, **_kwargs: {"profiles": [{"mlbam_id": 1, "role": "hitter"}]})
+    monkeypatch.setattr(harness, "build_universe", lambda *_args, **kwargs: {"players": [], "current_orgs": kwargs["current_orgs"]})
+
+    context = harness.build_fold_rank_context(contract, 2021, mature_through=2021)
+
+    assert set(context) == {
+        "prospect_universe",
+        "dynasty_layer",
+        "prospect_availability",
+        "mlb_roster_status",
+        "milb_history_by_key",
+        "investment_evidence",
+        "manual_graduated_ids",
+        "consensus_snapshots",
+        "incumbent_profiles",
+        "input_contract",
+    }
+    assert context["prospect_universe"]["current_orgs"] == {}
+    assert impact_calls == [
+        {"now": "2021-09-30T00:00:00+00:00", "fold_local_evidence": True, "mature_through": 2021},
+        {"now": "2021-09-30T00:00:00+00:00", "fold_local_evidence": True, "mature_through": 2021},
+    ]
+
+
+def test_explicit_historical_fold_omits_only_unavailable_qs_target(monkeypatch):
+    rows = [
+        {"mlbam_id": 1, "role": "hitter", "cohort_year": 2017, "outcome": "role", "plate_appearances": 300},
+        {"mlbam_id": 2, "role": "pitcher", "cohort_year": 2017, "outcome": "role", "innings_pitched": 100},
+    ]
+    fold_rows = {
+        ("3", "hitter"): {**rows[0], "mlbam_id": 3, "cohort_year": 2021},
+        ("4", "pitcher"): {**rows[1], "mlbam_id": 4, "cohort_year": 2021},
+    }
+    contract = {
+        "schema_version": "prospect_v2_development_contract_v1",
+        "historical": {"rows": rows},
+        "historical_mlb_seasons": {},
+    }
+    monkeypatch.setattr(harness, "TARGET_SPECS", {
+        "hitter": {"representative_hr_per_600": {}},
+        "pitcher": {"representative_qs_per_180": {}, "representative_k_per_180": {}},
+    })
+    monkeypatch.setattr(harness, "_eligible_fold_rows", lambda *_args, **_kwargs: fold_rows)
+    monkeypatch.setattr(harness, "train_role", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(harness, "train_impact_role", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(harness, "model_score_current", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(harness, "universal_score_current", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(harness, "build_layer", lambda *_args, **_kwargs: {"profiles": []})
+    monkeypatch.setattr(harness, "build_universe", lambda *_args, **_kwargs: {"players": []})
+    captured = []
+    monkeypatch.setattr(
+        harness,
+        "train_target",
+        lambda role, target, *_args, **_kwargs: captured.append((role, target)) or {},
+    )
+    monkeypatch.setattr(
+        harness,
+        "_horizon_clipped_seasons",
+        lambda *_args, **_kwargs: {"2_pitcher": [{"qs": None}]},
+    )
+
+    harness.build_fold_rank_context(contract, 2021, mature_through=2021)
+    assert ("pitcher", "representative_qs_per_180") not in captured
+    assert ("pitcher", "representative_k_per_180") in captured
+
+    captured.clear()
+    monkeypatch.setattr(
+        harness,
+        "_horizon_clipped_seasons",
+        lambda *_args, **_kwargs: {"2_pitcher": [{"qs": 1}]},
+    )
+    harness.build_fold_rank_context(contract, 2021, mature_through=2021)
+    assert ("pitcher", "representative_qs_per_180") in captured
 
 
 def test_variant_identity_set_mismatch_is_a_hard_error(monkeypatch):

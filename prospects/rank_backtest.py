@@ -158,7 +158,12 @@ def _fold_now(test_year: int) -> str:
     return f"{test_year}-09-30T00:00:00+00:00"
 
 
-def _eligible_fold_rows(contract: dict, test_year: int) -> dict:
+def _eligible_fold_rows(
+    contract: dict,
+    test_year: int,
+    *,
+    mature_through: int | None = None,
+) -> dict:
     """Raw test-cohort rows restricted to the eligible mature pseudo-universe.
 
     Eligibility mirrors the adapter/dynasty harnesses (_base_historical_rows,
@@ -167,11 +172,16 @@ def _eligible_fold_rows(contract: dict, test_year: int) -> dict:
     {(str(mlbam_id), role): raw_row}, deduped to the higher-sample row.
     """
     eligible_keys = set()
+    eligible_through = (
+        OUTCOME_COMPLETE_THROUGH - OUTCOME_HORIZON_YEARS
+        if mature_through is None
+        else mature_through
+    )
     for role in ("hitter", "pitcher"):
         for row in _base_historical_rows(
             contract["historical"]["rows"],
             role,
-            mature_through=OUTCOME_COMPLETE_THROUGH - OUTCOME_HORIZON_YEARS,
+            mature_through=eligible_through,
         ):
             if row["cohort_year"] == test_year:
                 eligible_keys.add((str(row["mlbam_id"]), role))
@@ -269,61 +279,23 @@ def _fold_board_scores_inner(
     test_year: int,
     rank_kwargs: dict | None = None,
 ) -> tuple[dict, dict]:
-    now = _fold_now(test_year)
-    train_through = test_year - OUTCOME_HORIZON_YEARS
-    training_rows = [
-        row
-        for row in contract["historical"]["rows"]
-        if int(row.get("cohort_year") or 9999) <= train_through
-    ]
-    if not training_rows:
-        raise ValueError(f"fold {test_year}: no eligible training cohorts")
+    context = build_fold_rank_context(contract, test_year)
     fold_rows = _eligible_fold_rows(contract, test_year)
-    if not fold_rows:
-        raise ValueError(f"fold {test_year}: empty eligible pseudo-universe")
-    fold_contract = _fold_contract(contract, fold_rows, test_year)
-    seasons = contract["historical_mlb_seasons"]
-
-    # Prospect model: production trainers + production scorer, fold-trained.
-    # model.py clips impact labels internally (Phase 0 F4 fix); universal needs
-    # the external clip (same call production's build_shadow_model makes).
-    role_models = {
-        role: train_role(role, training_rows, now=now)
-        for role in ("hitter", "pitcher")
-    }
-    references = _impact_references(seasons)
-    impact_models = {
-        role: train_impact_role(role, training_rows, seasons, references, now=now)
-        for role in ("hitter", "pitcher")
-    }
+    fold_contract = context["input_contract"]
     prospect_model = {
-        "ranked": model_score_current(fold_contract, role_models, impact_models),
-        "model_version": f"rank_backtest_fold_{test_year}",
-    }
-
-    clipped_seasons = _horizon_clipped_seasons(training_rows, seasons)
-    role_targets = {
-        role: {
-            target: train_target(role, target, training_rows, clipped_seasons, now=now)
-            for target in TARGET_SPECS[role]
-        }
-        for role in ("hitter", "pitcher")
-    }
-    dynasty_layer = build_layer(
-        {
-            "profiles": universal_score_current(fold_contract, role_targets),
-            "model_name": MODEL_NAME,
-            "model_version": MODEL_VERSION,
-            "input_contract": {"generated_at": now},
+        "model_version": "0.6.1",
+        "input_contract": {"generated_at": fold_contract["generated_at"]},
+        "release_contract": {
+            "consumer": "prospect_rank_v1",
+            "feeds_live_valucast_rank": True,
         },
-        backtest=None,
-    )
-    prospect_universe = build_universe(dynasty_layer, None, generated_at=now)
+        "ranked": context["incumbent_profiles"],
+    }
 
     with _neutralized_module_state():
         payload = build_prospect_rank_v1(
-            prospect_universe,
-            dynasty_layer,
+            context["prospect_universe"],
+            context["dynasty_layer"],
             prospect_model,
             fold_contract,
             prospect_availability=None,
@@ -343,7 +315,7 @@ def _fold_board_scores_inner(
     tiers = {key: OUTCOME_TARGET[row["outcome"]] for key, row in fold_rows.items()}
     diagnostics = {
         "test_cohort": test_year,
-        "train_cohort_max": train_through,
+        "train_cohort_max": test_year - OUTCOME_HORIZON_YEARS,
         "pseudo_universe": len(fold_rows),
         "board_rows": len(payload.get("board") or []),
         "scored_and_labeled": len(scores),
@@ -353,6 +325,105 @@ def _fold_board_scores_inner(
         "rank_status": payload.get("status"),
     }
     return {"scores": scores, "tiers": tiers}, diagnostics
+
+
+def build_fold_rank_context(
+    contract: dict,
+    test_year: int,
+    *,
+    mature_through: int | None = None,
+) -> dict:
+    if (
+        mature_through is not None
+        and contract.get("schema_version") != "prospect_v2_development_contract_v1"
+    ):
+        raise ValueError("explicit fold maturity requires a v2 source contract")
+    if mature_through is not None and test_year not in {2018, 2019, 2021}:
+        raise ValueError("explicit fold maturity supports 2018, 2019, or 2021 only")
+    now = _fold_now(test_year)
+    train_through = test_year - OUTCOME_HORIZON_YEARS
+    training_rows = [
+        row
+        for row in contract["historical"]["rows"]
+        if int(row.get("cohort_year") or 9999) <= train_through
+    ]
+    if not training_rows:
+        raise ValueError(f"fold {test_year}: no eligible training cohorts")
+    fold_rows = _eligible_fold_rows(
+        contract, test_year, mature_through=mature_through
+    )
+    if not fold_rows:
+        raise ValueError(f"fold {test_year}: empty eligible pseudo-universe")
+    fold_contract = _fold_contract(contract, fold_rows, test_year)
+    seasons = contract["historical_mlb_seasons"]
+
+    # Prospect model: production trainers + production scorer, fold-trained.
+    # model.py clips impact labels internally (Phase 0 F4 fix); universal needs
+    # the external clip (same call production's build_shadow_model makes).
+    role_models = {
+        role: train_role(role, training_rows, now=now)
+        for role in ("hitter", "pitcher")
+    }
+    references = _impact_references(seasons)
+    impact_kwargs = (
+        {}
+        if mature_through is None
+        else {"fold_local_evidence": True, "mature_through": mature_through}
+    )
+    impact_models = {
+        role: train_impact_role(
+            role, training_rows, seasons, references, now=now, **impact_kwargs
+        )
+        for role in ("hitter", "pitcher")
+    }
+    incumbent_profiles = model_score_current(
+        fold_contract, role_models, impact_models
+    )
+
+    clipped_seasons = _horizon_clipped_seasons(training_rows, seasons)
+    unavailable_targets = set()
+    if mature_through is not None and not any(
+        season.get("qs") is not None
+        for key, values in clipped_seasons.items()
+        if key.endswith("_pitcher")
+        for season in values
+    ):
+        unavailable_targets.add(("pitcher", "representative_qs_per_180"))
+    role_targets = {
+        role: {
+            target: train_target(role, target, training_rows, clipped_seasons, now=now)
+            for target in TARGET_SPECS[role]
+            if (role, target) not in unavailable_targets
+        }
+        for role in ("hitter", "pitcher")
+    }
+    dynasty_layer = build_layer(
+        {
+            "profiles": universal_score_current(fold_contract, role_targets),
+            "model_name": MODEL_NAME,
+            "model_version": MODEL_VERSION,
+            "input_contract": {"generated_at": now},
+        },
+        backtest=None,
+    )
+    prospect_universe = build_universe(
+        dynasty_layer, None, generated_at=now, current_orgs={}
+    )
+    return {
+        "prospect_universe": prospect_universe,
+        "dynasty_layer": dynasty_layer,
+        "prospect_availability": None,
+        "mlb_roster_status": None,
+        "milb_history_by_key": None,
+        "investment_evidence": None,
+        "manual_graduated_ids": set(),
+        "consensus_snapshots": {
+            key: {}
+            for key in ("sts", "fangraphs", "prospectslive", "pipeline", "hkb")
+        },
+        "incumbent_profiles": incumbent_profiles,
+        "input_contract": fold_contract,
+    }
 
 
 def _tier_concordance_fast(scores: np.ndarray, tiers: np.ndarray) -> float | None:

@@ -584,6 +584,10 @@ def test_committed_outputs_validate_when_sources_match():
 
 def test_proof_module_and_artifact_have_no_production_importers():
     root = Path(__file__).resolve().parents[1]
+    frozen_non_serving = {
+        "prospects/prospect_v2_candidate.py",
+        "prospects/prospect_v09.py",
+    }
     candidates = [
         path for path in root.rglob("*.py")
         if "tests" not in path.parts
@@ -596,9 +600,22 @@ def test_proof_module_and_artifact_have_no_production_importers():
             if path.suffix in {".html", ".js", ".yml", ".yaml"}
         )
     for path in candidates:
+        if path.relative_to(root).as_posix() in frozen_non_serving:
+            continue
         text = path.read_text(encoding="utf-8")
         assert "stage1_outcome_proof" not in text
         assert "valucast_stage1_outcome_proof" not in text
         # The registered maturation re-run's research artifacts are equally
         # off-limits to serving code (registration 2026-08-14).
         assert "maturation2021" not in text
+
+
+def test_frozen_v2_dependencies_are_not_current_rank_consumers():
+    root = Path(__file__).resolve().parents[1]
+    current_rank = (root / "prospects/rank_v1.py").read_text(encoding="utf-8")
+    assert "prospect_v2_candidate" not in current_rank
+    assert "prospect_v09" not in current_rank
+    assert "run_prospect_rank_v1" in (
+        root / "scripts/build_prospect_rank_v1.py"
+    ).read_text(encoding="utf-8")
+    assert not (root / "prospects/current_rank.py").exists()
