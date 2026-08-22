@@ -227,6 +227,28 @@ def test_dynamic_source_binding_rejects_altered_hash_or_implementation(monkeypat
 
 
 @requires_runner
+def test_dynamic_source_binding_allows_unrelated_merge_parent_changes(monkeypatch):
+    candidate = _runner()
+    registration = _exact_registration(candidate, {"runtime": "synthetic"})
+
+    def git_run(args, **_kwargs):
+        if args[:3] == ["git", "merge-base", "--is-ancestor"]:
+            return subprocess.CompletedProcess(args, 0, stdout="")
+        if args[:3] == ["git", "diff", "--name-only"]:
+            return subprocess.CompletedProcess(
+                args, 0, stdout="data/actuals/current.json\n"
+            )
+        raise AssertionError(args)
+
+    monkeypatch.setattr(candidate.subprocess, "run", git_run)
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda *_args: "1" * 40)
+    monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "1" * 40)
+    monkeypatch.setattr(candidate, "_normalized_source_sha256", lambda *_args: "2" * 64)
+
+    assert candidate._verify_source_bindings(registration) == "e" * 40
+
+
+@requires_runner
 def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp_path):
     candidate = _runner()
     registration = _exact_registration(candidate, {"runtime": "synthetic"})
