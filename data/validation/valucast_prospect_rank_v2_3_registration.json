@@ -4,7 +4,7 @@
   "registration_status_at_seal": "registered_unspent",
   "candidate": {
     "approved_design_commit": "1737468b16717ee6f7d24ea08b8444fdde3442f2",
-    "implementation_commit": "e1229bacc1c64d651609a5e621de0ec528a79a78",
+    "implementation_commit": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
     "family": "shared_threshold_role_slope_joint_ordered_logit",
     "parameter_order": [
       "tau_bust_role",
@@ -100,13 +100,13 @@
       "post_transition_blob": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
       "append_only_prefix_bytes": 18006,
       "history_evidence": {
-        "scope_tip": "e1229bacc1c64d651609a5e621de0ec528a79a78",
+        "scope_tip": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
         "standalone_pattern": "(^|[^0-9])31013([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
-        "object_count": 25964,
-        "sorted_object_ids_sha256": "338ecf8463398b9702b9963475a99cb18d160f6a730d64d8a66fcc621484a35c",
-        "inventory_entry_count": 94,
-        "inventory_sha256": "450ddd925a4b37f85dac7e1d939d63c710d4471a69c4ecf2004031561e0c42ae",
+        "object_count": 25973,
+        "sorted_object_ids_sha256": "a141d7967314a50d37d1ab0b1c1ddb39e62e827ffa9225c30bded717dadcae81",
+        "inventory_entry_count": 95,
+        "inventory_sha256": "889b86c17a8f12b18811528d748c113b0dc412720764c59b5ff95680b6cef180",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -607,6 +607,13 @@
             "classification": "governance_text"
           },
           {
+            "object_id": "dca61a116f699f51c041536fdaf4e3360dd1f472",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2617,
+            "line_sha256": "fa505acbf58f65b881a4af07ce308fa5366af9e003f8843c383410af7048048c",
+            "classification": "test_guard_or_fixture"
+          },
+          {
             "object_id": "de93ac5eaa961231a9ec5f517060f095e6763c9c",
             "path": "plans/README.md",
             "byte_offset": 30604,
@@ -768,7 +775,7 @@
             "classification": "unrelated_numeric_data"
           }
         ],
-        "classification_sha256": "987530729f55cbeffb732243c37631a8ff3ddbd250ee8d0ae126311ac19f3411",
+        "classification_sha256": "b5db9f9472aaaa300513a235cd68569dbeb2b7b34da531b1d6876e3b7f67ff0e",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -811,13 +818,13 @@
         }
       },
       "history_evidence": {
-        "scope_tip": "e1229bacc1c64d651609a5e621de0ec528a79a78",
+        "scope_tip": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
         "standalone_pattern": "(^|[^0-9])34021([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
-        "object_count": 25964,
-        "sorted_object_ids_sha256": "338ecf8463398b9702b9963475a99cb18d160f6a730d64d8a66fcc621484a35c",
-        "inventory_entry_count": 25,
-        "inventory_sha256": "6fffbff002d1d2582317a12820d5e65beec9c5416e2754139a948f121127e0f2",
+        "object_count": 25973,
+        "sorted_object_ids_sha256": "a141d7967314a50d37d1ab0b1c1ddb39e62e827ffa9225c30bded717dadcae81",
+        "inventory_entry_count": 26,
+        "inventory_sha256": "e7d5fdfdddbc1b058bf5a399f48155dca4af5b1f324d7d41aa27908864769f1b",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -975,6 +982,13 @@
             "classification": "governance_text"
           },
           {
+            "object_id": "dca61a116f699f51c041536fdaf4e3360dd1f472",
+            "path": "tests/test_prospect_v23_development.py",
+            "byte_offset": 2668,
+            "line_sha256": "ca5ba6bc1d42d68b01ecebe3299486acb80b9647e4ea3f9245eb57976a72b690",
+            "classification": "test_guard_or_fixture"
+          },
+          {
             "object_id": "e200b1b103f4fd2ecdfa659abd9764d5d4c948ff",
             "path": "tests/fixtures/prospect_v23_registration_static_preimage.json",
             "byte_offset": 3807,
@@ -996,7 +1010,7 @@
             "classification": "test_guard_or_fixture"
           }
         ],
-        "classification_sha256": "bbf86755a4e072587c2dc804120b394d183627f11c2b333ec9a000d2b8937b23",
+        "classification_sha256": "466bb7be247d7a2601447cd05523fdb3212f2529a0d13dc4f1a737c309139c84",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -1148,8 +1162,8 @@
       "normalized_sha256": "8f8435217fce43e77ae6b64115b04b36413d89cea53daab29a49108eb70261f2"
     },
     "prospects/role_slope_joint_calibration.py": {
-      "git_blob": "74ad3651db3049ab1889538b45f7d275bbd1a34e",
-      "normalized_sha256": "bc96e0e2bcc77713f00215cdb25beb6a4bfc8f2c306131d6917eda4088106cbc"
+      "git_blob": "e12e06ad0cbd140c1a3aaa89b7c9524db998d872",
+      "normalized_sha256": "7f7251c467987429b84e4be7687604b17414f1b3cc07b26c0539aa5b003c7490"
     },
     "prospects/stage1_contract.py": {
       "git_blob": "ce8ef455822f8992839ff492977a41ab24eba83f",
@@ -1176,8 +1190,8 @@
       "normalized_sha256": "d9ac9d55b2a363a3148b1da02ddc3cd6dba146629ff5baab57286b41f36e26b8"
     },
     "scripts/build_prospect_v23_candidate.py": {
-      "git_blob": "2dd1aa18a43e94f268abc1778ef6c1cbf74e9646",
-      "normalized_sha256": "318ab42ec65e42bb9b9e4799cca0531da7cf13e9123907a65f55a6e79830a69f"
+      "git_blob": "992a84bc47468ee5977845b0e0504ac732c15afd",
+      "normalized_sha256": "bf4ebfd55e1dbdbf49f291361d43d499c7ebf7f6c4e29e0899aa9b1f052a55f2"
     }
   },
   "folds": {
@@ -1401,10 +1415,10 @@
         "scan_contract": "git_rev_list_cat_file_batch_rg_bytes_v1"
       },
       "post_design": {
-        "scope_tip": "e1229bacc1c64d651609a5e621de0ec528a79a78",
+        "scope_tip": "01f6ace4f50e9652db1fdb7d8123f054560576e2",
         "inventory_schema": "git_blob_path_offset_v1",
-        "entry_count": 128,
-        "inventory_sha256": "d69eaa17701b66172796b66a7943373e00ad3924f1e2168702d506c5c76b5ef5",
+        "entry_count": 137,
+        "inventory_sha256": "f67135982bd49f556981a3bdb5f6ca23462d03c446b52157d4ef64d49c33e12c",
         "allowed_paths": [
           "docs/superpowers/specs/2026-08-20-prospect-rank-vnext-current-board-design.md",
           "docs/superpowers/plans/2026-08-20-prospect-rank-vnext-phase-a.md",
@@ -1415,7 +1429,7 @@
         "unexpected_path_count": 0
       },
       "structured_seed_fields": {
-        "inventory_sha256": "d7e6be460ac197fa5c29b0f8539dbb28eee72eddc4fa6744b0b6df6d410b456d",
+        "inventory_sha256": "d87c24067f406bcffa375bedb59d054f4556e9ef87ce654c24a5954de67b04d2",
         "pre_design_match_count": 0,
         "forbidden_held_spent_reserved_membership": false
       },
@@ -1536,5 +1550,5 @@
       }
     }
   },
-  "artifact_sha256": "6d1b0fe42887b4dff3f4b37bc0774c789b349ab38eab869233eebbc0f2217aec"
+  "artifact_sha256": "1051c582c17728bf1945379244b289f43d42578f520a070bae50c3e1d2017ea2"
 }
