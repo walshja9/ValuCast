@@ -19,13 +19,17 @@ outcome-bearing input. The next local replacement at
 `cae7017620291610685aa04b1128ae1e6f39fa99`, seal
 `c04261eb9f73bbf6728860665c0617f7d79a93927edda939ae14ca0c26e8f496`, is also
 `superseded_unspent / never_execute`; its history verifier failed before any
+scientific state was opened. The following local replacement at
+`be9646440448040408bf57f9ce0200d28f61d56f`, seal
+`8b6edf9f5b03ac302da11884ed33d4400df8208f82bc21f233dab5db6b0a8161`, is likewise
+`superseded_unspent / never_execute`; its history verifier also stopped before
 scientific state was opened. This document records a frozen protocol, not a metric
 result, model promotion, board change, valuation change, publication claim, or
 authorization to open outcome-bearing inputs.
 
 The approved design is bound at
 `1737468b16717ee6f7d24ea08b8444fdde3442f2`; the replacement implementation is
-bound at `a443300373dd3b61a4c8c69e13dfe21c003a08a2`. Execution requires a later,
+bound at `891262110c13961982420d405b6737c6243399fc`. Execution requires a later,
 explicit owner approval naming the exact merged execution SHA and satisfying
 every registered pre-marker check.
 
@@ -49,7 +53,7 @@ and an append-only transition below this registered block.
   "registration_status_at_seal": "registered_unspent",
   "candidate": {
     "approved_design_commit": "1737468b16717ee6f7d24ea08b8444fdde3442f2",
-    "implementation_commit": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
+    "implementation_commit": "891262110c13961982420d405b6737c6243399fc",
     "family": "shared_threshold_role_slope_joint_ordered_logit",
     "parameter_order": [
       "tau_bust_role",
@@ -145,11 +149,11 @@ and an append-only transition below this registered block.
       "post_transition_blob": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
       "append_only_prefix_bytes": 18006,
       "history_evidence": {
-        "scope_tip": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
+        "scope_tip": "891262110c13961982420d405b6737c6243399fc",
         "standalone_pattern": "(^|[^0-9])31013([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
         "object_count": 26302,
-        "sorted_object_ids_sha256": "5a1a4307ada23ebe0321a055629d2ff66dd86a1289f20e3cb851c6842145e0d8",
+        "sorted_object_ids_sha256": "ef3a73174b544e1f96e26574e18d3a66eb80937d9cf362a6c416c27739438e96",
         "inventory_entry_count": 96,
         "inventory_sha256": "3311c6ebbac5be759eb470b74416fde5936199706554d5fb03c14f26de2b23f7",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
@@ -870,11 +874,11 @@ and an append-only transition below this registered block.
         }
       },
       "history_evidence": {
-        "scope_tip": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
+        "scope_tip": "891262110c13961982420d405b6737c6243399fc",
         "standalone_pattern": "(^|[^0-9])34021([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
         "object_count": 26302,
-        "sorted_object_ids_sha256": "5a1a4307ada23ebe0321a055629d2ff66dd86a1289f20e3cb851c6842145e0d8",
+        "sorted_object_ids_sha256": "ef3a73174b544e1f96e26574e18d3a66eb80937d9cf362a6c416c27739438e96",
         "inventory_entry_count": 27,
         "inventory_sha256": "58ab38a05291d03e862503241c43c67eac8315ecec5b0f4e7e59eb5b0cf3c72b",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
@@ -1249,8 +1253,8 @@ and an append-only transition below this registered block.
       "normalized_sha256": "d9ac9d55b2a363a3148b1da02ddc3cd6dba146629ff5baab57286b41f36e26b8"
     },
     "scripts/build_prospect_v23_candidate.py": {
-      "git_blob": "59aa85906998e65ab1dd4b5209d70d872b96688d",
-      "normalized_sha256": "3ca0b7c5c34d28c6aaa20cee64b13837b646e1802ec86c853ea534bc00ba1a08"
+      "git_blob": "03aa8f5b393033b74d72667b15edcb32427dc211",
+      "normalized_sha256": "c1802d13bfcac85ec99eedb98261b6188582901f8ae685fd9a69f03156cf6747"
     }
   },
   "folds": {
@@ -1474,10 +1478,10 @@ and an append-only transition below this registered block.
         "scan_contract": "git_rev_list_cat_file_batch_rg_bytes_v1"
       },
       "post_design": {
-        "scope_tip": "a443300373dd3b61a4c8c69e13dfe21c003a08a2",
+        "scope_tip": "891262110c13961982420d405b6737c6243399fc",
         "inventory_schema": "git_blob_path_offset_v1",
         "entry_count": 146,
-        "inventory_sha256": "19352f5ad7f885f3e511d1200512981ac0c128dd64e098f2f11b27e3fb49e494",
+        "inventory_sha256": "f5ff2e8d9c544879d7a3458941b2f82ee899ed059aae71323673584eb15c6a5f",
         "allowed_paths": [
           "docs/superpowers/specs/2026-08-20-prospect-rank-vnext-current-board-design.md",
           "docs/superpowers/plans/2026-08-20-prospect-rank-vnext-phase-a.md",
@@ -1488,7 +1492,7 @@ and an append-only transition below this registered block.
         "unexpected_path_count": 0
       },
       "structured_seed_fields": {
-        "inventory_sha256": "2aab8f4bd4f88889b7931a7e1ac9d0a6d94ded4ba60b17350efbcf16599c2f8e",
+        "inventory_sha256": "969b24c38caccf31a31886200bc068bed3dd730ac7486dee16d00b970f0fdec6",
         "pre_design_match_count": 0,
         "forbidden_held_spent_reserved_membership": false
       },
@@ -1609,7 +1613,7 @@ and an append-only transition below this registered block.
       }
     }
   },
-  "artifact_sha256": "8b6edf9f5b03ac302da11884ed33d4400df8208f82bc21f233dab5db6b0a8161"
+  "artifact_sha256": "60dcc0710289919f0c8884321e73169680a8264d150f259cd227df60115f8828"
 }
 ```
 <!-- prospect-vnext-phase-a-registration:end -->
