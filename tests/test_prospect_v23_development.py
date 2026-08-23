@@ -181,6 +181,10 @@ def test_committed_static_registration_preimage_matches_production_hash():
     assert path.relative_to(Path(__file__).parents[1]).as_posix() in preimage[
         "bootstrap"
     ]["seed_hygiene"]["post_design"]["allowed_paths"]
+    assert {
+        "plans/038-prospect-vnext-phase-a.md",
+        "data/validation/valucast_prospect_rank_v2_3_registration.json",
+    } <= set(preimage["bootstrap"]["seed_hygiene"]["post_design"]["allowed_paths"])
     assert Path(__file__).relative_to(Path(__file__).parents[1]).as_posix() in preimage[
         "bootstrap"
     ]["seed_hygiene"]["post_registration_policy"]["allowed_paths"]
