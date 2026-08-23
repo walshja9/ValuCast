@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-08-22",
+  "generated_at": "2026-08-23",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -151,6 +151,21 @@
       "team": "Miami Marlins",
       "transaction_date": "2026-06-01",
       "transaction_id": 914873,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Los Angeles Dodgers placed CF Andy Pages on the 10-day injured list. Left hand fracture.",
+      "effective_date": "2026-08-22",
+      "list_type": "10-day injured list",
+      "mlbam_id": 681624,
+      "name": "Andy Pages",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Los Angeles Dodgers",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 938950,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -861,16 +876,16 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Boston Red Sox placed LHP Connelly Early on the 15-day injured list. Left elbow inflammation.",
-      "effective_date": "2026-07-01",
-      "list_type": "15-day injured list",
+      "description": "Washington Nationals transferred LHP Connelly Early from the 15-day injured list to the 60-day injured list. Left elbow inflammation.",
+      "effective_date": "2026-08-22",
+      "list_type": "60-day injured list",
       "mlbam_id": 813349,
       "name": "Connelly Early",
       "source": "official_mlb_statsapi_transactions",
       "status": "injured",
-      "team": "Boston Red Sox",
-      "transaction_date": "2026-07-01",
-      "transaction_id": 923945,
+      "team": "Washington Nationals",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 938967,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -891,18 +906,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Seattle Mariners transferred RHP Cooper Criswell from the 15-day injured list to the 60-day injured list. Right shoulder strain.",
-      "effective_date": "2026-07-03",
-      "list_type": "60-day injured list",
+      "description": "Seattle Mariners sent RHP Cooper Criswell on a rehab assignment to Tacoma Rainiers.",
+      "effective_date": "2026-08-22",
+      "list_type": null,
       "mlbam_id": 681867,
       "name": "Cooper Criswell",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Seattle Mariners",
-      "transaction_date": "2026-07-03",
-      "transaction_id": 924883,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Tacoma Rainiers",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 939002,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -1428,6 +1443,21 @@
       "transaction_id": 932415,
       "type_code": "ASG",
       "type_description": "Assigned"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "St. Louis Cardinals placed RHP Hunter Dobbins on the 15-day injured list. Right forearm tightness.",
+      "effective_date": "2026-08-22",
+      "list_type": "15-day injured list",
+      "mlbam_id": 690928,
+      "name": "Hunter Dobbins",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "St. Louis Cardinals",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 938948,
+      "type_code": "SC",
+      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -2631,18 +2661,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "San Francisco Giants transferred LHP Matt Gage from the 15-day injured list to the 60-day injured list. Left elbow strain.",
-      "effective_date": "2026-08-02",
-      "list_type": "60-day injured list",
+      "description": "San Francisco Giants sent LHP Matt Gage on a rehab assignment to Sacramento River Cats.",
+      "effective_date": "2026-08-22",
+      "list_type": null,
       "mlbam_id": 657424,
       "name": "Matt Gage",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "San Francisco Giants",
-      "transaction_date": "2026-08-02",
-      "transaction_id": 934122,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Sacramento River Cats",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 939007,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2928,6 +2958,21 @@
       "transaction_id": 934848,
       "type_code": "ASG",
       "type_description": "Assigned"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Los Angeles Angels placed 1B Nolan Schanuel on the 10-day injured list retroactive to August 21, 2026. Right intercostal muscle strain.",
+      "effective_date": "2026-08-21",
+      "list_type": "10-day injured list",
+      "mlbam_id": 694384,
+      "name": "Nolan Schanuel",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Los Angeles Angels",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 938975,
+      "type_code": "SC",
+      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -3801,18 +3846,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Toronto Blue Jays sent 1B Vladimir Guerrero Jr. on a rehab assignment to Dunedin Blue Jays.",
-      "effective_date": "2026-08-20",
-      "list_type": null,
-      "mlbam_id": 665489,
-      "name": "Vladimir Guerrero Jr.",
+      "description": "Los Angeles Angels placed LF Wade Meckler on the 7-day injured list retroactive to August 21, 2026. Concussion.",
+      "effective_date": "2026-08-21",
+      "list_type": "7-day injured list",
+      "mlbam_id": 685133,
+      "name": "Wade Meckler",
       "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Dunedin Blue Jays",
-      "transaction_date": "2026-08-20",
-      "transaction_id": 938667,
-      "type_code": "ASG",
-      "type_description": "Assigned"
+      "status": "injured",
+      "team": "Los Angeles Angels",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 938974,
+      "type_code": "SC",
+      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -5751,21 +5796,6 @@
     },
     {
       "active_injury_risk": false,
-      "description": "St. Louis Cardinals activated RHP Hunter Dobbins from the 15-day injured list.",
-      "effective_date": "2026-04-30",
-      "list_type": "15-day injured list",
-      "mlbam_id": 690928,
-      "name": "Hunter Dobbins",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "St. Louis Cardinals",
-      "transaction_date": "2026-04-30",
-      "transaction_id": 904461,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
       "description": "Cleveland Guardians activated RHP Hunter Gaddis from the 15-day injured list.",
       "effective_date": "2026-04-13",
       "list_type": "15-day injured list",
@@ -7416,21 +7446,6 @@
     },
     {
       "active_injury_risk": false,
-      "description": "Los Angeles Angels activated 1B Nolan Schanuel from the 10-day injured list.",
-      "effective_date": "2026-06-06",
-      "list_type": "10-day injured list",
-      "mlbam_id": 694384,
-      "name": "Nolan Schanuel",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Los Angeles Angels",
-      "transaction_date": "2026-06-06",
-      "transaction_id": 916411,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
       "description": "Pittsburgh Pirates activated CF Oneil Cruz from the 60-day injured list.",
       "effective_date": "2026-08-17",
       "list_type": "60-day injured list",
@@ -8481,6 +8496,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Toronto Blue Jays activated 1B Vladimir Guerrero Jr. from the 7-day injured list.",
+      "effective_date": "2026-08-22",
+      "list_type": "7-day injured list",
+      "mlbam_id": 665489,
+      "name": "Vladimir Guerrero Jr.",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Toronto Blue Jays",
+      "transaction_date": "2026-08-22",
+      "transaction_id": 938927,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "San Diego Padres activated 3B Will Wagner from the 10-day injured list.",
       "effective_date": "2026-05-07",
       "list_type": "10-day injured list",
@@ -8646,7 +8676,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-08-22",
+    "end_date": "2026-08-23",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -8664,15 +8694,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 308,
+    "available_after_il_count": 307,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 199,
-    "profile_count": 575,
+    "injured_count": 201,
+    "profile_count": 577,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 68,
-    "risk_profile_count": 267,
-    "tracked_mlbam_count": 11068,
-    "transaction_count": 10706
+    "rehab_count": 69,
+    "risk_profile_count": 270,
+    "tracked_mlbam_count": 11069,
+    "transaction_count": 10731
   }
 }
