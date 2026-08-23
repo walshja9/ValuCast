@@ -136,6 +136,21 @@ def test_fold_runner_import_is_the_registered_red_gate():
     _runner()
 
 
+def test_direct_runner_starts_outside_the_repository(tmp_path):
+    runner = Path(__file__).parents[1] / "scripts/build_prospect_v23_candidate.py"
+    completed = subprocess.run(
+        [sys.executable, "-P", "-B", str(runner), "--startup-probe"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert completed.returncode == 2
+    assert "ModuleNotFoundError" not in completed.stderr
+
+
 @requires_runner
 def test_protocol_refuses_missing_registration_before_reservation(monkeypatch, tmp_path):
     """The canonical wrapper never reserves or opens outcome data without registration."""
@@ -166,6 +181,10 @@ def test_committed_static_registration_preimage_matches_production_hash():
     assert path.relative_to(Path(__file__).parents[1]).as_posix() in preimage[
         "bootstrap"
     ]["seed_hygiene"]["post_design"]["allowed_paths"]
+    assert {
+        "plans/038-prospect-vnext-phase-a.md",
+        "data/validation/valucast_prospect_rank_v2_3_registration.json",
+    } <= set(preimage["bootstrap"]["seed_hygiene"]["post_design"]["allowed_paths"])
     assert Path(__file__).relative_to(Path(__file__).parents[1]).as_posix() in preimage[
         "bootstrap"
     ]["seed_hygiene"]["post_registration_policy"]["allowed_paths"]
@@ -353,7 +372,7 @@ def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
     monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], []))
     monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
-    monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda _revision, _path: "2" * 40)
     monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
     candidate._verify_predecessor_bindings(registration, "e" * 40)
     registration["predecessors"]["plan_031"]["history_evidence"]["inventory_sha256"] = "f" * 64
@@ -385,7 +404,7 @@ def test_plan_index_blobs_are_dynamic_and_mechanically_verified(monkeypatch, tmp
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
     monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], []))
     monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
-    monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda _revision, _path: "2" * 40)
     monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
     candidate._verify_predecessor_bindings(registration, "e" * 40)
 

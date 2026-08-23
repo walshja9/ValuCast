@@ -16,16 +16,21 @@ from pathlib import Path
 
 import numpy as np
 
-from prospects.rank_v1 import _score_source_sort_order
-from prospects.rank_v2 import build_fold_contract, reconstruct_fold_ladders
-from prospects.role_slope_joint_calibration import (
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from prospects.rank_v1 import _score_source_sort_order  # noqa: E402
+from prospects.rank_v2 import build_fold_contract, reconstruct_fold_ladders  # noqa: E402
+from prospects.role_slope_joint_calibration import (  # noqa: E402
     fit_role_slope_joint_map,
     score_role_slope_joint_ladders,
 )
-from prospects.prospect_v2_target import canonical_sha256, validate_development_contract
+from prospects.prospect_v2_target import (  # noqa: E402
+    canonical_sha256,
+    validate_development_contract,
+)
 
 
-ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_READ_PATHS = (
     "data/validation/valucast_prospect_rank_v2_3_registration.json",
     "data/validation/valucast_prospect_v2_development_contract.json",
@@ -80,7 +85,7 @@ STRUCTURAL_STAGES = (
 BOOTSTRAP_MINIMUM = 9_900
 
 _REGISTRATION_CONTRACT = {
-    "static_sha256": "6759d1323318be846a6f382edad8553ab9eb9777dc5eafaebca5fe2d11ebc6c6",
+    "static_sha256": "aaf933df536fa95c1d6dcfacd97780180c1455f0cbe0780f08e87c37acb39438",
     "source_binding_keys": {"git_blob", "normalized_sha256"},
     "history_evidence_keys": {
         "scope_tip", "standalone_pattern", "inventory_schema", "object_count",
@@ -1253,7 +1258,7 @@ def _verify_predecessor_bindings(registration: dict, implementation: str) -> Non
         except OSError as error:
             raise ProtocolError(f"cannot read predecessor plan: {relative}") from error
         if (
-            _git_blob_at(implementation, relative) != row["pre_transition_blob"]
+            _git_blob_at(implementation, relative) != row["post_transition_blob"]
             or len(before) != row["append_only_prefix_bytes"]
             or not current.startswith(before)
             or _git_blob(relative, ROOT / relative) != row["post_transition_blob"]
@@ -1287,7 +1292,7 @@ def _verify_predecessor_bindings(registration: dict, implementation: str) -> Non
     index = registration["predecessors"]["plan_index"]
     relative = index["plan_path"]
     if (
-        _git_blob_at(implementation, relative) != index["pre_transition_blob"]
+        _git_blob_at(implementation, relative) != index["post_transition_blob"]
         or _git_blob_at("HEAD", relative) != index["post_transition_blob"]
         or _git_blob(relative, ROOT / relative) != index["post_transition_blob"]
     ):
