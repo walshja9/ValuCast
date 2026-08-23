@@ -2788,6 +2788,7 @@ class TestConsensusLabelsAndYoungBadge(unittest.TestCase):
             if r.prospect_rank is not None
             and r.public_source_consensus is not None
             and "hkb" in (r.public_source_ranks or {})
+            and not r.active_mlb_callup
         )
         html = self.client.get(
             f"/player/{row.id}?mode=prospects",

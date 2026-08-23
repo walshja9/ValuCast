@@ -175,7 +175,13 @@ def test_real_card_renders_both_features_via_test_client(monkeypatch):
     if not app_module.dd_store.is_available:
         pytest.skip("dd feed not available")
     prospect = next(
-        (r for r in app_module.dd_store.get_all() if getattr(r, "is_prospect", False)),
+        (
+            r
+            for r in app_module.dd_store.get_all()
+            if getattr(r, "is_prospect", False)
+            and not r.active_mlb_callup
+            and r.source_ranks
+        ),
         None,
     )
     if prospect is None:
