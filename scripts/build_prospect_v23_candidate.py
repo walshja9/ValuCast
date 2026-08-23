@@ -1258,7 +1258,7 @@ def _verify_predecessor_bindings(registration: dict, implementation: str) -> Non
         except OSError as error:
             raise ProtocolError(f"cannot read predecessor plan: {relative}") from error
         if (
-            _git_blob_at(implementation, relative) != row["pre_transition_blob"]
+            _git_blob_at(implementation, relative) != row["post_transition_blob"]
             or len(before) != row["append_only_prefix_bytes"]
             or not current.startswith(before)
             or _git_blob(relative, ROOT / relative) != row["post_transition_blob"]
@@ -1292,7 +1292,7 @@ def _verify_predecessor_bindings(registration: dict, implementation: str) -> Non
     index = registration["predecessors"]["plan_index"]
     relative = index["plan_path"]
     if (
-        _git_blob_at(implementation, relative) != index["pre_transition_blob"]
+        _git_blob_at(implementation, relative) != index["post_transition_blob"]
         or _git_blob_at("HEAD", relative) != index["post_transition_blob"]
         or _git_blob(relative, ROOT / relative) != index["post_transition_blob"]
     ):

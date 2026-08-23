@@ -368,7 +368,7 @@ def test_dynamic_predecessor_evidence_rejects_altered_inventory(monkeypatch, tmp
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
     monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], []))
     monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
-    monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda _revision, _path: "2" * 40)
     monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
     candidate._verify_predecessor_bindings(registration, "e" * 40)
     registration["predecessors"]["plan_031"]["history_evidence"]["inventory_sha256"] = "f" * 64
@@ -400,7 +400,7 @@ def test_plan_index_blobs_are_dynamic_and_mechanically_verified(monkeypatch, tmp
     monkeypatch.setattr(candidate, "_git_object_ids", lambda _tip: ["a" * 40])
     monkeypatch.setattr(candidate, "_git_blob_inventory", lambda *_args, **_kwargs: ([], []))
     monkeypatch.setattr(candidate, "_git_blob_bytes", lambda _blob: b"x")
-    monkeypatch.setattr(candidate, "_git_blob_at", lambda revision, _path: "1" * 40 if revision == "e" * 40 else "2" * 40)
+    monkeypatch.setattr(candidate, "_git_blob_at", lambda _revision, _path: "2" * 40)
     monkeypatch.setattr(candidate, "_git_blob", lambda *_args: "2" * 40)
     candidate._verify_predecessor_bindings(registration, "e" * 40)
 
