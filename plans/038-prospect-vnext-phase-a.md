@@ -2,9 +2,17 @@
 
 **Status: REGISTERED - UNSPENT - NO EXECUTION AUTHORIZED**
 
-Replacement registered 2026-08-22 as one research-only, non-serving held-out
-development screen. The earlier local registration at
-`8684cec8cef5f12482feaef57430d2ae05c5f9b1`, seal
+Replacement registered 2026-08-23 as one research-only, non-serving held-out
+development screen. The current replacement registration is committed at
+`52b8e35b2e8bfdbdfb03d9703130bc35773e82d3`, seal
+`b53472eb608cd9c6a00e2422fc701a19afdcf16672edc612eb58f75443eb3748`.
+The superseded master-merged registration at
+`6e46ad2f946029a9c35c88313493d1fb5e257417`, seal
+`60dcc0710289919f0c8884321e73169680a8264d150f259cd227df60115f8828`, is
+`superseded_unspent / never_execute`; its sole owner-authorized invocation at
+`cc766153fff13ff3e4c23fa2bcd418c3d9e25802` failed before registration load or
+reservation and opened no outcome-bearing input. The earlier local registration
+at `8684cec8cef5f12482feaef57430d2ae05c5f9b1`, seal
 `6d1b0fe42887b4dff3f4b37bc0774c789b349ab38eab869233eebbc0f2217aec`, is
 `superseded_unspent / never_execute`; it never reached master or opened an
 outcome-bearing input. The subsequent local replacement at
@@ -29,9 +37,9 @@ authorization to open outcome-bearing inputs.
 
 The approved design is bound at
 `1737468b16717ee6f7d24ea08b8444fdde3442f2`; the replacement implementation is
-bound at `891262110c13961982420d405b6737c6243399fc`. Execution requires a later,
-explicit owner approval naming the exact merged execution SHA and satisfying
-every registered pre-marker check.
+bound at `95c0d67bbd9a66275cee62ee2e67781f777e54cd`. No execution is currently
+authorized. Execution requires a later, explicit owner approval naming the
+exact merged execution SHA and satisfying every registered pre-marker check.
 
 Plan 038 supersedes only the retired, unspent model tracks recorded append-only
 in Plans 031 and 034. Plan 034's separate buy-momentum and cross-universe tracks
