@@ -16,16 +16,21 @@ from pathlib import Path
 
 import numpy as np
 
-from prospects.rank_v1 import _score_source_sort_order
-from prospects.rank_v2 import build_fold_contract, reconstruct_fold_ladders
-from prospects.role_slope_joint_calibration import (
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from prospects.rank_v1 import _score_source_sort_order  # noqa: E402
+from prospects.rank_v2 import build_fold_contract, reconstruct_fold_ladders  # noqa: E402
+from prospects.role_slope_joint_calibration import (  # noqa: E402
     fit_role_slope_joint_map,
     score_role_slope_joint_ladders,
 )
-from prospects.prospect_v2_target import canonical_sha256, validate_development_contract
+from prospects.prospect_v2_target import (  # noqa: E402
+    canonical_sha256,
+    validate_development_contract,
+)
 
 
-ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_READ_PATHS = (
     "data/validation/valucast_prospect_rank_v2_3_registration.json",
     "data/validation/valucast_prospect_v2_development_contract.json",

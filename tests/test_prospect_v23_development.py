@@ -136,6 +136,21 @@ def test_fold_runner_import_is_the_registered_red_gate():
     _runner()
 
 
+def test_direct_runner_starts_outside_the_repository(tmp_path):
+    runner = Path(__file__).parents[1] / "scripts/build_prospect_v23_candidate.py"
+    completed = subprocess.run(
+        [sys.executable, "-P", "-B", str(runner), "--startup-probe"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+
+    assert completed.returncode == 2
+    assert "ModuleNotFoundError" not in completed.stderr
+
+
 @requires_runner
 def test_protocol_refuses_missing_registration_before_reservation(monkeypatch, tmp_path):
     """The canonical wrapper never reserves or opens outcome data without registration."""
