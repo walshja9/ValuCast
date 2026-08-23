@@ -44,6 +44,9 @@ The approved design is bound at
 bound at `e865b91547190af9c2d33d2891f170cd5490ec45`. No execution is currently
 authorized. Execution requires a later, explicit owner approval naming the
 exact merged execution SHA and satisfying every registered pre-marker check.
+The frozen v0.8 lineage transplant is explicitly exempt from Ruff `F401` so its
+reviewed bytes remain unchanged; the other disclosed style findings in
+Phase-A-touched paths predate the Phase A starting SHA.
 
 Plan 038 supersedes only the retired, unspent model tracks recorded append-only
 in Plans 031 and 034. Plan 034's separate buy-momentum and cross-universe tracks
