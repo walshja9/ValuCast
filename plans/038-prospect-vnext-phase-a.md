@@ -61,7 +61,7 @@ and an append-only transition below this registered block.
   "registration_status_at_seal": "registered_unspent",
   "candidate": {
     "approved_design_commit": "1737468b16717ee6f7d24ea08b8444fdde3442f2",
-    "implementation_commit": "95c0d67bbd9a66275cee62ee2e67781f777e54cd",
+    "implementation_commit": "e865b91547190af9c2d33d2891f170cd5490ec45",
     "family": "shared_threshold_role_slope_joint_ordered_logit",
     "parameter_order": [
       "tau_bust_role",
@@ -157,13 +157,13 @@ and an append-only transition below this registered block.
       "post_transition_blob": "49cea65a385e7db2c48b96673f2118f7004c5b4b",
       "append_only_prefix_bytes": 18006,
       "history_evidence": {
-        "scope_tip": "95c0d67bbd9a66275cee62ee2e67781f777e54cd",
+        "scope_tip": "e865b91547190af9c2d33d2891f170cd5490ec45",
         "standalone_pattern": "(^|[^0-9])31013([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
-        "object_count": 26434,
-        "sorted_object_ids_sha256": "c433097804c6e568a747182690437f68af9377aaa1410edaf2fa6b4c154f9f57",
-        "inventory_entry_count": 142,
-        "inventory_sha256": "d2cee0950b690c5489b64f958900d6c8f887a92c046a61ee2d0f32ab08775a47",
+        "object_count": 26607,
+        "sorted_object_ids_sha256": "97e7f1a53f9897258b5fcaf7839edd92d057d77920dbfc6c64f08701bcc68743",
+        "inventory_entry_count": 148,
+        "inventory_sha256": "5b803839f8f1c8301149bcf3b9030af63754037816a6f99f58565684a4241152",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -191,6 +191,20 @@ and an append-only transition below this registered block.
             "object_id": "07e6ba5dc1dc2d4522f5007e13592edc3302ec29",
             "path": "plans/038-prospect-vnext-phase-a.md",
             "byte_offset": 6138,
+            "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0ae3246044c210897ba98db48989b3e92712f97d",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 6250,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "0ae3246044c210897ba98db48989b3e92712f97d",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 6716,
             "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
             "classification": "governance_text"
           },
@@ -242,6 +256,20 @@ and an append-only transition below this registered block.
             "byte_offset": 1013,
             "line_sha256": "e82be979672a575ea35b9955488f7deff5c2110cb17a76d7f940b28b20935f66",
             "classification": "forbidden_seed_guard"
+          },
+          {
+            "object_id": "169c5a3d8708866b6f54f1380126f58282991afd",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 5672,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "169c5a3d8708866b6f54f1380126f58282991afd",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 6138,
+            "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
+            "classification": "governance_text"
           },
           {
             "object_id": "17884db5bdd2cdde9156cb1fa893a2154a95d6c0",
@@ -585,6 +613,20 @@ and an append-only transition below this registered block.
             "byte_offset": 443320,
             "line_sha256": "3f9a58d006edc1a7ee9f9877c252a2dd392930771bac72454678de7c32c2617b",
             "classification": "unrelated_numeric_data"
+          },
+          {
+            "object_id": "5f82a3e6b2ee7bf99e8b20624c82ec2618da5e31",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 2927,
+            "line_sha256": "9daea53fd7d0120978309ce292bd0d9e34ed6ce7b739a730baefe492cb40d155",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "5f82a3e6b2ee7bf99e8b20624c82ec2618da5e31",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 3393,
+            "line_sha256": "3a7afae71e625aef690c062c48c313300451ca2574f3bc517f3cfafd1a4ed5ac",
+            "classification": "governance_text"
           },
           {
             "object_id": "60737da83c251f4d4c1d47952c72927001b4834c",
@@ -1161,7 +1203,7 @@ and an append-only transition below this registered block.
             "classification": "unrelated_numeric_data"
           }
         ],
-        "classification_sha256": "92d03c43cffc95c4331574ab35f4cde21f644df7bccdfc4d8129e5188ca95bb0",
+        "classification_sha256": "0a0e82c99125badbe29662876681b31a061596130b6a442b09acf683f922f355",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -1204,13 +1246,13 @@ and an append-only transition below this registered block.
         }
       },
       "history_evidence": {
-        "scope_tip": "95c0d67bbd9a66275cee62ee2e67781f777e54cd",
+        "scope_tip": "e865b91547190af9c2d33d2891f170cd5490ec45",
         "standalone_pattern": "(^|[^0-9])34021([^0-9]|$)",
         "inventory_schema": "git_blob_path_offset_v1",
-        "object_count": 26434,
-        "sorted_object_ids_sha256": "c433097804c6e568a747182690437f68af9377aaa1410edaf2fa6b4c154f9f57",
-        "inventory_entry_count": 63,
-        "inventory_sha256": "3f942cfd501be00701a81fd72b0279d4593b8f99d67ddc76799f0fcb0e90a285",
+        "object_count": 26607,
+        "sorted_object_ids_sha256": "97e7f1a53f9897258b5fcaf7839edd92d057d77920dbfc6c64f08701bcc68743",
+        "inventory_entry_count": 69,
+        "inventory_sha256": "c062193abae3928a398a9c1c9dafa3c16220394fb444619c632c017b65eb8f4c",
         "classification_schema": "git_blob_path_offset_line_sha256_classification_v1",
         "classifications": [
           {
@@ -1224,6 +1266,20 @@ and an append-only transition below this registered block.
             "object_id": "07e6ba5dc1dc2d4522f5007e13592edc3302ec29",
             "path": "plans/038-prospect-vnext-phase-a.md",
             "byte_offset": 41429,
+            "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "0ae3246044c210897ba98db48989b3e92712f97d",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 55830,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "0ae3246044c210897ba98db48989b3e92712f97d",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 57639,
             "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
             "classification": "governance_text"
           },
@@ -1261,6 +1317,20 @@ and an append-only transition below this registered block.
             "byte_offset": 237,
             "line_sha256": "656e292f58cc81b528b98b4c7283a39d9b79a014193d585788b30126b4ba511d",
             "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "169c5a3d8708866b6f54f1380126f58282991afd",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 55252,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "169c5a3d8708866b6f54f1380126f58282991afd",
+            "path": "plans/038-prospect-vnext-phase-a.md",
+            "byte_offset": 57061,
+            "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
+            "classification": "governance_text"
           },
           {
             "object_id": "17884db5bdd2cdde9156cb1fa893a2154a95d6c0",
@@ -1407,6 +1477,20 @@ and an append-only transition below this registered block.
             "path": "docs/registration-2026-08-14-stage1-maturation-rerun.md",
             "byte_offset": 4376,
             "line_sha256": "5eb38f1f3d2a8622c30b77cc1434d8114f0d35dfa3eabbebb08e8ba3161942b1",
+            "classification": "governance_text"
+          },
+          {
+            "object_id": "5f82a3e6b2ee7bf99e8b20624c82ec2618da5e31",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 52507,
+            "line_sha256": "e0a0e51b45a4ed54a8081fa67baf9313d978d69e0633ae9aa58a99d792c7ed7d",
+            "classification": "test_guard_or_fixture"
+          },
+          {
+            "object_id": "5f82a3e6b2ee7bf99e8b20624c82ec2618da5e31",
+            "path": "data/validation/valucast_prospect_rank_v2_3_registration.json",
+            "byte_offset": 54316,
+            "line_sha256": "fbb53abbca33de6dd4d823e259a0c7e4690af9613decca7cc5122b83d0e7bf2a",
             "classification": "governance_text"
           },
           {
@@ -1655,7 +1739,7 @@ and an append-only transition below this registered block.
             "classification": "test_guard_or_fixture"
           }
         ],
-        "classification_sha256": "a64d68b40a9883120a447c076e658bdbf5b968becfe9deb4c8f648aaded89d78",
+        "classification_sha256": "e41693c3821ec33fac6d8600f1390929189870a726d9c41c11f0d332d05c6da9",
         "result_artifact_entries": [],
         "runner_invocation_entries": []
       }
@@ -2060,10 +2144,10 @@ and an append-only transition below this registered block.
         "scan_contract": "git_rev_list_cat_file_batch_rg_bytes_v1"
       },
       "post_design": {
-        "scope_tip": "95c0d67bbd9a66275cee62ee2e67781f777e54cd",
+        "scope_tip": "e865b91547190af9c2d33d2891f170cd5490ec45",
         "inventory_schema": "git_blob_path_offset_v1",
-        "entry_count": 251,
-        "inventory_sha256": "dccbe9d80f12af4e1ea3ee3f223f52108500846a7586cc8402bee9e3cfbef07f",
+        "entry_count": 260,
+        "inventory_sha256": "c1b98805c61584e720503950b88a29b40703fbfb44d8463c972740d64120ec7b",
         "allowed_paths": [
           "docs/superpowers/specs/2026-08-20-prospect-rank-vnext-current-board-design.md",
           "docs/superpowers/plans/2026-08-20-prospect-rank-vnext-phase-a.md",
@@ -2076,7 +2160,7 @@ and an append-only transition below this registered block.
         "unexpected_path_count": 0
       },
       "structured_seed_fields": {
-        "inventory_sha256": "08238844e8ce4adb9af9e32aa5b20f439c01b0f6794da34270bc1f5b1c6d0e7e",
+        "inventory_sha256": "4eacc6bde5e0731d95dce6ddc12843cf980201524ec33df9dfdbfe223bcb4037",
         "pre_design_match_count": 0,
         "forbidden_held_spent_reserved_membership": false
       },
@@ -2197,7 +2281,7 @@ and an append-only transition below this registered block.
       }
     }
   },
-  "artifact_sha256": "b53472eb608cd9c6a00e2422fc701a19afdcf16672edc612eb58f75443eb3748"
+  "artifact_sha256": "c5810eac762f7985360b41203e52a4be991d4abd8932a4a23b25273a34a2d068"
 }
 ```
 <!-- prospect-vnext-phase-a-registration:end -->
