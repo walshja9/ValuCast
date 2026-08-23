@@ -4,8 +4,12 @@
 
 Replacement registered 2026-08-23 as one research-only, non-serving held-out
 development screen. The current replacement registration is committed at
+`24ff8e6e73885b4b653e7492d64344c1ee6477de`, seal
+`c5810eac762f7985360b41203e52a4be991d4abd8932a4a23b25273a34a2d068`.
+The previous local replacement at
 `52b8e35b2e8bfdbdfb03d9703130bc35773e82d3`, seal
-`b53472eb608cd9c6a00e2422fc701a19afdcf16672edc612eb58f75443eb3748`.
+`b53472eb608cd9c6a00e2422fc701a19afdcf16672edc612eb58f75443eb3748`,
+is `superseded_unspent / never_execute`; it was never authorized or executed.
 The superseded master-merged registration at
 `6e46ad2f946029a9c35c88313493d1fb5e257417`, seal
 `60dcc0710289919f0c8884321e73169680a8264d150f259cd227df60115f8828`, is
@@ -37,7 +41,7 @@ authorization to open outcome-bearing inputs.
 
 The approved design is bound at
 `1737468b16717ee6f7d24ea08b8444fdde3442f2`; the replacement implementation is
-bound at `95c0d67bbd9a66275cee62ee2e67781f777e54cd`. No execution is currently
+bound at `e865b91547190af9c2d33d2891f170cd5490ec45`. No execution is currently
 authorized. Execution requires a later, explicit owner approval naming the
 exact merged execution SHA and satisfying every registered pre-marker check.
 
@@ -2293,8 +2297,11 @@ SHA `cc766153fff13ff3e4c23fa2bcd418c3d9e25802` exited before registration load
 or reservation because the direct-file runner could not import the repository's
 `prospects` package. It created no receipt, spend token, map, or outcome access.
 
-The direct-entry startup defect was repaired and the still-unspent registration
-was replaced at implementation commit
-`95c0d67bbd9a66275cee62ee2e67781f777e54cd`. No second execution is authorized.
+The direct-entry startup defect was repaired. After refreshed daily data exposed
+two tests selecting an active MLB call-up whose prospect fields are intentionally
+suppressed, those tests were constrained to display-eligible prospects and the
+still-unspent registration was replaced at implementation commit
+`e865b91547190af9c2d33d2891f170cd5490ec45`. These repairs opened no
+outcome-bearing input. No second execution is authorized.
 A later terminal-evidence commit may append the observed terminal status,
 receipt hash, and execution SHA here without editing the registered contract.
