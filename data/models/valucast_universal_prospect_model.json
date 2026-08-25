@@ -1,7 +1,7 @@
 {
   "candidate_count": 3117,
   "input_contract": {
-    "generated_at": "2026-08-24T00:00:00+00:00",
+    "generated_at": "2026-08-25T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -39517,78 +39517,78 @@
       "name": "Jakey Josepha",
       "normalized_name": "jakey josepha",
       "outcome_distribution": {
-        "bust_probability": 0.8741,
-        "role_probability": 0.0859,
+        "bust_probability": 0.8746,
+        "role_probability": 0.0854,
         "star_probability": 0.04
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.1259,
+          "prediction": 0.1254,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.1259,
+          "prediction": 0.1254,
           "prediction_source": "ridge",
           "unit": "probability"
         },
         "representative_avg": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.254,
+          "prediction": 0.2512,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "AVG"
         },
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 20.49,
+          "prediction": 20.55,
           "prediction_source": "historical_neighbors_25",
           "unit": "HR/600 PA"
         },
         "representative_k_pct": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 24.02,
+          "prediction": 24.39,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K%"
         },
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.7568,
+          "prediction": 0.7571,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
         "representative_pa": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 463.12,
+          "prediction": 460.16,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "PA"
         },
         "representative_r_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 74.1,
+          "prediction": 73.69,
           "prediction_source": "historical_neighbors_25",
           "unit": "R/600 PA"
         },
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 69.34,
+          "prediction": 68.43,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 9.32,
+          "prediction": 8.94,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -176258,35 +176258,35 @@
         "representative_era": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 4.6532,
+          "prediction": 4.6072,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "ERA"
         },
         "representative_hld_per_60": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 3.75,
+          "prediction": 3.78,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "HLD/60 IP"
         },
         "representative_ip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 84.15,
+          "prediction": 80.38,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "IP"
         },
         "representative_k_bb": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 2.3564,
+          "prediction": 2.4492,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K:BB"
         },
         "representative_k_per_9": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 8.21,
+          "prediction": 8.4,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "K/9"
         },
@@ -176321,7 +176321,7 @@
         "representative_whip": {
           "conditional_on": "representative season has at least 50 IP",
           "gate_status": "insufficient_sample",
-          "prediction": 1.3952,
+          "prediction": 1.38,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "WHIP"
         },
@@ -325147,7 +325147,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-08-24T00:00:00+00:00",
+          "activated_at": "2026-08-25T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.033681,
           "cv_method": "walk_forward",
@@ -327933,7 +327933,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-08-24T00:00:00+00:00",
+          "activated_at": "2026-08-25T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.03029,
           "cv_method": "walk_forward",
