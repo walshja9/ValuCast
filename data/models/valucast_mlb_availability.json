@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-08-31",
+  "generated_at": "2026-09-01",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -48,21 +48,6 @@
       "transaction_id": 929170,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Milwaukee Brewers sent RHP Abner Uribe on a rehab assignment to Wisconsin Timber Rattlers.",
-      "effective_date": "2026-08-25",
-      "list_type": null,
-      "mlbam_id": 682842,
-      "name": "Abner Uribe",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Wisconsin Timber Rattlers",
-      "transaction_date": "2026-08-25",
-      "transaction_id": 939373,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -636,6 +621,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Milwaukee Brewers placed RHP Bryse Wilson on the 15-day injured list. Low back strain.",
+      "effective_date": "2026-08-31",
+      "list_type": "15-day injured list",
+      "mlbam_id": 669060,
+      "name": "Bryse Wilson",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Milwaukee Brewers",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940258,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "Detroit Tigers sent RHP Burch Smith on a rehab assignment to Toledo Mud Hens.",
       "effective_date": "2026-07-21",
       "list_type": null,
@@ -936,16 +936,31 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Seattle Mariners placed SS Colt Emerson on the 10-day injured list. Left wrist tendon inflammation.",
-      "effective_date": "2026-08-14",
-      "list_type": "10-day injured list",
+      "description": "Texas Rangers placed RHP Cole Winn on the 15-day injured list retroactive to August 28, 2026. Right rotator cuff strain.",
+      "effective_date": "2026-08-28",
+      "list_type": "15-day injured list",
+      "mlbam_id": 668390,
+      "name": "Cole Winn",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Texas Rangers",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940287,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Seattle Mariners transferred SS Colt Emerson from the 10-day injured list to the 60-day injured list. Left wrist tendon repair.",
+      "effective_date": "2026-08-31",
+      "list_type": "60-day injured list",
       "mlbam_id": 806068,
       "name": "Colt Emerson",
       "source": "official_mlb_statsapi_transactions",
       "status": "injured",
       "team": "Seattle Mariners",
-      "transaction_date": "2026-08-14",
-      "transaction_id": 937571,
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940262,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -978,21 +993,6 @@
       "transaction_id": 934319,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Seattle Mariners sent RHP Cooper Criswell on a rehab assignment to Tacoma Rainiers.",
-      "effective_date": "2026-08-22",
-      "list_type": null,
-      "mlbam_id": 681867,
-      "name": "Cooper Criswell",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Tacoma Rainiers",
-      "transaction_date": "2026-08-22",
-      "transaction_id": 939002,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -1455,7 +1455,7 @@
       "status": "rehab",
       "team": "Oklahoma City Comets",
       "transaction_date": "2026-08-06",
-      "transaction_id": 935936,
+      "transaction_id": 940283,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -2496,21 +2496,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Arizona Diamondbacks placed 2B Ketel Marte on the 10-day injured list. Left knee inflammation.",
-      "effective_date": "2026-08-20",
-      "list_type": "10-day injured list",
-      "mlbam_id": 606466,
-      "name": "Ketel Marte",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Arizona Diamondbacks",
-      "transaction_date": "2026-08-20",
-      "transaction_id": 938717,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Pittsburgh Pirates sent SS Konnor Griffin on a rehab assignment to Altoona Curve.",
       "effective_date": "2026-08-29",
       "list_type": null,
@@ -2793,21 +2778,6 @@
       "transaction_id": 934461,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "New York Mets sent 1B Mark Vientos on a rehab assignment to Syracuse Mets.",
-      "effective_date": "2026-08-25",
-      "list_type": null,
-      "mlbam_id": 668901,
-      "name": "Mark Vientos",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Syracuse Mets",
-      "transaction_date": "2026-08-25",
-      "transaction_id": 939290,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -3126,6 +3096,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Seattle Mariners placed RHP Nick Davila on the 15-day injured list. SC joint sprain.",
+      "effective_date": "2026-08-31",
+      "list_type": "15-day injured list",
+      "mlbam_id": 689546,
+      "name": "Nick Davila",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Seattle Mariners",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940261,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "Athletics transferred 1B Nick Kurtz from the 10-day injured list to the 60-day injured list. Strained right thumb.",
       "effective_date": "2026-08-21",
       "list_type": "60-day injured list",
@@ -3256,6 +3241,21 @@
       "team": "St. Louis Cardinals",
       "transaction_date": "2026-08-27",
       "transaction_id": 939626,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Texas Rangers placed RHP Peyton Gray on the 15-day injured list retroactive to August 30, 2026. Right elbow inflammation.",
+      "effective_date": "2026-08-30",
+      "list_type": "15-day injured list",
+      "mlbam_id": 682608,
+      "name": "Peyton Gray",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Texas Rangers",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940286,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -4221,6 +4221,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Boston Red Sox placed 1B Willson Contreras on the 10-day injured list. Left hamstring strain.",
+      "effective_date": "2026-08-31",
+      "list_type": "10-day injured list",
+      "mlbam_id": 575929,
+      "name": "Willson Contreras",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Boston Red Sox",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940248,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "San Francisco Giants placed SS Willy Adames on the 10-day injured list. Left elbow sprain.",
       "effective_date": "2026-08-24",
       "list_type": "10-day injured list",
@@ -4231,6 +4246,21 @@
       "team": "San Francisco Giants",
       "transaction_date": "2026-08-24",
       "transaction_id": 939215,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Miami Marlins placed 2B Xavier Edwards on the 10-day injured list. Left thumb sprain.",
+      "effective_date": "2026-08-31",
+      "list_type": "10-day injured list",
+      "mlbam_id": 669364,
+      "name": "Xavier Edwards",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Miami Marlins",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940253,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -4351,6 +4381,21 @@
       "team": "Athletics",
       "transaction_date": "2026-06-17",
       "transaction_id": 919551,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Milwaukee Brewers activated RHP Abner Uribe from the 15-day injured list.",
+      "effective_date": "2026-08-31",
+      "list_type": "15-day injured list",
+      "mlbam_id": 682842,
+      "name": "Abner Uribe",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Milwaukee Brewers",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940257,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -5136,21 +5181,6 @@
     },
     {
       "active_injury_risk": false,
-      "description": "Texas Rangers activated RHP Cole Winn from the 15-day injured list.",
-      "effective_date": "2026-06-09",
-      "list_type": "15-day injured list",
-      "mlbam_id": 668390,
-      "name": "Cole Winn",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Texas Rangers",
-      "transaction_date": "2026-06-09",
-      "transaction_id": 916910,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
       "description": "Milwaukee Brewers activated RHP Coleman Crow from the 15-day injured list.",
       "effective_date": "2026-07-12",
       "list_type": "15-day injured list",
@@ -5176,6 +5206,21 @@
       "team": "Minnesota Twins",
       "transaction_date": "2026-07-26",
       "transaction_id": 931307,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Seattle Mariners activated RHP Cooper Criswell from the 60-day injured list.",
+      "effective_date": "2026-08-31",
+      "list_type": "60-day injured list",
+      "mlbam_id": 681867,
+      "name": "Cooper Criswell",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Seattle Mariners",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940260,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6966,6 +7011,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Arizona Diamondbacks activated 2B Ketel Marte from the 10-day injured list.",
+      "effective_date": "2026-08-31",
+      "list_type": "10-day injured list",
+      "mlbam_id": 606466,
+      "name": "Ketel Marte",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Arizona Diamondbacks",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940290,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Los Angeles Angels activated RHP Kirby Yates from the 15-day injured list.",
       "effective_date": "2026-05-05",
       "list_type": "15-day injured list",
@@ -7306,6 +7366,21 @@
       "team": "New York Mets",
       "transaction_date": "2026-07-16",
       "transaction_id": 927823,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "New York Mets activated 1B Mark Vientos from the 10-day injured list.",
+      "effective_date": "2026-08-31",
+      "list_type": "10-day injured list",
+      "mlbam_id": 668901,
+      "name": "Mark Vientos",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "New York Mets",
+      "transaction_date": "2026-08-31",
+      "transaction_id": 940254,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9036,7 +9111,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-08-31",
+    "end_date": "2026-09-01",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -9054,15 +9129,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 315,
+    "available_after_il_count": 318,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 203,
-    "profile_count": 601,
+    "injured_count": 208,
+    "profile_count": 606,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 83,
-    "risk_profile_count": 286,
-    "tracked_mlbam_count": 11088,
-    "transaction_count": 11035
+    "rehab_count": 80,
+    "risk_profile_count": 288,
+    "tracked_mlbam_count": 11095,
+    "transaction_count": 11074
   }
 }

@@ -9,13 +9,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 1.24,
+        "gap": 1.62,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 691406,
           "name": "Junior Caminero",
           "rank": 2,
-          "value": 97.9
+          "value": 97.52
         },
         "top": {
           "mlbam_id": 691718,
@@ -56,8 +56,8 @@
               "SP",
               "RP"
             ],
-            "rank": 5,
-            "value": 77.02
+            "rank": 4,
+            "value": 77.0
           },
           {
             "name": "Jacob Misiorowski",
@@ -65,23 +65,23 @@
               "SP"
             ],
             "rank": 7,
-            "value": 73.58
-          },
-          {
-            "name": "Cam Schlittler",
-            "positions": [
-              "SP"
-            ],
-            "rank": 22,
-            "value": 63.2
+            "value": 73.29
           },
           {
             "name": "Paul Skenes",
             "positions": [
               "SP"
             ],
+            "rank": 22,
+            "value": 62.79
+          },
+          {
+            "name": "Cam Schlittler",
+            "positions": [
+              "SP"
+            ],
             "rank": 23,
-            "value": 62.48
+            "value": 62.77
           }
         ],
         "reliever_count": 0,
@@ -124,7 +124,7 @@
             "name": "Hagen Smith",
             "rank": 7,
             "role": "pitcher",
-            "score": 58.02
+            "score": 58.03
           },
           {
             "mlbam_id": 701364,
@@ -186,10 +186,10 @@
       "id": "prospect_transition_continuity",
       "message": "Prospect transition calibration is continuous across the latest vintages.",
       "metrics": {
-        "baseline_date": "2026-08-30",
+        "baseline_date": "2026-08-31",
         "bucket_step_threshold": 6.0,
-        "current_date": "2026-08-31",
-        "evaluated_matched_row_count": 3149,
+        "current_date": "2026-09-01",
+        "evaluated_matched_row_count": 3158,
         "hitter_count": 0,
         "incident_count": 0,
         "model_delta_limit": 1.0,
@@ -428,7 +428,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 78,
+        "archive_day_span": 79,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -546,7 +546,7 @@
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
         "cooling_count": 12,
-        "generated_at": "2026-08-31T00:00:00+00:00",
+        "generated_at": "2026-09-01T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 12
@@ -593,21 +593,21 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-08-31T12:20:05.015481+00:00",
+  "generated_at": "2026-09-01T12:16:07.727614+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-08-31",
-      "buy_signals": "2026-08-31",
-      "milb_stat_freshness_audit": "2026-08-31",
-      "mlb_layer": "2026-08-31",
-      "movers": "2026-08-31",
-      "prospect_card_data_audit": "2026-08-31",
-      "prospect_coverage_audit": "2026-08-31",
-      "prospect_rank": "2026-08-31",
-      "public_snapshot": "2026-08-31",
-      "recent_signal_report": "2026-08-31"
+      "buy_review": "2026-09-01",
+      "buy_signals": "2026-09-01",
+      "milb_stat_freshness_audit": "2026-09-01",
+      "mlb_layer": "2026-09-01",
+      "movers": "2026-09-01",
+      "prospect_card_data_audit": "2026-09-01",
+      "prospect_coverage_audit": "2026-09-01",
+      "prospect_rank": "2026-09-01",
+      "public_snapshot": "2026-09-01",
+      "recent_signal_report": "2026-09-01"
     },
     "mlb_count": 908,
     "prospect_count": 3158,
