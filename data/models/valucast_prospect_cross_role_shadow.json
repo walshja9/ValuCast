@@ -1,6 +1,6 @@
 {
   "aaa_measured_evidence": {
-    "aaa_pitcher_population": 188,
+    "aaa_pitcher_population": 186,
     "covered_top25_pitchers": [
       {
         "mlbam_id": 696146,
@@ -8,7 +8,7 @@
         "name": "Hagen Smith",
         "overall": {
           "chase_pct": {
-            "aaa_empirical_percentile": 56.9,
+            "aaa_empirical_percentile": 57.5,
             "value": 29.9
           },
           "csw_pct": {
@@ -16,7 +16,7 @@
             "value": 32.2
           },
           "gb_pct": {
-            "aaa_empirical_percentile": 76.1,
+            "aaa_empirical_percentile": 75.8,
             "value": 47.9
           },
           "whiff_pct": {
@@ -24,7 +24,7 @@
             "value": 35.2
           },
           "zone_pct": {
-            "aaa_empirical_percentile": 50.5,
+            "aaa_empirical_percentile": 51.1,
             "value": 41.7
           }
         },
@@ -60,112 +60,28 @@
         "rank": 7
       },
       {
-        "mlbam_id": 687312,
-        "n_pitches": 674,
-        "name": "Gabriel Hughes",
-        "overall": {
-          "chase_pct": {
-            "aaa_empirical_percentile": 97.3,
-            "value": 36.4
-          },
-          "csw_pct": {
-            "aaa_empirical_percentile": 77.1,
-            "value": 29.5
-          },
-          "gb_pct": {
-            "aaa_empirical_percentile": 70.7,
-            "value": 46.9
-          },
-          "whiff_pct": {
-            "aaa_empirical_percentile": 39.9,
-            "value": 25.1
-          },
-          "zone_pct": {
-            "aaa_empirical_percentile": 87.8,
-            "value": 45.8
-          }
-        },
-        "pitch_types": {
-          "CH": {
-            "ext": 6.79,
-            "hb": -10.84,
-            "ivb": 3.6,
-            "n": 52,
-            "spin": 1507,
-            "usage_pct": 7.7,
-            "velo": 87.66
-          },
-          "CU": {
-            "ext": 6.75,
-            "hb": 7.2,
-            "ivb": -11.68,
-            "n": 88,
-            "spin": 2434,
-            "usage_pct": 13.1,
-            "velo": 78.04
-          },
-          "FF": {
-            "ext": 6.85,
-            "hb": 0.61,
-            "ivb": 10.29,
-            "n": 240,
-            "spin": 2208,
-            "usage_pct": 35.6,
-            "velo": 92.55
-          },
-          "SI": {
-            "ext": 6.88,
-            "hb": -9.01,
-            "ivb": 8.83,
-            "n": 118,
-            "spin": 2069,
-            "usage_pct": 17.5,
-            "velo": 92.81
-          },
-          "SL": {
-            "ext": 6.8,
-            "hb": 3.53,
-            "ivb": 1.45,
-            "n": 79,
-            "spin": 2272,
-            "usage_pct": 11.7,
-            "velo": 85.82
-          },
-          "ST": {
-            "ext": 6.74,
-            "hb": 11.2,
-            "ivb": 1.44,
-            "n": 96,
-            "spin": 2245,
-            "usage_pct": 14.2,
-            "velo": 83.31
-          }
-        },
-        "rank": 12
-      },
-      {
         "mlbam_id": 702566,
         "n_pitches": 1019,
         "name": "Owen Murphy",
         "overall": {
           "chase_pct": {
-            "aaa_empirical_percentile": 84.6,
+            "aaa_empirical_percentile": 84.9,
             "value": 32.7
           },
           "csw_pct": {
-            "aaa_empirical_percentile": 87.8,
+            "aaa_empirical_percentile": 88.2,
             "value": 31.4
           },
           "gb_pct": {
-            "aaa_empirical_percentile": 22.9,
+            "aaa_empirical_percentile": 23.1,
             "value": 37.7
           },
           "whiff_pct": {
-            "aaa_empirical_percentile": 72.3,
+            "aaa_empirical_percentile": 72.6,
             "value": 30.1
           },
           "zone_pct": {
-            "aaa_empirical_percentile": 91.0,
+            "aaa_empirical_percentile": 90.9,
             "value": 46.3
           }
         },
@@ -216,7 +132,7 @@
             "velo": 87.65
           }
         },
-        "rank": 23
+        "rank": 22
       }
     ]
   },
@@ -224,16 +140,16 @@
   "checks": {
     "aaa_measured_coverage": {
       "confirms_cross_role_calibration": false,
-      "coverage_rate": 1.0,
-      "covered_top25_pitcher_count": 3,
+      "coverage_rate": 0.666667,
+      "covered_top25_pitcher_count": 2,
       "eligible_sample_ready": true,
       "eligible_top25_pitcher_count": 3,
       "evidence_class": "post_first_look_aaa_feed_completeness",
       "floor": 0.6,
       "minimum_eligible_top25_pitcher_count": 3,
       "status": "pass",
-      "top25_pitcher_count": 12,
-      "top25_population_coverage_rate": 0.25
+      "top25_pitcher_count": 11,
+      "top25_population_coverage_rate": 0.181818
     },
     "cross_role_change_power": {
       "evidence_class": "prospective_change_gate",
@@ -264,16 +180,16 @@
       "evidence_class": "current_publication_shape",
       "max_top25_pitchers": 7,
       "max_top50_pitcher_rate": 0.3,
-      "model_component_eligible_board_count": 3121,
+      "model_component_eligible_board_count": 3160,
       "model_component_field": "components.model_score",
       "model_component_sort": "model_score_desc_then_served_rank_asc_then_mlbam_id_asc",
       "model_component_top25_evaluated_count": 25,
       "model_component_top25_hitter_count": 12,
       "model_component_top25_pitcher_count": 13,
       "status": "fail",
-      "top25_pitcher_count": 12,
-      "top50_pitcher_count": 19,
-      "top50_pitcher_rate": 0.38
+      "top25_pitcher_count": 11,
+      "top50_pitcher_count": 20,
+      "top50_pitcher_rate": 0.4
     },
     "historical_absolute_concordance": {
       "confirms_current_change": false,
@@ -304,35 +220,35 @@
     {
       "eligible_top25_count": 25,
       "minimum_sources": 1,
-      "pitcher_count": 12,
-      "pitcher_source_rank_median": 60.2
+      "pitcher_count": 11,
+      "pitcher_source_rank_median": 51.0
     },
     {
       "eligible_top25_count": 24,
       "minimum_sources": 2,
-      "pitcher_count": 11,
-      "pitcher_source_rank_median": 51.5
+      "pitcher_count": 10,
+      "pitcher_source_rank_median": 48.0
     },
     {
-      "eligible_top25_count": 23,
+      "eligible_top25_count": 24,
       "minimum_sources": 3,
       "pitcher_count": 10,
-      "pitcher_source_rank_median": 47.8
+      "pitcher_source_rank_median": 48.0
     },
     {
-      "eligible_top25_count": 20,
+      "eligible_top25_count": 21,
       "minimum_sources": 4,
       "pitcher_count": 8,
-      "pitcher_source_rank_median": 43.5
+      "pitcher_source_rank_median": 44.0
     },
     {
-      "eligible_top25_count": 17,
+      "eligible_top25_count": 19,
       "minimum_sources": 5,
       "pitcher_count": 7,
       "pitcher_source_rank_median": 43
     }
   ],
-  "generated_at": "2026-09-01T12:13:44.777842+00:00",
+  "generated_at": "2026-09-05T12:17:22.438854+00:00",
   "limitations": [
     "Historical absolute concordance is retrospective and does not confirm a current scoring change.",
     "AAA Statcast is measured current evidence, not a historical outcome panel.",
@@ -347,8 +263,8 @@
   },
   "schema_version": "1.2.0",
   "source_dates": {
-    "aaa_artifact_generated_at": "2026-09-01T12:13:44.344957+00:00",
-    "rank_artifact_generated_at": "2026-09-01T00:00:00+00:00"
+    "aaa_artifact_generated_at": "2026-09-05T12:17:21.986498+00:00",
+    "rank_artifact_generated_at": "2026-09-05T00:00:00+00:00"
   },
   "source_policy": {
     "external_rankings_used_as_outcomes": false,
