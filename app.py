@@ -73,6 +73,7 @@ from web.prospect_league_ranks import format_ranks_for
 from web.value_spark import build_spark
 from web import buy_score
 from web import prospect_percentiles
+from web.accepted_prospect_board import CSV_NAME as ACCEPTED_BOARD_CSV_NAME, select_board
 from web.share_pages import build_share_preview_html
 from prospects.availability import LEVEL_ORDER
 from prospects.availability import eta_window as prospect_eta_window
@@ -82,6 +83,9 @@ from prospects.universe import MINOR_TEAM_MLB_AFFILIATES
 from scouting.mlb_read import build_mlb_scouting_read, stat_line_stats
 
 app = Flask(__name__)
+accepted_prospect_board = select_board(os.environ)
+if accepted_prospect_board.error:
+    app.logger.error("Selected accepted prospect board unavailable: %s", accepted_prospect_board.error)
 PUBLIC_BASE_URL = os.environ.get("VALUCAST_PUBLIC_URL", "https://valucast.app").rstrip("/")
 # Deliberate public hold of the buys/AOTC surface until release; flip to False (and redeploy) to re-enable.
 AHEAD_OF_THE_CURVE_HOLD = False
@@ -265,6 +269,17 @@ def _png_cache_key():
         request.path,
         tuple(sorted(params)),
     )
+
+
+@app.before_request
+def _guard_accepted_prospect_graphics():
+    # Run before the old PNG cache: selected v266 must never return a v1 image.
+    if accepted_prospect_board.selected and (
+        request.path.startswith(("/prospects/share-card", "/prospects/player-card/", "/share/prospects/"))
+        or request.path == "/prospects/graphic"
+    ):
+        return render_template("accepted_prospect_unavailable.html", accepted_prospect_view=True,
+                               mode="prospects"), 503
 
 
 @app.before_request
@@ -478,6 +493,24 @@ def metrics_summary():
     response = jsonify(site_metrics.summary(days=days))
     response.headers["Cache-Control"] = "public, max-age=300"
     return response
+
+
+@app.context_processor
+def _accepted_prospect_provenance():
+    selected = accepted_prospect_board.selected
+    accepted_view = selected and request.endpoint in {
+        "index", "rankings", "player_detail", "compare", "export_csv"
+    } and request.args.get("mode") == "prospects"
+    retained = request.endpoint in {
+        "trade", "value_map", "farms", "backfields", "backfields_team",
+        "backfields_team_share_card", "buys", "movers", "gaps", "receipts",
+        "scouting_reports", "discipline_leaders", "my_players", "player_detail", "compare",
+    }
+    return {"accepted_prospect_view": accepted_view, "accepted_prospect_selected": selected,
+            "legacy_prospect_context": selected and retained and not accepted_view,
+            "legacy_prospect_as_of": str(dd_store.generated_at or "")[:10],
+            "prospect_player_url": _prospect_player_url,
+            "accepted_board": accepted_prospect_board.board}
 
 
 @app.context_processor
@@ -1100,7 +1133,7 @@ def _discipline_leaders_context(args) -> dict:
             "rank": rank,
             "name": (info or {}).get("name") or f"MLBAM {row['mlbam_id']}",
             "player_url": (
-                f"/player/{quote(str(info['player_id']), safe='')}?mode=prospects"
+                _prospect_player_url(info['player_id'], mlbam_id=row['mlbam_id'])
                 if info else None
             ),
             "team": (info or {}).get("team"),
@@ -5224,9 +5257,71 @@ def _front_door_onramp():
     return picks[:3]
 
 
+def _accepted_board_or_503():
+    board = accepted_prospect_board.board
+    if board is None:
+        abort(503, description="The accepted prospect board is unavailable. Please try again later.")
+    return board
+
+
+def _known_prospect_mlbam(player_id):
+    """Join a legacy ID through its actual snapshot record, never its spelling/name."""
+    row = dd_store.get_by_id(player_id) if dd_store.is_available else None
+    if row is None or not row.is_prospect:
+        return None
+    value = getattr(row, "mlbam_id", None)
+    return str(value) if value is not None and re.fullmatch(r"[1-9][0-9]*", str(value)) else None
+
+
+def _prospect_player_url(player_id=None, *, mlbam_id=None, name=None):
+    if accepted_prospect_board.selected:
+        identity = str(mlbam_id) if mlbam_id is not None else _known_prospect_mlbam(player_id)
+        if identity and re.fullmatch(r"[1-9][0-9]*", identity):
+            return f"/player/v266-{identity}?mode=prospects"
+    if player_id not in (None, ""):
+        return f"/player/{quote(str(player_id), safe='')}?mode=prospects"
+    clean_name = " ".join(str(name or "").split())
+    return "/?" + urlencode({"mode": "prospects", **({"search": clean_name} if clean_name else {})})
+
+
+def _accepted_row_from_source_id(board, player_id):
+    row = board.get(player_id)
+    if row is not None:
+        return row
+    identity = _known_prospect_mlbam(player_id)
+    return board.get(f"v266-{identity}") if identity else None
+
+
+def _accepted_uncovered_response():
+    template = ("partials/accepted_prospect_uncovered.html" if request.headers.get("HX-Request") == "true"
+                else "accepted_prospect_uncovered.html")
+    response = make_response(render_template(template, mode="prospects", accepted_prospect_view=True), 404)
+    response.headers["X-ValuCast-Forecast-Coverage"] = "uncovered"
+    return response
+
+
+def _accepted_board_context():
+    board = _accepted_board_or_503()
+    role = request.args.get("role", "")
+    if role not in {"", "hitter", "pitcher", "two_way"}:
+        abort(400, description="Choose all roles, hitter, pitcher or two-way.")
+    search = request.args.get("search", "")
+    return {"accepted_board": board, "accepted_rows": board.filtered(search, role),
+            "mode": "prospects", "accepted_prospect_view": True, "search": search, "role": role}
+
+
+def _accepted_detail_response(board, rows):
+    template = ("partials/accepted_prospect_detail.html" if request.headers.get("HX-Request") == "true"
+                else "accepted_prospect_detail.html")
+    return render_template(template, accepted_board=board, detail_rows=rows,
+                           mode="prospects", accepted_prospect_view=True)
+
+
 @app.route("/")
 def index():
     mode = request.args.get("mode", "categories")
+    if mode == "prospects" and accepted_prospect_board.selected:
+        return render_template("accepted_prospect_board.html", **_accepted_board_context())
     if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:
             abort(503, description="The requested rankings are unavailable. Please try again later.")
@@ -5254,6 +5349,13 @@ def rankings():
     if _browser_direct_partial_request():
         return _redirect_home(request.args.to_dict(flat=False))
     mode = request.args.get("mode", "categories")
+    if mode == "prospects" and accepted_prospect_board.selected:
+        context = _accepted_board_context()
+        response = make_response(render_template("partials/accepted_prospect_table.html", **context))
+        response.headers["HX-Replace-Url"] = "/?" + urlencode(
+            {key: value for key, value in {"mode": "prospects", "search": context["search"],
+                                          "role": context["role"]}.items() if value})
+        return response
     if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:
             abort(503, description="The requested rankings are unavailable. Please try again later.")
@@ -6277,6 +6379,8 @@ def scouting_reports():
         item["player_url"] = "/?" + urlencode(
             {"mode": "prospects", "search": item.get("name") or ""}
         )
+        if accepted_prospect_board.selected:
+            item["player_url"] = _prospect_player_url(item.get("id"), mlbam_id=item.get("mlbam_id"), name=item.get("name"))
         item["status_label"] = _format_context_label(item.get("report_status"))
         recent_context = item.get("recent_signal")
         if isinstance(recent_context, dict):
@@ -6638,11 +6742,8 @@ def _team_board_eta_window(row):
 
 
 def _team_board_player_url(row):
-    player_id = getattr(row, "id", None)
-    if player_id not in (None, ""):
-        return f"/player/{quote(str(player_id), safe='')}?mode=prospects"
     name = str(getattr(row, "name", "") or "").strip()
-    return "/?mode=prospects" if not name else "/?" + urlencode({"mode": "prospects", "search": name})
+    return _prospect_player_url(getattr(row, "id", None), mlbam_id=getattr(row, "mlbam_id", None), name=name)
 
 
 def _team_board_report_url(name):
@@ -6849,10 +6950,7 @@ def _team_board_buys(org, *, payload=None, limit=3):
         buys.append({
             "rank": row.get("rank"),
             "name": name,
-            "url": (
-                f"/player/{quote(player_id, safe='')}?mode=prospects"
-                if player_id else "/?" + urlencode({"mode": "prospects", "search": name})
-            ),
+            "url": _prospect_player_url(player_id, mlbam_id=row.get("mlbam_id"), name=name),
             "score": _team_board_fmt_value(row.get("score")),
             "reason": str(row.get("reason") or "ValuCast buy signal"),
             "availability": str(row.get("availability_status") or "unknown").replace("_", " ").title(),
@@ -7081,19 +7179,8 @@ def _build_backfields_page_context():
             return clean
         return clean[: limit - 3].rstrip() + "..."
 
-    def player_search_url(name):
-        clean = " ".join(str(name or "").split())
-        if not clean:
-            return "/?mode=prospects"
-        return "/?" + urlencode({"mode": "prospects", "search": clean})
-
-    def player_detail_url(player_id, name=None):
-        if player_id not in (None, ""):
-            return f"/player/{quote(str(player_id), safe='')}?mode=prospects"
-        return player_search_url(name)
-
-    def player_link_fields(name, player_id):
-        url = player_detail_url(player_id, name)
+    def player_link_fields(name, player_id, mlbam_id=None):
+        url = _prospect_player_url(player_id, mlbam_id=mlbam_id, name=name)
         return {
             "id": str(player_id or ""),
             "url": url,
@@ -7399,7 +7486,7 @@ def _build_backfields_page_context():
             )
             shaped.append({
                 "name": name,
-                **player_link_fields(name, resolved_id or row.get("mlbam_id")),
+                **player_link_fields(name, resolved_id or row.get("mlbam_id"), mlbam_id=row.get("mlbam_id")),
                 "valucast_rank": int(valucast_rank),
                 "consensus_rank": int(consensus_rank),
                 "divergence": int(divergence),
@@ -7468,7 +7555,8 @@ def _farm_rankings_share_card_png(context):
         draw,
         headline="Farm-System Rankings",
         subtitle=f"All MLB farm systems - {date_label}",
-        extra_line="Top-20 ValuCast dynasty value; Top 100 breaks ties",
+        extra_line=("Public-v1 snapshot: top-20 dynasty value; Top 100 breaks ties"
+                    if accepted_prospect_board.selected else "Top-20 ValuCast dynasty value; Top 100 breaks ties"),
         tagline="Farm-System Rankings",
     )
 
@@ -7509,11 +7597,12 @@ def _farm_rankings_share_card_png(context):
 
     draw.text(
         (48, 1164),
-        "System value = sum of each organization's top 20 current ValuCast prospect values.",
+        ("Public-v1 snapshot: sum of each organization's top 20 dynasty values."
+         if accepted_prospect_board.selected else "System value = sum of each organization's top 20 current ValuCast prospect values."),
         fill=muted,
         font=_graphic_font(16),
     )
-    _graphic_footer(draw, right_note="Current board - all systems")
+    _graphic_footer(draw, right_note="Public-v1 snapshot - all systems" if accepted_prospect_board.selected else "Current board - all systems")
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -7537,12 +7626,14 @@ def farms_share_card():
         return "<!doctype html><title>Farm-system graphic unavailable</title>", 503
     html = build_share_preview_html(
         title="ValuCast Farm-System Rankings",
-        subtitle="All MLB systems ranked by current top-20 ValuCast prospect value",
+        subtitle=("All MLB systems ranked by dated public-v1 top-20 dynasty value"
+                  if accepted_prospect_board.selected else "All MLB systems ranked by current top-20 ValuCast prospect value"),
         png_url="/farms/share-card.png",
         filename="valucast-farm-system-rankings.png",
         public_png_url=_public_url("/farms/share-card.png"),
         public_page_url=_public_url("/farms/share-card"),
-        description="All MLB farm systems ranked by the sum of their top 20 current ValuCast prospect values.",
+        description=("All MLB farm systems ranked by the sum of their top 20 dated public-v1 dynasty values."
+                     if accepted_prospect_board.selected else "All MLB farm systems ranked by the sum of their top 20 current ValuCast prospect values."),
         image_alt="ValuCast farm-system rankings graphic",
         back_url="/farms",
         back_label="Back to farm-system rankings",
@@ -7862,7 +7953,8 @@ def _team_board_share_card_png(board, *, limit):
     else:
         draw.text((table_x1 + 668, insight_y + 43), "No current buy signal", fill=muted, font=small_font)
 
-    footer = f"{selected['org']} team board · top {limit} · ValuCast order"
+    source_label = "Public-v1 snapshot" if accepted_prospect_board.selected else "ValuCast order"
+    footer = f"{selected['org']} team board · top {limit} · {source_label}"
     _graphic_footer(draw, right_note=footer)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -10753,6 +10845,9 @@ def health_ready():
         "steamer": _store_ok("steamer"),
         "valucast": _store_ok("valucast"),
     }
+    selected_board = accepted_prospect_board.board
+    if accepted_prospect_board.selected:
+        stores["accepted_prospect_board_available"] = selected_board is not None
     if os.environ.get("VALUCAST_USE_PUBLIC_SNAPSHOT", "1") == "1":
         # Gate the deploy on the snapshot being SERVABLE (valid + present), not on
         # live-readiness. When the quality governor withholds live consumption
@@ -10776,6 +10871,12 @@ def health_ready():
     body = {
         "ready": ready,
         "stores": stores,
+        "prospect_board": {
+            "source": "v2.6.6" if accepted_prospect_board.selected else "public-v1",
+            "available": selected_board is not None if accepted_prospect_board.selected else dd_store.is_available,
+            "decision_date": selected_board.metadata["decision_date"] if selected_board else None,
+            "row_count": len(selected_board.rows) if selected_board else None,
+        },
         "public_snapshot": {
             "available": public_snapshot_store.is_available,
             "generated_at": public_snapshot_store.generated_at,
@@ -10961,6 +11062,12 @@ def _build_dynasty_player_detail_context(player_id, args):
 @app.route("/player/<player_id>")
 def player_detail(player_id):
     mode = request.args.get("mode", "categories")
+    if mode == "prospects" and accepted_prospect_board.selected:
+        board = _accepted_board_or_503()
+        row = _accepted_row_from_source_id(board, player_id)
+        if row is None:
+            return _accepted_uncovered_response()
+        return _accepted_detail_response(board, (row,))
 
     if request.headers.get("HX-Request") != "true":
         player_name = None
@@ -11017,6 +11124,12 @@ def compare():
     mode = request.args.get("mode", "categories")
     p1_id = request.args.get("p1", "")
     p2_id = request.args.get("p2", "")
+    if mode == "prospects" and accepted_prospect_board.selected:
+        board = _accepted_board_or_503()
+        rows = (_accepted_row_from_source_id(board, p1_id), _accepted_row_from_source_id(board, p2_id))
+        if any(row is None for row in rows):
+            return _accepted_uncovered_response()
+        return _accepted_detail_response(board, rows)
 
     if mode in ("dd_dynasty", "prospects"):
         ctx = _build_dynasty_context(request.args)
@@ -11061,6 +11174,13 @@ def _csv_safe(value):
 @app.route("/export")
 def export_csv():
     mode = request.args.get("mode", "categories")
+    if mode == "prospects" and accepted_prospect_board.selected:
+        board = _accepted_board_or_503()
+        response = make_response(board.csv_bytes)
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+        response.headers["Content-Disposition"] = f'attachment; filename="{ACCEPTED_BOARD_CSV_NAME}"'
+        response.set_etag(board.metadata["csv_sha256"])
+        return response
 
     if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:

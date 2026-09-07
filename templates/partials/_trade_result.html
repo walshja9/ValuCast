@@ -11,7 +11,7 @@
         {% for p in give_pieces %}
         <article class="movers-row trade-row">
             <div class="buys-main trade-main">
-                <a href="/player/{{ p.id }}?mode={{ 'prospects' if p.is_prospect else 'dd_dynasty' }}">{{ p.name }}</a>
+                <a href="{{ prospect_player_url(p.id) if p.is_prospect else url_for('player_detail', player_id=p.id, mode='dd_dynasty') }}">{{ p.name }}</a>
                 <span class="buys-tag">{% if p.rank_label %}{{ p.rank_label }} &middot; {% endif %}{{ p.team }}{% if p.pos %} &middot; {{ p.pos }}{% endif %}{% if p.level %} &middot; {{ p.level }}{% endif %}{% if p.confidence %} &middot; {{ p.confidence }} confidence{% endif %}{% if p.momentum %} &middot; {{ p.momentum }}{% endif %}</span>
             </div>
             <span class="trade-val">{{ p.value }}</span>
@@ -30,7 +30,7 @@
         {% for p in get_pieces %}
         <article class="movers-row trade-row">
             <div class="buys-main trade-main">
-                <a href="/player/{{ p.id }}?mode={{ 'prospects' if p.is_prospect else 'dd_dynasty' }}">{{ p.name }}</a>
+                <a href="{{ prospect_player_url(p.id) if p.is_prospect else url_for('player_detail', player_id=p.id, mode='dd_dynasty') }}">{{ p.name }}</a>
                 <span class="buys-tag">{% if p.rank_label %}{{ p.rank_label }} &middot; {% endif %}{{ p.team }}{% if p.pos %} &middot; {{ p.pos }}{% endif %}{% if p.level %} &middot; {{ p.level }}{% endif %}{% if p.confidence %} &middot; {{ p.confidence }} confidence{% endif %}{% if p.momentum %} &middot; {{ p.momentum }}{% endif %}</span>
             </div>
             <span class="trade-val">{{ p.value }}</span>

@@ -1,0 +1,17 @@
+<p role="status">Showing {{ accepted_rows|length }} of {{ accepted_board.rows|length }} assets. Original ranks are preserved.</p>
+<div class="accepted-board-table-wrap" tabindex="0" role="region" aria-label="Prospect forecast table; scroll horizontally on small screens">
+    <table class="rankings-table accepted-board-table">
+        <caption>Accepted v2.6.6 prospect forecast, 2026-08-26</caption>
+        <thead><tr><th scope="col">Rank</th><th scope="col">Player</th><th scope="col">Role</th>
+            <th scope="col">Y12 surplus</th><th scope="col">Y24 surplus</th><th scope="col">Evidence confidence</th></tr></thead>
+        <tbody>
+            {% for row in accepted_rows %}
+            <tr data-board-rank="{{ row.rank }}" data-mlbam-id="{{ row.mlbam_id }}">
+                <td>{{ row.rank }}</td>
+                <th scope="row"><a href="{{ url_for('player_detail', player_id=row.id, mode='prospects') }}">{{ row.name }}</a></th>
+                <td>{{ row.role|replace('_', '-') }}</td><td>{{ row.y12_display }}</td><td>{{ row.y24_display }}</td><td>{{ row.confidence }}</td>
+            </tr>
+            {% else %}<tr><td colspan="6">No prospects match these filters.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>

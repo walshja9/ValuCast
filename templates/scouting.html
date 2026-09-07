@@ -127,7 +127,7 @@
                 {% if report.confidence_label %}{% set scouting_meta.parts = scouting_meta.parts + [report.confidence_label ~ " confidence"] %}{% endif %}
                 <span class="scouting-meta-line">{{ scouting_meta.parts | join("  ·  ") }}</span>
                 <a href="{{ report.player_url }}">Open board</a>
-                {% if report.id %}<a href="/prospects/player-card/{{ report.id }}" target="_blank" rel="noopener">Share graphic</a>{% endif %}
+                {% if report.id and not accepted_prospect_selected %}<a href="/prospects/player-card/{{ report.id }}" target="_blank" rel="noopener">Share graphic</a>{% endif %}
             </div>
         </article>
         {% endfor %}

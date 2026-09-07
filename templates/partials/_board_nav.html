@@ -1,4 +1,4 @@
-{% macro board_nav(active='', dd_available=true, aria='Board navigation') %}
+{% macro board_nav(active='', dd_available=true, aria='Board navigation', accepted=false) %}
 {# Horizon switch ONLY: destination pages live in the primary nav and footer. #}
 <nav class="horizon-tabs" aria-label="{{ aria }}">
     <a href="/" class="htab{% if active == 'redraft' %} on{% endif %}"{% if active == 'redraft' %} aria-current="page"{% endif %}>Redraft</a>
@@ -8,5 +8,5 @@
     {% endif %}
 </nav>
 {# Provenance line: the identity claim, on every board (7/3 landscape review). #}
-<p class="prov-line">Deterministic &middot; committed daily &middot; {% if active == 'ledger' %}publicly scored{% else %}<a href="/ledger">publicly scored</a>{% endif %} &middot; free, no login</p>
+<p class="prov-line">{% if accepted %}Fixed forecast &middot; accepted export &middot; {% else %}Deterministic &middot; committed daily &middot; {% if active == 'ledger' %}publicly scored{% else %}<a href="/ledger">publicly scored</a>{% endif %} &middot; {% endif %}free, no login</p>
 {% endmacro %}

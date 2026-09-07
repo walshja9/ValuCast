@@ -1,8 +1,10 @@
 {% from "partials/_editorial_date.html" import editorial_date %}
 <div class="footer-about">
     <p class="footer-how">
-        <span class="footer-positioning">ValuCast independently evaluates prospects, translates that evidence into league-specific fantasy decisions, and publishes the methodology and receipts.</span><br>
-        {% if glossary_page %}
+        <span class="footer-positioning">{% if accepted_prospect_view %}ValuCast combined prospect forecast.{% else %}ValuCast independently evaluates prospects, translates that evidence into league-specific fantasy decisions, and publishes the methodology and receipts.{% endif %}</span><br>
+        {% if accepted_prospect_view %}
+        Y12 and Y24 are forecast surplus, not dollars or a 0–100 dynasty score. Filters preserve the accepted combined order.
+        {% elif glossary_page %}
         ValuCast glossary: plain-language definitions for the core numbers on player cards, boards, and The Second Opinion.
         {% elif intelligence_page %}
         ValuCast Intelligence Hub: one place for the rankings, quality gates, scouting reads, peak projections, role tracker, projection track, and league tools.
@@ -21,7 +23,11 @@
     </p>
 </div>
 <p class="footer-data">
-    {% if methodology_page or scouting_page or intelligence_page or glossary_page %}
+    {% if accepted_prospect_view %}
+    {% if accepted_board %}Source: accepted ValuCast v2.6.6 export · Forecast 2026-08-26, 12:00 UTC · {{ accepted_board.rows|length }} assets.
+    {% else %}The selected v2.6.6 prospect source is unavailable.{% endif %}
+    This forecast is separate from daily factual updates. <a href="/?mode=prospects">Combined prospect board</a>
+    {% elif methodology_page or scouting_page or intelligence_page or glossary_page %}
     <a href="/">Back to board</a> - <a href="/intelligence">Intelligence Hub</a> - <a href="/ledger">The Ledger</a>{% if not scoreboard_hold %} - <a href="/scoreboard">Forward Ledger</a>{% endif %} - <a href="/models">Model Verdicts</a> - <a href="/glossary">Glossary</a> - <a href="/scouting">Scouting Reports</a> - <a href="/discipline-leaders">Discipline Leaders</a> - <a href="/front-office">Front Office Track</a> - <a href="/cards">Player Cards</a> - <a href="/trade">The Second Opinion</a> - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
     Data: Dynasty model + prospect feed - MLB stats from FanGraphs Steamer rest-of-season + MLB Stats API{% if as_of %} - Updated {{ editorial_date(as_of) }}{% endif %}
@@ -55,3 +61,8 @@
     - <a href="mailto:valucast.feedback@gmail.com">Send feedback</a>
     {% endif %}
 </p>
+{% if accepted_prospect_view and accepted_board %}
+<details class="footer-data"><summary>Artifact provenance</summary>
+    <p>Terminal {{ accepted_board.metadata.terminal_commit }}<br>Metadata SHA-256 {{ accepted_board.metadata_sha256 }}</p>
+</details>
+{% endif %}

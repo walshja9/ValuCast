@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+{% from "partials/_board_nav.html" import board_nav with context %}
+{{ board_nav(active='prospects', dd_available=true, aria='Board horizon', accepted=true) }}
+<section class="accepted-board" aria-labelledby="accepted-board-title" hx-history="false">
+    <h2 id="accepted-board-title">Combined prospect board</h2>
+    <p>ValuCast v2.6.6 · Forecast date <time datetime="2026-08-26T12:00:00Z">2026-08-26, 12:00 UTC</time>.</p>
+    <p>One rank per asset, ordered by Y24 surplus, then Y12 surplus. This fixed forecast does not include a daily model update.</p>
+    {% include "partials/accepted_prospect_help.html" %}
+    <form class="accepted-board-controls" method="get" action="/" hx-get="/rankings" hx-target="#rankings-container"
+          hx-trigger="submit, change, input changed delay:300ms from:#accepted-search" hx-sync="this:replace">
+        <input type="hidden" name="mode" value="prospects">
+        <label for="accepted-search">Player search</label>
+        <input type="search" id="accepted-search" name="search" value="{{ search }}" placeholder="Search player names">
+        <label for="accepted-role">Role</label>
+        <select id="accepted-role" name="role">
+            <option value=""{% if not role %} selected{% endif %}>All roles</option>
+            <option value="hitter"{% if role == 'hitter' %} selected{% endif %}>Hitters, including two-way</option>
+            <option value="pitcher"{% if role == 'pitcher' %} selected{% endif %}>Pitchers, including two-way</option>
+            <option value="two_way"{% if role == 'two_way' %} selected{% endif %}>Two-way only</option>
+        </select>
+        <button class="export-btn" type="submit">Apply filters</button>
+    </form>
+    <p><a href="/export?mode=prospects" download>Download full accepted board</a> — all {{ accepted_board.rows|length }} assets, including those hidden by filters.</p>
+    <details class="accepted-board-compare">
+    <summary>Compare prospects</summary>
+    <form class="accepted-board-controls" action="/compare" method="get">
+        <input type="hidden" name="mode" value="prospects">
+        {% for field, label in [('p1', 'First prospect'), ('p2', 'Second prospect')] %}
+        <label for="accepted-{{ field }}">{{ label }}</label>
+        <select id="accepted-{{ field }}" name="{{ field }}">
+            {% for row in accepted_board.rows %}
+            <option value="{{ row.id }}"{% if field == 'p2' and loop.index == 2 %} selected{% endif %}>#{{ row.rank }} {{ row.name }}</option>
+            {% endfor %}
+        </select>
+        {% endfor %}
+        <button class="export-btn" type="submit">Compare</button>
+    </form>
+    </details>
+    <div id="rankings-container" aria-live="polite">
+        {% include "partials/accepted_prospect_table.html" %}
+    </div>
+</section>
+{% endblock %}
