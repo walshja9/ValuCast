@@ -1,6 +1,8 @@
 """Tests for the ValuCast prospect availability/risk layer."""
 import json
 
+import pytest
+
 from prospects.availability import (
     MAX_IL_RISK_DISCOUNT,
     MAX_RISK_DISCOUNT,
@@ -343,6 +345,53 @@ def test_active_mlb_roster_with_thin_sample_still_validates(tmp_path):
     assert validate_prospect_availability(artifact_path)[1] == []
 
 
+@pytest.mark.parametrize("manual_status", ["injured", "il"])
+def test_active_mlb_roster_supersedes_manual_injury_override(tmp_path, manual_status):
+    override = {
+        "mlbam_id": 30, "role": "pitcher", "status": manual_status,
+        "risk_discount": 0.12, "age": 23, "note": "Previous injured-list stint.",
+    }
+    payload = build_prospect_availability(
+        _input_contract(), overrides={"overrides": [override]},
+        active_roster_ids={"30"}, il_lookup={"30": _official_il_profile()},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert pitcher["active_mlb_roster"] is True
+    assert pitcher["status"] == "available"
+    assert pitcher["risk_basis"] == "current_sample_size"
+    assert pitcher["risk_discount"] == 0.06
+    assert pitcher["age"] == 23
+    assert pitcher["evidence_provenance"]["status_source"] == "active_mlb_roster"
+    assert "manual_status_override" not in pitcher["signals"]
+    assert "official_mlb_il_override" not in pitcher["signals"]
+    assert pitcher["availability_note"] != override["note"]
+    assert override["status"] == manual_status
+    assert validate_prospect_availability(artifact_path)[1] == []
+
+
+def test_active_mlb_roster_preserves_manual_available_risk_override(tmp_path):
+    payload = build_prospect_availability(
+        _input_contract(), active_roster_ids={"30"},
+        overrides={"overrides": [{
+            "mlbam_id": 30, "role": "pitcher", "status": "available",
+            "risk_discount": 0.09, "note": "Available with verified workload risk.",
+        }]},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert pitcher["status"] == "available"
+    assert pitcher["risk_basis"] == "manual_override"
+    assert pitcher["risk_discount"] == 0.09
+    assert pitcher["evidence_provenance"]["status_source"] == "manual_override"
+    assert "manual_status_override" in pitcher["signals"]
+    assert validate_prospect_availability(artifact_path)[1] == []
+
+
 def test_active_mlb_roster_with_stale_sample_still_validates(tmp_path):
     contract = _input_contract()
     contract["current"]["pitchers"][2]["sample_staleness_years"] = 1
@@ -499,7 +548,7 @@ def test_run_prospect_availability_writes_artifact(tmp_path):
     assert result["profile_count"] == 3
     assert result["risk_profile_count"] == 2
     assert payload["artifact"] == "valucast_prospect_availability"
-    assert payload["artifact_version"] == "0.5.1"
+    assert payload["artifact_version"] == "0.5.2"
     assert payload["summary"]["profile_count"] == 3
     assert validate_prospect_availability(artifact_path)[1] == []
 

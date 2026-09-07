@@ -2,7 +2,9 @@
 
 Player values tuned to your league.
 
-ValuCast is a fantasy baseball valuation tool that combines 2026 actual stats with rest-of-season projections to produce season outlook rankings for any league format. Configure your scoring mode, categories, and weights — ValuCast handles the math.
+ValuCast combines independent prospect intelligence with league-specific fantasy baseball values. It supports season outlook rankings, combined MLB/prospect dynasty boards, player comparisons, and trade decisions. Configure your scoring mode, categories, and weights to translate the available player evidence into your league's settings.
+
+The public product and experimental research lineages have separate release gates. A research checkpoint or fitted model does not replace the public board. Product direction is recorded in the [positioning design](docs/superpowers/specs/2026-08-04-valucast-positioning-messaging-design.md); dated plans record their own scope and approval state.
 
 **Live:** [valucast.app](https://valucast.app)
 
@@ -13,7 +15,9 @@ ValuCast is a fantasy baseball valuation tool that combines 2026 actual stats wi
 - **26 categories:** 13 hitting + 13 pitching, with custom weights
 - **SP/RP split:** Separate baselines for starters and relievers
 - **Instant results:** No uploads, no accounts — pick your format, see rankings
-- **CSV export:** Download filtered rankings
+- **CSV export:** Download every matching dynasty/prospect asset, with source dates and prospect publication status
+- **Dynasty and prospects:** League-aware rankings, player context, and trade analysis
+- **Evidence:** Methodology, historical boards, and tracked calls with explicit readiness limits
 
 ## Quick Start
 
@@ -22,13 +26,14 @@ ValuCast is a fantasy baseball valuation tool that combines 2026 actual stats wi
 pip install -r requirements.txt
 pip install -e .
 
-# Refresh data (fetches latest actuals + projections)
-python -c "from scraper.refresh import refresh; refresh()"
-
-# Run the web app
+# Run the web app with the committed data snapshot
 python app.py
 # → http://localhost:5001
 ```
+
+The Prospects board combines hitters and pitchers into one list and keeps each two-way player once, using the best-ranked role. Use **Show all prospects** to view the full pool; **Export all matches CSV** includes every match regardless of the display limit. League filters and sorting apply to both. The stored prospect rank remains visible, so removing a duplicate role can leave a rank gap.
+
+For a complete data refresh, use the existing `daily-public-data.yml` workflow. Running only `scraper.refresh` updates MLB projections, not the full prospect pipeline. Publication stays atomic after all validators pass. The site displays the snapshot date and overdue refresh warning; `/health/ready` reports serving readiness separately from data freshness and prospect qualification.
 
 ## Data Pipeline
 
@@ -75,7 +80,7 @@ app.py                 Flask app (/, /rankings, /player, /compare, /export, /lea
 templates/             Jinja2 + htmx templates
 static/                CSS
 data/                  Projections, actuals, metadata
-tests/                 unit tests (700+)
+tests/                 unit and integration tests
 ```
 
 ## Tests
@@ -93,9 +98,10 @@ python -m pytest
 - [x] Tier visualization, position ranks, auction dollars
 - [x] Dynasty mode (Beta) with combined MLB + prospect rankings
 - [x] Prospect board with source ranks, breakout indicators, MiLB stats
-- [ ] Dynasty league customization (scoring format, prospect depth, trade window)
-- [ ] Render deployment
-- [ ] Engine result caching for faster player detail loads
+- [x] Dynasty league customization (scoring format, prospect depth, trade window)
+- [x] Render service configuration and gated deployment workflows
+- [x] Canonical valuation and share-card caching
+- [ ] Reuse cached canonical values throughout player detail and compare routes
 
 ## Deploy
 Run `powershell -File scripts/deploy.ps1` from a clean `master` working tree.

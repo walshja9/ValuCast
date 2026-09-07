@@ -1,3 +1,3 @@
 {% if snapshot_stale %}
-<div class="notice">Showing the most recent validated ValuCast snapshot — today's refresh hasn't published yet.</div>
+<div class="notice" role="status">Daily refresh overdue. Latest snapshot: <strong>{{ snapshot_as_of or 'date unavailable' }}</strong>{% if snapshot_age_days is not none and snapshot_age_days >= 0 %} ({{ snapshot_age_days }} {{ 'day' if snapshot_age_days == 1 else 'days' }} old){% endif %}. These rankings reflect that snapshot.</div>
 {% endif %}

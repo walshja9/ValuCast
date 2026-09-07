@@ -101,6 +101,12 @@
             notice.hidden = true;
         }, 5000);
     }
+    document.body.addEventListener('htmx:beforeSwap', function (event) {
+        if (event.detail.xhr.status === 503 && event.detail.target.id === 'rankings-container') {
+            event.detail.shouldSwap = true;
+            event.detail.isError = false;
+        }
+    });
     ['htmx:responseError', 'htmx:sendError', 'htmx:timeout'].forEach(function (evt) {
         document.body.addEventListener(evt, htmxFailureNotice);
     });

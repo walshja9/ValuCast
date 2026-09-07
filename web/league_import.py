@@ -10,7 +10,9 @@ returned partial dict and the caller keeps its current/default value.
 """
 from __future__ import annotations
 
+import json
 import re
+from contextlib import closing
 from datetime import datetime, timezone
 from urllib.parse import parse_qs, urlparse
 
@@ -82,27 +84,35 @@ def _fetch_json(url: str, params: dict | None = None) -> dict:
         # allow_redirects=False: the API hosts are hardcoded; following a 30x
         # is never legitimate here and would re-open the fetch to other hosts.
         resp = requests.get(url, params=params, timeout=FETCH_TIMEOUT,
-                            allow_redirects=False,
+                            allow_redirects=False, stream=True,
                             headers={"User-Agent": "ValuCast/1.0 league-import"})
     except requests.RequestException:
         raise ImportError_("Couldn't reach the league host — try again, or enter settings manually.") from None
-    if resp.status_code in (401, 403):
-        raise ImportError_("This league is private — enter settings manually.")
-    if resp.status_code != 200:
-        raise ImportError_(f"League lookup failed (HTTP {resp.status_code}) — enter settings manually.")
-    try:
-        declared_size = int(resp.headers.get("Content-Length", "0") or 0)
-    except (TypeError, ValueError):
-        declared_size = 0
-    if declared_size > MAX_RESPONSE_BYTES:
-        raise ImportError_("Unexpected response from the league host — enter settings manually.")
-    try:
-        data = resp.json()
-    except ValueError:
-        raise ImportError_("Unexpected response from the league host — enter settings manually.") from None
-    if not isinstance(data, dict):
-        raise ImportError_("Unexpected response from the league host — enter settings manually.")
-    return data
+    with closing(resp):
+        if resp.status_code in (401, 403):
+            raise ImportError_("This league is private — enter settings manually.")
+        if resp.status_code != 200:
+            raise ImportError_(f"League lookup failed (HTTP {resp.status_code}) — enter settings manually.")
+        try:
+            declared_size = int(resp.headers.get("Content-Length", "0") or 0)
+        except (TypeError, ValueError):
+            declared_size = 0
+        if declared_size > MAX_RESPONSE_BYTES:
+            raise ImportError_("Unexpected response from the league host — enter settings manually.")
+        try:
+            body = bytearray()
+            for chunk in resp.iter_content(chunk_size=64 * 1024):
+                if len(body) + len(chunk) > MAX_RESPONSE_BYTES:
+                    raise ImportError_("Unexpected response from the league host — enter settings manually.")
+                body.extend(chunk)
+            data = json.loads(body)
+        except requests.RequestException:
+            raise ImportError_("Couldn't reach the league host — try again, or enter settings manually.") from None
+        except ValueError:
+            raise ImportError_("Unexpected response from the league host — enter settings manually.") from None
+        if not isinstance(data, dict):
+            raise ImportError_("Unexpected response from the league host — enter settings manually.")
+        return data
 
 
 def import_league(url: str) -> tuple[dict, str]:
