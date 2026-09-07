@@ -3,11 +3,11 @@
 
 {% block title %}{{ board.selected.name }} prospects | Backfields{% endblock %}
 {% block og_title %}{{ board.selected.name }} prospects | ValuCast Backfields{% endblock %}
-{% block og_description %}Top prospects for {{ board.selected.name }} by ValuCast prospect order.{% endblock %}
+{% block og_description %}Top prospects for {{ board.selected.name }} by {% if accepted_prospect_selected %}public-v1 snapshot{% else %}ValuCast prospect{% endif %} order.{% endblock %}
 {% block og_url %}https://valucast.app/backfields/team/{{ board.selected.org }}/share-card{% endblock %}
 {% block og_image %}https://valucast.app/backfields/team/{{ board.selected.org }}/share-card.png?n=10{% endblock %}
 {% block twitter_title %}{{ board.selected.name }} prospects | ValuCast{% endblock %}
-{% block twitter_description %}Top prospects for {{ board.selected.name }} by ValuCast prospect order.{% endblock %}
+{% block twitter_description %}Top prospects for {{ board.selected.name }} by {% if accepted_prospect_selected %}public-v1 snapshot{% else %}ValuCast prospect{% endif %} order.{% endblock %}
 {% block twitter_image %}https://valucast.app/backfields/team/{{ board.selected.org }}/share-card.png?n=10{% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
         <div class="bf-hero-copy">
             <p class="bf-eyebrow">Backfields Team Board</p>
             <h1>{{ board.selected.name }}</h1>
-            <p class="bf-tagline">ValuCast prospect order for {{ board.selected.org }}. This is the same model order used in Backfields.</p>
+            <p class="bf-tagline">{% if accepted_prospect_selected %}Public-v1 snapshot{% else %}ValuCast prospect{% endif %} order for {{ board.selected.org }}. This is the same model order used in Backfields.</p>
         </div>
         <div class="bf-hero-actions">
             {% if as_of %}<span class="bf-freshness">Values updated {{ editorial_date(as_of) }}</span>{% endif %}
@@ -28,7 +28,7 @@
         <div class="bf-section-head">
             <div>
                 <h2>Share graphic</h2>
-                <p>ValuCast prospect order</p>
+                <p>{% if accepted_prospect_selected %}Public-v1 snapshot{% else %}ValuCast prospect{% endif %} order</p>
             </div>
             <a class="bf-section-link" href="/backfields">Back to Backfields</a>
         </div>

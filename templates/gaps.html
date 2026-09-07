@@ -51,7 +51,7 @@
         <article class="movers-row">
             <span class="buys-rank">#{{ p.valucast_rank }}</span>
             <div class="buys-main">
-                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+                <a href="{{ prospect_player_url('vc_prospect_' ~ p.mlbam_id ~ '_' ~ p.role, mlbam_id=p.mlbam_id) }}">{{ p.name }}</a>
                 {# Aggregate consensus ONLY — never per-source ranks. The median
                    across boards is our transformative figure; reprinting each
                    outside site's exact rank would redistribute their product
@@ -70,7 +70,7 @@
         <article class="movers-row">
             <span class="buys-rank">#{{ p.valucast_rank }}</span>
             <div class="buys-main">
-                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+                <a href="{{ prospect_player_url('vc_prospect_' ~ p.mlbam_id ~ '_' ~ p.role, mlbam_id=p.mlbam_id) }}">{{ p.name }}</a>
                 <span class="buys-tag">{{ p.team }} &middot; field {% if p.board_min is not none and p.board_max is not none and p.board_min != p.board_max %}#{{ p.board_min }}&ndash;#{{ p.board_max }}, median {% endif %}~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
             </div>
             <span class="mover-delta down">{{ p.divergence }}</span>

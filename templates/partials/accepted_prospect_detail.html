@@ -1,0 +1,18 @@
+<section aria-label="Accepted prospect forecast details">
+    <p><a href="/?mode=prospects">Back to combined prospect board</a></p>
+    <p>ValuCast v2.6.6 · Forecast date <time datetime="2026-08-26T12:00:00Z">2026-08-26, 12:00 UTC</time>. Fixed forecast; no daily model update.</p>
+    {% include "partials/accepted_prospect_help.html" %}
+    {% for row in detail_rows %}
+    <article aria-labelledby="accepted-player-{{ row.mlbam_id }}">
+        <h2 id="accepted-player-{{ row.mlbam_id }}">#{{ row.rank }} {{ row.name }}</h2>
+        <dl>
+            <dt>MLBAM ID</dt><dd>{{ row.mlbam_id }}</dd>
+            <dt>Role</dt><dd>{{ row.role | replace('_', '-') }}</dd>
+            <dt>Y12 surplus</dt><dd>{{ row.y12_display }}</dd>
+            <dt>Y24 surplus</dt><dd>{{ row.y24_display }}</dd>
+            <dt>Evidence confidence</dt><dd>{{ row.confidence }}</dd>
+        </dl>
+    </article>
+    {% endfor %}
+    <p><a href="/export?mode=prospects" download>Download full accepted board</a></p>
+</section>

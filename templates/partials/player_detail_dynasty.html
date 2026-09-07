@@ -67,9 +67,9 @@
             <span class="headline-context">{{ headline_context.parts | join("  ·  ") }}</span>
             {% endif %}
             <div class="profile-card-badges">
-            {% if row.is_prospect %}
+            {% if row.is_prospect and not accepted_prospect_selected %}
                 <a class="player-share-link" data-metric="share_card" href="/prospects/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
-            {% else %}
+            {% elif not row.is_prospect %}
                 <a class="player-share-link" data-metric="share_card" href="/dynasty/player-card/{{ row.id }}" target="_blank" rel="noopener">Share graphic</a>
             {% endif %}
             </div>
@@ -960,4 +960,3 @@
         {% endif %}
     </div>
 </div>
-

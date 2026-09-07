@@ -2,11 +2,11 @@
 
 {% block title %}Farm-System Rankings | ValuCast{% endblock %}
 {% block og_title %}Farm-System Rankings | ValuCast{% endblock %}
-{% block og_description %}MLB farm systems ranked from the current ValuCast prospect board.{% endblock %}
+{% block og_description %}MLB farm systems ranked from the {% if accepted_prospect_selected %}dated public-v1 snapshot{% else %}current ValuCast prospect board{% endif %}.{% endblock %}
 {% block og_url %}https://valucast.app/farms{% endblock %}
 {% block og_image %}https://valucast.app/farms/share-card.png{% endblock %}
 {% block twitter_title %}Farm-System Rankings | ValuCast{% endblock %}
-{% block twitter_description %}MLB farm systems ranked from the current ValuCast prospect board.{% endblock %}
+{% block twitter_description %}MLB farm systems ranked from the {% if accepted_prospect_selected %}dated public-v1 snapshot{% else %}current ValuCast prospect board{% endif %}.{% endblock %}
 {% block twitter_image %}https://valucast.app/farms/share-card.png{% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
         <div class="bf-hero-copy">
             <p class="bf-eyebrow">Minor Leagues</p>
             <h1>Farm-System Rankings</h1>
-            <p class="bf-tagline">The sum of each system's top 20 dynasty values on the current ValuCast prospect board.</p>
+            <p class="bf-tagline">The sum of each system's top 20 dynasty values on the {% if accepted_prospect_selected %}public-v1 snapshot ({{ legacy_prospect_as_of }}){% else %}current ValuCast prospect board{% endif %}.</p>
         </div>
         <span class="bf-team-share-actions">
             <a class="bf-section-link" href="/farms/share-card">Preview graphic</a>

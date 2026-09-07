@@ -1,0 +1,24 @@
+/* Preserve real table headers on phones; the legacy table becomes value cards. */
+.accepted-board-table-wrap { max-width: 100%; overflow-x: auto; margin: 1rem 0; }
+.accepted-board-table.rankings-table { display: table; min-width: 680px; }
+.accepted-board-table.rankings-table > thead { display: table-header-group; position: static; }
+.accepted-board-table.rankings-table > tbody { display: table-row-group; }
+.accepted-board-table.rankings-table > tbody > tr { display: table-row; }
+.accepted-board-table.rankings-table > tbody > tr > td,
+.accepted-board-table.rankings-table > tbody > tr > th { display: table-cell; width: auto; padding: .5rem; }
+.accepted-board-table caption { text-align: left; padding: .5rem; }
+.accepted-board-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; margin: 1rem 0; }
+.accepted-board-controls input, .accepted-board-controls select { min-height: 44px; max-width: 100%; }
+.accepted-board-controls button { min-height: 44px; }
+.accepted-board-controls .export-btn {
+    margin-left: 0; padding: .55rem .9rem;
+    color: var(--c-text); background: var(--surface-2); border-color: var(--c-border-strong);
+}
+.accepted-board-controls .export-btn:hover { color: var(--c-text); border-color: var(--c-blue-strong); }
+.accepted-board a { color: var(--c-text); text-decoration: underline; text-underline-offset: .2em; }
+.accepted-board a:hover { color: var(--c-blue-strong); }
+.accepted-board a:focus-visible,
+.accepted-board summary:focus-visible,
+.accepted-board-controls :focus-visible { outline: 2px solid var(--c-blue-strong); outline-offset: 3px; }
+.accepted-board-compare summary, .accepted-board-help summary { cursor: pointer; padding: .65rem 0; color: var(--c-text); }
+.footer-data { overflow-wrap: anywhere; }
