@@ -246,8 +246,8 @@ def test_index_places_hidden_live_panel_immediately_before_rankings():
     panel = '<section id="my-players" class="my-players" aria-live="polite" hidden></section>'
 
     assert panel in source
-    assert source.index(panel) < source.index('<div id="rankings-container">')
-    assert not source[source.index(panel) + len(panel):source.index('<div id="rankings-container">')].strip()
+    assert source.index(panel) < source.index('<div id="rankings-container"')
+    assert not source[source.index(panel) + len(panel):source.index('<div id="rankings-container"')].strip()
 
 
 def test_board_templates_expose_dormant_watch_buttons_beside_names():
