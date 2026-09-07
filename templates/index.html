@@ -230,7 +230,7 @@
     {% endif %}
 
 <section id="my-players" class="my-players" aria-live="polite" hidden></section>
-<div id="rankings-container">
+<div id="rankings-container" tabindex="0" role="region" aria-label="Player rankings">
     {% if mode == 'dd_dynasty' or mode == 'prospects' %}
     {% include "partials/rankings_table_dynasty.html" %}
     {% else %}
