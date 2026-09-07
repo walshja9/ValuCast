@@ -1,7 +1,16 @@
 import importlib
 import importlib.util
+import json
+from pathlib import Path
 
 import pytest
+
+_ADAPTER_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "data"
+    / "models"
+    / "valucast_prospect_league_adapters.json"
+)
 
 
 def _module():
@@ -10,11 +19,39 @@ def _module():
     return importlib.import_module("web.prospect_league_ranks")
 
 
+def _preset_players(payload, preset, role):
+    roles = (payload.get("presets", {}).get(preset) or {}).get("roles") or {}
+    return (roles.get(role) or {}).get("players") or []
+
+
+def _adapter_payload():
+    return json.loads(_ADAPTER_PATH.read_text(encoding="utf-8"))
+
+
 def test_loader_returns_format_ranks_for_covered_prospect():
     # ops_7x7 (split SV/HLD) ships in the committed adapters artifact as of 7/1;
     # dd_7x7 stays in the artifact but is deliberately no longer surfaced.
-    # The artifact regenerates daily — assert structure, not ranks that drift.
-    ranks = _module().format_ranks_for("806956", "hitter")
+    # The artifact regenerates daily -- select a qualifying subject from it
+    # rather than pinning a player id (a pinned player eventually graduates
+    # out of the artifact and silently reddens master: the Whisenhunt class).
+    payload = _adapter_payload()
+    roto = {
+        str(p.get("mlbam_id")): p.get("adapter_rank")
+        for p in _preset_players(payload, "roto_5x5", "hitter")
+    }
+    subject = next(
+        (
+            str(p["mlbam_id"])
+            for p in _preset_players(payload, "ops_7x7", "hitter")
+            if p.get("adapter_rank") is not None
+            and roto.get(str(p.get("mlbam_id"))) is not None
+        ),
+        None,
+    )
+    if subject is None:
+        pytest.skip("no hitter with both 7x7 OPS and 5x5 ranks in today's artifact")
+
+    ranks = _module().format_ranks_for(subject, "hitter")
 
     assert [r["label"] for r in ranks] == ["7x7 OPS", "5x5"]
     for r in ranks:
@@ -29,8 +66,26 @@ def test_loader_returns_empty_list_for_unknown_player():
 
 def test_loader_skips_entries_lacking_adapter_rank():
     # Pitchers have no surfaced roto_5x5 rank (coverage refusal: no W), so only the
-    # 7x7 OPS row resolves — the missing-preset entry is skipped, which is the point.
-    ranks = _module().format_ranks_for("671936", "pitcher")
+    # 7x7 OPS row resolves -- the missing-preset entry is skipped, which is the
+    # point. Subject selected from the daily artifact, not pinned (see above).
+    payload = _adapter_payload()
+    roto = {
+        str(p.get("mlbam_id")): p.get("adapter_rank")
+        for p in _preset_players(payload, "roto_5x5", "pitcher")
+    }
+    subject = next(
+        (
+            str(p["mlbam_id"])
+            for p in _preset_players(payload, "ops_7x7", "pitcher")
+            if p.get("adapter_rank") is not None
+            and roto.get(str(p.get("mlbam_id"))) is None
+        ),
+        None,
+    )
+    if subject is None:
+        pytest.skip("no pitcher with a 7x7 OPS rank and no 5x5 rank in today's artifact")
+
+    ranks = _module().format_ranks_for(subject, "pitcher")
 
     assert [r["label"] for r in ranks] == ["7x7 OPS"]
     assert isinstance(ranks[0]["rank"], int) and ranks[0]["rank"] >= 1
