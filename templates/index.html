@@ -4,14 +4,13 @@
 {% from "partials/_editorial_date.html" import editorial_date %}
 {% from "partials/_board_nav.html" import board_nav with context %}
 <form id="league-setup"
+      hx-history="false"
       hx-get="/rankings"
       hx-target="#rankings-container"
-      hx-trigger="change delay:100ms, keyup changed delay:300ms from:#search-input"
+      hx-trigger="change delay:100ms, input changed delay:300ms from:#search-input"
       hx-sync="this:replace">
 
-    {% if snapshot_stale %}
-    <div class="notice">Showing the most recent validated ValuCast snapshot — today's refresh hasn't published yet.</div>
-    {% endif %}
+    {% include "partials/_stale_notice.html" %}
     {% if notice %}
     <div class="notice">{{ notice }}</div>
     {% endif %}
@@ -89,7 +88,7 @@
                 {% endfor %}
             </select>
             <span id="display-slot" class="display-slot">{% include "partials/_display_toggle.html" %}</span>
-            <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+            <a id="export-btn" download class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
             <details class="graphic-menu" aria-label="Redraft graphic actions">
                 <summary class="export-btn graphic-btn">Share graphic</summary>
                 <div class="graphic-menu-list">
@@ -142,7 +141,7 @@
                 <label><input type="radio" name="rank_by" value="now" {{ 'checked' if rank_by == 'now' else '' }}><span>Now $</span></label>
             </fieldset>
             {% endif %}
-            <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+            <a id="export-btn" download class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
             <details class="graphic-menu" aria-label="Dynasty graphic actions">
                 <summary class="export-btn graphic-btn">Share graphic</summary>
                 <div class="graphic-menu-list">
@@ -180,6 +179,10 @@
         <input type="hidden" name="pslots" value="{{ league_settings.pslots }}">
         {% endif %}
         <input type="text" name="search" id="search-input" class="search-input" placeholder="Search prospects..." value="{{ search }}">
+        <select name="limit" class="position-select" aria-label="Board depth">
+            <option value="200" {{ 'selected' if row_limit == 200 else '' }}>Top 200 matches</option>
+            <option value="all" {{ 'selected' if row_limit is none else '' }}>Show all prospects</option>
+        </select>
         {# Re-rank the prospect board for a league's categories. Choosing a preset
            sets rank_by=league and clears any custom category chips; "Default
            order" clears it back to the model's P#. #}
@@ -217,7 +220,7 @@
                     {% endfor %}
                 </div>
             </details>
-            <a id="export-btn" class="export-btn" href="/export" onclick="exportCsv(event)">Export CSV</a>
+            <a id="export-btn" download class="export-btn" href="/export" onclick="exportCsv(event)" title="Download every matching prospect, including rows beyond the display limit">Export all matches CSV</a>
         </div>
     </div>
     {# Arbitrary custom-category re-ranking, restricted to the categories the
@@ -406,9 +409,8 @@ function sortTable(colIndex) {
 }
 
 function exportCsv(e) {
-    e.preventDefault();
     const params = new URLSearchParams(new FormData(document.getElementById('league-setup')));
-    window.location.href = '/export?' + params.toString();
+    e.currentTarget.href = '/export?' + params.toString();
 }
 
 function detailRequestParams() {

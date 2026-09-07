@@ -1,6 +1,9 @@
+import csv
+import io
 import os
 import sys
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -225,6 +228,74 @@ class TestDynastyPresetValueContext(unittest.TestCase):
         self.assertTrue(garbage["preset_value_enabled"])
         self.assertEqual(garbage["preset_rank_by_id"], {})
         self._assert_same_board(garbage, default)
+
+    def test_export_uses_the_selected_preset_rank_value_and_dollars(self):
+        self._set_flag(True)
+        context = self._context(("preset", "sv_hld"))
+        with flask_app.test_request_context(
+            "/export?mode=dd_dynasty&teams=2&budget=100&roster=2&preset=sv_hld"
+        ):
+            response = app_module.export_csv()
+        rows = list(csv.DictReader(io.StringIO(response.get_data(as_text=True))))
+        self.assertEqual([row["Player"] for row in rows],
+                         [row.name for row in context["dd_rows"]])
+        for exported, row in zip(rows, context["dd_rows"]):
+            self.assertEqual(int(exported["Overall Dynasty Rank"]),
+                             context["preset_rank_by_id"][row.id])
+            self.assertEqual(float(exported["Dynasty Value"]), row.value_for("sv_hld"))
+            self.assertEqual(float(exported["Dynasty $"]), context["dynasty_dollars"][row.id])
+
+
+class TestProspectExportParity(unittest.TestCase):
+    def setUp(self):
+        rows = [
+            replace(_snapshot_row(str(i), name, i, 100.0 - i, player_type="prospect"),
+                    mlbam_id=str(i), role="hitter", prospect_rank=i)
+            for i, name in enumerate(("Alpha", "Beta", "Gamma"), 1)
+        ]
+        patches = {
+            "dd_store": _PresetValueStore(rows),
+            "_DYNASTY_METADATA_CACHE": {},
+            "_UNIVERSAL_PROSPECT_AVAILABLE": True,
+        }
+        for name, value in patches.items():
+            patcher = patch.object(app_module, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        for name, value in {
+            "_dynasty_z_map": {}, "_dynasty_stats_map": {},
+            "_debuted_prospect_ids": {"1": "2026-07-01"},
+            "_call_up_pulse_keys": frozenset(),
+            "_native_prospect_movers_strip": [], "_load_artifact": {},
+            "_custom_prospect_ranks": {
+                "role_status": {role: {"status": "ready"} for role in ("hitter", "pitcher")},
+                "ranks": {(i, "hitter"): {"adapter_rank": 4 - i} for i in range(1, 4)},
+            },
+        }.items():
+            patcher = patch.object(app_module, name, return_value=value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def test_export_keeps_the_board_debut_filter(self):
+        for debut_view, expected in (("debuted", ["Alpha"]),
+                                     ("undebuted", ["Beta", "Gamma"]),
+                                     ("milb", ["Beta", "Gamma"])):
+            with self.subTest(debut_view=debut_view), flask_app.test_request_context(
+                "/export?mode=prospects&callups=" + debut_view
+            ):
+                response = app_module.export_csv()
+                rows = list(csv.DictReader(io.StringIO(response.get_data(as_text=True))))
+                self.assertEqual([row["Player"] for row in rows], expected)
+
+    def test_export_keeps_the_league_order_after_filtering(self):
+        with flask_app.test_request_context(
+            "/export?mode=prospects&callups=undebuted&rank_by=league"
+            "&cats=HR,SB,OPS&pcats=K,ERA,WHIP"
+        ):
+            response = app_module.export_csv()
+        rows = list(csv.DictReader(io.StringIO(response.get_data(as_text=True))))
+        self.assertEqual([row["Player"] for row in rows], ["Gamma", "Beta"])
+        self.assertEqual([row["Prospect Rank"] for row in rows], ["3", "2"])
 
 
 class TestDynastyRoutes(unittest.TestCase):

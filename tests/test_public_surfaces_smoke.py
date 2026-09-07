@@ -92,7 +92,9 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
             is_available=True, ready_for_live_consumers=False
         )
         live_snapshot = types.SimpleNamespace(
-            is_available=True, ready_for_live_consumers=True
+            is_available=True, ready_for_live_consumers=True,
+            generated_at=app_module.public_snapshot_store.generated_at,
+            surface_readiness=app_module.public_snapshot_store.surface_readiness,
         )
         with mock.patch.object(app_module, "public_snapshot_store", live_snapshot), \
              mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"), \
@@ -115,7 +117,9 @@ class TestPublicSurfacesSmoke(unittest.TestCase):
         if not (base.get("steamer") and base.get("valucast")):
             self.skipTest("base projection stores not available in this checkout")
         blocked_snapshot = types.SimpleNamespace(
-            is_available=True, ready_for_live_consumers=False
+            is_available=True, ready_for_live_consumers=False,
+            generated_at=app_module.public_snapshot_store.generated_at,
+            surface_readiness=app_module.public_snapshot_store.surface_readiness,
         )
         with mock.patch.object(app_module, "public_snapshot_store", blocked_snapshot):
             response = self.client.get("/health/ready")

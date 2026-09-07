@@ -26,7 +26,7 @@ MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
-ARTIFACT_VERSION = "0.5.1"
+ARTIFACT_VERSION = "0.5.2"
 
 MAX_RISK_DISCOUNT = 0.12
 SEVERE_IL_DISCOUNT = 0.30
@@ -512,6 +512,11 @@ def _profile(
         role,
         override,
     )
+    # A current official active roster supersedes a retained manual IL claim,
+    # just as it supersedes stale transaction/upstream injury status below.
+    # Keep unrelated override metadata (such as age) and available-risk overrides.
+    if active_mlb_roster and override_status in {"injured", "il"}:
+        override_discount, override_signals, override_status, override_note = 0.0, [], None, None
     override_present = override_discount > 0.0 or bool(override_status)
     if override_present or active_mlb_roster:
         il_discount, il_signals, il_status, il_note = 0.0, [], None, None

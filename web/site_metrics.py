@@ -16,6 +16,8 @@ summarizing must never break a page or a test run.
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Iterator
+from contextlib import closing, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -81,13 +83,15 @@ class SiteMetricsStore:
     def enabled(self) -> bool:
         return self.db_path is not None
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
         # Near-zero busy timeout (review F3): the recorder runs synchronously
         # inside after_request, so a locked database must DROP the event, not
         # hold the response. Lost analytics beat delayed pages.
-        con = sqlite3.connect(self.db_path, timeout=0.05)
-        con.execute("PRAGMA journal_mode=WAL")
-        return con
+        with closing(sqlite3.connect(self.db_path, timeout=0.05)) as con:
+            con.execute("PRAGMA journal_mode=WAL")
+            with con:
+                yield con
 
     # -- writers ------------------------------------------------------------
     def record_pageview(

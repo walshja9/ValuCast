@@ -1,16 +1,8 @@
 import importlib
 import importlib.util
 import json
-from pathlib import Path
 
 import pytest
-
-_ADAPTER_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "data"
-    / "models"
-    / "valucast_prospect_league_adapters.json"
-)
 
 
 def _module():
@@ -19,39 +11,27 @@ def _module():
     return importlib.import_module("web.prospect_league_ranks")
 
 
-def _preset_players(payload, preset, role):
-    roles = (payload.get("presets", {}).get(preset) or {}).get("roles") or {}
-    return (roles.get(role) or {}).get("players") or []
-
-
-def _adapter_payload():
-    return json.loads(_ADAPTER_PATH.read_text(encoding="utf-8"))
+def _covered_hitter_ids():
+    payload = json.loads(_module()._ADAPTER_PATH.read_text(encoding="utf-8"))
+    covered = []
+    for preset in ("ops_7x7", "roto_5x5"):
+        players = payload["presets"][preset]["roles"]["hitter"]["players"]
+        covered.append({
+            str(player["mlbam_id"]) for player in players
+            if player.get("mlbam_id") is not None
+            and isinstance(player.get("adapter_rank"), int)
+            and player["adapter_rank"] >= 1
+        })
+    ids = covered[0] & covered[1]
+    assert ids, "committed adapters must cover hitters in both surfaced formats"
+    return ids
 
 
 def test_loader_returns_format_ranks_for_covered_prospect():
     # ops_7x7 (split SV/HLD) ships in the committed adapters artifact as of 7/1;
     # dd_7x7 stays in the artifact but is deliberately no longer surfaced.
-    # The artifact regenerates daily -- select a qualifying subject from it
-    # rather than pinning a player id (a pinned player eventually graduates
-    # out of the artifact and silently reddens master: the Whisenhunt class).
-    payload = _adapter_payload()
-    roto = {
-        str(p.get("mlbam_id")): p.get("adapter_rank")
-        for p in _preset_players(payload, "roto_5x5", "hitter")
-    }
-    subject = next(
-        (
-            str(p["mlbam_id"])
-            for p in _preset_players(payload, "ops_7x7", "hitter")
-            if p.get("adapter_rank") is not None
-            and roto.get(str(p.get("mlbam_id"))) is not None
-        ),
-        None,
-    )
-    if subject is None:
-        pytest.skip("no hitter with both 7x7 OPS and 5x5 ranks in today's artifact")
-
-    ranks = _module().format_ranks_for(subject, "hitter")
+    # The artifact regenerates daily — assert structure, not ranks that drift.
+    ranks = _module().format_ranks_for(sorted(_covered_hitter_ids())[0], "hitter")
 
     assert [r["label"] for r in ranks] == ["7x7 OPS", "5x5"]
     for r in ranks:
@@ -64,56 +44,36 @@ def test_loader_returns_empty_list_for_unknown_player():
     assert _module().format_ranks_for("999999999", "hitter") == []
 
 
-def test_loader_skips_entries_lacking_adapter_rank():
-    # Pitchers have no surfaced roto_5x5 rank (coverage refusal: no W), so only the
-    # 7x7 OPS row resolves -- the missing-preset entry is skipped, which is the
-    # point. Subject selected from the daily artifact, not pinned (see above).
-    payload = _adapter_payload()
-    roto = {
-        str(p.get("mlbam_id")): p.get("adapter_rank")
-        for p in _preset_players(payload, "roto_5x5", "pitcher")
-    }
-    subject = next(
-        (
-            str(p["mlbam_id"])
-            for p in _preset_players(payload, "ops_7x7", "pitcher")
-            if p.get("adapter_rank") is not None
-            and roto.get(str(p.get("mlbam_id"))) is None
-        ),
-        None,
-    )
-    if subject is None:
-        pytest.skip("no pitcher with a 7x7 OPS rank and no 5x5 rank in today's artifact")
-
-    ranks = _module().format_ranks_for(subject, "pitcher")
+def test_loader_skips_entries_lacking_adapter_rank(tmp_path, monkeypatch):
+    # Pin the coverage-refusal case independently of daily roster membership.
+    path = tmp_path / "adapters.json"
+    path.write_text(json.dumps({"presets": {
+        "ops_7x7": {"roles": {"pitcher": {"players": [
+            {"mlbam_id": "671936", "adapter_rank": 7},
+        ]}}},
+        "roto_5x5": {"roles": {"pitcher": {"players": [
+            {"mlbam_id": "671936", "adapter_rank": None},
+        ]}}},
+    }}), encoding="utf-8")
+    monkeypatch.setattr(_module(), "_ADAPTER_PATH", path)
+    ranks = _module().format_ranks_for("671936", "pitcher")
 
     assert [r["label"] for r in ranks] == ["7x7 OPS"]
     assert isinstance(ranks[0]["rank"], int) and ranks[0]["rank"] >= 1
 
 
-def _row_by_mlbam(app_module, mlbam_id):
-    return next(
-        (
-            row for row in app_module.dd_store.get_all()
-            if str(getattr(row, "mlbam_id", "")) == str(mlbam_id)
-        ),
-        None,
-    )
-
-
 def test_player_detail_renders_format_ranks_for_covered_prospects():
-    # As of the 7/1 adapters rebuild every board prospect resolves format ranks, so
-    # the old uncovered-player negative case has no real fixture left — the loader's
-    # empty-result path stays covered by test_loader_returns_empty_list_for_unknown_player
-    # and the template guard is a plain {% if format_ranks %}.
-    _module()
     valucast_app = importlib.import_module("app")
     if not valucast_app.dd_store.is_available:
         pytest.skip("DD store not available")
 
-    covered = _row_by_mlbam(valucast_app, "806956")
-    if covered is None:
-        pytest.skip("expected prospect row not available")
+    covered_ids = _covered_hitter_ids()
+    covered = next((
+        row for row in valucast_app.dd_store.get_all()
+        if row.is_prospect and row.role == "hitter"
+        and str(row.mlbam_id) in covered_ids
+    ), None)
+    assert covered is not None, "available snapshot must join covered prospect hitters"
 
     valucast_app.app.config["TESTING"] = True
     client = valucast_app.app.test_client()

@@ -1,12 +1,12 @@
-{# "Today on ValuCast" — the front-door daily loop. Lives OUTSIDE the htmx
+{# "Latest on ValuCast" — the front-door daily loop. Lives OUTSIDE the htmx
    swap target so preset/filter changes never redraw it; every cell deep-links
    to the page that owns the number. Slots render only when their artifact
    produced data (7/3 landscape review, Batch 1). #}
 {% from "partials/_editorial_date.html" import editorial_date %}
 {% if today_digest %}
-<section class="today-strip glass" aria-label="Today on ValuCast">
+<section class="today-strip glass" aria-label="Latest on ValuCast">
     <div class="today-head">
-        <span class="today-eyebrow">Today on ValuCast</span>
+        <span class="today-eyebrow">Latest on ValuCast</span>
         {% if as_of %}<span class="today-date">{{ editorial_date(as_of) }}</span>{% endif %}
     </div>
     <div class="today-cells">

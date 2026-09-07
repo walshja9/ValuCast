@@ -179,7 +179,7 @@
             item.querySelector('.trade-search-name').textContent = p.name;
             item.querySelector('.trade-search-meta').textContent = meta;
             item.querySelector('.trade-search-val').textContent =
-                searchValuePrefix + (Math.round(p.value * 10) / 10).toFixed(1);
+                searchValuePrefix + p.display_value.toFixed(1);
             item.addEventListener('click', function () { addPlayer(side, p.id); });
             box.appendChild(item);
         });

@@ -318,17 +318,18 @@ def _maybe_gzip(response):
         or response.status_code >= 300
         or response.direct_passthrough
         or response.headers.get("Content-Encoding")
-        or "gzip" not in request.headers.get("Accept-Encoding", "").lower()
         or response.mimetype not in _GZIP_MIMETYPES
     ):
         return response
     body = response.get_data()
     if len(body) < _GZIP_MIN_BYTES:
         return response
+    _append_vary(response, "Accept-Encoding")
+    if not request.accept_encodings["gzip"]:
+        return response
     response.set_data(gzip.compress(body))
     response.headers["Content-Encoding"] = "gzip"
     response.headers["Content-Length"] = str(len(response.get_data()))
-    _append_vary(response, "Accept-Encoding")
     return response
 
 
@@ -484,7 +485,16 @@ def _snapshot_staleness():
     """Every dd_store-backed surface gets the same honest stale flag — the banner
     used to exist only on the home board while map/backfields/buys/movers served
     the identical stale data silently (7/2)."""
-    return {"snapshot_stale": dynasty_data_source == "valucast_public_snapshot_stale"}
+    generated_at = public_snapshot_store.generated_at
+    try:
+        age_days = (date.today() - date.fromisoformat(str(generated_at)[:10])).days
+    except (TypeError, ValueError):
+        age_days = None
+    return {
+        "snapshot_stale": not _artifact_is_fresh(generated_at),
+        "snapshot_as_of": str(generated_at or "")[:10],
+        "snapshot_age_days": age_days,
+    }
 
 
 @app.context_processor
@@ -695,6 +705,13 @@ def _handle_server_error(_e):
     return render_template(
         "error.html", code=500,
         message="Something broke on our end. Try again in a minute."), 500
+
+
+@app.errorhandler(503)
+def _handle_unavailable(error):
+    if request.headers.get("HX-Request") == "true":
+        return f'<div class="notice" role="alert">{escape(error.description)}</div>', 503
+    return render_template("error.html", code=503, message=error.description), 503
 
 
 @app.route("/robots.txt")
@@ -1449,22 +1466,30 @@ def _prospect_tiers():
     return tiers
 
 
-def _prospect_rows(position=None, search=None, row_filter=None):
+def _prospect_rows(position=None, search=None, row_filter=None, limit=200):
     """Return the dedicated Prospects board in DD's authoritative prospect order.
-    row_filter runs BEFORE the top-200 slice (like position/search) so a filtered
-    view repopulates to full depth — hiding 23 debuted players surfaces the next
-    23 ranked prospects instead of leaving a 177-row board."""
+    Filters and asset deduplication precede the display limit; None returns all."""
     rows = dd_store.filter(pool="prospect", position=position, search=search)
     if row_filter is not None:
         rows = [row for row in rows if row_filter(row)]
-    return sorted(
+    rows = sorted(
         rows,
         key=lambda row: (
             row.prospect_rank is None,
             row.prospect_rank if row.prospect_rank is not None else row.dynasty_rank,
             row.dynasty_rank,
         ),
-    )[:200]
+    )
+    return _unique_prospect_rows(rows)[:limit]
+
+
+def _unique_prospect_rows(rows):
+    """Keep the best-ranked role of each prospect asset, in the supplied order."""
+    unique = {}
+    for row in rows:
+        key = str(row.mlbam_id) if row.mlbam_id not in (None, "") else f"name:{row.name.casefold()}"
+        unique.setdefault(key, row)
+    return list(unique.values())
 
 
 def _dynasty_category_state(args):
@@ -1747,7 +1772,9 @@ def _apply_prospect_board_context(ctx, args):
         position=ctx.get("position") or None,
         search=ctx.get("search") or None,
         row_filter=row_filter,
+        limit=None,
     )
+    ctx["total_rows"] = len(rows)
     ctx["callups"] = callups
     settings = parse_league_settings(args)
     ctx["dynasty_dollars"], _ = _dynasty_metadata(settings)
@@ -1855,13 +1882,16 @@ def _apply_prospect_board_context(ctx, args):
     # NOT raise a banner — only an explicit False verdict does. getattr for the
     # same reason: duck-typed stores (test fakes, legacy feeds) may not expose
     # the gate at all — unknown gate means no banner, never a crash.
-    if getattr(dd_store, "surface_readiness", {}).get("prospects") is False:
-        blockers = getattr(dd_store, "surface_blockers", {}).get("prospects") or []
-        blocker_text = "; ".join(str(b) for b in blockers) or "not yet promoted for public view"
-        ctx["prospect_gate_notice"] = (
-            f"Preliminary — publication gate not met: {blocker_text}"
-        )
-    ctx["dd_rows"] = rows
+    ctx["prospect_gate_notice"] = _prospect_gate_notice()
+    ctx["dd_rows"] = rows[:ctx.get("row_limit", 200)]
+
+
+def _prospect_gate_notice():
+    if getattr(dd_store, "surface_readiness", {}).get("prospects") is not False:
+        return ""
+    blockers = getattr(dd_store, "surface_blockers", {}).get("prospects") or []
+    reason = "; ".join(str(b) for b in blockers) or "not yet promoted for public view"
+    return f"Preliminary — publication gate not met: {reason}"
 
 
 def _prospect_adapter_key(row):
@@ -4396,7 +4426,7 @@ def _dynasty_player_card_png(row, context):
     return _player_value_card_png(row, context, "dynasty")
 
 
-def _build_dynasty_context(args):
+def _build_dynasty_context(args, *, full_export=False):
     """Build template context for DD Dynasty mode."""
     pool = args.get("pool", "")
     position = args.get("position", "")
@@ -4433,7 +4463,9 @@ def _build_dynasty_context(args):
                 row.dynasty_rank,
             ),
         )
-    rows = rows[:200]
+    total_rows = len(rows)
+    row_limit = None if full_export or args.get("limit") == "all" else 200
+    rows = rows[:row_limit]
     if active_preset:
         preset_rank_rows = sorted(
             dd_store.get_all(),
@@ -4454,6 +4486,8 @@ def _build_dynasty_context(args):
         "position": position,
         "search": search,
         "dd_rows": rows,
+        "total_rows": total_rows,
+        "row_limit": row_limit,
         "dyn_z_map": _dynasty_z_map(),
         "dyn_stats_map": _dynasty_stats_map(),
         # Stat columns follow the active category selection (7/2: they were
@@ -4905,6 +4939,7 @@ def _build_context(args):
         "split_rp": split_rp,
         "weights": weights,
         "results": results,
+        "canonical_results": all_results,
         "active_categories": active_categories,
         "display_columns": display_columns,
         "hitting_categories": HITTING_CATEGORIES,
@@ -5194,20 +5229,10 @@ def index():
     mode = request.args.get("mode", "categories")
     if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:
-            fallback_args = request.args.to_dict(flat=False)
-            fallback_args["mode"] = ["categories"]
-            from werkzeug.datastructures import ImmutableMultiDict
-            ctx = _build_context(ImmutableMultiDict(
-                (k, v) for k, vals in fallback_args.items() for v in vals
-            ))
-            ctx["notice"] = "Dynasty data is not available. Showing default rankings."
-            ctx["dd_available"] = False
-            ctx["today_digest"] = _front_door_digest()
-            return render_template("index.html", **ctx)
+            abort(503, description="The requested rankings are unavailable. Please try again later.")
         ctx = _build_dynasty_context(request.args)
         if mode == "prospects":
             _apply_prospect_board_context(ctx, request.args)
-        ctx["snapshot_stale"] = dynasty_data_source == "valucast_public_snapshot_stale"
         ctx["today_digest"] = _front_door_digest()
         return render_template("index.html", **ctx)
     ctx = _build_context(request.args)
@@ -5231,13 +5256,7 @@ def rankings():
     mode = request.args.get("mode", "categories")
     if mode in ("dd_dynasty", "prospects"):
         if not dd_store.is_available:
-            from werkzeug.datastructures import ImmutableMultiDict
-            fallback_args = request.args.to_dict(flat=False)
-            fallback_args["mode"] = ["categories"]
-            ctx = _build_context(ImmutableMultiDict(
-                (k, v) for k, vals in fallback_args.items() for v in vals
-            ))
-            ctx["dd_available"] = False
+            abort(503, description="The requested rankings are unavailable. Please try again later.")
         else:
             ctx = _build_dynasty_context(request.args)
             if mode == "prospects":
@@ -5258,7 +5277,7 @@ def rankings():
             value = request.args.get(name)
             if value:
                 params[name] = value
-        for name in ("cats", "pcats", "rank_by", "preset"):
+        for name in ("cats", "pcats", "rank_by", "preset", "limit"):
             values = request.args.getlist(name)
             if values:
                 params[name] = (
@@ -6520,16 +6539,7 @@ def _team_board_prospect_rows(rows=None):
         if _team_board_org_for(row) is not None
     ]
     rows = sorted(rows, key=_team_board_prospect_sort_key)
-    seen = set()
-    deduped = []
-    for row in rows:
-        mlbam_id = getattr(row, "mlbam_id", None)
-        key = str(mlbam_id) if mlbam_id not in (None, "") else f"name:{str(getattr(row, 'name', '') or '').casefold()}"
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(row)
-    return deduped
+    return _unique_prospect_rows(rows)
 
 
 def _team_board_movements():
@@ -8055,6 +8065,7 @@ def _value_map_players(rows):
             "name": row.name,
             "age": row.age,
             "value": row.dynasty_value,
+            "display_value": _trade_display_value(row.dynasty_value),
             "position": primary,
             "group": group,
             "player_type": row.player_type,
@@ -8203,6 +8214,11 @@ def _trade_momentum_label(row):
     return entry.get("momentum_label") if entry else None
 
 
+def _trade_display_value(value):
+    """Use the same server rounding for trade search and selected pieces."""
+    return round(float(value), 1)
+
+
 def _trade_piece(row, value=None):
     """Read an existing PublicSnapshotRow into a template-friendly dict.
     No computation -- just display fields the verdict page needs."""
@@ -8225,7 +8241,7 @@ def _trade_piece(row, value=None):
         "pos": pos,
         "level": row.level if is_prospect else None,
         "is_prospect": is_prospect,
-        "value": round(float(row.dynasty_value if value is None else value), 1),
+        "value": _trade_display_value(row.dynasty_value if value is None else value),
         "rank_label": rank_label,
         "confidence": confidence,
         "momentum": _trade_momentum_label(row),   # None when not a prominent mover
@@ -10218,7 +10234,7 @@ def _artifact_is_fresh(generated_at, hours=36):
         return False
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
-    return (datetime.now(timezone.utc) - ts).total_seconds() <= hours * 3600
+    return 0 <= (datetime.now(timezone.utc) - ts).total_seconds() <= hours * 3600
 
 
 @app.route("/llms.txt")
@@ -10746,7 +10762,7 @@ def health_ready():
         # deploy rather than freezing the whole site on the prior build. The
         # live-readiness flag stays reported under "public_snapshot" below for
         # observability; it gates what those pages show, never the deploy.
-        stores["public_snapshot_available"] = public_snapshot_store.is_available
+        stores["public_snapshot_available"] = dd_store.is_available
     # Buys readiness is informational only — a governor block on /buys must not
     # fail health and block the deploy. ponytail: reported, never gating.
     buys_live = (
@@ -10762,6 +10778,9 @@ def health_ready():
         "stores": stores,
         "public_snapshot": {
             "available": public_snapshot_store.is_available,
+            "generated_at": public_snapshot_store.generated_at,
+            "fresh": _artifact_is_fresh(public_snapshot_store.generated_at),
+            "surface_readiness": public_snapshot_store.surface_readiness,
             "ready_for_live_consumers": public_snapshot_store.ready_for_live_consumers,
             "active": dynasty_data_source == "valucast_public_snapshot",
         },
@@ -10971,11 +10990,10 @@ def player_detail(player_id):
     if not player_proj:
         abort(404)
 
-    config = ctx["config"]
-    # Value the canonical universe (no on-demand force-keep) so the detail value matches
+    # Reuse the canonical universe (no on-demand force-keep) so the detail value matches
     # the board exactly. A below-floor player isn't in the canonical set -> result None,
     # and the template shows the projection without a (non-canonical) value.
-    detail_results = _redraft_value_players(_valuation_players(active_store=active), config)
+    detail_results = ctx["canonical_results"]
     result = next((r for r in detail_results if r.player.id == player_id), None)
     base_id = player_proj.metadata.get("base_id") or player_proj.id
     siblings = [
@@ -11019,11 +11037,8 @@ def compare():
         )
 
     ctx = _build_context(request.args)
-    config = ctx["config"]
     # Use canonical results so compare matches the board (not an on-demand mini-pool).
-    all_results = _redraft_value_players(
-        _valuation_players(active_store=ctx["active_store"]), config
-    )
+    all_results = ctx["canonical_results"]
 
     r1 = next((r for r in all_results if r.player.id == p1_id), None)
     r2 = next((r for r in all_results if r.player.id == p2_id), None)
@@ -11047,38 +11062,48 @@ def _csv_safe(value):
 def export_csv():
     mode = request.args.get("mode", "categories")
 
-    if mode in ("dd_dynasty", "prospects") and dd_store.is_available:
-        ctx = _build_dynasty_context(request.args)
+    if mode in ("dd_dynasty", "prospects"):
+        if not dd_store.is_available:
+            abort(503, description="Rankings export is unavailable. Please try again later.")
+        ctx = _build_dynasty_context(request.args, full_export=True)
         if mode == "prospects":
-            ctx["dd_rows"] = _prospect_rows(
-                position=ctx.get("position") or None,
-                search=ctx.get("search") or None,
-            )
-            ctx["dynasty_dollars"], _ = _dynasty_metadata(parse_league_settings(request.args))
-            ctx["tiers"] = _prospect_tiers()
+            _apply_prospect_board_context(ctx, request.args)
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
+        active_preset = ctx.get("active_preset")
+        prospect_gate = getattr(dd_store, "surface_readiness", {}).get("prospects")
+        publication_status = {True: "qualified", False: "preliminary"}.get(prospect_gate, "unknown")
+        publication_note = _prospect_gate_notice()
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow(["Overall Dynasty Rank", "Player", "Type", "Positions", "Team",
                          "Age", "Dynasty Value", "Dynasty $", "Confidence Level",
-                         "Value Low", "Value High", "Prospect Rank", "Level", "ETA"])
-        for row in rows:
+                         "Value Low", "Value High", "Prospect Rank", "Level", "ETA",
+                         "Board Rank", "MLBAM ID", "Role", "As Of", "Publication Status",
+                         "Publication Note", "League Rank"])
+        for board_rank, row in enumerate(rows, 1):
             confidence = row.confidence or {}
             value_range = confidence.get("range") or {}
             writer.writerow([
-                row.dynasty_rank, _csv_safe(row.name), row.player_type.upper(),
+                ctx["preset_rank_by_id"].get(row.id, row.dynasty_rank),
+                _csv_safe(row.name), row.player_type.upper(),
                 ", ".join(row.positions) or "", row.team, row.age or "",
-                row.dynasty_value, dynasty_dollars.get(row.id, 0),
+                row.value_for(active_preset) if active_preset else row.dynasty_value,
+                dynasty_dollars.get(row.id, 0),
                 confidence.get("level", ""),
                 value_range.get("low", ""),
                 value_range.get("high", ""),
                 row.prospect_rank or "", row.level or "", row.eta or "",
+                board_rank, row.mlbam_id or "", row.role or "", dd_store.generated_at or "",
+                publication_status if row.is_prospect else "",
+                _csv_safe(publication_note) if row.is_prospect else "",
+                ctx.get("league_adapter_ranks", {}).get(row.id, ""),
             ])
 
         response = make_response(output.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
-        response.headers["Content-Disposition"] = "attachment; filename=valucast-dynasty-rankings.csv"
+        board_name = "prospect" if mode == "prospects" else "dynasty"
+        response.headers["Content-Disposition"] = f"attachment; filename=valucast-{board_name}-rankings.csv"
         return response
 
     ctx = _build_context(request.args)
@@ -11322,8 +11347,7 @@ def _build_redraft_player_card_context(player_id, args):
     if player is None:
         return None, 404
 
-    config = ctx["config"]
-    detail_results = _redraft_value_players(_valuation_players(active_store=active), config)
+    detail_results = ctx["canonical_results"]
     result = next((r for r in detail_results if r.player.id == player_id), None)
     card_ctx = dict(ctx)
     card_ctx.update(_card_extras(player.name, player.pool, player.metadata))
@@ -11340,7 +11364,7 @@ def _build_redraft_player_card_context(player_id, args):
         "dyn_categories": ctx["active_categories"],
         "dyn_category_summary": ctx["config_summary"],
         "as_of": active.as_of,
-        "redraft_value_scale": _redraft_value_scale(detail_results),
+        "redraft_value_scale": ctx["redraft_value_scale"],
         "redraft_dynasty_row": dynasty_row,
     })
     return card_ctx, 200

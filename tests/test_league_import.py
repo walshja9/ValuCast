@@ -7,7 +7,7 @@ from unittest.mock import patch
 import requests
 
 from web.league_import import (
-    detect_platform, parse_fantrax, parse_espn, ImportError_, import_league,
+    detect_platform, parse_fantrax, parse_espn, ImportError_, import_league, _fetch_json,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -88,7 +88,7 @@ class TestFetchErrors(unittest.TestCase):
     @patch("web.league_import.requests.get")
     def test_bad_json_raises_unexpected(self, mock_get):
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.side_effect = ValueError("not json")
+        mock_get.return_value.iter_content.return_value = [b"not json"]
         with self.assertRaises(ImportError_) as ctx:
             import_league(FANTRAX_URL)
         self.assertIn("Unexpected response", str(ctx.exception))
@@ -96,7 +96,7 @@ class TestFetchErrors(unittest.TestCase):
     @patch("web.league_import.requests.get")
     def test_non_dict_json_raises_unexpected(self, mock_get):
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = [1, 2, 3]
+        mock_get.return_value.iter_content.return_value = [b"[1, 2, 3]"]
         with self.assertRaises(ImportError_) as ctx:
             import_league(FANTRAX_URL)
         self.assertIn("Unexpected response", str(ctx.exception))
@@ -136,6 +136,42 @@ class TestUpstreamShapeDrift(unittest.TestCase):
 
 
 class TestFetchHardening(unittest.TestCase):
+    @patch("web.league_import.MAX_RESPONSE_BYTES", 32)
+    @patch("web.league_import.requests.get")
+    def test_actual_body_limit_stops_reading_and_closes_response(self, mock_get):
+        for headers in ({}, {"Content-Length": "1", "Content-Encoding": "gzip"}):
+            with self.subTest(headers=headers):
+                response = mock_get.return_value
+                response.reset_mock()
+                response.status_code = 200
+                response.headers = headers
+                response.json.return_value = {"teams": 10}
+
+                def chunks(**kwargs):
+                    yield b" " * 32
+                    yield b" "
+                    self.fail("read continued past the response limit")
+
+                response.iter_content.side_effect = chunks
+                with self.assertRaisesRegex(ImportError_, "Unexpected response"):
+                    _fetch_json("https://example.invalid/settings")
+                self.assertTrue(mock_get.call_args.kwargs["stream"])
+                response.close.assert_called_once()
+
+    @patch("web.league_import.requests.get")
+    def test_bounded_json_and_stream_errors_close_response(self, mock_get):
+        response = mock_get.return_value
+        response.status_code = 200
+        response.headers = {}
+        response.iter_content.return_value = [b'{"teams":', b'10}']
+        self.assertEqual(_fetch_json("https://example.invalid/settings"), {"teams": 10})
+        response.close.assert_called_once()
+        response.close.reset_mock()
+        response.iter_content.side_effect = requests.exceptions.ConnectionError()
+        with self.assertRaisesRegex(ImportError_, "Couldn't reach"):
+            _fetch_json("https://example.invalid/settings")
+        response.close.assert_called_once()
+
     @patch("web.league_import.requests.get")
     def test_redirects_are_not_followed(self, mock_get):
         mock_get.return_value.status_code = 301

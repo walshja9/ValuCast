@@ -5,6 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import app as app_module
@@ -408,6 +410,18 @@ class TestExportRoute(unittest.TestCase):
         response = self.client.get("/export?mode=categories&cats=R,HR&pcats=K,ERA")
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/csv", response.content_type)
+
+    def test_unavailable_dynasty_exports_never_fall_back_to_redraft(self):
+        with patch.object(app_module, "dd_store") as unavailable, patch.object(
+            app_module, "_build_context", side_effect=AssertionError("Wrong board requested")
+        ):
+            unavailable.is_available = False
+            for mode in ("prospects", "dd_dynasty"):
+                with self.subTest(mode=mode):
+                    response = self.client.get("/export?mode=" + mode)
+                    self.assertEqual(response.status_code, 503)
+                    self.assertNotIn("Content-Disposition", response.headers)
+                    self.assertIn(b"Rankings export is unavailable", response.data)
 
     def test_export_has_attachment_header(self):
         response = self.client.get("/export?mode=categories&cats=R,HR&pcats=K,ERA")
@@ -1558,6 +1572,23 @@ class TestInputHardening(unittest.TestCase):
         self.assertEqual(r.headers.get("Content-Encoding"), "gzip")
         self.assertIn("Accept-Encoding", r.headers.get("Vary", ""))
 
+    def test_gzip_quality_values_and_identity_vary(self):
+        import gzip
+        from flask import make_response
+
+        body = b"compression negotiation " * 100
+        for accepted, compressed in (("gzip", True), ("gzip;q=0", False),
+                                     ("", False), ("br", False), ("*;q=0.8", True)):
+            with self.subTest(accepted=accepted), app.test_request_context(
+                "/", headers={"Accept-Encoding": accepted}
+            ):
+                response = app_module._maybe_gzip(make_response(body))
+                self.assertEqual(response.headers.get("Content-Encoding"),
+                                 "gzip" if compressed else None)
+                self.assertIn("Accept-Encoding", response.headers.get("Vary", ""))
+                decoded = gzip.decompress(response.data) if compressed else response.data
+                self.assertEqual(decoded, body)
+
     def test_png_responses_are_publicly_cacheable(self):
         from app import dd_store
         if not dd_store.is_available:
@@ -2085,6 +2116,40 @@ class TestTradeAnalyzer(unittest.TestCase):
         self.assertEqual(league["window"], "balanced")
 
     # --- Step 2/5: the route -------------------------------------------
+    def test_trade_search_display_matches_pieces_without_rounding_raw_totals(self):
+        from dataclasses import replace
+        from werkzeug.datastructures import MultiDict
+
+        base = app_module.dd_store.get_all()[0]
+        give = replace(base, id="rounding-give", age=24, value=35.65)
+        other = replace(give, id="rounding-other")
+        get = replace(give, id="rounding-get", value=46.65)
+        replacement = replace(give, id="rounding-replacement", value=10.0)
+        rows = [give, other, get, replacement]
+        by_id = {row.id: row for row in rows}
+        with (
+            patch.object(app_module.dd_store, "get_all", return_value=rows),
+            patch.object(app_module.dd_store, "get_by_id", side_effect=by_id.get),
+            patch.object(app_module, "_VALUE_MAP_CACHE", (None, None)),
+        ):
+            payload = self.client.get("/api/value-map-players").get_json()
+            player = next(p for p in payload["players"] if p["id"] == give.id)
+            self.assertEqual(player["value"], 35.65)
+            self.assertEqual(player["display_value"], 35.6)
+            for league, piece_value, total in (("0", 35.6, 71.3), ("1", 25.6, 51.3)):
+                with self.subTest(league=league):
+                    ctx = app_module._build_trade_page_context(MultiDict([
+                        ("give", give.id + "," + other.id), ("get", get.id),
+                        ("league", league), ("teams", "4"), ("roster", "10"),
+                    ]))
+                    self.assertEqual(ctx["give_pieces"][0]["value"], piece_value)
+                    self.assertEqual(ctx["verdict"]["give_total"], total)
+                    self.assertEqual(give.dynasty_value, 35.65)
+            body = self.client.get("/trade?league=1").data.decode()
+            self.assertIn("searchValuePrefix + p.display_value.toFixed(1)", body)
+            self.assertIn('var searchValuePrefix = "Base value ";', body)
+            self.assertNotIn("Math.round(p.value * 10)", body)
+
     def test_trade_empty_state_renders_search(self):
         r = self.client.get("/trade")
         self.assertEqual(r.status_code, 200)
@@ -2480,7 +2545,7 @@ class TestTradeAnalyzer(unittest.TestCase):
 
 
 class TestTodayStrip(unittest.TestCase):
-    """Front-door "Today on ValuCast" digest (7/3 landscape review, Batch 1)."""
+    """Front-door "Latest on ValuCast" digest (7/3 landscape review, Batch 1)."""
 
     def setUp(self):
         self.client = app.test_client()
@@ -2488,7 +2553,7 @@ class TestTodayStrip(unittest.TestCase):
 
     def test_front_door_carries_daily_digest_and_ledger_counts(self):
         html = self.client.get("/").data.decode("utf-8")
-        self.assertIn("Today on ValuCast", html)
+        self.assertIn("Latest on ValuCast", html)
         self.assertIn("calls tracked publicly", html)
         self.assertIn("Receipts open", html)
         # 7/14 declutter: the freshness badge is gone from the front door — the
@@ -2503,7 +2568,7 @@ class TestTodayStrip(unittest.TestCase):
     def test_digest_renders_on_all_horizons(self):
         for url in ("/?mode=dd_dynasty", "/?mode=prospects"):
             html = self.client.get(url).data.decode("utf-8")
-            self.assertIn("Today on ValuCast", html, url)
+            self.assertIn("Latest on ValuCast", html, url)
 
     def test_digest_degrades_to_nothing_when_artifacts_missing(self):
         import app as app_module
@@ -2577,7 +2642,7 @@ class TestTodayStrip(unittest.TestCase):
             app_module.AHEAD_OF_THE_CURVE_HOLD = original
         self.assertNotIn("Top buy", held_html)
         # The rest of the strip (movers/callups) still renders.
-        self.assertIn("Today on ValuCast", held_html)
+        self.assertIn("Latest on ValuCast", held_html)
 
 
 class TestFamiliarNameOnRamp(unittest.TestCase):
@@ -2658,15 +2723,42 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         app.config["TESTING"] = True
 
     def test_buys_shows_qualification_funnel_and_why_lines(self):
-        html = self.client.get("/buys").data.decode("utf-8")
+        from types import SimpleNamespace
+
+        row = {"mlbam_id": 123, "role": "hitter", "rank": 1,
+               "player_id": "vc_prospect_123_hitter", "name": "Synthetic Prospect",
+               "team": "BOS", "positions": ["SS"], "score": 60}
+        buy_store = SimpleNamespace(
+            is_available=True, get_all=lambda: [row], generated_at="2026-09-06",
+            validation={"candidate_count": 100, "row_count": 20,
+                        "active_mlb_roster_excluded_count": 5},
+        )
+        reports = {app_module._identity_key(123, "hitter"):
+                   {"report": "A patient hitter. Another sentence."}}
+        # A rendering contract must exercise ready data even when the saved
+        # real snapshot has aged out of the public buy-signal gate.
+        with patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), patch.object(
+            app_module, "_select_buy_source", return_value=(buy_store, "valucast_buys")
+        ), patch.object(app_module, "_indexed_artifact_rows", return_value=reports):
+            html = self.client.get("/buys").data.decode("utf-8")
         # Scarcity + funnel disclosure at point of use.
         self.assertIn("of the pool by design", html)
         self.assertIn("active-MLB call-ups excluded", html)
         # Why-line: joined from the existing deterministic scouting reads.
         self.assertIn("buys-why", html)
+        self.assertIn("A patient hitter.", html)
+        self.assertNotIn("Another sentence.", html)
         # Form-curve window presets render with All active by default.
         self.assertIn("buys-window-pills", html)
         self.assertIn(">7d</a>", html)
+
+        with patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), patch.object(
+            app_module, "_select_buy_source", return_value=(buy_store, "unavailable")
+        ):
+            unavailable = self.client.get("/buys").data.decode("utf-8")
+        self.assertIn("buys board will return", unavailable)
+        self.assertNotIn("of the pool by design", unavailable)
+        self.assertNotIn('class="buys-row"', unavailable)
 
     def test_buys_window_param_trims_form_curves(self):
         import re as _re
