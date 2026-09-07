@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_prospect_availability",
-  "artifact_version": "0.5.1",
+  "artifact_version": "0.5.2",
   "generated_at": "2026-09-07T00:00:00+00:00",
   "max_risk_discount": 0.12,
   "profile_count": 5869,
@@ -55662,19 +55662,19 @@
       "team": "Wilson Warbirds"
     },
     {
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "active_row_count": 1,
       "age": 23,
-      "availability_note": "Colorado Rockies sent 3B Kyle Karros on a rehab assignment to Hartford Yard Goats.",
+      "availability_note": "thin upper level hitter sample under 100 pa",
       "evidence_provenance": {
         "active_row_count": 1,
-        "adjustment_reason": "official_mlb_rehab",
+        "adjustment_reason": "current_sample_size",
         "generated_at": "2026-09-07T00:00:00+00:00",
         "selected_level": "AA",
         "selected_sample": 17.0,
         "selected_sample_fetched_date": "2026-09-07",
         "selected_sample_unit": "PA",
-        "status_source": "official_mlb_transactions"
+        "status_source": "active_mlb_roster"
       },
       "evidence_state": "known_limited",
       "level": "AA",
@@ -55682,9 +55682,9 @@
       "name": "Kyle Karros",
       "normalized_name": "kyle karros",
       "present": true,
-      "risk_basis": "official_mlb_rehab",
-      "risk_discount": 0.08,
-      "risk_level": "high",
+      "risk_basis": "current_sample_size",
+      "risk_discount": 0.05,
+      "risk_level": "medium",
       "role": "hitter",
       "row_count": 1,
       "sample": 17.0,
@@ -55692,10 +55692,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "PA",
       "signals": [
-        "official_mlb_rehab_override"
+        "thin_upper_level_hitter_sample_under_100_pa"
       ],
       "source_kind": "current_season",
-      "status": "rehab",
+      "status": "available",
       "team": "Hartford Yard Goats"
     },
     {
@@ -74915,7 +74915,7 @@
       "team": "Inland Empire 66ers"
     },
     {
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "active_row_count": 1,
       "age": 25,
       "availability_note": "Current sample is active.",
@@ -74927,7 +74927,7 @@
         "selected_sample": 234.0,
         "selected_sample_fetched_date": "2026-09-07",
         "selected_sample_unit": "PA",
-        "status_source": "active_mlb_roster"
+        "status_source": "current_sample"
       },
       "evidence_state": "known_available",
       "level": "AAA",
@@ -102366,7 +102366,7 @@
       "team": "Reno Aces"
     },
     {
-      "active_mlb_roster": false,
+      "active_mlb_roster": true,
       "active_row_count": 1,
       "age": 25,
       "availability_note": "thin starter workload under 30 ip",
@@ -102378,7 +102378,7 @@
         "selected_sample": 18.0,
         "selected_sample_fetched_date": "2026-09-07",
         "selected_sample_unit": "IP",
-        "status_source": "current_sample"
+        "status_source": "active_mlb_roster"
       },
       "evidence_state": "known_limited",
       "level": "AAA",
@@ -102399,7 +102399,7 @@
         "thin_starter_workload_under_30_ip"
       ],
       "source_kind": "current_season",
-      "status": "thin_current_sample",
+      "status": "available",
       "team": "Nashville Sounds"
     },
     {
@@ -134064,29 +134064,29 @@
       "team": "Dayton Dragons"
     },
     {
-      "active_mlb_roster": true,
+      "active_mlb_roster": false,
       "active_row_count": 1,
       "age": 29,
-      "availability_note": "thin pitcher workload under 12 ip",
+      "availability_note": "Milwaukee Brewers placed RHP Grant Anderson on the 15-day injured list. Right biceps inflammation.",
       "evidence_provenance": {
         "active_row_count": 1,
-        "adjustment_reason": "current_sample_size",
+        "adjustment_reason": "official_mlb_il",
         "generated_at": "2026-09-07T00:00:00+00:00",
         "selected_level": "AAA",
         "selected_sample": 3.0,
         "selected_sample_fetched_date": "2026-09-07",
         "selected_sample_unit": "IP",
-        "status_source": "active_mlb_roster"
+        "status_source": "official_mlb_transactions"
       },
-      "evidence_state": "known_limited",
+      "evidence_state": "known_unavailable",
       "level": "AAA",
       "mlbam_id": 681982,
       "name": "Grant Anderson",
       "normalized_name": "grant anderson",
       "present": true,
-      "risk_basis": "current_sample_size",
-      "risk_discount": 0.04,
-      "risk_level": "medium",
+      "risk_basis": "official_mlb_il",
+      "risk_discount": 0.12,
+      "risk_level": "high",
       "role": "pitcher",
       "row_count": 1,
       "sample": 3.0,
@@ -134094,10 +134094,10 @@
       "sample_staleness_days": 0,
       "sample_unit": "IP",
       "signals": [
-        "thin_pitcher_workload_under_12_ip"
+        "official_mlb_il_override"
       ],
       "source_kind": "current_season",
-      "status": "available",
+      "status": "injured",
       "team": "Nashville Sounds"
     },
     {
@@ -208851,8 +208851,8 @@
       "current_sample_size": 1481,
       "manual_override": 1,
       "none": 4169,
-      "official_mlb_il": 106,
-      "official_mlb_rehab": 58,
+      "official_mlb_il": 107,
+      "official_mlb_rehab": 57,
       "sample_staleness": 54
     },
     "risk_level_counts": {
@@ -208865,19 +208865,19 @@
       "limited_upper_level_hitter_sample_under_150_pa": 116,
       "limited_upper_level_starter_workload_under_45_ip": 123,
       "manual_status_override": 2,
-      "official_mlb_il_override": 106,
-      "official_mlb_rehab_override": 58,
+      "official_mlb_il_override": 107,
+      "official_mlb_rehab_override": 57,
       "prior_season_sample": 54,
-      "thin_pitcher_workload_under_12_ip": 599,
+      "thin_pitcher_workload_under_12_ip": 598,
       "thin_starter_workload_under_30_ip": 387,
-      "thin_upper_level_hitter_sample_under_100_pa": 267
+      "thin_upper_level_hitter_sample_under_100_pa": 268
     },
     "status_counts": {
-      "available": 4490,
-      "injured": 106,
-      "rehab": 58,
+      "available": 4491,
+      "injured": 107,
+      "rehab": 57,
       "stale_or_inactive": 49,
-      "thin_current_sample": 1166
+      "thin_current_sample": 1165
     },
     "top_risk_profiles": [
       {

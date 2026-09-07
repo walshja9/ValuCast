@@ -1461,6 +1461,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Milwaukee Brewers placed RHP Grant Anderson on the 15-day injured list. Right biceps inflammation.",
+      "effective_date": "2026-09-07",
+      "list_type": "15-day injured list",
+      "mlbam_id": 681982,
+      "name": "Grant Anderson",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Milwaukee Brewers",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941525,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "Athletics transferred RHP Gunnar Hoglund from the 15-day injured list to the 60-day injured list. Sprained right knee.",
       "effective_date": "2026-04-07",
       "list_type": "60-day injured list",
@@ -2401,21 +2416,6 @@
       "team": "Round Rock Express",
       "transaction_date": "2026-09-04",
       "transaction_id": 941315,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Colorado Rockies sent 3B Kyle Karros on a rehab assignment to Hartford Yard Goats.",
-      "effective_date": "2026-09-03",
-      "list_type": null,
-      "mlbam_id": 691720,
-      "name": "Kyle Karros",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Hartford Yard Goats",
-      "transaction_date": "2026-09-03",
-      "transaction_id": 941112,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -7161,6 +7161,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Colorado Rockies activated 3B Kyle Karros from the 7-day injured list.",
+      "effective_date": "2026-09-07",
+      "list_type": "7-day injured list",
+      "mlbam_id": 691720,
+      "name": "Kyle Karros",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Colorado Rockies",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941520,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Miami Marlins activated 1B Kyle Stowers from the 10-day injured list.",
       "effective_date": "2026-08-24",
       "list_type": "10-day injured list",
@@ -9279,15 +9294,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 342,
+    "available_after_il_count": 343,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 210,
-    "profile_count": 616,
+    "injured_count": 211,
+    "profile_count": 617,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 64,
+    "rehab_count": 63,
     "risk_profile_count": 274,
     "tracked_mlbam_count": 11123,
-    "transaction_count": 11386
+    "transaction_count": 11390
   }
 }

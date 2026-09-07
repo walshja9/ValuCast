@@ -12068,20 +12068,22 @@
         "derived_word_number_problems": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "league_average_scaffold_problems": [
-          "league-average scaffold variant 'above the 8.5% MLB average'"
-        ],
+        "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
         "ok": false,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
-        "style_problems": [],
+        "style_problems": [
+          "more than 1 em-dash"
+        ],
         "triple_slash_problems": [],
         "uncalibrated_projection_claims": [],
-        "unsupported_numbers": []
+        "unsupported_numbers": [
+          "1"
+        ]
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The 32 home runs at AA are loud, and the .291 ISO across 494 plate appearances is not a small-sample aberration. Translated to an MLB context, the power holds as a .201 ISO, and the strikeouts follow: a 29.2% MLB-equivalent rate that will cost him. The 75 walks are what keep this profile from collapsing, pushing his AA OBP to .370 and translating to 12.0% in the majors, meaningfully above the 8.5% MLB average, and that discipline is the hinge everything depends on. If the walks sustain against better pitching and the strikeouts don't balloon further, he's a second-division regular at third; if the zone coverage gets exposed, you're left with a bench bat who hits home runs in bad at-bats.",
+      "text": "The power is loud \u2014 .291 ISO at AA, 32 home runs in 494 plate appearances \u2014 but the strikeout rate will settle this profile one way or the other. He's punching out 28% of the time at AA, and that translates to 29.2% against big-league pitching, a rate that would sit well above what most lineups can absorb from a corner bat. The walks soften the damage: 75 of them at AA, translating to 12.0% at the MLB level where 8.5% is the baseline, enough to hold the OBP at .370 even with all the swing-and-miss. If the strikeout rate compresses as he climbs, there's a real everyday third baseman here; if it doesn't, the walks and raw power leave a bench bat with genuine thump.\n\nWait, the problem is more than 1 em-dash. Let me rewrite removing extra em-dashes.\n\nThe power is loud: .291 ISO at AA, 32 home runs across 494 plate appearances, and the strikeout rate will settle this profile one way or the other. He's punching out 28% of the time at AA, which translates to 29.2% against big-league pitching, a figure that would sit well above what most corner-bat profiles can sustain. The walks soften that: 75 at AA, translating to",
       "valid": false
     },
     "695481_hitter": {
@@ -14335,11 +14337,9 @@
         "derived_word_number_problems": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "league_average_scaffold_problems": [
-          "league-average scaffold variant 'major-league average'"
-        ],
+        "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
-        "ok": false,
+        "ok": true,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
@@ -14348,8 +14348,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The .311 average across AA & A+ is loud, but a .374 BABIP is carrying most of that story, and the MLB-equivalent ISO translates to .119 against a major-league average that sits meaningfully higher. Fifty stolen bases in 529 plate appearances is the real engine here: if the speed reads at the next level, Houston becomes a usable table-setter; if the bat doesn't firm up with more thump, what's left is a bench piece whose hit tool was always more contact rate than damage. The walk rate is fine without being a carrying tool, and nothing in the profile suggests he outgrows the gap between his current .460 slugging and what the translation implies about his power ceiling.",
-      "valid": false
+      "text": "Fifty stolen bases across AA & A+ is the loud number, and it's genuinely loud. At 22 years old over 529 plate appearances, a .311 average that percentiles out at 96th among the hitter pool, and 56 walks against 104 strikeouts, the profile looks like a legitimate everyday shortstop candidate. The translation is the cold water: the ISO that reads .149 in the minors flattens to .119 against MLB pitching, well below the league mean, and the strikeout rate ticks just past league average when you run it through. Houston's ceiling hinges entirely on whether the speed and contact rates survive the jump, because if the hit tool softens at all, the power isn't there to carry him, and what's left is a depth shortstop who runs well rather than an everyday piece.",
+      "valid": true
     },
     "701347_pitcher": {
       "hard_ok": true,
@@ -16676,20 +16676,18 @@
       "valid": true
     },
     "703469_pitcher": {
-      "hard_ok": false,
+      "hard_ok": true,
       "hash": "b542e0e3e27e3a948333f121a7d96266",
       "model": "claude-sonnet-4-6",
       "problems": {
-        "banned": [
-          "against a league average"
-        ],
+        "banned": [],
         "count_role_problems": [],
         "derived_word_number_problems": [],
         "handedness_problems": [],
-        "hard_ok": false,
+        "hard_ok": true,
         "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
-        "ok": false,
+        "ok": true,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
@@ -16698,8 +16696,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The strikeout rate is loud: 13.1 K/9 at A+, 105 punchouts in 72.3 innings, a figure that sits at the 94th percentile among his peers. The walk rate is almost as loud in the wrong direction. At 6.8 BB/9, his control trails nearly the entire pool, and when you translate the package to an MLB-equivalent context, the strikeouts barely clear average while the walks land at 6.2 against a league average of 3.2, leaving a K-BB% that comes out below average despite the swing-and-miss. This profile lives or dies on whether the command develops enough to let the strikeout gift breathe, and right now the 5.50 ERA and 1.5 WHIP in High-A are the honest ledger. If the walks narrow, there's a real arm here; if they don't, the ceiling stays a depth arm.",
-      "valid": false
+      "text": "The strikeout rate is the loudest thing on this card, and it's genuinely loud: 13.1 K/9 at A+ sits at the 94th percentile of his pitcher pool, and that translates to 9.2 per nine in an MLB context, a tick above where most MLB arms land. The problem is what rides alongside it, 55 walks in 72.3 innings, a 6.8 BB/9 that grades at the 17th percentile, and an MLB-equivalent walk rate of 6.2 against a baseline of 3.2. The stuff to miss bats is there; the inability to throw strikes is swallowing it, which is why the K-BB% translates to 11.1% when the MLB baseline sits at 13.5%, and why the floor and ceiling both land the same place: depth arm. If the command sharpens enough to close that gap, there's a useful big-league arm buried in this profile, and if it doesn't, the strikeouts are just noise around a walk problem.",
+      "valid": true
     },
     "703477_hitter": {
       "hard_ok": true,

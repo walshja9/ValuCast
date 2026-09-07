@@ -2682,10 +2682,12 @@
       "claim_date": "2026-08-24",
       "claim_divergence": 52,
       "claim_valucast_rank": 198,
+      "consensus_move_spots": -34,
       "identity_key": "800724_hitter",
       "mlbam_id": "800724",
       "name": "Eric Bitonti",
-      "outcome": "open",
+      "outcome": "resolved_by_consensus_move",
+      "resolved_date": "2026-09-07",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
@@ -2922,6 +2924,19 @@
       "role": "hitter",
       "side": "higher",
       "team": "CLE"
+    },
+    {
+      "claim_consensus_rank": 225,
+      "claim_date": "2026-09-07",
+      "claim_divergence": 126,
+      "claim_valucast_rank": 99,
+      "identity_key": "815148_pitcher",
+      "mlbam_id": "815148",
+      "name": "Nestor German",
+      "outcome": "open",
+      "role": "pitcher",
+      "side": "higher",
+      "team": "BAL"
     },
     {
       "claim_consensus_rank": 178,
@@ -6420,7 +6435,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-09-07T15:07:38.136486+00:00",
+  "generated_at": "2026-09-07T16:55:34.067355+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -6443,9 +6458,9 @@
       "expired_unresolved": 8,
       "open": 25,
       "resolved_by_callup": 8,
-      "resolved_by_consensus_move": 37,
+      "resolved_by_consensus_move": 38,
       "retracted_by_model_move": 121,
-      "total": 199
+      "total": 200
     },
     "lower": {
       "expired_unresolved": 28,
