@@ -9,19 +9,19 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 3.01,
+        "gap": 4.69,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 691406,
           "name": "Junior Caminero",
           "rank": 2,
-          "value": 96.13
+          "value": 94.46
         },
         "top": {
           "mlbam_id": 691718,
           "name": "Pete Crow-Armstrong",
           "rank": 1,
-          "value": 99.14
+          "value": 99.15
         }
       },
       "status": "passed",
@@ -47,7 +47,7 @@
       "metrics": {
         "max_pitcher_count": 9,
         "max_reliever_count": 1,
-        "pitcher_count": 4,
+        "pitcher_count": 3,
         "pitcher_samples": [
           {
             "name": "Shohei Ohtani",
@@ -56,7 +56,7 @@
               "SP"
             ],
             "rank": 5,
-            "value": 75.29
+            "value": 75.1
           },
           {
             "name": "Jacob Misiorowski",
@@ -64,23 +64,15 @@
               "SP"
             ],
             "rank": 9,
-            "value": 71.57
+            "value": 70.68
           },
           {
             "name": "Cam Schlittler",
             "positions": [
               "SP"
             ],
-            "rank": 21,
-            "value": 62.62
-          },
-          {
-            "name": "Paul Skenes",
-            "positions": [
-              "SP"
-            ],
-            "rank": 24,
-            "value": 61.24
+            "rank": 22,
+            "value": 61.79
           }
         ],
         "reliever_count": 0,
@@ -109,7 +101,7 @@
             "name": "Tyler Bremner",
             "rank": 4,
             "role": "pitcher",
-            "score": 60.9
+            "score": 60.91
           },
           {
             "mlbam_id": 824604,
@@ -158,7 +150,7 @@
             "name": "Ryan Sloan",
             "rank": 17,
             "role": "pitcher",
-            "score": 49.91
+            "score": 49.92
           },
           {
             "mlbam_id": 696292,
@@ -185,10 +177,10 @@
       "id": "prospect_transition_continuity",
       "message": "Prospect transition calibration is continuous across the latest vintages.",
       "metrics": {
-        "baseline_date": "2026-09-05",
+        "baseline_date": "2026-09-07",
         "bucket_step_threshold": 6.0,
-        "current_date": "2026-09-07",
-        "evaluated_matched_row_count": 3194,
+        "current_date": "2026-09-08",
+        "evaluated_matched_row_count": 3215,
         "hitter_count": 0,
         "incident_count": 0,
         "model_delta_limit": 1.0,
@@ -427,7 +419,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 81,
+        "archive_day_span": 82,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -544,8 +536,8 @@
       "id": "movers_surface_gate",
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
-        "cooling_count": 0,
-        "generated_at": "2026-09-07T00:00:00+00:00",
+        "cooling_count": 1,
+        "generated_at": "2026-09-08T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 6
@@ -592,21 +584,21 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-09-07T16:50:56.607528+00:00",
+  "generated_at": "2026-09-08T12:08:32.781564+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-09-07",
-      "buy_signals": "2026-09-07",
-      "milb_stat_freshness_audit": "2026-09-07",
-      "mlb_layer": "2026-09-07",
-      "movers": "2026-09-07",
-      "prospect_card_data_audit": "2026-09-07",
-      "prospect_coverage_audit": "2026-09-07",
-      "prospect_rank": "2026-09-07",
-      "public_snapshot": "2026-09-07",
-      "recent_signal_report": "2026-09-07"
+      "buy_review": "2026-09-08",
+      "buy_signals": "2026-09-08",
+      "milb_stat_freshness_audit": "2026-09-08",
+      "mlb_layer": "2026-09-08",
+      "movers": "2026-09-08",
+      "prospect_card_data_audit": "2026-09-08",
+      "prospect_coverage_audit": "2026-09-08",
+      "prospect_rank": "2026-09-08",
+      "public_snapshot": "2026-09-08",
+      "recent_signal_report": "2026-09-08"
     },
     "mlb_count": 908,
     "prospect_count": 3215,

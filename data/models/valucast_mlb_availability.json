@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-09-07",
+  "generated_at": "2026-09-08",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -33,21 +33,6 @@
       "transaction_id": 915281,
       "type_code": "ASG",
       "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "New York Yankees placed RF Aaron Judge on the 60-day injured list. Right rib stress fracture.",
-      "effective_date": "2026-07-18",
-      "list_type": "60-day injured list",
-      "mlbam_id": 592450,
-      "name": "Aaron Judge",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "New York Yankees",
-      "transaction_date": "2026-07-18",
-      "transaction_id": 929170,
-      "type_code": "SC",
-      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -738,21 +723,6 @@
       "transaction_id": 917782,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Chicago White Sox sent LHP Chris Murphy on a rehab assignment to Charlotte Knights.",
-      "effective_date": "2026-08-25",
-      "list_type": null,
-      "mlbam_id": 669684,
-      "name": "Chris Murphy",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Charlotte Knights",
-      "transaction_date": "2026-08-25",
-      "transaction_id": 939405,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2256,21 +2226,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Cincinnati Reds placed 3B Ke'Bryan Hayes on the 10-day injured list retroactive to August 27, 2026. Left groin strain.",
-      "effective_date": "2026-08-27",
-      "list_type": "10-day injured list",
-      "mlbam_id": 663647,
-      "name": "Ke'Bryan Hayes",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Cincinnati Reds",
-      "transaction_date": "2026-08-28",
-      "transaction_id": 939816,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
       "description": "San Francisco Giants transferred RHP Keaton Winn from the 15-day injured list to the 60-day injured list. Right elbow neuritis.",
       "effective_date": "2026-09-03",
       "list_type": "60-day injured list",
@@ -2961,21 +2916,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "San Diego Padres sent RHP Nick Pivetta on a rehab assignment to El Paso Chihuahuas.",
-      "effective_date": "2026-08-30",
-      "list_type": null,
-      "mlbam_id": 601713,
-      "name": "Nick Pivetta",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "El Paso Chihuahuas",
-      "transaction_date": "2026-08-30",
-      "transaction_id": 940214,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Los Angeles Angels placed 1B Nolan Schanuel on the 10-day injured list retroactive to August 21, 2026. Right intercostal muscle strain.",
       "effective_date": "2026-08-21",
       "list_type": "10-day injured list",
@@ -2986,6 +2926,21 @@
       "team": "Los Angeles Angels",
       "transaction_date": "2026-08-22",
       "transaction_id": 938975,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Washington Nationals placed RHP Orlando Ribalta on the 15-day injured list retroactive to September 4, 2026. Right forearm inflammation.",
+      "effective_date": "2026-09-04",
+      "list_type": "15-day injured list",
+      "mlbam_id": 687377,
+      "name": "Orlando Ribalta",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Washington Nationals",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941541,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -3273,21 +3228,6 @@
       "transaction_id": 910818,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Texas Rangers sent LHP Robert Garcia on a rehab assignment to Round Rock Express.",
-      "effective_date": "2026-09-05",
-      "list_type": null,
-      "mlbam_id": 676395,
-      "name": "Robert Garcia",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Round Rock Express",
-      "transaction_date": "2026-09-05",
-      "transaction_id": 941419,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -4176,6 +4116,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "New York Yankees activated RF Aaron Judge from the 60-day injured list.",
+      "effective_date": "2026-09-07",
+      "list_type": "60-day injured list",
+      "mlbam_id": 592450,
+      "name": "Aaron Judge",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "New York Yankees",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941559,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Milwaukee Brewers activated RHP Abner Uribe from the 15-day injured list.",
       "effective_date": "2026-08-31",
       "list_type": "15-day injured list",
@@ -4906,6 +4861,21 @@
       "team": "Texas Rangers",
       "transaction_date": "2026-08-03",
       "transaction_id": 934284,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Chicago White Sox activated LHP Chris Murphy from the 15-day injured list.",
+      "effective_date": "2026-09-07",
+      "list_type": "15-day injured list",
+      "mlbam_id": 669684,
+      "name": "Chris Murphy",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Chicago White Sox",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941533,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -7026,6 +6996,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Cincinnati Reds activated 3B Ke'Bryan Hayes from the 10-day injured list.",
+      "effective_date": "2026-09-07",
+      "list_type": "10-day injured list",
+      "mlbam_id": 663647,
+      "name": "Ke'Bryan Hayes",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Cincinnati Reds",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941546,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Minnesota Twins activated LHP Kendry Rojas from the 15-day injured list.",
       "effective_date": "2026-06-21",
       "list_type": "15-day injured list",
@@ -7866,6 +7851,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "San Diego Padres activated RHP Nick Pivetta from the 60-day injured list.",
+      "effective_date": "2026-09-07",
+      "list_type": "60-day injured list",
+      "mlbam_id": 601713,
+      "name": "Nick Pivetta",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "San Diego Padres",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941531,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Boston Red Sox activated 3B Nick Sogard from the 10-day injured list.",
       "effective_date": "2026-07-12",
       "list_type": "10-day injured list",
@@ -8176,6 +8176,21 @@
       "team": "Seattle Mariners",
       "transaction_date": "2026-07-28",
       "transaction_id": 932154,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Texas Rangers activated LHP Robert Garcia from the 60-day injured list.",
+      "effective_date": "2026-09-07",
+      "list_type": "60-day injured list",
+      "mlbam_id": 676395,
+      "name": "Robert Garcia",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Texas Rangers",
+      "transaction_date": "2026-09-07",
+      "transaction_id": 941561,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9276,7 +9291,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-09-07",
+    "end_date": "2026-09-08",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -9294,15 +9309,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 343,
+    "available_after_il_count": 348,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 211,
-    "profile_count": 617,
+    "injured_count": 210,
+    "profile_count": 618,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 63,
-    "risk_profile_count": 274,
+    "rehab_count": 60,
+    "risk_profile_count": 270,
     "tracked_mlbam_count": 11123,
-    "transaction_count": 11390
+    "transaction_count": 11412
   }
 }

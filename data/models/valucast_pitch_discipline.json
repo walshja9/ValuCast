@@ -1,21 +1,21 @@
 {
   "artifact": "valucast_pitch_discipline",
-  "as_of": "2026-09-07",
+  "as_of": "2026-09-08",
   "cohorts": {
     "calibration": {
-      "a": -0.02602234964267932,
+      "a": -0.026022477727864132,
       "agreement_bands": {
         "overall": {
           "agreement_pct": 97.6,
-          "n": 156741
+          "n": 156841
         },
         "within_1in": {
           "agreement_pct": 86.3,
-          "n": 19397
+          "n": 19411
         },
         "within_3in": {
           "agreement_pct": 94.7,
-          "n": 56668
+          "n": 56705
         }
       },
       "agreement_floor_pct": 85.0,
@@ -23,17 +23,17 @@
         "A",
         "AAA"
       ],
-      "b": 3.0415779372917138,
-      "c": -0.03549950471707712,
-      "d": 8.557620434526369,
-      "fit_r2": 0.9496,
+      "b": 3.0415951032695077,
+      "c": -0.035500370450309175,
+      "d": 8.557779251840667,
+      "fit_r2": 0.9497,
       "fit_r2_x": 0.9792,
-      "fit_r2_y": 0.9496,
-      "fitted_at": "2026-09-07T16:48:21.730697+00:00",
+      "fit_r2_y": 0.9497,
+      "fitted_at": "2026-09-08T12:05:39.847166+00:00",
       "held_out_agreement_pct": 97.6,
-      "n_held": 156741,
-      "n_pairs": 783702,
-      "n_train": 626961,
+      "n_held": 156841,
+      "n_pairs": 784204,
+      "n_train": 627363,
       "passes_quality_gate": true
     },
     "cohort_sizes": {
@@ -64,7 +64,7 @@
     "whiff_pct",
     "swstr_pct"
   ],
-  "generated_at": "2026-09-07T16:48:32.989692+00:00",
+  "generated_at": "2026-09-08T12:05:50.077499+00:00",
   "metric_labels": {
     "chase_pct": "Chase%",
     "swing_pct": "Swing%",
@@ -229,40 +229,40 @@
     "672012": {
       "AAA": {
         "counts": {
-          "contact": 523,
-          "in_zone": 725,
-          "o_swings": 210,
-          "out_zone": 926,
-          "pitches": 1651,
-          "swings": 695,
-          "whiffs": 172,
-          "z_contact": 412,
-          "z_swings": 485,
+          "contact": 531,
+          "in_zone": 737,
+          "o_swings": 212,
+          "out_zone": 937,
+          "pitches": 1674,
+          "swings": 707,
+          "whiffs": 176,
+          "z_contact": 419,
+          "z_swings": 495,
           "zone_pitches_calibrated": 1,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 1651
+          "zone_pitches_with_coords": 1674
         },
         "percentiles": {
-          "chase_pct": 89,
-          "swstr_pct": 68,
+          "chase_pct": 90,
+          "swstr_pct": 67,
           "whiff_pct": 56,
-          "z_contact_pct": 59
+          "z_contact_pct": 58
         },
-        "pitches": 1651,
+        "pitches": 1674,
         "position_percentiles": {
           "swing_pct": 19,
-          "z_swing_pct": 45,
-          "zone_pct": 55
+          "z_swing_pct": 47,
+          "zone_pct": 56
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 22.7,
-          "swing_pct": 42.1,
-          "swstr_pct": 10.4,
-          "whiff_pct": 24.7,
-          "z_contact_pct": 84.9,
-          "z_swing_pct": 66.9,
-          "zone_pct": 43.9
+          "chase_pct": 22.6,
+          "swing_pct": 42.2,
+          "swstr_pct": 10.5,
+          "whiff_pct": 24.9,
+          "z_contact_pct": 84.6,
+          "z_swing_pct": 67.2,
+          "zone_pct": 44.0
         },
         "zone_estimated": true
       }
@@ -327,12 +327,12 @@
         "percentiles": {
           "chase_pct": 65,
           "swstr_pct": 76,
-          "whiff_pct": 62,
+          "whiff_pct": 63,
           "z_contact_pct": 36
         },
         "pitches": 2447,
         "position_percentiles": {
-          "swing_pct": 15,
+          "swing_pct": 14,
           "z_swing_pct": 5,
           "zone_pct": 64
         },
@@ -437,7 +437,7 @@
           "zone_pitches_with_coords": 1193
         },
         "percentiles": {
-          "chase_pct": 81,
+          "chase_pct": 82,
           "swstr_pct": 43,
           "whiff_pct": 40,
           "z_contact_pct": 30
@@ -730,9 +730,9 @@
       "AA": {
         "counts": {
           "contact": 248,
-          "in_zone": 445,
+          "in_zone": 444,
           "o_swings": 146,
-          "out_zone": 495,
+          "out_zone": 496,
           "pitches": 944,
           "swings": 425,
           "whiffs": 177,
@@ -752,17 +752,17 @@
         "position_percentiles": {
           "swing_pct": 35,
           "z_swing_pct": 21,
-          "zone_pct": 93
+          "zone_pct": 92
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 29.5,
+          "chase_pct": 29.4,
           "swing_pct": 45.0,
           "swstr_pct": 18.8,
           "whiff_pct": 41.6,
           "z_contact_pct": 66.5,
-          "z_swing_pct": 62.5,
-          "zone_pct": 47.3
+          "z_swing_pct": 62.6,
+          "zone_pct": 47.2
         },
         "zone_estimated": true
       },
@@ -944,7 +944,7 @@
         "position_percentiles": {
           "swing_pct": 44,
           "z_swing_pct": 10,
-          "zone_pct": 21
+          "zone_pct": 20
         },
         "qualifies": true,
         "rates": {
@@ -1017,8 +1017,8 @@
           "zone_pitches_with_coords": 1363
         },
         "percentiles": {
-          "chase_pct": 59,
-          "swstr_pct": 7,
+          "chase_pct": 58,
+          "swstr_pct": 6,
           "whiff_pct": 4,
           "z_contact_pct": 7
         },
@@ -1230,7 +1230,7 @@
         "pitches": 1624,
         "position_percentiles": {
           "swing_pct": 78,
-          "z_swing_pct": 84,
+          "z_swing_pct": 85,
           "zone_pct": 15
         },
         "qualifies": true,
@@ -1547,10 +1547,10 @@
           "zone_pitches_with_coords": 910
         },
         "percentiles": {
-          "chase_pct": 70,
+          "chase_pct": 71,
           "swstr_pct": 46,
-          "whiff_pct": 9,
-          "z_contact_pct": 18
+          "whiff_pct": 8,
+          "z_contact_pct": 17
         },
         "pitches": 910,
         "position_percentiles": {
@@ -1588,7 +1588,7 @@
           "zone_pitches_with_coords": 1173
         },
         "percentiles": {
-          "chase_pct": 55,
+          "chase_pct": 54,
           "swstr_pct": 16,
           "whiff_pct": 12,
           "z_contact_pct": 15
@@ -1757,40 +1757,40 @@
       },
       "AAA": {
         "counts": {
-          "contact": 420,
-          "in_zone": 571,
-          "o_swings": 203,
-          "out_zone": 718,
-          "pitches": 1289,
-          "swings": 594,
-          "whiffs": 174,
-          "z_contact": 313,
-          "z_swings": 391,
+          "contact": 422,
+          "in_zone": 576,
+          "o_swings": 204,
+          "out_zone": 730,
+          "pitches": 1306,
+          "swings": 598,
+          "whiffs": 176,
+          "z_contact": 315,
+          "z_swings": 394,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 1289
+          "zone_pitches_with_coords": 1306
         },
         "percentiles": {
-          "chase_pct": 58,
+          "chase_pct": 59,
           "swstr_pct": 33,
-          "whiff_pct": 34,
-          "z_contact_pct": 29
+          "whiff_pct": 33,
+          "z_contact_pct": 26
         },
-        "pitches": 1289,
+        "pitches": 1306,
         "position_percentiles": {
-          "swing_pct": 48,
-          "z_swing_pct": 55,
-          "zone_pct": 64
+          "swing_pct": 46,
+          "z_swing_pct": 54,
+          "zone_pct": 58
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 28.3,
-          "swing_pct": 46.1,
+          "chase_pct": 27.9,
+          "swing_pct": 45.8,
           "swstr_pct": 13.5,
-          "whiff_pct": 29.3,
-          "z_contact_pct": 80.1,
-          "z_swing_pct": 68.5,
-          "zone_pct": 44.3
+          "whiff_pct": 29.4,
+          "z_contact_pct": 79.9,
+          "z_swing_pct": 68.4,
+          "zone_pct": 44.1
         },
         "zone_estimated": false
       }
@@ -1837,18 +1837,18 @@
       },
       "AAA": {
         "counts": {
-          "contact": 248,
-          "in_zone": 337,
-          "o_swings": 158,
-          "out_zone": 434,
-          "pitches": 771,
-          "swings": 371,
-          "whiffs": 123,
-          "z_contact": 165,
-          "z_swings": 213,
+          "contact": 252,
+          "in_zone": 344,
+          "o_swings": 161,
+          "out_zone": 443,
+          "pitches": 787,
+          "swings": 378,
+          "whiffs": 126,
+          "z_contact": 168,
+          "z_swings": 217,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 771
+          "zone_pitches_with_coords": 787
         },
         "percentiles": {
           "chase_pct": 11,
@@ -1856,20 +1856,20 @@
           "whiff_pct": 14,
           "z_contact_pct": 13
         },
-        "pitches": 771,
+        "pitches": 787,
         "position_percentiles": {
-          "swing_pct": 67,
+          "swing_pct": 66,
           "z_swing_pct": 22,
           "zone_pct": 51
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 36.4,
-          "swing_pct": 48.1,
+          "chase_pct": 36.3,
+          "swing_pct": 48.0,
           "swstr_pct": 16.0,
-          "whiff_pct": 33.2,
-          "z_contact_pct": 77.5,
-          "z_swing_pct": 63.2,
+          "whiff_pct": 33.3,
+          "z_contact_pct": 77.4,
+          "z_swing_pct": 63.1,
           "zone_pct": 43.7
         },
         "zone_estimated": false
@@ -1893,14 +1893,14 @@
         },
         "percentiles": {
           "chase_pct": 48,
-          "swstr_pct": 20,
+          "swstr_pct": 19,
           "whiff_pct": 10,
-          "z_contact_pct": 24
+          "z_contact_pct": 23
         },
         "pitches": 1286,
         "position_percentiles": {
           "swing_pct": 38,
-          "z_swing_pct": 27,
+          "z_swing_pct": 28,
           "zone_pct": 48
         },
         "qualifies": true,
@@ -1934,7 +1934,7 @@
         },
         "percentiles": {
           "chase_pct": 21,
-          "swstr_pct": 29,
+          "swstr_pct": 30,
           "whiff_pct": 34,
           "z_contact_pct": 40
         },
@@ -2197,7 +2197,7 @@
         "pitches": 1345,
         "position_percentiles": {
           "swing_pct": 17,
-          "z_swing_pct": 44,
+          "z_swing_pct": 43,
           "zone_pct": 76
         },
         "qualifies": true,
@@ -2351,7 +2351,7 @@
           "zone_pitches_with_coords": 1704
         },
         "percentiles": {
-          "chase_pct": 80,
+          "chase_pct": 81,
           "swstr_pct": 38,
           "whiff_pct": 18,
           "z_contact_pct": 19
@@ -2938,7 +2938,7 @@
         "pitches": 747,
         "position_percentiles": {
           "swing_pct": 51,
-          "z_swing_pct": 25,
+          "z_swing_pct": 26,
           "zone_pct": 20
         },
         "qualifies": true,
@@ -3271,40 +3271,40 @@
       },
       "AAA": {
         "counts": {
-          "contact": 474,
-          "in_zone": 605,
-          "o_swings": 284,
-          "out_zone": 764,
-          "pitches": 1369,
-          "swings": 719,
-          "whiffs": 245,
-          "z_contact": 322,
-          "z_swings": 435,
+          "contact": 477,
+          "in_zone": 608,
+          "o_swings": 286,
+          "out_zone": 770,
+          "pitches": 1378,
+          "swings": 723,
+          "whiffs": 246,
+          "z_contact": 324,
+          "z_swings": 437,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 1369
+          "zone_pitches_with_coords": 1378
         },
         "percentiles": {
           "chase_pct": 8,
           "swstr_pct": 4,
-          "whiff_pct": 10,
+          "whiff_pct": 11,
           "z_contact_pct": 6
         },
-        "pitches": 1369,
+        "pitches": 1378,
         "position_percentiles": {
           "swing_pct": 91,
           "z_swing_pct": 78,
-          "zone_pct": 60
+          "zone_pct": 58
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 37.2,
+          "chase_pct": 37.1,
           "swing_pct": 52.5,
           "swstr_pct": 17.9,
-          "whiff_pct": 34.1,
-          "z_contact_pct": 74.0,
+          "whiff_pct": 34.0,
+          "z_contact_pct": 74.1,
           "z_swing_pct": 71.9,
-          "zone_pct": 44.2
+          "zone_pct": 44.1
         },
         "zone_estimated": false
       }
@@ -3877,40 +3877,40 @@
       },
       "AAA": {
         "counts": {
-          "contact": 159,
-          "in_zone": 217,
-          "o_swings": 76,
-          "out_zone": 297,
-          "pitches": 514,
-          "swings": 216,
-          "whiffs": 57,
-          "z_contact": 122,
-          "z_swings": 140,
+          "contact": 165,
+          "in_zone": 226,
+          "o_swings": 78,
+          "out_zone": 300,
+          "pitches": 526,
+          "swings": 223,
+          "whiffs": 58,
+          "z_contact": 127,
+          "z_swings": 145,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 514
+          "zone_pitches_with_coords": 526
         },
         "percentiles": {
-          "chase_pct": 71,
+          "chase_pct": 69,
           "swstr_pct": 58,
-          "whiff_pct": 48,
-          "z_contact_pct": 74
+          "whiff_pct": 50,
+          "z_contact_pct": 77
         },
-        "pitches": 514,
+        "pitches": 526,
         "position_percentiles": {
           "swing_pct": 19,
-          "z_swing_pct": 29,
-          "zone_pct": 21
+          "z_swing_pct": 28,
+          "zone_pct": 34
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 25.6,
-          "swing_pct": 42.0,
-          "swstr_pct": 11.1,
-          "whiff_pct": 26.4,
-          "z_contact_pct": 87.1,
-          "z_swing_pct": 64.5,
-          "zone_pct": 42.2
+          "chase_pct": 26.0,
+          "swing_pct": 42.4,
+          "swstr_pct": 11.0,
+          "whiff_pct": 26.0,
+          "z_contact_pct": 87.6,
+          "z_swing_pct": 64.2,
+          "zone_pct": 43.0
         },
         "zone_estimated": false
       }
@@ -4044,7 +4044,7 @@
           "zone_pitches_with_coords": 1138
         },
         "percentiles": {
-          "chase_pct": 55,
+          "chase_pct": 54,
           "swstr_pct": 76,
           "whiff_pct": 80,
           "z_contact_pct": 59
@@ -4319,7 +4319,7 @@
         "pitches": 1824,
         "position_percentiles": {
           "swing_pct": 5,
-          "z_swing_pct": 39,
+          "z_swing_pct": 40,
           "zone_pct": 25
         },
         "qualifies": true,
@@ -4612,40 +4612,40 @@
       },
       "AAA": {
         "counts": {
-          "contact": 135,
-          "in_zone": 245,
-          "o_swings": 72,
-          "out_zone": 296,
-          "pitches": 541,
-          "swings": 220,
-          "whiffs": 85,
-          "z_contact": 117,
-          "z_swings": 148,
+          "contact": 142,
+          "in_zone": 257,
+          "o_swings": 75,
+          "out_zone": 305,
+          "pitches": 562,
+          "swings": 230,
+          "whiffs": 88,
+          "z_contact": 123,
+          "z_swings": 155,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 541
+          "zone_pitches_with_coords": 562
         },
         "percentiles": {
-          "chase_pct": 81,
+          "chase_pct": 80,
           "swstr_pct": 15,
-          "whiff_pct": 3,
-          "z_contact_pct": 21
+          "whiff_pct": 4,
+          "z_contact_pct": 23
         },
-        "pitches": 541,
+        "pitches": 562,
         "position_percentiles": {
-          "swing_pct": 13,
-          "z_swing_pct": 11,
-          "zone_pct": 83
+          "swing_pct": 15,
+          "z_swing_pct": 10,
+          "zone_pct": 89
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 24.3,
-          "swing_pct": 40.7,
+          "chase_pct": 24.6,
+          "swing_pct": 40.9,
           "swstr_pct": 15.7,
-          "whiff_pct": 38.6,
-          "z_contact_pct": 79.1,
-          "z_swing_pct": 60.4,
-          "zone_pct": 45.3
+          "whiff_pct": 38.3,
+          "z_contact_pct": 79.4,
+          "z_swing_pct": 60.3,
+          "zone_pct": 45.7
         },
         "zone_estimated": false
       }
@@ -4857,7 +4857,7 @@
         "position_percentiles": {
           "swing_pct": 1,
           "z_swing_pct": 1,
-          "zone_pct": 27
+          "zone_pct": 26
         },
         "qualifies": true,
         "rates": {
@@ -5010,7 +5010,7 @@
         "position_percentiles": {
           "swing_pct": 30,
           "z_swing_pct": 26,
-          "zone_pct": 93
+          "zone_pct": 92
         },
         "qualifies": true,
         "rates": {
@@ -5045,7 +5045,7 @@
           "chase_pct": 57,
           "swstr_pct": 59,
           "whiff_pct": 57,
-          "z_contact_pct": 45
+          "z_contact_pct": 44
         },
         "pitches": 804,
         "position_percentiles": {
@@ -5654,7 +5654,7 @@
           "chase_pct": 41,
           "swstr_pct": 32,
           "whiff_pct": 41,
-          "z_contact_pct": 45
+          "z_contact_pct": 46
         },
         "pitches": 450,
         "position_percentiles": {
@@ -5695,13 +5695,13 @@
           "chase_pct": 54,
           "swstr_pct": 32,
           "whiff_pct": 31,
-          "z_contact_pct": 23
+          "z_contact_pct": 22
         },
         "pitches": 1225,
         "position_percentiles": {
           "swing_pct": 47,
           "z_swing_pct": 58,
-          "zone_pct": 32
+          "zone_pct": 31
         },
         "qualifies": true,
         "rates": {
@@ -6266,40 +6266,40 @@
     "687605": {
       "AAA": {
         "counts": {
-          "contact": 456,
-          "in_zone": 741,
+          "contact": 461,
+          "in_zone": 749,
           "o_swings": 261,
-          "out_zone": 911,
-          "pitches": 1652,
-          "swings": 708,
-          "whiffs": 252,
-          "z_contact": 351,
-          "z_swings": 447,
+          "out_zone": 914,
+          "pitches": 1663,
+          "swings": 714,
+          "whiffs": 253,
+          "z_contact": 356,
+          "z_swings": 453,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 1652
+          "zone_pitches_with_coords": 1663
         },
         "percentiles": {
           "chase_pct": 56,
-          "swstr_pct": 18,
+          "swstr_pct": 19,
           "whiff_pct": 5,
           "z_contact_pct": 17
         },
-        "pitches": 1652,
+        "pitches": 1663,
         "position_percentiles": {
           "swing_pct": 23,
-          "z_swing_pct": 10,
-          "zone_pct": 79
+          "z_swing_pct": 11,
+          "zone_pct": 80
         },
         "qualifies": true,
         "rates": {
           "chase_pct": 28.6,
           "swing_pct": 42.9,
-          "swstr_pct": 15.3,
-          "whiff_pct": 35.6,
-          "z_contact_pct": 78.5,
-          "z_swing_pct": 60.3,
-          "zone_pct": 44.9
+          "swstr_pct": 15.2,
+          "whiff_pct": 35.4,
+          "z_contact_pct": 78.6,
+          "z_swing_pct": 60.5,
+          "zone_pct": 45.0
         },
         "zone_estimated": false
       }
@@ -6392,16 +6392,16 @@
           "zone_pitches_with_coords": 1822
         },
         "percentiles": {
-          "chase_pct": 69,
+          "chase_pct": 70,
           "swstr_pct": 71,
-          "whiff_pct": 61,
-          "z_contact_pct": 62
+          "whiff_pct": 62,
+          "z_contact_pct": 63
         },
         "pitches": 1822,
         "position_percentiles": {
           "swing_pct": 21,
           "z_swing_pct": 35,
-          "zone_pct": 29
+          "zone_pct": 28
         },
         "qualifies": true,
         "rates": {
@@ -6565,7 +6565,7 @@
         "position_percentiles": {
           "swing_pct": 23,
           "z_swing_pct": 33,
-          "zone_pct": 72
+          "zone_pct": 73
         },
         "qualifies": true,
         "rates": {
@@ -6767,7 +6767,7 @@
         "pitches": 1660,
         "position_percentiles": {
           "swing_pct": 68,
-          "z_swing_pct": 44,
+          "z_swing_pct": 43,
           "zone_pct": 58
         },
         "qualifies": true,
@@ -6994,7 +6994,7 @@
         "position_percentiles": {
           "swing_pct": 59,
           "z_swing_pct": 42,
-          "zone_pct": 72
+          "zone_pct": 73
         },
         "qualifies": true,
         "rates": {
@@ -7174,7 +7174,7 @@
         "pitches": 650,
         "position_percentiles": {
           "swing_pct": 28,
-          "z_swing_pct": 63,
+          "z_swing_pct": 64,
           "zone_pct": 53
         },
         "qualifies": true,
@@ -7208,7 +7208,7 @@
         },
         "percentiles": {
           "chase_pct": 46,
-          "swstr_pct": 8,
+          "swstr_pct": 9,
           "whiff_pct": 8,
           "z_contact_pct": 5
         },
@@ -7536,7 +7536,7 @@
           "chase_pct": 24,
           "swstr_pct": 44,
           "whiff_pct": 48,
-          "z_contact_pct": 47
+          "z_contact_pct": 48
         },
         "pitches": 311,
         "position_percentiles": {
@@ -7742,7 +7742,7 @@
         "pitches": 374,
         "position_percentiles": {
           "swing_pct": 57,
-          "z_swing_pct": 39,
+          "z_swing_pct": 40,
           "zone_pct": 95
         },
         "qualifies": true,
@@ -7835,7 +7835,7 @@
           "zone_pitches_with_coords": 1288
         },
         "percentiles": {
-          "chase_pct": 79,
+          "chase_pct": 80,
           "swstr_pct": 84,
           "whiff_pct": 85,
           "z_contact_pct": 72
@@ -7843,7 +7843,7 @@
         "pitches": 1288,
         "position_percentiles": {
           "swing_pct": 41,
-          "z_swing_pct": 62,
+          "z_swing_pct": 63,
           "zone_pct": 89
         },
         "qualifies": true,
@@ -8069,7 +8069,7 @@
           "chase_pct": 56,
           "swstr_pct": 18,
           "whiff_pct": 15,
-          "z_contact_pct": 43
+          "z_contact_pct": 44
         },
         "pitches": 568,
         "position_percentiles": {
@@ -8146,8 +8146,8 @@
           "zone_pitches_with_coords": 755
         },
         "percentiles": {
-          "chase_pct": 59,
-          "swstr_pct": 28,
+          "chase_pct": 58,
+          "swstr_pct": 29,
           "whiff_pct": 25,
           "z_contact_pct": 19
         },
@@ -8235,7 +8235,7 @@
         "position_percentiles": {
           "swing_pct": 97,
           "z_swing_pct": 87,
-          "zone_pct": 32
+          "zone_pct": 31
         },
         "qualifies": true,
         "rates": {
@@ -8562,7 +8562,7 @@
           "zone_pitches_with_coords": 839
         },
         "percentiles": {
-          "chase_pct": 11,
+          "chase_pct": 10,
           "swstr_pct": 3,
           "whiff_pct": 6,
           "z_contact_pct": 9
@@ -8570,8 +8570,8 @@
         "pitches": 839,
         "position_percentiles": {
           "swing_pct": 93,
-          "z_swing_pct": 92,
-          "zone_pct": 27
+          "z_swing_pct": 93,
+          "zone_pct": 26
         },
         "qualifies": true,
         "rates": {
@@ -8651,7 +8651,7 @@
         "position_percentiles": {
           "swing_pct": 58,
           "z_swing_pct": 83,
-          "zone_pct": 86
+          "zone_pct": 85
         },
         "qualifies": true,
         "rates": {
@@ -8790,40 +8790,40 @@
       },
       "AAA": {
         "counts": {
-          "contact": 304,
-          "in_zone": 320,
-          "o_swings": 155,
-          "out_zone": 385,
-          "pitches": 705,
-          "swings": 397,
-          "whiffs": 93,
-          "z_contact": 202,
-          "z_swings": 242,
+          "contact": 306,
+          "in_zone": 324,
+          "o_swings": 158,
+          "out_zone": 398,
+          "pitches": 722,
+          "swings": 402,
+          "whiffs": 96,
+          "z_contact": 203,
+          "z_swings": 244,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 705
+          "zone_pitches_with_coords": 722
         },
         "percentiles": {
-          "chase_pct": 2,
-          "swstr_pct": 36,
-          "whiff_pct": 63,
-          "z_contact_pct": 49
+          "chase_pct": 3,
+          "swstr_pct": 35,
+          "whiff_pct": 61,
+          "z_contact_pct": 46
         },
-        "pitches": 705,
+        "pitches": 722,
         "position_percentiles": {
-          "swing_pct": 99,
-          "z_swing_pct": 94,
-          "zone_pct": 85
+          "swing_pct": 98,
+          "z_swing_pct": 92,
+          "zone_pct": 79
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 40.3,
-          "swing_pct": 56.3,
-          "swstr_pct": 13.2,
-          "whiff_pct": 23.4,
-          "z_contact_pct": 83.5,
-          "z_swing_pct": 75.6,
-          "zone_pct": 45.4
+          "chase_pct": 39.7,
+          "swing_pct": 55.7,
+          "swstr_pct": 13.3,
+          "whiff_pct": 23.9,
+          "z_contact_pct": 83.2,
+          "z_swing_pct": 75.3,
+          "zone_pct": 44.9
         },
         "zone_estimated": false
       }
@@ -8908,7 +8908,7 @@
           "chase_pct": 78,
           "swstr_pct": 26,
           "whiff_pct": 13,
-          "z_contact_pct": 26
+          "z_contact_pct": 25
         },
         "pitches": 825,
         "position_percentiles": {
@@ -9474,7 +9474,7 @@
           "zone_pitches_with_coords": 1620
         },
         "percentiles": {
-          "chase_pct": 9,
+          "chase_pct": 8,
           "swstr_pct": 37,
           "whiff_pct": 46,
           "z_contact_pct": 56
@@ -9808,7 +9808,7 @@
         "position_percentiles": {
           "swing_pct": 88,
           "z_swing_pct": 70,
-          "zone_pct": 83
+          "zone_pct": 84
         },
         "qualifies": true,
         "rates": {
@@ -10442,7 +10442,7 @@
           "zone_pitches_with_coords": 1252
         },
         "percentiles": {
-          "chase_pct": 25,
+          "chase_pct": 26,
           "swstr_pct": 27,
           "whiff_pct": 31,
           "z_contact_pct": 23
@@ -10623,7 +10623,7 @@
         "position_percentiles": {
           "swing_pct": 95,
           "z_swing_pct": 82,
-          "zone_pct": 88
+          "zone_pct": 89
         },
         "qualifies": true,
         "rates": {
@@ -10948,7 +10948,7 @@
         "position_percentiles": {
           "swing_pct": 63,
           "z_swing_pct": 44,
-          "zone_pct": 72
+          "zone_pct": 73
         },
         "qualifies": true,
         "rates": {
@@ -11332,26 +11332,26 @@
     "691620": {
       "AAA": {
         "counts": {
-          "contact": 577,
-          "in_zone": 713,
-          "o_swings": 306,
-          "out_zone": 878,
-          "pitches": 1591,
-          "swings": 820,
-          "whiffs": 243,
-          "z_contact": 429,
-          "z_swings": 514,
+          "contact": 584,
+          "in_zone": 721,
+          "o_swings": 309,
+          "out_zone": 888,
+          "pitches": 1609,
+          "swings": 830,
+          "whiffs": 246,
+          "z_contact": 434,
+          "z_swings": 521,
           "zone_pitches_calibrated": 7,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 1591
+          "zone_pitches_with_coords": 1609
         },
         "percentiles": {
-          "chase_pct": 18,
+          "chase_pct": 19,
           "swstr_pct": 18,
           "whiff_pct": 32,
-          "z_contact_pct": 49
+          "z_contact_pct": 48
         },
-        "pitches": 1591,
+        "pitches": 1609,
         "position_percentiles": {
           "swing_pct": 87,
           "z_swing_pct": 79,
@@ -11359,12 +11359,12 @@
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 34.9,
-          "swing_pct": 51.5,
+          "chase_pct": 34.8,
+          "swing_pct": 51.6,
           "swstr_pct": 15.3,
           "whiff_pct": 29.6,
-          "z_contact_pct": 83.5,
-          "z_swing_pct": 72.1,
+          "z_contact_pct": 83.3,
+          "z_swing_pct": 72.3,
           "zone_pct": 44.8
         },
         "zone_estimated": true
@@ -11701,10 +11701,10 @@
           "zone_pitches_with_coords": 1632
         },
         "percentiles": {
-          "chase_pct": 6,
-          "swstr_pct": 29,
+          "chase_pct": 7,
+          "swstr_pct": 30,
           "whiff_pct": 50,
-          "z_contact_pct": 45
+          "z_contact_pct": 46
         },
         "pitches": 1632,
         "position_percentiles": {
@@ -11744,7 +11744,7 @@
         "percentiles": {
           "chase_pct": 42,
           "swstr_pct": 15,
-          "whiff_pct": 9,
+          "whiff_pct": 8,
           "z_contact_pct": 6
         },
         "pitches": 1882,
@@ -11902,7 +11902,7 @@
         "position_percentiles": {
           "swing_pct": 34,
           "z_swing_pct": 38,
-          "zone_pct": 94
+          "zone_pct": 93
         },
         "qualifies": true,
         "rates": {
@@ -12137,7 +12137,7 @@
         "position_percentiles": {
           "swing_pct": 52,
           "z_swing_pct": 81,
-          "zone_pct": 29
+          "zone_pct": 28
         },
         "qualifies": true,
         "rates": {
@@ -12412,7 +12412,7 @@
         "percentiles": {
           "chase_pct": 30,
           "swstr_pct": 13,
-          "whiff_pct": 12,
+          "whiff_pct": 11,
           "z_contact_pct": 10
         },
         "pitches": 627,
@@ -13433,7 +13433,7 @@
           "chase_pct": 71,
           "swstr_pct": 51,
           "whiff_pct": 33,
-          "z_contact_pct": 42
+          "z_contact_pct": 43
         },
         "pitches": 818,
         "position_percentiles": {
@@ -13501,10 +13501,10 @@
           "zone_pitches_with_coords": 935
         },
         "percentiles": {
-          "chase_pct": 3,
+          "chase_pct": 4,
           "swstr_pct": 13,
           "whiff_pct": 23,
-          "z_contact_pct": 49
+          "z_contact_pct": 50
         },
         "pitches": 935,
         "position_percentiles": {
@@ -13924,7 +13924,7 @@
         "position_percentiles": {
           "swing_pct": 96,
           "z_swing_pct": 95,
-          "zone_pct": 72
+          "zone_pct": 73
         },
         "qualifies": true,
         "rates": {
@@ -14027,7 +14027,7 @@
         "percentiles": {
           "chase_pct": 31,
           "swstr_pct": 11,
-          "whiff_pct": 13,
+          "whiff_pct": 12,
           "z_contact_pct": 4
         },
         "pitches": 432,
@@ -14068,7 +14068,7 @@
         "percentiles": {
           "chase_pct": 67,
           "swstr_pct": 35,
-          "whiff_pct": 42,
+          "whiff_pct": 43,
           "z_contact_pct": 28
         },
         "pitches": 783,
@@ -14387,14 +14387,14 @@
       "AA": {
         "counts": {
           "contact": 490,
-          "in_zone": 514,
-          "o_swings": 272,
-          "out_zone": 674,
+          "in_zone": 513,
+          "o_swings": 273,
+          "out_zone": 675,
           "pitches": 1190,
           "swings": 627,
           "whiffs": 137,
-          "z_contact": 322,
-          "z_swings": 355,
+          "z_contact": 321,
+          "z_swings": 354,
           "zone_pitches_calibrated": 1188,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 1188
@@ -14408,8 +14408,8 @@
         "pitches": 1190,
         "position_percentiles": {
           "swing_pct": 86,
-          "z_swing_pct": 61,
-          "zone_pct": 23
+          "z_swing_pct": 60,
+          "zone_pct": 21
         },
         "qualifies": true,
         "rates": {
@@ -14418,8 +14418,8 @@
           "swstr_pct": 11.5,
           "whiff_pct": 21.9,
           "z_contact_pct": 90.7,
-          "z_swing_pct": 69.1,
-          "zone_pct": 43.3
+          "z_swing_pct": 69.0,
+          "zone_pct": 43.2
         },
         "zone_estimated": true
       }
@@ -15117,7 +15117,7 @@
         "pitches": 1365,
         "position_percentiles": {
           "swing_pct": 99,
-          "z_swing_pct": 93,
+          "z_swing_pct": 94,
           "zone_pct": 38
         },
         "qualifies": true,
@@ -15592,9 +15592,9 @@
       "AA": {
         "counts": {
           "contact": 617,
-          "in_zone": 769,
+          "in_zone": 768,
           "o_swings": 360,
-          "out_zone": 1041,
+          "out_zone": 1042,
           "pitches": 1812,
           "swings": 925,
           "whiffs": 308,
@@ -15605,7 +15605,7 @@
           "zone_pitches_with_coords": 1810
         },
         "percentiles": {
-          "chase_pct": 22,
+          "chase_pct": 23,
           "swstr_pct": 17,
           "whiff_pct": 24,
           "z_contact_pct": 44
@@ -15613,18 +15613,18 @@
         "pitches": 1812,
         "position_percentiles": {
           "swing_pct": 77,
-          "z_swing_pct": 82,
-          "zone_pct": 12
+          "z_swing_pct": 83,
+          "zone_pct": 10
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 34.6,
+          "chase_pct": 34.5,
           "swing_pct": 51.0,
           "swstr_pct": 17.0,
           "whiff_pct": 33.3,
           "z_contact_pct": 80.8,
-          "z_swing_pct": 73.2,
-          "zone_pct": 42.5
+          "z_swing_pct": 73.3,
+          "zone_pct": 42.4
         },
         "zone_estimated": true
       }
@@ -15687,7 +15687,7 @@
         "position_percentiles": {
           "swing_pct": 58,
           "z_swing_pct": 27,
-          "zone_pct": 72
+          "zone_pct": 73
         },
         "qualifies": true,
         "rates": {
@@ -15777,20 +15777,20 @@
       "AA": {
         "counts": {
           "contact": 459,
-          "in_zone": 580,
-          "o_swings": 249,
-          "out_zone": 682,
+          "in_zone": 579,
+          "o_swings": 250,
+          "out_zone": 683,
           "pitches": 1262,
           "swings": 630,
           "whiffs": 171,
-          "z_contact": 308,
-          "z_swings": 381,
+          "z_contact": 307,
+          "z_swings": 380,
           "zone_pitches_calibrated": 1262,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 1262
         },
         "percentiles": {
-          "chase_pct": 17,
+          "chase_pct": 16,
           "swstr_pct": 46,
           "whiff_pct": 58,
           "z_contact_pct": 44
@@ -15799,17 +15799,17 @@
         "position_percentiles": {
           "swing_pct": 73,
           "z_swing_pct": 39,
-          "zone_pct": 81
+          "zone_pct": 80
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 36.5,
+          "chase_pct": 36.6,
           "swing_pct": 49.9,
           "swstr_pct": 13.5,
           "whiff_pct": 27.1,
           "z_contact_pct": 80.8,
-          "z_swing_pct": 65.7,
-          "zone_pct": 46.0
+          "z_swing_pct": 65.6,
+          "zone_pct": 45.9
         },
         "zone_estimated": true
       }
@@ -16338,7 +16338,7 @@
           "chase_pct": 4,
           "swstr_pct": 26,
           "whiff_pct": 46,
-          "z_contact_pct": 58
+          "z_contact_pct": 59
         },
         "pitches": 842,
         "position_percentiles": {
@@ -16730,7 +16730,7 @@
           "zone_pitches_with_coords": 1142
         },
         "percentiles": {
-          "chase_pct": 81,
+          "chase_pct": 82,
           "swstr_pct": 77,
           "whiff_pct": 78,
           "z_contact_pct": 76
@@ -16739,7 +16739,7 @@
         "position_percentiles": {
           "swing_pct": 37,
           "z_swing_pct": 65,
-          "zone_pct": 60
+          "zone_pct": 61
         },
         "qualifies": true,
         "rates": {
@@ -16873,7 +16873,7 @@
           "chase_pct": 61,
           "swstr_pct": 73,
           "whiff_pct": 77,
-          "z_contact_pct": 75
+          "z_contact_pct": 74
         },
         "pitches": 300,
         "position_percentiles": {
@@ -17246,7 +17246,7 @@
         "pitches": 977,
         "position_percentiles": {
           "swing_pct": 21,
-          "z_swing_pct": 45,
+          "z_swing_pct": 44,
           "zone_pct": 48
         },
         "qualifies": true,
@@ -17336,40 +17336,40 @@
     "694385": {
       "AAA": {
         "counts": {
-          "contact": 573,
-          "in_zone": 939,
-          "o_swings": 240,
-          "out_zone": 1138,
-          "pitches": 2077,
-          "swings": 783,
-          "whiffs": 210,
-          "z_contact": 444,
-          "z_swings": 543,
+          "contact": 576,
+          "in_zone": 944,
+          "o_swings": 242,
+          "out_zone": 1150,
+          "pitches": 2094,
+          "swings": 788,
+          "whiffs": 212,
+          "z_contact": 447,
+          "z_swings": 546,
           "zone_pitches_calibrated": 8,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 2077
+          "zone_pitches_with_coords": 2094
         },
         "percentiles": {
-          "chase_pct": 95,
+          "chase_pct": 96,
           "swstr_pct": 71,
-          "whiff_pct": 45,
+          "whiff_pct": 44,
           "z_contact_pct": 38
         },
-        "pitches": 2077,
+        "pitches": 2094,
         "position_percentiles": {
-          "swing_pct": 4,
+          "swing_pct": 3,
           "z_swing_pct": 4,
           "zone_pct": 81
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 21.1,
-          "swing_pct": 37.7,
+          "chase_pct": 21.0,
+          "swing_pct": 37.6,
           "swstr_pct": 10.1,
-          "whiff_pct": 26.8,
-          "z_contact_pct": 81.8,
+          "whiff_pct": 26.9,
+          "z_contact_pct": 81.9,
           "z_swing_pct": 57.8,
-          "zone_pct": 45.2
+          "zone_pct": 45.1
         },
         "zone_estimated": true
       }
@@ -17511,7 +17511,7 @@
         "pitches": 1761,
         "position_percentiles": {
           "swing_pct": 17,
-          "z_swing_pct": 12,
+          "z_swing_pct": 11,
           "zone_pct": 89
         },
         "qualifies": true,
@@ -17698,9 +17698,9 @@
         },
         "percentiles": {
           "chase_pct": 93,
-          "swstr_pct": 59,
+          "swstr_pct": 58,
           "whiff_pct": 60,
-          "z_contact_pct": 41
+          "z_contact_pct": 42
         },
         "pitches": 1351,
         "position_percentiles": {
@@ -18059,7 +18059,7 @@
         "pitches": 736,
         "position_percentiles": {
           "swing_pct": 60,
-          "z_swing_pct": 28,
+          "z_swing_pct": 29,
           "zone_pct": 17
         },
         "qualifies": true,
@@ -18458,13 +18458,13 @@
           "chase_pct": 18,
           "swstr_pct": 16,
           "whiff_pct": 28,
-          "z_contact_pct": 23
+          "z_contact_pct": 22
         },
         "pitches": 422,
         "position_percentiles": {
           "swing_pct": 90,
           "z_swing_pct": 90,
-          "zone_pct": 32
+          "zone_pct": 31
         },
         "qualifies": true,
         "rates": {
@@ -18595,9 +18595,9 @@
       "A+": {
         "counts": {
           "contact": 218,
-          "in_zone": 306,
+          "in_zone": 305,
           "o_swings": 124,
-          "out_zone": 379,
+          "out_zone": 380,
           "pitches": 686,
           "swings": 339,
           "whiffs": 121,
@@ -18608,7 +18608,7 @@
           "zone_pitches_with_coords": 685
         },
         "percentiles": {
-          "chase_pct": 28,
+          "chase_pct": 29,
           "swstr_pct": 13,
           "whiff_pct": 16,
           "z_contact_pct": 22
@@ -18616,18 +18616,18 @@
         "pitches": 686,
         "position_percentiles": {
           "swing_pct": 73,
-          "z_swing_pct": 67,
-          "zone_pct": 74
+          "z_swing_pct": 68,
+          "zone_pct": 71
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 32.7,
+          "chase_pct": 32.6,
           "swing_pct": 49.4,
           "swstr_pct": 17.6,
           "whiff_pct": 35.7,
           "z_contact_pct": 76.7,
-          "z_swing_pct": 70.3,
-          "zone_pct": 44.7
+          "z_swing_pct": 70.5,
+          "zone_pct": 44.5
         },
         "zone_estimated": true
       },
@@ -19635,7 +19635,7 @@
         "position_percentiles": {
           "swing_pct": 56,
           "z_swing_pct": 24,
-          "zone_pct": 86
+          "zone_pct": 85
         },
         "qualifies": true,
         "rates": {
@@ -20035,7 +20035,7 @@
         "percentiles": {
           "chase_pct": 12,
           "swstr_pct": 8,
-          "whiff_pct": 12,
+          "whiff_pct": 11,
           "z_contact_pct": 11
         },
         "pitches": 1769,
@@ -20211,39 +20211,39 @@
       },
       "AAA": {
         "counts": {
-          "contact": 134,
-          "in_zone": 155,
-          "o_swings": 82,
-          "out_zone": 213,
-          "pitches": 368,
-          "swings": 196,
-          "whiffs": 62,
-          "z_contact": 99,
-          "z_swings": 114,
+          "contact": 141,
+          "in_zone": 163,
+          "o_swings": 89,
+          "out_zone": 224,
+          "pitches": 387,
+          "swings": 208,
+          "whiffs": 67,
+          "z_contact": 102,
+          "z_swings": 119,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 368
+          "zone_pitches_with_coords": 387
         },
         "percentiles": {
-          "chase_pct": 5,
-          "swstr_pct": 10,
-          "whiff_pct": 23,
-          "z_contact_pct": 71
+          "chase_pct": 3,
+          "swstr_pct": 8,
+          "whiff_pct": 19,
+          "z_contact_pct": 62
         },
-        "pitches": 368,
+        "pitches": 387,
         "position_percentiles": {
-          "swing_pct": 94,
-          "z_swing_pct": 86,
+          "swing_pct": 95,
+          "z_swing_pct": 83,
           "zone_pct": 19
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 38.5,
-          "swing_pct": 53.3,
-          "swstr_pct": 16.8,
-          "whiff_pct": 31.6,
-          "z_contact_pct": 86.8,
-          "z_swing_pct": 73.5,
+          "chase_pct": 39.7,
+          "swing_pct": 53.7,
+          "swstr_pct": 17.3,
+          "whiff_pct": 32.2,
+          "z_contact_pct": 85.7,
+          "z_swing_pct": 73.0,
           "zone_pct": 42.1
         },
         "zone_estimated": false
@@ -20395,7 +20395,7 @@
         "pitches": 571,
         "position_percentiles": {
           "swing_pct": 68,
-          "z_swing_pct": 50,
+          "z_swing_pct": 49,
           "zone_pct": 99
         },
         "qualifies": true,
@@ -21290,7 +21290,7 @@
         },
         "percentiles": {
           "chase_pct": 29,
-          "swstr_pct": 68,
+          "swstr_pct": 69,
           "whiff_pct": 79,
           "z_contact_pct": 83
         },
@@ -21298,7 +21298,7 @@
         "position_percentiles": {
           "swing_pct": 77,
           "z_swing_pct": 61,
-          "zone_pct": 81
+          "zone_pct": 82
         },
         "qualifies": true,
         "rates": {
@@ -21403,7 +21403,7 @@
         "percentiles": {
           "chase_pct": 99,
           "swstr_pct": 62,
-          "whiff_pct": 40,
+          "whiff_pct": 41,
           "z_contact_pct": 33
         },
         "pitches": 1065,
@@ -21706,13 +21706,13 @@
           "chase_pct": 13,
           "swstr_pct": 22,
           "whiff_pct": 42,
-          "z_contact_pct": 47
+          "z_contact_pct": 48
         },
         "pitches": 1474,
         "position_percentiles": {
-          "swing_pct": 95,
+          "swing_pct": 94,
           "z_swing_pct": 99,
-          "zone_pct": 32
+          "zone_pct": 31
         },
         "qualifies": true,
         "rates": {
@@ -21810,40 +21810,40 @@
       },
       "AAA": {
         "counts": {
-          "contact": 130,
-          "in_zone": 180,
-          "o_swings": 79,
-          "out_zone": 211,
-          "pitches": 391,
-          "swings": 199,
+          "contact": 136,
+          "in_zone": 185,
+          "o_swings": 80,
+          "out_zone": 214,
+          "pitches": 399,
+          "swings": 205,
           "whiffs": 69,
-          "z_contact": 95,
-          "z_swings": 120,
+          "z_contact": 100,
+          "z_swings": 125,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 391
+          "zone_pitches_with_coords": 399
         },
         "percentiles": {
           "chase_pct": 8,
-          "swstr_pct": 6,
-          "whiff_pct": 8,
-          "z_contact_pct": 22
+          "swstr_pct": 8,
+          "whiff_pct": 13,
+          "z_contact_pct": 28
         },
-        "pitches": 391,
+        "pitches": 399,
         "position_percentiles": {
-          "swing_pct": 85,
-          "z_swing_pct": 43,
-          "zone_pct": 92
+          "swing_pct": 86,
+          "z_swing_pct": 50,
+          "zone_pct": 94
         },
         "qualifies": true,
         "rates": {
           "chase_pct": 37.4,
-          "swing_pct": 50.9,
-          "swstr_pct": 17.6,
-          "whiff_pct": 34.7,
-          "z_contact_pct": 79.2,
-          "z_swing_pct": 66.7,
-          "zone_pct": 46.0
+          "swing_pct": 51.4,
+          "swstr_pct": 17.3,
+          "whiff_pct": 33.7,
+          "z_contact_pct": 80.0,
+          "z_swing_pct": 67.6,
+          "zone_pct": 46.4
         },
         "zone_estimated": false
       }
@@ -22063,7 +22063,7 @@
         "percentiles": {
           "chase_pct": 51,
           "swstr_pct": 22,
-          "whiff_pct": 19,
+          "whiff_pct": 20,
           "z_contact_pct": 17
         },
         "pitches": 1597,
@@ -22190,7 +22190,7 @@
         "pitches": 1509,
         "position_percentiles": {
           "swing_pct": 31,
-          "z_swing_pct": 39,
+          "z_swing_pct": 40,
           "zone_pct": 99
         },
         "qualifies": true,
@@ -22383,7 +22383,7 @@
         "position_percentiles": {
           "swing_pct": 23,
           "z_swing_pct": 72,
-          "zone_pct": 35
+          "zone_pct": 34
         },
         "qualifies": true,
         "rates": {
@@ -22465,7 +22465,7 @@
         "position_percentiles": {
           "swing_pct": 27,
           "z_swing_pct": 23,
-          "zone_pct": 72
+          "zone_pct": 73
         },
         "qualifies": true,
         "rates": {
@@ -23164,7 +23164,7 @@
         "pitches": 1049,
         "position_percentiles": {
           "swing_pct": 52,
-          "z_swing_pct": 68,
+          "z_swing_pct": 67,
           "zone_pct": 21
         },
         "qualifies": true,
@@ -23460,7 +23460,7 @@
         "position_percentiles": {
           "swing_pct": 54,
           "z_swing_pct": 54,
-          "zone_pct": 81
+          "zone_pct": 82
         },
         "qualifies": true,
         "rates": {
@@ -23540,7 +23540,7 @@
         "position_percentiles": {
           "swing_pct": 82,
           "z_swing_pct": 96,
-          "zone_pct": 29
+          "zone_pct": 28
         },
         "qualifies": true,
         "rates": {
@@ -23679,31 +23679,31 @@
       },
       "AAA": {
         "counts": {
-          "contact": 8,
-          "in_zone": 13,
-          "o_swings": 2,
-          "out_zone": 9,
-          "pitches": 22,
-          "swings": 11,
+          "contact": 15,
+          "in_zone": 17,
+          "o_swings": 5,
+          "out_zone": 14,
+          "pitches": 31,
+          "swings": 18,
           "whiffs": 3,
-          "z_contact": 7,
-          "z_swings": 9,
+          "z_contact": 11,
+          "z_swings": 13,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 22
+          "zone_pitches_with_coords": 31
         },
         "percentiles": {},
-        "pitches": 22,
+        "pitches": 31,
         "position_percentiles": {},
         "qualifies": false,
         "rates": {
-          "chase_pct": 22.2,
-          "swing_pct": 50.0,
-          "swstr_pct": 13.6,
-          "whiff_pct": 27.3,
-          "z_contact_pct": 77.8,
-          "z_swing_pct": 69.2,
-          "zone_pct": 59.1
+          "chase_pct": 35.7,
+          "swing_pct": 58.1,
+          "swstr_pct": 9.7,
+          "whiff_pct": 16.7,
+          "z_contact_pct": 84.6,
+          "z_swing_pct": 76.5,
+          "zone_pct": 54.8
         },
         "zone_estimated": false
       }
@@ -24190,7 +24190,7 @@
           "zone_pitches_with_coords": 1702
         },
         "percentiles": {
-          "chase_pct": 4,
+          "chase_pct": 5,
           "swstr_pct": 51,
           "whiff_pct": 60,
           "z_contact_pct": 51
@@ -25136,7 +25136,7 @@
         "position_percentiles": {
           "swing_pct": 37,
           "z_swing_pct": 59,
-          "zone_pct": 32
+          "zone_pct": 31
         },
         "qualifies": true,
         "rates": {
@@ -25698,7 +25698,7 @@
         },
         "percentiles": {
           "chase_pct": 23,
-          "swstr_pct": 20,
+          "swstr_pct": 19,
           "whiff_pct": 30,
           "z_contact_pct": 42
         },
@@ -25706,7 +25706,7 @@
         "position_percentiles": {
           "swing_pct": 82,
           "z_swing_pct": 77,
-          "zone_pct": 60
+          "zone_pct": 61
         },
         "qualifies": true,
         "rates": {
@@ -27055,39 +27055,39 @@
       "AA": {
         "counts": {
           "contact": 143,
-          "in_zone": 184,
-          "o_swings": 57,
-          "out_zone": 221,
+          "in_zone": 183,
+          "o_swings": 58,
+          "out_zone": 222,
           "pitches": 407,
           "swings": 179,
           "whiffs": 36,
           "z_contact": 106,
-          "z_swings": 121,
+          "z_swings": 120,
           "zone_pitches_calibrated": 405,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 405
         },
         "percentiles": {
-          "chase_pct": 77,
+          "chase_pct": 76,
           "swstr_pct": 90,
           "whiff_pct": 89,
-          "z_contact_pct": 88
+          "z_contact_pct": 91
         },
         "pitches": 407,
         "position_percentiles": {
           "swing_pct": 29,
-          "z_swing_pct": 40,
-          "zone_pct": 72
+          "z_swing_pct": 39,
+          "zone_pct": 67
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 25.8,
+          "chase_pct": 26.1,
           "swing_pct": 44.0,
           "swstr_pct": 8.8,
           "whiff_pct": 20.1,
-          "z_contact_pct": 87.6,
-          "z_swing_pct": 65.8,
-          "zone_pct": 45.4
+          "z_contact_pct": 88.3,
+          "z_swing_pct": 65.6,
+          "zone_pct": 45.2
         },
         "zone_estimated": true
       }
@@ -27468,8 +27468,8 @@
         },
         "pitches": 1516,
         "position_percentiles": {
-          "swing_pct": 86,
-          "z_swing_pct": 85,
+          "swing_pct": 85,
+          "z_swing_pct": 86,
           "zone_pct": 87
         },
         "qualifies": true,
@@ -28169,7 +28169,7 @@
           "zone_pitches_with_coords": 1885
         },
         "percentiles": {
-          "chase_pct": 77,
+          "chase_pct": 78,
           "swstr_pct": 46,
           "whiff_pct": 46,
           "z_contact_pct": 62
@@ -28759,7 +28759,7 @@
           "chase_pct": 92,
           "swstr_pct": 71,
           "whiff_pct": 56,
-          "z_contact_pct": 58
+          "z_contact_pct": 59
         },
         "pitches": 553,
         "position_percentiles": {
@@ -29431,7 +29431,7 @@
           "zone_pitches_with_coords": 1679
         },
         "percentiles": {
-          "chase_pct": 69,
+          "chase_pct": 70,
           "swstr_pct": 26,
           "whiff_pct": 24,
           "z_contact_pct": 10
@@ -29440,7 +29440,7 @@
         "position_percentiles": {
           "swing_pct": 49,
           "z_swing_pct": 83,
-          "zone_pct": 35
+          "zone_pct": 34
         },
         "qualifies": true,
         "rates": {
@@ -29794,7 +29794,7 @@
         "position_percentiles": {
           "swing_pct": 20,
           "z_swing_pct": 40,
-          "zone_pct": 72
+          "zone_pct": 73
         },
         "qualifies": true,
         "rates": {
@@ -29969,13 +29969,13 @@
           "chase_pct": 83,
           "swstr_pct": 85,
           "whiff_pct": 85,
-          "z_contact_pct": 63
+          "z_contact_pct": 64
         },
         "pitches": 974,
         "position_percentiles": {
           "swing_pct": 38,
-          "z_swing_pct": 62,
-          "zone_pct": 83
+          "z_swing_pct": 63,
+          "zone_pct": 84
         },
         "qualifies": true,
         "rates": {
@@ -30790,7 +30790,7 @@
         "pitches": 1399,
         "position_percentiles": {
           "swing_pct": 33,
-          "z_swing_pct": 46,
+          "z_swing_pct": 45,
           "zone_pct": 42
         },
         "qualifies": true,
@@ -30810,14 +30810,14 @@
       "A+": {
         "counts": {
           "contact": 427,
-          "in_zone": 751,
-          "o_swings": 217,
-          "out_zone": 1055,
+          "in_zone": 750,
+          "o_swings": 218,
+          "out_zone": 1056,
           "pitches": 1806,
           "swings": 669,
           "whiffs": 242,
-          "z_contact": 338,
-          "z_swings": 452,
+          "z_contact": 337,
+          "z_swings": 451,
           "zone_pitches_calibrated": 1806,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 1806
@@ -30831,8 +30831,8 @@
         "pitches": 1806,
         "position_percentiles": {
           "swing_pct": 6,
-          "z_swing_pct": 17,
-          "zone_pct": 18
+          "z_swing_pct": 16,
+          "zone_pct": 16
         },
         "qualifies": true,
         "rates": {
@@ -30840,9 +30840,9 @@
           "swing_pct": 37.0,
           "swstr_pct": 13.4,
           "whiff_pct": 36.2,
-          "z_contact_pct": 74.8,
-          "z_swing_pct": 60.2,
-          "zone_pct": 41.6
+          "z_contact_pct": 74.7,
+          "z_swing_pct": 60.1,
+          "zone_pct": 41.5
         },
         "zone_estimated": true
       },
@@ -31212,7 +31212,7 @@
         "position_percentiles": {
           "swing_pct": 31,
           "z_swing_pct": 16,
-          "zone_pct": 29
+          "zone_pct": 28
         },
         "qualifies": true,
         "rates": {
@@ -32627,7 +32627,7 @@
           "zone_pitches_with_coords": 603
         },
         "percentiles": {
-          "chase_pct": 55,
+          "chase_pct": 54,
           "swstr_pct": 80,
           "whiff_pct": 81,
           "z_contact_pct": 78
@@ -33030,7 +33030,7 @@
         "pitches": 719,
         "position_percentiles": {
           "swing_pct": 60,
-          "z_swing_pct": 25,
+          "z_swing_pct": 26,
           "zone_pct": 94
         },
         "qualifies": true,
@@ -34646,9 +34646,9 @@
         },
         "pitches": 781,
         "position_percentiles": {
-          "swing_pct": 98,
+          "swing_pct": 99,
           "z_swing_pct": 99,
-          "zone_pct": 32
+          "zone_pct": 31
         },
         "qualifies": true,
         "rates": {
@@ -35120,7 +35120,7 @@
           "chase_pct": 93,
           "swstr_pct": 90,
           "whiff_pct": 88,
-          "z_contact_pct": 44
+          "z_contact_pct": 43
         },
         "pitches": 614,
         "position_percentiles": {
@@ -35159,12 +35159,12 @@
           "chase_pct": 94,
           "swstr_pct": 50,
           "whiff_pct": 30,
-          "z_contact_pct": 26
+          "z_contact_pct": 25
         },
         "pitches": 685,
         "position_percentiles": {
           "swing_pct": 13,
-          "z_swing_pct": 46,
+          "z_swing_pct": 45,
           "zone_pct": 17
         },
         "qualifies": true,
@@ -36615,31 +36615,31 @@
       },
       "AAA": {
         "counts": {
-          "contact": 49,
-          "in_zone": 72,
-          "o_swings": 32,
-          "out_zone": 103,
-          "pitches": 175,
-          "swings": 81,
-          "whiffs": 32,
-          "z_contact": 38,
-          "z_swings": 49,
+          "contact": 53,
+          "in_zone": 77,
+          "o_swings": 34,
+          "out_zone": 110,
+          "pitches": 187,
+          "swings": 87,
+          "whiffs": 34,
+          "z_contact": 42,
+          "z_swings": 53,
           "zone_pitches_calibrated": 1,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 175
+          "zone_pitches_with_coords": 187
         },
         "percentiles": {},
-        "pitches": 175,
+        "pitches": 187,
         "position_percentiles": {},
         "qualifies": false,
         "rates": {
-          "chase_pct": 31.1,
-          "swing_pct": 46.3,
-          "swstr_pct": 18.3,
-          "whiff_pct": 39.5,
-          "z_contact_pct": 77.6,
-          "z_swing_pct": 68.1,
-          "zone_pct": 41.1
+          "chase_pct": 30.9,
+          "swing_pct": 46.5,
+          "swstr_pct": 18.2,
+          "whiff_pct": 39.1,
+          "z_contact_pct": 79.2,
+          "z_swing_pct": 68.8,
+          "zone_pct": 41.2
         },
         "zone_estimated": true
       }
@@ -37036,7 +37036,7 @@
         "position_percentiles": {
           "swing_pct": 58,
           "z_swing_pct": 73,
-          "zone_pct": 88
+          "zone_pct": 89
         },
         "qualifies": true,
         "rates": {
@@ -38160,7 +38160,7 @@
         "position_percentiles": {
           "swing_pct": 68,
           "z_swing_pct": 75,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -39273,7 +39273,7 @@
           "zone_pitches_with_coords": 525
         },
         "percentiles": {
-          "chase_pct": 25,
+          "chase_pct": 26,
           "swstr_pct": 37,
           "whiff_pct": 57,
           "z_contact_pct": 75
@@ -39353,7 +39353,7 @@
         "position_percentiles": {
           "swing_pct": 74,
           "z_swing_pct": 72,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -39756,10 +39756,10 @@
           "zone_pitches_with_coords": 310
         },
         "percentiles": {
-          "chase_pct": 5,
+          "chase_pct": 6,
           "swstr_pct": 31,
           "whiff_pct": 34,
-          "z_contact_pct": 43
+          "z_contact_pct": 44
         },
         "pitches": 310,
         "position_percentiles": {
@@ -41604,7 +41604,7 @@
           "zone_pitches_with_coords": 1111
         },
         "percentiles": {
-          "chase_pct": 77,
+          "chase_pct": 78,
           "swstr_pct": 41,
           "whiff_pct": 22,
           "z_contact_pct": 3
@@ -42424,7 +42424,7 @@
         "pitches": 328,
         "position_percentiles": {
           "swing_pct": 60,
-          "z_swing_pct": 47,
+          "z_swing_pct": 46,
           "zone_pct": 97
         },
         "qualifies": true,
@@ -42703,7 +42703,7 @@
           "chase_pct": 27,
           "swstr_pct": 41,
           "whiff_pct": 57,
-          "z_contact_pct": 47
+          "z_contact_pct": 48
         },
         "pitches": 1519,
         "position_percentiles": {
@@ -43088,13 +43088,13 @@
           "chase_pct": 47,
           "swstr_pct": 70,
           "whiff_pct": 74,
-          "z_contact_pct": 62
+          "z_contact_pct": 63
         },
         "pitches": 1558,
         "position_percentiles": {
           "swing_pct": 51,
           "z_swing_pct": 58,
-          "zone_pct": 21
+          "zone_pct": 20
         },
         "qualifies": true,
         "rates": {
@@ -43128,14 +43128,14 @@
         "percentiles": {
           "chase_pct": 84,
           "swstr_pct": 54,
-          "whiff_pct": 43,
+          "whiff_pct": 44,
           "z_contact_pct": 33
         },
         "pitches": 1434,
         "position_percentiles": {
           "swing_pct": 25,
           "z_swing_pct": 38,
-          "zone_pct": 83
+          "zone_pct": 84
         },
         "qualifies": true,
         "rates": {
@@ -43217,7 +43217,7 @@
         "position_percentiles": {
           "swing_pct": 23,
           "z_swing_pct": 22,
-          "zone_pct": 35
+          "zone_pct": 34
         },
         "qualifies": true,
         "rates": {
@@ -43954,14 +43954,14 @@
       "A": {
         "counts": {
           "contact": 217,
-          "in_zone": 416,
-          "o_swings": 73,
-          "out_zone": 574,
+          "in_zone": 415,
+          "o_swings": 74,
+          "out_zone": 575,
           "pitches": 992,
           "swings": 299,
           "whiffs": 82,
-          "z_contact": 184,
-          "z_swings": 226,
+          "z_contact": 183,
+          "z_swings": 225,
           "zone_pitches_calibrated": 990,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 990
@@ -43970,23 +43970,23 @@
           "chase_pct": 99,
           "swstr_pct": 89,
           "whiff_pct": 56,
-          "z_contact_pct": 48
+          "z_contact_pct": 47
         },
         "pitches": 992,
         "position_percentiles": {
           "swing_pct": 1,
           "z_swing_pct": 3,
-          "zone_pct": 57
+          "zone_pct": 55
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 12.7,
+          "chase_pct": 12.9,
           "swing_pct": 30.1,
           "swstr_pct": 8.3,
           "whiff_pct": 27.4,
-          "z_contact_pct": 81.4,
-          "z_swing_pct": 54.3,
-          "zone_pct": 42.0
+          "z_contact_pct": 81.3,
+          "z_swing_pct": 54.2,
+          "zone_pct": 41.9
         },
         "zone_estimated": true
       },
@@ -44197,14 +44197,14 @@
       "A+": {
         "counts": {
           "contact": 255,
-          "in_zone": 363,
-          "o_swings": 148,
-          "out_zone": 447,
+          "in_zone": 362,
+          "o_swings": 149,
+          "out_zone": 448,
           "pitches": 810,
           "swings": 389,
           "whiffs": 134,
-          "z_contact": 197,
-          "z_swings": 241,
+          "z_contact": 196,
+          "z_swings": 240,
           "zone_pitches_calibrated": 810,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 810
@@ -44219,17 +44219,17 @@
         "position_percentiles": {
           "swing_pct": 66,
           "z_swing_pct": 44,
-          "zone_pct": 75
+          "zone_pct": 74
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 33.1,
+          "chase_pct": 33.3,
           "swing_pct": 48.0,
           "swstr_pct": 16.5,
           "whiff_pct": 34.4,
           "z_contact_pct": 81.7,
-          "z_swing_pct": 66.4,
-          "zone_pct": 44.8
+          "z_swing_pct": 66.3,
+          "zone_pct": 44.7
         },
         "zone_estimated": true
       }
@@ -44238,14 +44238,14 @@
       "A+": {
         "counts": {
           "contact": 65,
-          "in_zone": 94,
-          "o_swings": 23,
-          "out_zone": 143,
+          "in_zone": 93,
+          "o_swings": 24,
+          "out_zone": 144,
           "pitches": 237,
           "swings": 88,
           "whiffs": 23,
-          "z_contact": 53,
-          "z_swings": 65,
+          "z_contact": 52,
+          "z_swings": 64,
           "zone_pitches_calibrated": 237,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 237
@@ -44255,13 +44255,13 @@
         "position_percentiles": {},
         "qualifies": false,
         "rates": {
-          "chase_pct": 16.1,
+          "chase_pct": 16.7,
           "swing_pct": 37.1,
           "swstr_pct": 9.7,
           "whiff_pct": 26.1,
-          "z_contact_pct": 81.5,
-          "z_swing_pct": 69.1,
-          "zone_pct": 39.7
+          "z_contact_pct": 81.2,
+          "z_swing_pct": 68.8,
+          "zone_pct": 39.2
         },
         "zone_estimated": true
       },
@@ -44653,7 +44653,7 @@
         "position_percentiles": {
           "swing_pct": 35,
           "z_swing_pct": 37,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -45015,7 +45015,7 @@
         "pitches": 619,
         "position_percentiles": {
           "swing_pct": 34,
-          "z_swing_pct": 22,
+          "z_swing_pct": 23,
           "zone_pct": 2
         },
         "qualifies": true,
@@ -45090,7 +45090,7 @@
           "chase_pct": 89,
           "swstr_pct": 89,
           "whiff_pct": 89,
-          "z_contact_pct": 90
+          "z_contact_pct": 89
         },
         "pitches": 349,
         "position_percentiles": {
@@ -45462,7 +45462,7 @@
           "zone_pitches_with_coords": 1127
         },
         "percentiles": {
-          "chase_pct": 77,
+          "chase_pct": 78,
           "swstr_pct": 84,
           "whiff_pct": 83,
           "z_contact_pct": 81
@@ -46237,7 +46237,7 @@
           "chase_pct": 49,
           "swstr_pct": 38,
           "whiff_pct": 44,
-          "z_contact_pct": 45
+          "z_contact_pct": 46
         },
         "pitches": 1848,
         "position_percentiles": {
@@ -46401,7 +46401,7 @@
           "chase_pct": 41,
           "swstr_pct": 87,
           "whiff_pct": 86,
-          "z_contact_pct": 90
+          "z_contact_pct": 89
         },
         "pitches": 1489,
         "position_percentiles": {
@@ -48083,7 +48083,7 @@
           "chase_pct": 77,
           "swstr_pct": 46,
           "whiff_pct": 46,
-          "z_contact_pct": 45
+          "z_contact_pct": 46
         },
         "pitches": 458,
         "position_percentiles": {
@@ -48339,7 +48339,7 @@
           "chase_pct": 30,
           "swstr_pct": 84,
           "whiff_pct": 89,
-          "z_contact_pct": 76
+          "z_contact_pct": 75
         },
         "pitches": 1402,
         "position_percentiles": {
@@ -48377,10 +48377,10 @@
           "zone_pitches_with_coords": 1132
         },
         "percentiles": {
-          "chase_pct": 81,
+          "chase_pct": 82,
           "swstr_pct": 56,
           "whiff_pct": 36,
-          "z_contact_pct": 22
+          "z_contact_pct": 21
         },
         "pitches": 1132,
         "position_percentiles": {
@@ -49507,7 +49507,7 @@
         "pitches": 1313,
         "position_percentiles": {
           "swing_pct": 20,
-          "z_swing_pct": 39,
+          "z_swing_pct": 40,
           "zone_pct": 81
         },
         "qualifies": true,
@@ -49794,31 +49794,31 @@
       },
       "AAA": {
         "counts": {
-          "contact": 50,
-          "in_zone": 44,
-          "o_swings": 29,
-          "out_zone": 62,
-          "pitches": 106,
-          "swings": 61,
-          "whiffs": 11,
-          "z_contact": 29,
-          "z_swings": 32,
+          "contact": 54,
+          "in_zone": 48,
+          "o_swings": 31,
+          "out_zone": 67,
+          "pitches": 115,
+          "swings": 66,
+          "whiffs": 12,
+          "z_contact": 32,
+          "z_swings": 35,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 106
+          "zone_pitches_with_coords": 115
         },
         "percentiles": {},
-        "pitches": 106,
+        "pitches": 115,
         "position_percentiles": {},
         "qualifies": false,
         "rates": {
-          "chase_pct": 46.8,
-          "swing_pct": 57.5,
+          "chase_pct": 46.3,
+          "swing_pct": 57.4,
           "swstr_pct": 10.4,
-          "whiff_pct": 18.0,
-          "z_contact_pct": 90.6,
-          "z_swing_pct": 72.7,
-          "zone_pct": 41.5
+          "whiff_pct": 18.2,
+          "z_contact_pct": 91.4,
+          "z_swing_pct": 72.9,
+          "zone_pct": 41.7
         },
         "zone_estimated": false
       }
@@ -50165,7 +50165,7 @@
           "zone_pitches_with_coords": 1662
         },
         "percentiles": {
-          "chase_pct": 68,
+          "chase_pct": 69,
           "swstr_pct": 26,
           "whiff_pct": 21,
           "z_contact_pct": 31
@@ -50174,7 +50174,7 @@
         "position_percentiles": {
           "swing_pct": 43,
           "z_swing_pct": 67,
-          "zone_pct": 60
+          "zone_pct": 61
         },
         "qualifies": true,
         "rates": {
@@ -50206,7 +50206,7 @@
           "zone_pitches_with_coords": 1583
         },
         "percentiles": {
-          "chase_pct": 71,
+          "chase_pct": 72,
           "swstr_pct": 97,
           "whiff_pct": 96,
           "z_contact_pct": 93
@@ -50255,7 +50255,7 @@
         "pitches": 1728,
         "position_percentiles": {
           "swing_pct": 64,
-          "z_swing_pct": 68,
+          "z_swing_pct": 67,
           "zone_pct": 71
         },
         "qualifies": true,
@@ -52625,7 +52625,7 @@
         "pitches": 1576,
         "position_percentiles": {
           "swing_pct": 81,
-          "z_swing_pct": 68,
+          "z_swing_pct": 67,
           "zone_pct": 66
         },
         "qualifies": true,
@@ -53777,13 +53777,13 @@
           "chase_pct": 29,
           "swstr_pct": 10,
           "whiff_pct": 17,
-          "z_contact_pct": 25
+          "z_contact_pct": 24
         },
         "pitches": 1249,
         "position_percentiles": {
           "swing_pct": 87,
           "z_swing_pct": 94,
-          "zone_pct": 35
+          "zone_pct": 34
         },
         "qualifies": true,
         "rates": {
@@ -54859,14 +54859,14 @@
       "A+": {
         "counts": {
           "contact": 847,
-          "in_zone": 859,
-          "o_swings": 517,
-          "out_zone": 1249,
+          "in_zone": 858,
+          "o_swings": 518,
+          "out_zone": 1250,
           "pitches": 2110,
           "swings": 1159,
           "whiffs": 312,
-          "z_contact": 525,
-          "z_swings": 642,
+          "z_contact": 524,
+          "z_swings": 641,
           "zone_pitches_calibrated": 2108,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 2108
@@ -54875,7 +54875,7 @@
           "chase_pct": 2,
           "swstr_pct": 32,
           "whiff_pct": 61,
-          "z_contact_pct": 54
+          "z_contact_pct": 53
         },
         "pitches": 2110,
         "position_percentiles": {
@@ -54889,7 +54889,7 @@
           "swing_pct": 54.9,
           "swstr_pct": 14.8,
           "whiff_pct": 26.9,
-          "z_contact_pct": 81.8,
+          "z_contact_pct": 81.7,
           "z_swing_pct": 74.7,
           "zone_pct": 40.7
         },
@@ -55345,20 +55345,20 @@
       "A+": {
         "counts": {
           "contact": 488,
-          "in_zone": 649,
-          "o_swings": 239,
-          "out_zone": 964,
+          "in_zone": 648,
+          "o_swings": 240,
+          "out_zone": 965,
           "pitches": 1613,
           "swings": 638,
           "whiffs": 150,
-          "z_contact": 344,
-          "z_swings": 399,
+          "z_contact": 343,
+          "z_swings": 398,
           "zone_pitches_calibrated": 1613,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 1613
         },
         "percentiles": {
-          "chase_pct": 76,
+          "chase_pct": 75,
           "swstr_pct": 85,
           "whiff_pct": 76,
           "z_contact_pct": 82
@@ -55371,12 +55371,12 @@
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 24.8,
+          "chase_pct": 24.9,
           "swing_pct": 39.6,
           "swstr_pct": 9.3,
           "whiff_pct": 23.5,
           "z_contact_pct": 86.2,
-          "z_swing_pct": 61.5,
+          "z_swing_pct": 61.4,
           "zone_pct": 40.2
         },
         "zone_estimated": true
@@ -58159,13 +58159,13 @@
           "chase_pct": 34,
           "swstr_pct": 26,
           "whiff_pct": 38,
-          "z_contact_pct": 21
+          "z_contact_pct": 20
         },
         "pitches": 1749,
         "position_percentiles": {
           "swing_pct": 81,
           "z_swing_pct": 87,
-          "zone_pct": 60
+          "zone_pct": 61
         },
         "qualifies": true,
         "rates": {
@@ -58236,7 +58236,7 @@
         "position_percentiles": {
           "swing_pct": 7,
           "z_swing_pct": 19,
-          "zone_pct": 35
+          "zone_pct": 34
         },
         "qualifies": true,
         "rates": {
@@ -58309,8 +58309,8 @@
         "percentiles": {
           "chase_pct": 37,
           "swstr_pct": 16,
-          "whiff_pct": 19,
-          "z_contact_pct": 24
+          "whiff_pct": 20,
+          "z_contact_pct": 23
         },
         "pitches": 965,
         "position_percentiles": {
@@ -61923,7 +61923,7 @@
         "position_percentiles": {
           "swing_pct": 67,
           "z_swing_pct": 52,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -62227,20 +62227,20 @@
       "A": {
         "counts": {
           "contact": 123,
-          "in_zone": 249,
-          "o_swings": 94,
-          "out_zone": 345,
+          "in_zone": 248,
+          "o_swings": 95,
+          "out_zone": 346,
           "pitches": 594,
           "swings": 241,
           "whiffs": 118,
           "z_contact": 102,
-          "z_swings": 147,
+          "z_swings": 146,
           "zone_pitches_calibrated": 594,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 594
         },
         "percentiles": {
-          "chase_pct": 59,
+          "chase_pct": 58,
           "swstr_pct": 5,
           "whiff_pct": 1,
           "z_contact_pct": 5
@@ -62249,17 +62249,17 @@
         "position_percentiles": {
           "swing_pct": 22,
           "z_swing_pct": 10,
-          "zone_pct": 55
+          "zone_pct": 53
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 27.2,
+          "chase_pct": 27.5,
           "swing_pct": 40.6,
           "swstr_pct": 19.9,
           "whiff_pct": 49.0,
-          "z_contact_pct": 69.4,
-          "z_swing_pct": 59.0,
-          "zone_pct": 41.9
+          "z_contact_pct": 69.9,
+          "z_swing_pct": 58.9,
+          "zone_pct": 41.8
         },
         "zone_estimated": true
       }
@@ -62514,7 +62514,7 @@
         "position_percentiles": {
           "swing_pct": 54,
           "z_swing_pct": 71,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -62602,39 +62602,39 @@
       "AA": {
         "counts": {
           "contact": 182,
-          "in_zone": 249,
-          "o_swings": 99,
-          "out_zone": 313,
+          "in_zone": 248,
+          "o_swings": 100,
+          "out_zone": 314,
           "pitches": 562,
           "swings": 257,
           "whiffs": 75,
           "z_contact": 127,
-          "z_swings": 158,
+          "z_swings": 157,
           "zone_pitches_calibrated": 562,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 562
         },
         "percentiles": {
-          "chase_pct": 39,
+          "chase_pct": 38,
           "swstr_pct": 48,
           "whiff_pct": 44,
-          "z_contact_pct": 42
+          "z_contact_pct": 44
         },
         "pitches": 562,
         "position_percentiles": {
           "swing_pct": 42,
-          "z_swing_pct": 26,
-          "zone_pct": 47
+          "z_swing_pct": 25,
+          "zone_pct": 43
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 31.6,
+          "chase_pct": 31.8,
           "swing_pct": 45.7,
           "swstr_pct": 13.3,
           "whiff_pct": 29.2,
-          "z_contact_pct": 80.4,
-          "z_swing_pct": 63.5,
-          "zone_pct": 44.3
+          "z_contact_pct": 80.9,
+          "z_swing_pct": 63.3,
+          "zone_pct": 44.1
         },
         "zone_estimated": true
       }
@@ -62698,7 +62698,7 @@
           "chase_pct": 34,
           "swstr_pct": 91,
           "whiff_pct": 96,
-          "z_contact_pct": 90
+          "z_contact_pct": 89
         },
         "pitches": 882,
         "position_percentiles": {
@@ -63580,13 +63580,13 @@
           "chase_pct": 99,
           "swstr_pct": 53,
           "whiff_pct": 35,
-          "z_contact_pct": 27
+          "z_contact_pct": 26
         },
         "pitches": 2190,
         "position_percentiles": {
           "swing_pct": 11,
           "z_swing_pct": 24,
-          "zone_pct": 94
+          "zone_pct": 93
         },
         "qualifies": true,
         "rates": {
@@ -65174,7 +65174,7 @@
         "position_percentiles": {
           "swing_pct": 19,
           "z_swing_pct": 34,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -65316,7 +65316,7 @@
           "zone_pitches_with_coords": 779
         },
         "percentiles": {
-          "chase_pct": 3,
+          "chase_pct": 2,
           "swstr_pct": 98,
           "whiff_pct": 98,
           "z_contact_pct": 99
@@ -66780,7 +66780,7 @@
         },
         "percentiles": {
           "chase_pct": 58,
-          "swstr_pct": 68,
+          "swstr_pct": 69,
           "whiff_pct": 73,
           "z_contact_pct": 66
         },
@@ -67239,7 +67239,7 @@
           "chase_pct": 44,
           "swstr_pct": 87,
           "whiff_pct": 88,
-          "z_contact_pct": 90
+          "z_contact_pct": 89
         },
         "pitches": 1051,
         "position_percentiles": {
@@ -68028,7 +68028,7 @@
         "pitches": 869,
         "position_percentiles": {
           "swing_pct": 42,
-          "z_swing_pct": 68,
+          "z_swing_pct": 67,
           "zone_pct": 63
         },
         "qualifies": true,
@@ -68344,9 +68344,9 @@
         },
         "percentiles": {
           "chase_pct": 42,
-          "swstr_pct": 28,
+          "swstr_pct": 29,
           "whiff_pct": 27,
-          "z_contact_pct": 21
+          "z_contact_pct": 20
         },
         "pitches": 979,
         "position_percentiles": {
@@ -68624,40 +68624,40 @@
       },
       "AAA": {
         "counts": {
-          "contact": 388,
-          "in_zone": 445,
-          "o_swings": 224,
-          "out_zone": 592,
-          "pitches": 1037,
-          "swings": 534,
-          "whiffs": 146,
-          "z_contact": 258,
-          "z_swings": 310,
+          "contact": 391,
+          "in_zone": 454,
+          "o_swings": 231,
+          "out_zone": 600,
+          "pitches": 1054,
+          "swings": 546,
+          "whiffs": 155,
+          "z_contact": 259,
+          "z_swings": 315,
           "zone_pitches_calibrated": 0,
           "zone_pitches_fallback_sz": 0,
-          "zone_pitches_with_coords": 1037
+          "zone_pitches_with_coords": 1054
         },
         "percentiles": {
-          "chase_pct": 7,
-          "swstr_pct": 30,
-          "whiff_pct": 43,
-          "z_contact_pct": 45
+          "chase_pct": 5,
+          "swstr_pct": 23,
+          "whiff_pct": 39,
+          "z_contact_pct": 41
         },
-        "pitches": 1037,
+        "pitches": 1054,
         "position_percentiles": {
-          "swing_pct": 87,
-          "z_swing_pct": 64,
-          "zone_pct": 32
+          "swing_pct": 88,
+          "z_swing_pct": 63,
+          "zone_pct": 38
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 37.8,
-          "swing_pct": 51.5,
-          "swstr_pct": 14.1,
-          "whiff_pct": 27.3,
-          "z_contact_pct": 83.2,
-          "z_swing_pct": 69.7,
-          "zone_pct": 42.9
+          "chase_pct": 38.5,
+          "swing_pct": 51.8,
+          "swstr_pct": 14.7,
+          "whiff_pct": 28.4,
+          "z_contact_pct": 82.2,
+          "z_swing_pct": 69.4,
+          "zone_pct": 43.1
         },
         "zone_estimated": false
       }
@@ -69721,7 +69721,7 @@
           "chase_pct": 68,
           "swstr_pct": 92,
           "whiff_pct": 90,
-          "z_contact_pct": 90
+          "z_contact_pct": 89
         },
         "pitches": 1755,
         "position_percentiles": {
@@ -71558,7 +71558,7 @@
         "pitches": 906,
         "position_percentiles": {
           "swing_pct": 30,
-          "z_swing_pct": 68,
+          "z_swing_pct": 67,
           "zone_pct": 22
         },
         "qualifies": true,
@@ -72528,7 +72528,7 @@
         "position_percentiles": {
           "swing_pct": 52,
           "z_swing_pct": 70,
-          "zone_pct": 26
+          "zone_pct": 25
         },
         "qualifies": true,
         "rates": {
@@ -76720,7 +76720,7 @@
         "position_percentiles": {
           "swing_pct": 69,
           "z_swing_pct": 72,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -77299,7 +77299,7 @@
         "pitches": 463,
         "position_percentiles": {
           "swing_pct": 14,
-          "z_swing_pct": 10,
+          "z_swing_pct": 11,
           "zone_pct": 15
         },
         "qualifies": true,
@@ -77767,20 +77767,20 @@
       "A": {
         "counts": {
           "contact": 633,
-          "in_zone": 674,
-          "o_swings": 338,
-          "out_zone": 928,
+          "in_zone": 673,
+          "o_swings": 339,
+          "out_zone": 929,
           "pitches": 1604,
           "swings": 836,
           "whiffs": 203,
-          "z_contact": 408,
-          "z_swings": 497,
+          "z_contact": 407,
+          "z_swings": 496,
           "zone_pitches_calibrated": 1602,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 1602
         },
         "percentiles": {
-          "chase_pct": 13,
+          "chase_pct": 12,
           "swstr_pct": 50,
           "whiff_pct": 72,
           "z_contact_pct": 52
@@ -77789,17 +77789,17 @@
         "position_percentiles": {
           "swing_pct": 89,
           "z_swing_pct": 82,
-          "zone_pct": 58
+          "zone_pct": 57
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 36.4,
+          "chase_pct": 36.5,
           "swing_pct": 52.1,
           "swstr_pct": 12.7,
           "whiff_pct": 24.3,
           "z_contact_pct": 82.1,
           "z_swing_pct": 73.7,
-          "zone_pct": 42.1
+          "zone_pct": 42.0
         },
         "zone_estimated": true
       }
@@ -79593,7 +79593,7 @@
         "position_percentiles": {
           "swing_pct": 5,
           "z_swing_pct": 4,
-          "zone_pct": 83
+          "zone_pct": 84
         },
         "qualifies": true,
         "rates": {
@@ -79819,7 +79819,7 @@
         "position_percentiles": {
           "swing_pct": 33,
           "z_swing_pct": 50,
-          "zone_pct": 88
+          "zone_pct": 89
         },
         "qualifies": true,
         "rates": {
@@ -80434,7 +80434,7 @@
         "position_percentiles": {
           "swing_pct": 30,
           "z_swing_pct": 47,
-          "zone_pct": 75
+          "zone_pct": 76
         },
         "qualifies": true,
         "rates": {
@@ -80548,7 +80548,7 @@
           "zone_pitches_with_coords": 1282
         },
         "percentiles": {
-          "chase_pct": 59,
+          "chase_pct": 60,
           "swstr_pct": 66,
           "whiff_pct": 74,
           "z_contact_pct": 45
@@ -81259,7 +81259,7 @@
         },
         "pitches": 747,
         "position_percentiles": {
-          "swing_pct": 15,
+          "swing_pct": 14,
           "z_swing_pct": 17,
           "zone_pct": 64
         },
@@ -84804,7 +84804,7 @@
         },
         "percentiles": {
           "chase_pct": 78,
-          "swstr_pct": 27,
+          "swstr_pct": 28,
           "whiff_pct": 13,
           "z_contact_pct": 29
         },
@@ -87000,9 +87000,9 @@
       "A": {
         "counts": {
           "contact": 250,
-          "in_zone": 309,
+          "in_zone": 308,
           "o_swings": 165,
-          "out_zone": 429,
+          "out_zone": 430,
           "pitches": 739,
           "swings": 400,
           "whiffs": 150,
@@ -87021,18 +87021,18 @@
         "pitches": 739,
         "position_percentiles": {
           "swing_pct": 93,
-          "z_swing_pct": 89,
-          "zone_pct": 55
+          "z_swing_pct": 90,
+          "zone_pct": 51
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 38.5,
+          "chase_pct": 38.4,
           "swing_pct": 54.1,
           "swstr_pct": 20.3,
           "whiff_pct": 37.5,
           "z_contact_pct": 74.9,
-          "z_swing_pct": 76.1,
-          "zone_pct": 41.9
+          "z_swing_pct": 76.3,
+          "zone_pct": 41.7
         },
         "zone_estimated": true
       }
@@ -87321,7 +87321,7 @@
           "zone_pitches_with_coords": 517
         },
         "percentiles": {
-          "chase_pct": 59,
+          "chase_pct": 60,
           "swstr_pct": 77,
           "whiff_pct": 85,
           "z_contact_pct": 83
@@ -88205,7 +88205,7 @@
           "chase_pct": 70,
           "swstr_pct": 49,
           "whiff_pct": 47,
-          "z_contact_pct": 44
+          "z_contact_pct": 43
         },
         "pitches": 1602,
         "position_percentiles": {
@@ -88865,14 +88865,14 @@
       "A+": {
         "counts": {
           "contact": 692,
-          "in_zone": 953,
-          "o_swings": 258,
-          "out_zone": 1119,
+          "in_zone": 952,
+          "o_swings": 259,
+          "out_zone": 1120,
           "pitches": 2079,
           "swings": 844,
           "whiffs": 152,
           "z_contact": 514,
-          "z_swings": 583,
+          "z_swings": 582,
           "zone_pitches_calibrated": 2072,
           "zone_pitches_fallback_sz": 0,
           "zone_pitches_with_coords": 2072
@@ -88895,9 +88895,9 @@
           "swing_pct": 40.6,
           "swstr_pct": 7.3,
           "whiff_pct": 18.0,
-          "z_contact_pct": 88.2,
-          "z_swing_pct": 61.2,
-          "zone_pct": 46.0
+          "z_contact_pct": 88.3,
+          "z_swing_pct": 61.1,
+          "zone_pct": 45.9
         },
         "zone_estimated": true
       }
@@ -89018,9 +89018,9 @@
       "A": {
         "counts": {
           "contact": 277,
-          "in_zone": 470,
+          "in_zone": 469,
           "o_swings": 180,
-          "out_zone": 581,
+          "out_zone": 582,
           "pitches": 1051,
           "swings": 470,
           "whiffs": 193,
@@ -89039,18 +89039,18 @@
         "pitches": 1051,
         "position_percentiles": {
           "swing_pct": 49,
-          "z_swing_pct": 19,
+          "z_swing_pct": 20,
           "zone_pct": 91
         },
         "qualifies": true,
         "rates": {
-          "chase_pct": 31.0,
+          "chase_pct": 30.9,
           "swing_pct": 44.7,
           "swstr_pct": 18.4,
           "whiff_pct": 41.1,
           "z_contact_pct": 66.2,
-          "z_swing_pct": 61.7,
-          "zone_pct": 44.7
+          "z_swing_pct": 61.8,
+          "zone_pct": 44.6
         },
         "zone_estimated": true
       }
