@@ -975,6 +975,23 @@ table th, table td, .stat-value { font-variant-numeric: tabular-nums; }
 .col-rank { width: 40px; text-align: center; color: var(--c-muted); }
 .col-compare { width: 30px; text-align: center; }
 .col-name { min-width: 150px; }
+#rankings-container .rankings-table > thead > tr > th,
+#rankings-container .rankings-table > tbody > tr.player-row > td.col-name {
+    white-space: normal;
+}
+@media (min-width: 641px) {
+    /* Extra stat columns scroll within the board, with their header in view. */
+    #league-setup:has(> #rankings-container > .rankings-table > thead > tr > th:nth-child(10)) > .rank-toolbar {
+        position: static;
+    }
+    #rankings-container:has(> .rankings-table > thead > tr > th:nth-child(10)) {
+        overflow: auto;
+        max-height: 70vh;
+    }
+    #rankings-container:has(> .rankings-table > thead > tr > th:nth-child(10)) > .rankings-table > thead {
+        top: 0;
+    }
+}
 .col-pos { color: var(--c-muted); font-size: 0.8rem; }
 .col-team { color: var(--c-muted); font-size: 0.8rem; }
 .col-dollars { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 40px; }
@@ -3099,6 +3116,14 @@ main {
         gap: .22rem .34rem;
         font-size: .98rem;
         padding-right: 2.7rem;
+    }
+
+    /* Board cards reserve separate space for the rank and compare control. */
+    #rankings-container .rankings-table > tbody > tr.player-row > td.col-rank {
+        right: 3rem;
+    }
+    #rankings-container .rankings-table > tbody > tr.player-row > td.col-name {
+        padding-right: 4.5rem;
     }
 
     .rankings-table td.col-name strong {
