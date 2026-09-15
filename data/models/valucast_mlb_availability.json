@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-09-14",
+  "generated_at": "2026-09-15",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -1128,6 +1128,21 @@
       "transaction_id": 937235,
       "type_code": "ASG",
       "type_description": "Assigned"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Los Angeles Dodgers placed RHP Edgardo Henriquez on the 15-day injured list. Lower back discomfort.",
+      "effective_date": "2026-09-14",
+      "list_type": "15-day injured list",
+      "mlbam_id": 683618,
+      "name": "Edgardo Henriquez",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Los Angeles Dodgers",
+      "transaction_date": "2026-09-14",
+      "transaction_id": 942326,
+      "type_code": "SC",
+      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -3316,6 +3331,21 @@
       "team": "Los Angeles Dodgers",
       "transaction_date": "2026-08-27",
       "transaction_id": 939689,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Toronto Blue Jays placed RF Rudy Martin Jr. on the 10-day injured list retroactive to September 13, 2026. Left hamstring strain.",
+      "effective_date": "2026-09-13",
+      "list_type": "10-day injured list",
+      "mlbam_id": 657675,
+      "name": "Rudy Martin Jr.",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Toronto Blue Jays",
+      "transaction_date": "2026-09-14",
+      "transaction_id": 942310,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9456,7 +9486,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-09-14",
+    "end_date": "2026-09-15",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -9477,12 +9507,12 @@
     "available_after_il_count": 357,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 196,
-    "profile_count": 629,
+    "injured_count": 198,
+    "profile_count": 631,
     "ready_for_mlb_dynasty_layer": true,
     "rehab_count": 76,
-    "risk_profile_count": 272,
-    "tracked_mlbam_count": 11122,
-    "transaction_count": 11588
+    "risk_profile_count": 274,
+    "tracked_mlbam_count": 11121,
+    "transaction_count": 11607
   }
 }

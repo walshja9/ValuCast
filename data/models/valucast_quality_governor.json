@@ -9,13 +9,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 1.8,
+        "gap": 4.83,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 691406,
           "name": "Junior Caminero",
           "rank": 2,
-          "value": 97.34
+          "value": 94.31
         },
         "top": {
           "mlbam_id": 691718,
@@ -55,7 +55,7 @@
               "SP"
             ],
             "rank": 9,
-            "value": 72.91
+            "value": 71.32
           },
           {
             "name": "Shohei Ohtani",
@@ -63,8 +63,8 @@
               "DH",
               "SP"
             ],
-            "rank": 12,
-            "value": 70.1
+            "rank": 11,
+            "value": 69.84
           },
           {
             "name": "Cam Schlittler",
@@ -72,7 +72,7 @@
               "SP"
             ],
             "rank": 18,
-            "value": 66.57
+            "value": 64.83
           }
         ],
         "reliever_count": 0,
@@ -108,7 +108,7 @@
             "name": "Hagen Smith",
             "rank": 5,
             "role": "pitcher",
-            "score": 59.76
+            "score": 59.75
           },
           {
             "mlbam_id": 824604,
@@ -177,9 +177,9 @@
       "id": "prospect_transition_continuity",
       "message": "Prospect transition calibration is continuous across the latest vintages.",
       "metrics": {
-        "baseline_date": "2026-09-13",
+        "baseline_date": "2026-09-14",
         "bucket_step_threshold": 6.0,
-        "current_date": "2026-09-14",
+        "current_date": "2026-09-15",
         "evaluated_matched_row_count": 3213,
         "hitter_count": 0,
         "incident_count": 0,
@@ -431,7 +431,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 88,
+        "archive_day_span": 89,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -540,7 +540,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 211
+        "row_count": 210
       },
       "status": "passed"
     },
@@ -549,7 +549,7 @@
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
         "cooling_count": 5,
-        "generated_at": "2026-09-14T00:00:00+00:00",
+        "generated_at": "2026-09-15T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 12
@@ -596,21 +596,21 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-09-14T13:19:20.705153+00:00",
+  "generated_at": "2026-09-15T12:21:58.260758+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-09-14",
-      "buy_signals": "2026-09-14",
-      "milb_stat_freshness_audit": "2026-09-14",
-      "mlb_layer": "2026-09-14",
-      "movers": "2026-09-14",
-      "prospect_card_data_audit": "2026-09-14",
-      "prospect_coverage_audit": "2026-09-14",
-      "prospect_rank": "2026-09-14",
-      "public_snapshot": "2026-09-14",
-      "recent_signal_report": "2026-09-14"
+      "buy_review": "2026-09-15",
+      "buy_signals": "2026-09-15",
+      "milb_stat_freshness_audit": "2026-09-15",
+      "mlb_layer": "2026-09-15",
+      "movers": "2026-09-15",
+      "prospect_card_data_audit": "2026-09-15",
+      "prospect_coverage_audit": "2026-09-15",
+      "prospect_rank": "2026-09-15",
+      "public_snapshot": "2026-09-15",
+      "recent_signal_report": "2026-09-15"
     },
     "mlb_count": 912,
     "prospect_count": 3213,
