@@ -9,13 +9,13 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 3.88,
+        "gap": 4.82,
         "max_allowed_gap": 18.0,
         "second": {
           "mlbam_id": 691406,
           "name": "Junior Caminero",
           "rank": 2,
-          "value": 95.27
+          "value": 94.33
         },
         "top": {
           "mlbam_id": 691718,
@@ -47,7 +47,7 @@
       "metrics": {
         "max_pitcher_count": 9,
         "max_reliever_count": 1,
-        "pitcher_count": 3,
+        "pitcher_count": 2,
         "pitcher_samples": [
           {
             "name": "Jacob Misiorowski",
@@ -55,16 +55,7 @@
               "SP"
             ],
             "rank": 9,
-            "value": 71.92
-          },
-          {
-            "name": "Shohei Ohtani",
-            "positions": [
-              "DH",
-              "SP"
-            ],
-            "rank": 11,
-            "value": 69.78
+            "value": 71.13
           },
           {
             "name": "Cam Schlittler",
@@ -72,7 +63,7 @@
               "SP"
             ],
             "rank": 18,
-            "value": 64.83
+            "value": 63.43
           }
         ],
         "reliever_count": 0,
@@ -101,7 +92,7 @@
             "name": "Tyler Bremner",
             "rank": 4,
             "role": "pitcher",
-            "score": 61.35
+            "score": 61.34
           },
           {
             "mlbam_id": 696146,
@@ -122,21 +113,21 @@
             "name": "Jamie Arnold",
             "rank": 10,
             "role": "pitcher",
-            "score": 56.05
+            "score": 56.04
           },
           {
             "mlbam_id": 805906,
             "name": "Gage Wood",
             "rank": 14,
             "role": "pitcher",
-            "score": 53.42
+            "score": 53.45
           },
           {
             "mlbam_id": 815825,
             "name": "Seth Hernandez",
-            "rank": 16,
+            "rank": 15,
             "role": "pitcher",
-            "score": 51.04
+            "score": 51.14
           },
           {
             "mlbam_id": 804817,
@@ -150,7 +141,7 @@
             "name": "Ryan Sloan",
             "rank": 20,
             "role": "pitcher",
-            "score": 48.86
+            "score": 48.8
           },
           {
             "mlbam_id": 809254,
@@ -166,8 +157,8 @@
         "top25_sample_ready": true,
         "top50_evaluated_count": 50,
         "top50_n": 50,
-        "top50_pitcher_count": 20,
-        "top50_pitcher_rate": 0.4,
+        "top50_pitcher_count": 21,
+        "top50_pitcher_rate": 0.42,
         "top50_sample_ready": true
       },
       "status": "blocked",
@@ -177,9 +168,9 @@
       "id": "prospect_transition_continuity",
       "message": "Prospect transition calibration is continuous across the latest vintages.",
       "metrics": {
-        "baseline_date": "2026-09-15",
+        "baseline_date": "2026-09-16",
         "bucket_step_threshold": 6.0,
-        "current_date": "2026-09-16",
+        "current_date": "2026-09-17",
         "evaluated_matched_row_count": 3211,
         "hitter_count": 0,
         "incident_count": 0,
@@ -347,8 +338,8 @@
         "band_counts": {
           "balanced": 4,
           "impact": 4,
-          "mixed": 24,
-          "starter_volume": 18
+          "mixed": 23,
+          "starter_volume": 19
         },
         "best_single_level_covered_count": 0,
         "best_single_level_samples": [],
@@ -389,8 +380,8 @@
         "audit_status": "candidate_ready",
         "blocker_count": 0,
         "blockers": [],
-        "current_row_count": 8371,
-        "current_season_row_count": 8276,
+        "current_row_count": 8375,
+        "current_season_row_count": 8280,
         "max_allowed_blockers": 0,
         "targeted_row_refresh_count": 0,
         "top200_history_fallback_count": 2,
@@ -419,7 +410,7 @@
       "id": "recent_signal_report",
       "message": "Recent movement signal is available for cards and scouting reports.",
       "metrics": {
-        "archive_day_span": 90,
+        "archive_day_span": 91,
         "blockers": [],
         "report_present": true,
         "report_status": "candidate_ready",
@@ -528,7 +519,7 @@
         "public_board_ready": true,
         "review_ready": true,
         "review_status": "candidate_ready",
-        "row_count": 209
+        "row_count": 210
       },
       "status": "passed"
     },
@@ -537,7 +528,7 @@
       "message": "ValuCast Prospect Movers artifact is ready for public display.",
       "metrics": {
         "cooling_count": 6,
-        "generated_at": "2026-09-16T00:00:00+00:00",
+        "generated_at": "2026-09-17T00:00:00+00:00",
         "movers_artifact_present": true,
         "policy_ok": true,
         "rising_count": 12
@@ -584,25 +575,25 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-09-16T12:19:06.529999+00:00",
+  "generated_at": "2026-09-17T12:16:56.258694+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
     "generated_dates": {
-      "buy_review": "2026-09-16",
-      "buy_signals": "2026-09-16",
-      "milb_stat_freshness_audit": "2026-09-16",
-      "mlb_layer": "2026-09-16",
-      "movers": "2026-09-16",
-      "prospect_card_data_audit": "2026-09-16",
-      "prospect_coverage_audit": "2026-09-16",
-      "prospect_rank": "2026-09-16",
-      "public_snapshot": "2026-09-16",
-      "recent_signal_report": "2026-09-16"
+      "buy_review": "2026-09-17",
+      "buy_signals": "2026-09-17",
+      "milb_stat_freshness_audit": "2026-09-17",
+      "mlb_layer": "2026-09-17",
+      "movers": "2026-09-17",
+      "prospect_card_data_audit": "2026-09-17",
+      "prospect_coverage_audit": "2026-09-17",
+      "prospect_rank": "2026-09-17",
+      "public_snapshot": "2026-09-17",
+      "recent_signal_report": "2026-09-17"
     },
-    "mlb_count": 915,
+    "mlb_count": 913,
     "prospect_count": 3211,
-    "public_row_count": 4126
+    "public_row_count": 4124
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",
