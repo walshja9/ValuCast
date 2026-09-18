@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-09-17",
+  "generated_at": "2026-09-18",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -636,16 +636,16 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Philadelphia Phillies placed RHP Caleb Kilian on the 15-day injured list. Left oblique strain.",
-      "effective_date": "2026-08-10",
-      "list_type": "15-day injured list",
+      "description": "Philadelphia Phillies transferred RHP Caleb Kilian from the 15-day injured list to the 60-day injured list. Left oblique strain.",
+      "effective_date": "2026-09-17",
+      "list_type": "60-day injured list",
       "mlbam_id": 668873,
       "name": "Caleb Kilian",
       "source": "official_mlb_statsapi_transactions",
       "status": "injured",
       "team": "Philadelphia Phillies",
-      "transaction_date": "2026-08-10",
-      "transaction_id": 936674,
+      "transaction_date": "2026-09-17",
+      "transaction_id": 943078,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -891,18 +891,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Cleveland Guardians placed RHP Colin Holderman on the 15-day injured list. Right wrist inflammation.",
-      "effective_date": "2026-09-04",
-      "list_type": "15-day injured list",
+      "description": "Cleveland Guardians sent RHP Colin Holderman on a rehab assignment to Columbus Clippers.",
+      "effective_date": "2026-09-17",
+      "list_type": null,
       "mlbam_id": 670059,
       "name": "Colin Holderman",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Cleveland Guardians",
-      "transaction_date": "2026-09-04",
-      "transaction_id": 941178,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Columbus Clippers",
+      "transaction_date": "2026-09-17",
+      "transaction_id": 943065,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -1266,18 +1266,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "St. Louis Cardinals placed RF Everson Pereira on the 10-day injured list. Left hand contusion.",
-      "effective_date": "2026-08-23",
-      "list_type": "10-day injured list",
+      "description": "St. Louis Cardinals sent RF Everson Pereira on a rehab assignment to Memphis Redbirds.",
+      "effective_date": "2026-09-17",
+      "list_type": null,
       "mlbam_id": 677592,
       "name": "Everson Pereira",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "St. Louis Cardinals",
-      "transaction_date": "2026-08-23",
-      "transaction_id": 939020,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Memphis Redbirds",
+      "transaction_date": "2026-09-17",
+      "transaction_id": 943108,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2046,18 +2046,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Boston Red Sox transferred RHP Johan Oviedo from the 15-day injured list to the 60-day injured list. Right elbow strain.",
-      "effective_date": "2026-04-14",
-      "list_type": "60-day injured list",
+      "description": "Boston Red Sox sent RHP Johan Oviedo on a rehab assignment to Worcester Red Sox.",
+      "effective_date": "2026-09-17",
+      "list_type": null,
       "mlbam_id": 670912,
       "name": "Johan Oviedo",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Boston Red Sox",
-      "transaction_date": "2026-04-14",
-      "transaction_id": 898865,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Worcester Red Sox",
+      "transaction_date": "2026-09-17",
+      "transaction_id": 943060,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -2208,21 +2208,6 @@
       "transaction_id": 940486,
       "type_code": "SC",
       "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Washington Nationals sent RHP Josiah Gray on a rehab assignment to Rochester Red Wings.",
-      "effective_date": "2026-09-09",
-      "list_type": null,
-      "mlbam_id": 680686,
-      "name": "Josiah Gray",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Rochester Red Wings",
-      "transaction_date": "2026-09-09",
-      "transaction_id": 941845,
-      "type_code": "ASG",
-      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -3270,7 +3255,7 @@
       "status": "rehab",
       "team": "Nashville Sounds",
       "transaction_date": "2026-09-09",
-      "transaction_id": 941857,
+      "transaction_id": 943067,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -3706,21 +3691,6 @@
       "team": "Chicago White Sox",
       "transaction_date": "2026-05-04",
       "transaction_id": 905718,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Tampa Bay Rays placed SS Taylor Walls on the 10-day injured list retroactive to September 6, 2026. Right hip flexor strain.",
-      "effective_date": "2026-09-06",
-      "list_type": "10-day injured list",
-      "mlbam_id": 670764,
-      "name": "Taylor Walls",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Tampa Bay Rays",
-      "transaction_date": "2026-09-08",
-      "transaction_id": 941700,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6951,6 +6921,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Washington Nationals activated RHP Josiah Gray from the 60-day injured list.",
+      "effective_date": "2026-09-17",
+      "list_type": "60-day injured list",
+      "mlbam_id": 680686,
+      "name": "Josiah Gray",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Washington Nationals",
+      "transaction_date": "2026-09-17",
+      "transaction_id": 943069,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "New York Yankees activated SS Jos\u00e9 Caballero from the 10-day injured list.",
       "effective_date": "2026-05-22",
       "list_type": "10-day injured list",
@@ -8931,6 +8916,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Tampa Bay Rays activated SS Taylor Walls from the 10-day injured list.",
+      "effective_date": "2026-09-17",
+      "list_type": "10-day injured list",
+      "mlbam_id": 670764,
+      "name": "Taylor Walls",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Tampa Bay Rays",
+      "transaction_date": "2026-09-17",
+      "transaction_id": 943052,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Los Angeles Dodgers activated LF Teoscar Hern\u00e1ndez from the 10-day injured list.",
       "effective_date": "2026-06-29",
       "list_type": "10-day injured list",
@@ -9591,7 +9591,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-09-17",
+    "end_date": "2026-09-18",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -9609,15 +9609,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 364,
+    "available_after_il_count": 366,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 201,
+    "injured_count": 197,
     "profile_count": 638,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 73,
-    "risk_profile_count": 274,
+    "rehab_count": 75,
+    "risk_profile_count": 272,
     "tracked_mlbam_count": 11122,
-    "transaction_count": 11905
+    "transaction_count": 11928
   }
 }
