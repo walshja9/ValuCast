@@ -251,10 +251,10 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 45,
+        "buy_comparison_count": 46,
         "latest_rank_bucket_count": 23,
-        "observation_span_days": 51,
-        "rank_comparison_count": 45
+        "observation_span_days": 52,
+        "rank_comparison_count": 46
       },
       "recommendations": [
         "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
@@ -279,7 +279,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-09-19T11:39:04.379698+00:00",
+        "activated_at": "2026-09-20T11:39:57.349929+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -293,13 +293,13 @@
       },
       "candidate_count": 3204,
       "impact_board_gate": {
-        "activated_at": "2026-09-19T11:39:04.379698+00:00",
+        "activated_at": "2026-09-20T11:39:57.349929+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.130762,
+        "baseline_score": 0.130772,
         "cv_method": "walk_forward",
-        "improvement_pct": 3.0316,
+        "improvement_pct": 3.0312,
         "metric": "category_impact_mae",
-        "model_score": 0.126797,
+        "model_score": 0.126808,
         "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
         "sample_size": 2901,
         "status": "active",
@@ -328,7 +328,7 @@
         "minimum_span_days": 60,
         "missing": [
           {
-            "current": 51,
+            "current": 52,
             "metric": "observation_span_days",
             "required": 60
           }
@@ -351,12 +351,12 @@
     "target_grade": "A-",
     "uncapped_score": 90
   },
-  "generated_at": "2026-09-19T00:00:00+00:00",
+  "generated_at": "2026-09-20T00:00:00+00:00",
   "generated_dates": {
-    "cross_role_shadow": "2026-09-19",
-    "dynasty_backtest": "2026-09-19",
-    "forward_validation": "2026-09-19",
-    "model_v07": "2026-09-19",
+    "cross_role_shadow": "2026-09-20",
+    "dynasty_backtest": "2026-09-20",
+    "forward_validation": "2026-09-20",
+    "model_v07": "2026-09-20",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",
