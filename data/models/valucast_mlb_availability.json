@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-09-20",
+  "generated_at": "2026-09-21",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -316,21 +316,6 @@
       "team": "Oklahoma City Comets",
       "transaction_date": "2026-07-25",
       "transaction_id": 931273,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Tampa Bay Rays sent 2B Ben Williamson on a rehab assignment to Durham Bulls.",
-      "effective_date": "2026-09-15",
-      "list_type": null,
-      "mlbam_id": 810938,
-      "name": "Ben Williamson",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Durham Bulls",
-      "transaction_date": "2026-09-15",
-      "transaction_id": 942605,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -636,6 +621,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Texas Rangers placed RHP Cal Quantrill on the 15-day injured list. Right lat strain.",
+      "effective_date": "2026-09-20",
+      "list_type": "15-day injured list",
+      "mlbam_id": 615698,
+      "name": "Cal Quantrill",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Texas Rangers",
+      "transaction_date": "2026-09-20",
+      "transaction_id": 943376,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "Philadelphia Phillies transferred RHP Caleb Kilian from the 15-day injured list to the 60-day injured list. Left oblique strain.",
       "effective_date": "2026-09-17",
       "list_type": "60-day injured list",
@@ -751,6 +751,21 @@
       "team": "Boston Red Sox",
       "transaction_date": "2026-09-06",
       "transaction_id": 941452,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Cincinnati Reds placed RHP Chase Burns on the 15-day injured list retroactive to September 19, 2026. Right groin strain.",
+      "effective_date": "2026-09-19",
+      "list_type": "15-day injured list",
+      "mlbam_id": 695505,
+      "name": "Chase Burns",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Cincinnati Reds",
+      "transaction_date": "2026-09-20",
+      "transaction_id": 943317,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -1516,21 +1531,6 @@
       "team": "Iowa Cubs",
       "transaction_date": "2026-07-29",
       "transaction_id": 932415,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Chicago White Sox sent RHP Huascar Brazob\u00e1n on a rehab assignment to Charlotte Knights.",
-      "effective_date": "2026-09-02",
-      "list_type": null,
-      "mlbam_id": 623211,
-      "name": "Huascar Brazob\u00e1n",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Charlotte Knights",
-      "transaction_date": "2026-09-02",
-      "transaction_id": 940908,
       "type_code": "ASG",
       "type_description": "Assigned"
     },
@@ -3276,18 +3276,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Chicago Cubs transferred LHP Riley Martin from the 15-day injured list to the 60-day injured list. Left elbow inflammation.",
-      "effective_date": "2026-05-17",
-      "list_type": "60-day injured list",
+      "description": "Chicago Cubs sent LHP Riley Martin on a rehab assignment to Iowa Cubs.",
+      "effective_date": "2026-09-20",
+      "list_type": null,
       "mlbam_id": 702303,
       "name": "Riley Martin",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Chicago Cubs",
-      "transaction_date": "2026-05-17",
-      "transaction_id": 921811,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Iowa Cubs",
+      "transaction_date": "2026-09-20",
+      "transaction_id": 943374,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -3441,18 +3441,18 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Arizona Diamondbacks transferred RHP Ryan Thompson from the 15-day injured list to the 60-day injured list. Strained lower back.",
-      "effective_date": "2026-09-01",
-      "list_type": "60-day injured list",
+      "description": "Arizona Diamondbacks sent RHP Ryan Thompson on a rehab assignment to Reno Aces.",
+      "effective_date": "2026-09-20",
+      "list_type": null,
       "mlbam_id": 657044,
       "name": "Ryan Thompson",
       "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Arizona Diamondbacks",
-      "transaction_date": "2026-09-01",
-      "transaction_id": 940649,
-      "type_code": "SC",
-      "type_description": "Status Change"
+      "status": "rehab",
+      "team": "Reno Aces",
+      "transaction_date": "2026-09-20",
+      "transaction_id": 943378,
+      "type_code": "ASG",
+      "type_description": "Assigned"
     },
     {
       "active_injury_risk": true,
@@ -3916,21 +3916,6 @@
       "team": "Tampa Bay Rays",
       "transaction_date": "2026-09-15",
       "transaction_id": 942742,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Boston Red Sox placed RHP Tyron Guerrero on the 15-day injured list. Right shoulder inflammation.",
-      "effective_date": "2026-09-01",
-      "list_type": "15-day injured list",
-      "mlbam_id": 594027,
-      "name": "Tyron Guerrero",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Boston Red Sox",
-      "transaction_date": "2026-09-01",
-      "transaction_id": 940459,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -4471,6 +4456,21 @@
       "team": "Los Angeles Angels",
       "transaction_date": "2026-08-04",
       "transaction_id": 934935,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Tampa Bay Rays activated 2B Ben Williamson from the 10-day injured list.",
+      "effective_date": "2026-09-20",
+      "list_type": "10-day injured list",
+      "mlbam_id": 810938,
+      "name": "Ben Williamson",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Tampa Bay Rays",
+      "transaction_date": "2026-09-20",
+      "transaction_id": 943315,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6136,6 +6136,21 @@
       "team": "Baltimore Orioles",
       "transaction_date": "2026-05-28",
       "transaction_id": 912601,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Chicago White Sox activated RHP Huascar Brazob\u00e1n from the 15-day injured list.",
+      "effective_date": "2026-09-20",
+      "list_type": "15-day injured list",
+      "mlbam_id": 623211,
+      "name": "Huascar Brazob\u00e1n",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Chicago White Sox",
+      "transaction_date": "2026-09-20",
+      "transaction_id": 943356,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9306,6 +9321,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Boston Red Sox activated RHP Tyron Guerrero from the 15-day injured list.",
+      "effective_date": "2026-09-20",
+      "list_type": "15-day injured list",
+      "mlbam_id": 594027,
+      "name": "Tyron Guerrero",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Boston Red Sox",
+      "transaction_date": "2026-09-20",
+      "transaction_id": 943320,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "New York Mets activated LF Tyrone Taylor from the 10-day injured list.",
       "effective_date": "2026-06-26",
       "list_type": "10-day injured list",
@@ -9681,7 +9711,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-09-20",
+    "end_date": "2026-09-21",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -9699,15 +9729,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 370,
+    "available_after_il_count": 373,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 203,
-    "profile_count": 644,
+    "injured_count": 202,
+    "profile_count": 646,
     "ready_for_mlb_dynasty_layer": true,
     "rehab_count": 71,
-    "risk_profile_count": 274,
+    "risk_profile_count": 273,
     "tracked_mlbam_count": 11121,
-    "transaction_count": 12001
+    "transaction_count": 12023
   }
 }
