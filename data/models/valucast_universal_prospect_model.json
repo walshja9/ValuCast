@@ -1,7 +1,7 @@
 {
-  "candidate_count": 3236,
+  "candidate_count": 3235,
   "input_contract": {
-    "generated_at": "2026-09-21T00:00:00+00:00",
+    "generated_at": "2026-09-22T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -110513,103 +110513,6 @@
       "sample_reliability": 0.449,
       "sample_unit": "PA",
       "team": "Las Vegas Aviators"
-    },
-    {
-      "age": 24,
-      "level": "AAA",
-      "mlbam_id": 813841,
-      "name": "Jonah Cox",
-      "normalized_name": "jonah cox",
-      "outcome_distribution": {
-        "bust_probability": 0.6677,
-        "role_probability": 0.3323,
-        "star_probability": 0.0
-      },
-      "outcomes": {
-        "established_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.3323,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "probability"
-        },
-        "regular_probability": {
-          "conditional_on": null,
-          "gate_status": "active",
-          "prediction": 0.3323,
-          "prediction_source": "ridge",
-          "unit": "probability"
-        },
-        "representative_avg": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.2612,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "AVG"
-        },
-        "representative_hr_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 18.38,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "HR/600 PA"
-        },
-        "representative_k_pct": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 21.44,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "K%"
-        },
-        "representative_ops": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.7644,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "OPS"
-        },
-        "representative_pa": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 515.72,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "PA"
-        },
-        "representative_r_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 76.25,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "R/600 PA"
-        },
-        "representative_rbi_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 67.89,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "RBI/600 PA"
-        },
-        "representative_sb_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 14.03,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "SB/600 PA"
-        },
-        "star_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.0,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "probability"
-        }
-      },
-      "position": "CF",
-      "role": "hitter",
-      "sample": 52.0,
-      "sample_reliability": 0.206,
-      "sample_unit": "PA",
-      "team": "Sacramento River Cats"
     },
     {
       "age": 24,
@@ -337306,7 +337209,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-09-21T00:00:00+00:00",
+          "activated_at": "2026-09-22T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.033681,
           "cv_method": "walk_forward",
@@ -340092,7 +339995,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-09-21T00:00:00+00:00",
+          "activated_at": "2026-09-22T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.03029,
           "cv_method": "walk_forward",
