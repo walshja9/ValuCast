@@ -1,7 +1,7 @@
 {
   "candidate_count": 3235,
   "input_contract": {
-    "generated_at": "2026-09-22T00:00:00+00:00",
+    "generated_at": "2026-09-23T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -27586,22 +27586,22 @@
       "name": "D'Andre Smith",
       "normalized_name": "d andre smith",
       "outcome_distribution": {
-        "bust_probability": 0.7032,
-        "role_probability": 0.2568,
+        "bust_probability": 0.7002,
+        "role_probability": 0.2598,
         "star_probability": 0.04
       },
       "outcomes": {
         "established_probability": {
           "conditional_on": null,
           "gate_status": "fallback",
-          "prediction": 0.2968,
+          "prediction": 0.2998,
           "prediction_source": "canonical_historical_neighbors_25",
           "unit": "probability"
         },
         "regular_probability": {
           "conditional_on": null,
           "gate_status": "active",
-          "prediction": 0.2968,
+          "prediction": 0.2998,
           "prediction_source": "ridge",
           "unit": "probability"
         },
@@ -27615,7 +27615,7 @@
         "representative_hr_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 17.37,
+          "prediction": 16.93,
           "prediction_source": "historical_neighbors_25",
           "unit": "HR/600 PA"
         },
@@ -27629,7 +27629,7 @@
         "representative_ops": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 0.757,
+          "prediction": 0.7527,
           "prediction_source": "historical_neighbors_25",
           "unit": "OPS"
         },
@@ -27643,21 +27643,21 @@
         "representative_r_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 77.63,
+          "prediction": 77.48,
           "prediction_source": "historical_neighbors_25",
           "unit": "R/600 PA"
         },
         "representative_rbi_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 65.47,
+          "prediction": 64.12,
           "prediction_source": "historical_neighbors_25",
           "unit": "RBI/600 PA"
         },
         "representative_sb_per_600": {
           "conditional_on": "representative season has at least 300 PA",
           "gate_status": "insufficient_sample",
-          "prediction": 13.89,
+          "prediction": 14.0,
           "prediction_source": "historical_neighbors_25",
           "unit": "SB/600 PA"
         },
@@ -337209,7 +337209,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-09-22T00:00:00+00:00",
+          "activated_at": "2026-09-23T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.033681,
           "cv_method": "walk_forward",
@@ -339995,7 +339995,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-09-22T00:00:00+00:00",
+          "activated_at": "2026-09-23T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.03029,
           "cv_method": "walk_forward",
