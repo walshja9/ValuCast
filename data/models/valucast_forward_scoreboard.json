@@ -3,21 +3,21 @@
     "ci_high": 6.0,
     "ci_low": -3.0,
     "label": "leading, not yet significant",
-    "median_lead_days": 2.5,
+    "median_lead_days": 3.0,
     "null": {
       "null_ci_high": 4.0,
       "null_ci_low": -4.0,
       "null_median": 0.0
     },
-    "pool_size": 138,
+    "pool_size": 139,
     "provisional": false,
     "sign_test": {
       "basis": "exact_binomial_sign_test_p025_one_sided",
       "direction": "leading",
-      "n_nonzero": 138,
+      "n_nonzero": 139,
       "negatives": 62,
-      "p_value": 0.13419498600443708,
-      "positives": 76,
+      "p_value": 0.11746575164529853,
+      "positives": 77,
       "significant": false,
       "zeros_excluded": 0
     },
@@ -38,7 +38,7 @@
     ],
     "status": "registered"
   },
-  "content_sha256": "5b44f1f875f14c8897494da466427fc44d277fbc8148a2019cb97988cb4ccdbf",
+  "content_sha256": "bbec2caa22389e208f1be92044db2a5ba56f54fc1bc74ff7ddc0db6e1567e88e",
   "dials": {
     "adverse_move_floor_spots": 10,
     "ci_percentile": 95,
@@ -56,7 +56,7 @@
       "callup_win": 8,
       "clean_retraction": 230,
       "consensus_move_unscored": 0,
-      "consensus_move_win": 68,
+      "consensus_move_win": 69,
       "open": 87,
       "unclassified": 0
     },
@@ -70,7 +70,7 @@
         "callup_win": 8,
         "clean_retraction": 103,
         "consensus_move_unscored": 0,
-        "consensus_move_win": 38,
+        "consensus_move_win": 39,
         "open": 38,
         "unclassified": 0
       },
@@ -104,21 +104,21 @@
     "excluded_from_pool": 343,
     "losses": 62,
     "open": 87,
-    "pool_size": 138,
+    "pool_size": 139,
     "self_retraction_rate": {
-      "rate": 0.5696465696465697,
+      "rate": 0.5684647302904564,
       "retracted": 274,
-      "total": 481
+      "total": 482
     },
-    "total_claims": 481,
+    "total_claims": 482,
     "unscored_or_unclassified": 0,
-    "wins": 76
+    "wins": 77
   },
-  "generated_at": "2026-09-24T12:20:09.327955+00:00",
+  "generated_at": "2026-09-25T12:27:54.076859+00:00",
   "generated_by": "valucast",
   "independence_attestation": "ValuCast scores are computed without any consensus input; external source ranks are carried as context only and never feed the model. This independence is validator-enforced.",
   "ledger_ref": {
-    "generated_at": "2026-09-24T12:20:06.112199+00:00",
+    "generated_at": "2026-09-25T12:27:50.175697+00:00",
     "signal_version": "0.1.0"
   },
   "protocol_version": "030-v1",

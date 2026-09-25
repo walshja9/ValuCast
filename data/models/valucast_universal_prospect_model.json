@@ -1,7 +1,7 @@
 {
-  "candidate_count": 3235,
+  "candidate_count": 3234,
   "input_contract": {
-    "generated_at": "2026-09-24T00:00:00+00:00",
+    "generated_at": "2026-09-25T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -39703,103 +39703,6 @@
       "sample_reliability": 0.475,
       "sample_unit": "PA",
       "team": "Brooklyn Cyclones"
-    },
-    {
-      "age": 22,
-      "level": "AAA",
-      "mlbam_id": 699302,
-      "name": "H\u00e9ctor Rodr\u00edguez",
-      "normalized_name": "hector rodriguez",
-      "outcome_distribution": {
-        "bust_probability": 0.68,
-        "role_probability": 0.24,
-        "star_probability": 0.08
-      },
-      "outcomes": {
-        "established_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.32,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "probability"
-        },
-        "regular_probability": {
-          "conditional_on": null,
-          "gate_status": "active",
-          "prediction": 0.2896,
-          "prediction_source": "ridge",
-          "unit": "probability"
-        },
-        "representative_avg": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.2623,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "AVG"
-        },
-        "representative_hr_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 23.85,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "HR/600 PA"
-        },
-        "representative_k_pct": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 23.04,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "K%"
-        },
-        "representative_ops": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 0.7766,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "OPS"
-        },
-        "representative_pa": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 500.12,
-          "prediction_source": "canonical_historical_neighbors_25",
-          "unit": "PA"
-        },
-        "representative_r_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 74.51,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "R/600 PA"
-        },
-        "representative_rbi_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 76.64,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "RBI/600 PA"
-        },
-        "representative_sb_per_600": {
-          "conditional_on": "representative season has at least 300 PA",
-          "gate_status": "insufficient_sample",
-          "prediction": 8.39,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "SB/600 PA"
-        },
-        "star_probability": {
-          "conditional_on": null,
-          "gate_status": "fallback",
-          "prediction": 0.08,
-          "prediction_source": "historical_neighbors_25",
-          "unit": "probability"
-        }
-      },
-      "position": "RF",
-      "role": "hitter",
-      "sample": 455.0,
-      "sample_reliability": 0.695,
-      "sample_unit": "PA",
-      "team": "Louisville Bats"
     },
     {
       "age": 22,
@@ -337209,7 +337112,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-09-24T00:00:00+00:00",
+          "activated_at": "2026-09-25T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.033681,
           "cv_method": "walk_forward",
@@ -339995,7 +339898,7 @@
           "high_school_draftee"
         ],
         "gate": {
-          "activated_at": "2026-09-24T00:00:00+00:00",
+          "activated_at": "2026-09-25T00:00:00+00:00",
           "baseline": "canonical_historical_neighbors_25",
           "baseline_score": 0.03029,
           "cv_method": "walk_forward",
