@@ -251,10 +251,10 @@
     "forward_observation": {
       "is_realized_outcome_accuracy_evidence": false,
       "metrics": {
-        "buy_comparison_count": 52,
+        "buy_comparison_count": 53,
         "latest_rank_bucket_count": 23,
-        "observation_span_days": 59,
-        "rank_comparison_count": 52
+        "observation_span_days": 60,
+        "rank_comparison_count": 53
       },
       "recommendations": [
         "No bucket-level forward movement requires a scoring change yet; keep collecting archives."
@@ -279,7 +279,7 @@
     },
     "ordinal_bridge_walk_forward": {
       "board_gate": {
-        "activated_at": "2026-09-27T15:40:18.721641+00:00",
+        "activated_at": "2026-09-28T13:46:37.809739+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.140745,
         "cv_method": "walk_forward",
@@ -293,13 +293,13 @@
       },
       "candidate_count": 3201,
       "impact_board_gate": {
-        "activated_at": "2026-09-27T15:40:18.721641+00:00",
+        "activated_at": "2026-09-28T13:46:37.809739+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.130782,
+        "baseline_score": 0.130787,
         "cv_method": "walk_forward",
-        "improvement_pct": 3.0311,
+        "improvement_pct": 3.031,
         "metric": "category_impact_mae",
-        "model_score": 0.126818,
+        "model_score": 0.126823,
         "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
         "sample_size": 2901,
         "status": "active",
@@ -310,8 +310,8 @@
   },
   "front_office_track": {
     "cap_reasons": [],
-    "forward_next_target_grade": "A+",
-    "forward_supported_grade": "A",
+    "forward_next_target_grade": null,
+    "forward_supported_grade": "A+",
     "forward_thresholds": {
       "A": {
         "minimum_buy_comparisons": 14,
@@ -326,14 +326,8 @@
         "minimum_buy_retention_rate": 0.6,
         "minimum_rank_comparisons": 30,
         "minimum_span_days": 60,
-        "missing": [
-          {
-            "current": 59,
-            "metric": "observation_span_days",
-            "required": 60
-          }
-        ],
-        "passed": false
+        "missing": [],
+        "passed": true
       },
       "A-": {
         "minimum_buy_comparisons": 7,
@@ -351,12 +345,12 @@
     "target_grade": "A-",
     "uncapped_score": 90
   },
-  "generated_at": "2026-09-27T00:00:00+00:00",
+  "generated_at": "2026-09-28T00:00:00+00:00",
   "generated_dates": {
-    "cross_role_shadow": "2026-09-27",
-    "dynasty_backtest": "2026-09-27",
-    "forward_validation": "2026-09-27",
-    "model_v07": "2026-09-27",
+    "cross_role_shadow": "2026-09-28",
+    "dynasty_backtest": "2026-09-28",
+    "forward_validation": "2026-09-28",
+    "model_v07": "2026-09-28",
     "prospect_model": null
   },
   "report_name": "ValuCast Prospect Outcome Evidence",

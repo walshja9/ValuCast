@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-09-27",
+  "generated_at": "2026-09-28",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -376,6 +376,21 @@
       "team": "Cincinnati Reds",
       "transaction_date": "2026-08-06",
       "transaction_id": 935812,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Los Angeles Dodgers placed RHP Blake Treinen on the 15-day injured list. Right shoulder inflammation.",
+      "effective_date": "2026-09-27",
+      "list_type": "15-day injured list",
+      "mlbam_id": 595014,
+      "name": "Blake Treinen",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Los Angeles Dodgers",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944166,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -1236,16 +1251,16 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Boston Red Sox placed CF Eli White on the 10-day injured list retroactive to September 9, 2026. Right foot ligament injury.",
-      "effective_date": "2026-09-09",
-      "list_type": "10-day injured list",
+      "description": "Boston Red Sox transferred CF Eli White from the 10-day injured list to the 60-day injured list. Right foot ligament injury.",
+      "effective_date": "2026-09-27",
+      "list_type": "60-day injured list",
       "mlbam_id": 642201,
       "name": "Eli White",
       "source": "official_mlb_statsapi_transactions",
       "status": "injured",
       "team": "Boston Red Sox",
-      "transaction_date": "2026-09-11",
-      "transaction_id": 942027,
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944149,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -1716,21 +1731,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Detroit Tigers sent RHP Jack Flaherty on a rehab assignment to Toledo Mud Hens.",
-      "effective_date": "2026-09-06",
-      "list_type": null,
-      "mlbam_id": 656427,
-      "name": "Jack Flaherty",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Toledo Mud Hens",
-      "transaction_date": "2026-09-06",
-      "transaction_id": 943885,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Los Angeles Angels transferred RHP Jack Kochanowicz from the 15-day injured list to the 60-day injured list. Right elbow inflammation.",
       "effective_date": "2026-06-10",
       "list_type": "60-day injured list",
@@ -1851,21 +1851,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Kansas City Royals sent RHP James McArthur on a rehab assignment to Omaha Storm Chasers.",
-      "effective_date": "2026-09-15",
-      "list_type": null,
-      "mlbam_id": 663704,
-      "name": "James McArthur",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Omaha Storm Chasers",
-      "transaction_date": "2026-09-15",
-      "transaction_id": 943886,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Detroit Tigers sent CF James Outman on a rehab assignment to Toledo Mud Hens.",
       "effective_date": "2026-08-20",
       "list_type": null,
@@ -1983,21 +1968,6 @@
       "transaction_id": 941785,
       "type_code": "ASG",
       "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "Philadelphia Phillies placed LHP Jes\u00fas Luzardo on the 15-day injured list retroactive to September 12, 2026. Left shoulder inflammation.",
-      "effective_date": "2026-09-12",
-      "list_type": "15-day injured list",
-      "mlbam_id": 666200,
-      "name": "Jes\u00fas Luzardo",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "Philadelphia Phillies",
-      "transaction_date": "2026-09-15",
-      "transaction_id": 942694,
-      "type_code": "SC",
-      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -2946,6 +2916,21 @@
     },
     {
       "active_injury_risk": true,
+      "description": "Boston Red Sox placed DH Mickey Gasper on the 10-day injured list retroactive to September 26, 2026. Right biceps strain.",
+      "effective_date": "2026-09-26",
+      "list_type": "10-day injured list",
+      "mlbam_id": 681508,
+      "name": "Mickey Gasper",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Boston Red Sox",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944153,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
       "description": "San Diego Padres sent DH Miguel Andujar on a rehab assignment to El Paso Chihuahuas.",
       "effective_date": "2026-09-08",
       "list_type": null,
@@ -3741,21 +3726,6 @@
     },
     {
       "active_injury_risk": true,
-      "description": "Boston Red Sox sent RHP Tanner Houck on a rehab assignment to Worcester Red Sox.",
-      "effective_date": "2026-09-15",
-      "list_type": null,
-      "mlbam_id": 656557,
-      "name": "Tanner Houck",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "rehab",
-      "team": "Worcester Red Sox",
-      "transaction_date": "2026-09-15",
-      "transaction_id": 943883,
-      "type_code": "ASG",
-      "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
       "description": "Chicago White Sox transferred LF Tanner Murray from the 10-day injured list to the 60-day injured list. Left shoulder dislocation.",
       "effective_date": "2026-05-04",
       "list_type": "60-day injured list",
@@ -3766,6 +3736,21 @@
       "team": "Chicago White Sox",
       "transaction_date": "2026-05-04",
       "transaction_id": 905718,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Kansas City Royals placed RHP Tony Gonsolin on the 15-day injured list. Allergic reaction.",
+      "effective_date": "2026-09-27",
+      "list_type": "15-day injured list",
+      "mlbam_id": 664062,
+      "name": "Tony Gonsolin",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Kansas City Royals",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944161,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -3976,6 +3961,21 @@
       "team": "Miami Marlins",
       "transaction_date": "2026-09-25",
       "transaction_id": 943991,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": true,
+      "description": "Boston Red Sox placed RHP Tyron Guerrero on the 15-day injured list retroactive to September 24, 2026. Right shoulder strain.",
+      "effective_date": "2026-09-24",
+      "list_type": "15-day injured list",
+      "mlbam_id": 594027,
+      "name": "Tyron Guerrero",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "injured",
+      "team": "Boston Red Sox",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944154,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -4561,21 +4561,6 @@
       "team": "Los Angeles Dodgers",
       "transaction_date": "2026-08-11",
       "transaction_id": 937112,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
-      "description": "Los Angeles Dodgers activated RHP Blake Treinen from the 60-day injured list.",
-      "effective_date": "2026-09-02",
-      "list_type": "60-day injured list",
-      "mlbam_id": 595014,
-      "name": "Blake Treinen",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Los Angeles Dodgers",
-      "transaction_date": "2026-09-02",
-      "transaction_id": 940940,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6336,6 +6321,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Detroit Tigers activated RHP Jack Flaherty from the 15-day injured list.",
+      "effective_date": "2026-09-27",
+      "list_type": "15-day injured list",
+      "mlbam_id": 656427,
+      "name": "Jack Flaherty",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Detroit Tigers",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944169,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Milwaukee Brewers activated LF Jackson Chourio from the 10-day injured list.",
       "effective_date": "2026-05-04",
       "list_type": "10-day injured list",
@@ -6451,6 +6451,21 @@
       "team": "Texas Rangers",
       "transaction_date": "2026-08-15",
       "transaction_id": 937756,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Kansas City Royals activated RHP James McArthur from the 60-day injured list.",
+      "effective_date": "2026-09-27",
+      "list_type": "60-day injured list",
+      "mlbam_id": 663704,
+      "name": "James McArthur",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Kansas City Royals",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944162,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -6661,6 +6676,21 @@
       "team": "Tampa Bay Rays",
       "transaction_date": "2026-07-23",
       "transaction_id": 930599,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "Philadelphia Phillies activated LHP Jes\u00fas Luzardo from the 15-day injured list.",
+      "effective_date": "2026-09-27",
+      "list_type": "15-day injured list",
+      "mlbam_id": 666200,
+      "name": "Jes\u00fas Luzardo",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Philadelphia Phillies",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944156,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9111,6 +9141,21 @@
     },
     {
       "active_injury_risk": false,
+      "description": "Boston Red Sox activated RHP Tanner Houck from the 60-day injured list.",
+      "effective_date": "2026-09-27",
+      "list_type": "60-day injured list",
+      "mlbam_id": 656557,
+      "name": "Tanner Houck",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "Boston Red Sox",
+      "transaction_date": "2026-09-27",
+      "transaction_id": 944150,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
       "description": "Detroit Tigers activated LHP Tarik Skubal from the 15-day injured list.",
       "effective_date": "2026-06-13",
       "list_type": "15-day injured list",
@@ -9271,21 +9316,6 @@
       "team": "Colorado Rockies",
       "transaction_date": "2026-07-18",
       "transaction_id": 928594,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
-      "description": "Kansas City Royals activated RHP Tony Gonsolin from the 15-day injured list.",
-      "effective_date": "2026-09-21",
-      "list_type": "15-day injured list",
-      "mlbam_id": 664062,
-      "name": "Tony Gonsolin",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Kansas City Royals",
-      "transaction_date": "2026-09-21",
-      "transaction_id": 943405,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9466,21 +9496,6 @@
       "team": "San Francisco Giants",
       "transaction_date": "2026-06-24",
       "transaction_id": 921986,
-      "type_code": "SC",
-      "type_description": "Status Change"
-    },
-    {
-      "active_injury_risk": false,
-      "description": "Boston Red Sox activated RHP Tyron Guerrero from the 15-day injured list.",
-      "effective_date": "2026-09-20",
-      "list_type": "15-day injured list",
-      "mlbam_id": 594027,
-      "name": "Tyron Guerrero",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "available",
-      "team": "Boston Red Sox",
-      "transaction_date": "2026-09-20",
-      "transaction_id": 943320,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9861,7 +9876,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-09-27",
+    "end_date": "2026-09-28",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -9879,15 +9894,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 379,
+    "available_after_il_count": 380,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 219,
-    "profile_count": 656,
+    "injured_count": 222,
+    "profile_count": 657,
     "ready_for_mlb_dynasty_layer": true,
-    "rehab_count": 58,
+    "rehab_count": 55,
     "risk_profile_count": 277,
     "tracked_mlbam_count": 11120,
-    "transaction_count": 12247
+    "transaction_count": 12277
   }
 }
