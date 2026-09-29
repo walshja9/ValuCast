@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_prospect_model_v0_7_preview",
-  "as_of": "2026-09-28",
+  "as_of": "2026-09-29",
   "bucket_comparison": {
     "bucket_count": 8,
     "bucket_definition": "role|level_band|score_source|availability_status",
@@ -13642,11 +13642,11 @@
       "mlbam_id": 694696,
       "name": "Cade Smith",
       "rank_v1_rank": 408,
-      "rank_v1_score": 22.59,
+      "rank_v1_score": 22.6,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 3.245,
-      "v0_7_shadow_score": 25.835
+      "v0_7_shadow_score": 25.845
     },
     {
       "candidate_features": {
@@ -23749,39 +23749,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_per_9": 4.7,
-        "bucket_calibration": null,
-        "current_sample": 71.7,
-        "current_sample_unit": "IP",
-        "current_skill_band": "starter_volume",
-        "factual_investment_context": null,
-        "k_bb_pct": 12.1,
-        "k_per_9": 8.4,
-        "sample_reliability": 43.4,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "A+",
-      "mlbam_id": 801249,
-      "name": "Julio Mendez",
-      "rank_v1_rank": 703,
-      "rank_v1_score": 18.16,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.374,
-      "v0_7_shadow_score": 19.534
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 3.6,
         "bucket_calibration": null,
         "current_sample": 34.0,
@@ -23803,12 +23770,45 @@
       "level": "AA",
       "mlbam_id": 804123,
       "name": "Joey Volini",
-      "rank_v1_rank": 704,
+      "rank_v1_rank": 703,
       "rank_v1_score": 18.15,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.073,
       "v0_7_shadow_score": 17.077
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 4.7,
+        "bucket_calibration": null,
+        "current_sample": 71.7,
+        "current_sample_unit": "IP",
+        "current_skill_band": "starter_volume",
+        "factual_investment_context": null,
+        "k_bb_pct": 12.1,
+        "k_per_9": 8.4,
+        "sample_reliability": 43.4,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "A+",
+      "mlbam_id": 801249,
+      "name": "Julio Mendez",
+      "rank_v1_rank": 704,
+      "rank_v1_score": 18.15,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.374,
+      "v0_7_shadow_score": 19.524
     },
     {
       "candidate_features": {
@@ -125128,7 +125128,7 @@
       "bucket_calibration"
     ]
   },
-  "generated_at": "2026-09-28T00:00:00+00:00",
+  "generated_at": "2026-09-29T00:00:00+00:00",
   "input_artifacts": {
     "outcome_backtest_grade": "A-",
     "outcome_backtest_version": "0.2.0",
@@ -125150,8 +125150,8 @@
     "forward_evidence_ready": true,
     "front_office_track": {
       "cap_reasons": [],
-      "forward_next_target_grade": "A+",
-      "forward_supported_grade": "A",
+      "forward_next_target_grade": null,
+      "forward_supported_grade": "A+",
       "forward_thresholds": {
         "A": {
           "minimum_buy_comparisons": 14,
@@ -125166,14 +125166,8 @@
           "minimum_buy_retention_rate": 0.6,
           "minimum_rank_comparisons": 30,
           "minimum_span_days": 60,
-          "missing": [
-            {
-              "current": 59,
-              "metric": "observation_span_days",
-              "required": 60
-            }
-          ],
-          "passed": false
+          "missing": [],
+          "passed": true
         },
         "A-": {
           "minimum_buy_comparisons": 7,

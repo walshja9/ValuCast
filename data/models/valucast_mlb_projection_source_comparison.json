@@ -14,7 +14,7 @@
       "SLG",
       "OPS"
     ],
-    "horizon_days": 102,
+    "horizon_days": 103,
     "horizon_sufficient": true,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "min_horizon_days": 30,
@@ -5738,7 +5738,7 @@
       "677865": {
         "counts": {
           "BB": 15.0,
-          "ER": 16.0,
+          "ER": 15.0,
           "HLD": 5.0,
           "H_ALLOWED": 39.0,
           "K": 30.0,
@@ -8746,7 +8746,7 @@
     "scores": {
       "marcel_mae": {
         "BB": 12.41515,
-        "ER": 15.4359,
+        "ER": 15.43318,
         "HLD": 3.06587,
         "HR": 5.65523,
         "H_ALLOWED": 31.0179,
@@ -8757,44 +8757,44 @@
         "SV": 1.79351,
         "W": 2.63802
       },
-      "marcel_mean_ratio_vs_steamer": 1.9642,
+      "marcel_mean_ratio_vs_steamer": 1.9539,
       "per_stat_ratio": {
-        "BB": 2.0558,
-        "ER": 2.1877,
-        "HLD": 1.5977,
-        "HR": 1.6875,
-        "H_ALLOWED": 2.6332,
-        "K": 2.4364,
-        "R": 1.7578,
-        "RBI": 1.7848,
-        "SB": 1.9907,
+        "BB": 2.0495,
+        "ER": 2.1771,
+        "HLD": 1.6088,
+        "HR": 1.6691,
+        "H_ALLOWED": 2.6108,
+        "K": 2.4345,
+        "R": 1.737,
+        "RBI": 1.7584,
+        "SB": 1.9769,
         "SV": 1.738,
-        "W": 1.7367
+        "W": 1.7333
       },
       "steamer_mae": {
-        "BB": 6.03902,
-        "ER": 7.0559,
-        "HLD": 1.91888,
-        "HR": 3.3513,
-        "H_ALLOWED": 11.77951,
-        "K": 13.97425,
-        "R": 9.83758,
-        "RBI": 9.83623,
-        "SB": 2.14556,
+        "BB": 6.05752,
+        "ER": 7.08889,
+        "HLD": 1.90571,
+        "HR": 3.38827,
+        "H_ALLOWED": 11.88076,
+        "K": 13.98505,
+        "R": 9.95552,
+        "RBI": 9.98401,
+        "SB": 2.16055,
         "SV": 1.03194,
-        "W": 1.51895
+        "W": 1.52194
       }
     },
     "status": "scored",
-    "steamer_ros_git_commit": "a40e3791972a8e54a2383beeb4362b033e250b6e",
+    "steamer_ros_git_commit": "2e59439f8fea42a33c15108cc92e6208d4383d01",
     "window": {
       "as_of": "2026-06-18",
-      "elapsed_days": 102,
-      "proration_factor": 1.0099,
+      "elapsed_days": 103,
+      "proration_factor": 1.0198,
       "proration_method": "calendar_days_elapsed_over_regular_season_days_remaining; projection rows are treated as rest-of-season counts",
       "remaining_days_at_freeze": 101,
       "season_end": "2026-09-27",
-      "through": "2026-09-28"
+      "through": "2026-09-29"
     }
   },
   "gate": {
@@ -8808,9 +8808,9 @@
     "reason": "does not beat steamer_ros: -9.85% < required 2.0%",
     "sample_size": 759,
     "status": "fallback",
-    "validated_through": "2026-09-28"
+    "validated_through": "2026-09-29"
   },
-  "generated_at": "2026-09-28T13:43:19.430302+00:00",
+  "generated_at": "2026-09-29T11:40:02.270655+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
@@ -8835,7 +8835,7 @@
       "reason": "does not beat steamer_ros: -4.90% < required 2.0%",
       "sample_size": 392,
       "status": "fallback",
-      "validated_through": "2026-09-28"
+      "validated_through": "2026-09-29"
     },
     "pitchers": {
       "activated_at": null,
@@ -8848,16 +8848,16 @@
       "reason": "does not beat steamer_ros: -19.73% < required 2.0%",
       "sample_size": 367,
       "status": "fallback",
-      "validated_through": "2026-09-28"
+      "validated_through": "2026-09-29"
     }
   },
   "role_scores": {
     "hitters": {
       "marcel_mae": {
-        "AVG": 0.03159,
-        "OBP": 0.03324,
-        "OPS": 0.09278,
-        "SLG": 0.06515
+        "AVG": 0.03157,
+        "OBP": 0.03323,
+        "OPS": 0.09275,
+        "SLG": 0.06514
       },
       "marcel_mean_ratio_vs_steamer": 1.049,
       "per_stat_ratio": {
@@ -8867,52 +8867,52 @@
         "SLG": 1.078
       },
       "steamer_mae": {
-        "AVG": 0.03032,
-        "OBP": 0.03294,
-        "OPS": 0.08693,
-        "SLG": 0.06044
+        "AVG": 0.0303,
+        "OBP": 0.03293,
+        "OPS": 0.0869,
+        "SLG": 0.06042
       }
     },
     "pitchers": {
       "marcel_mae": {
-        "ERA": 1.3467,
+        "ERA": 1.34726,
         "WHIP": 0.22519
       },
       "marcel_mean_ratio_vs_steamer": 1.1973,
       "per_stat_ratio": {
-        "ERA": 1.1893,
+        "ERA": 1.1892,
         "WHIP": 1.2054
       },
       "steamer_mae": {
-        "ERA": 1.13236,
+        "ERA": 1.13291,
         "WHIP": 0.18682
       }
     }
   },
   "scores": {
     "marcel_mae": {
-      "AVG": 0.03159,
-      "ERA": 1.3467,
-      "OBP": 0.03324,
-      "OPS": 0.09278,
-      "SLG": 0.06515,
+      "AVG": 0.03157,
+      "ERA": 1.34726,
+      "OBP": 0.03323,
+      "OPS": 0.09275,
+      "SLG": 0.06514,
       "WHIP": 0.22519
     },
     "marcel_mean_ratio_vs_steamer": 1.0985,
     "per_stat_ratio": {
       "AVG": 1.0418,
-      "ERA": 1.1893,
+      "ERA": 1.1892,
       "OBP": 1.009,
       "OPS": 1.0673,
       "SLG": 1.078,
       "WHIP": 1.2054
     },
     "steamer_mae": {
-      "AVG": 0.03032,
-      "ERA": 1.13236,
-      "OBP": 0.03294,
-      "OPS": 0.08693,
-      "SLG": 0.06044,
+      "AVG": 0.0303,
+      "ERA": 1.13291,
+      "OBP": 0.03293,
+      "OPS": 0.0869,
+      "SLG": 0.06042,
       "WHIP": 0.18682
     }
   },

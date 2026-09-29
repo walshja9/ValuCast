@@ -1,6 +1,6 @@
 {
   "board_gate": {
-    "activated_at": "2026-09-28T13:46:37.809739+00:00",
+    "activated_at": "2026-09-29T11:43:19.156972+00:00",
     "baseline": "historical_neighbors_25",
     "baseline_score": 0.140745,
     "cv_method": "walk_forward",
@@ -14,7 +14,7 @@
   },
   "candidate_count": 3201,
   "impact_board_gate": {
-    "activated_at": "2026-09-28T13:46:37.809739+00:00",
+    "activated_at": "2026-09-29T11:43:19.156972+00:00",
     "baseline": "historical_neighbors_25",
     "baseline_score": 0.130787,
     "cv_method": "walk_forward",
@@ -393,9 +393,9 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-09-28T13:46:37.809739+00:00",
+        "activated_at": "2026-09-29T11:43:19.156972+00:00",
         "baseline": "historical_neighbors_25",
-        "baseline_score": 0.16144,
+        "baseline_score": 0.161439,
         "cv_method": "walk_forward",
         "improvement_pct": 5.5467,
         "metric": "category_impact_mae",
@@ -445,7 +445,7 @@
       ],
       "model_kind": "hurdle_ridge",
       "model_mae": 0.152485,
-      "neighbor_mae": 0.16144,
+      "neighbor_mae": 0.161439,
       "prediction_model": {
         "arrival_model": {
           "means": [
@@ -642,43 +642,43 @@
             0.43657121
           ],
           "weights": [
-            0.50942005,
-            0.02933034,
-            0.00713591,
-            -0.00260489,
-            0.02398841,
-            0.01602429,
-            -0.01519817,
-            -0.00850522,
-            0.03333768,
-            0.03276898,
-            -0.01076457,
-            0.01228687,
-            0.00616905,
-            -0.02756951,
-            0.00858046,
-            -0.011779,
-            0.00356916,
-            0.00446873,
-            0.01203256,
-            0.00267122,
-            -0.03198541,
-            -0.00109322,
-            -0.01661036,
-            0.0325625,
-            0.01029541,
-            -0.00073774,
-            0.00699416,
+            0.50941881,
+            0.02932985,
+            0.00713638,
+            -0.00260524,
+            0.02398889,
+            0.0160241,
+            -0.01519787,
+            -0.00850649,
+            0.03333882,
+            0.03276981,
+            -0.0107646,
+            0.01228651,
+            0.00616948,
+            -0.02757091,
+            0.00858073,
+            -0.01177907,
+            0.00356843,
+            0.00446839,
+            0.01203354,
+            0.00267142,
+            -0.03198536,
+            -0.00109264,
+            -0.01661041,
+            0.03256338,
+            0.01029609,
+            -0.00073824,
+            0.00699456,
             0.0,
-            0.00303441,
-            0.00555174,
-            0.00430469,
-            -0.01747219,
-            0.00958049,
-            -0.00962857,
-            -0.0066157,
-            -0.02030041,
-            0.00564733
+            0.00303426,
+            0.00555205,
+            0.00430439,
+            -0.01747171,
+            0.00958055,
+            -0.00962905,
+            -0.0066152,
+            -0.02030031,
+            0.005647
           ]
         },
         "model_kind": "hurdle_ridge"
@@ -728,43 +728,43 @@
       "training_sample": 2697,
       "validation_sample": 1522,
       "weights": [
-        0.13561869,
-        0.02427219,
-        0.01079723,
-        0.06751769,
-        -0.00899554,
-        0.01837173,
-        -0.00269609,
-        0.00674938,
-        0.01470495,
-        0.01181507,
-        -0.0147728,
-        0.00662498,
-        0.01060103,
-        0.04936047,
-        0.00980425,
-        -0.02791795,
-        0.02963802,
-        -0.02355564,
-        0.00393346,
-        0.02645901,
-        -0.00503781,
-        0.0133043,
-        0.00390782,
-        0.0386745,
-        0.00526244,
-        -0.00289287,
-        0.00646861,
+        0.13561836,
+        0.02427222,
+        0.01079732,
+        0.06751738,
+        -0.00899518,
+        0.0183716,
+        -0.00269579,
+        0.0067488,
+        0.0147053,
+        0.01181519,
+        -0.01477277,
+        0.0066249,
+        0.0106011,
+        0.04935997,
+        0.00980431,
+        -0.02791796,
+        0.02963764,
+        -0.02355586,
+        0.00393368,
+        0.02645909,
+        -0.00503795,
+        0.01330424,
+        0.00390812,
+        0.03867496,
+        0.00526288,
+        -0.0028933,
+        0.00646871,
         0.0,
-        0.01558252,
-        -0.00393975,
-        0.0259405,
-        -0.01916332,
-        -0.00130958,
-        -0.00613328,
-        -0.00264331,
-        -0.00364075,
-        -0.00208745
+        0.0155825,
+        -0.00393964,
+        0.02594034,
+        -0.01916319,
+        -0.00130956,
+        -0.00613341,
+        -0.00264315,
+        -0.0036407,
+        -0.00208757
       ]
     }
   },
@@ -847,7 +847,7 @@
     "validation": "expanding_window"
   },
   "input_contract": {
-    "generated_at": "2026-09-28T00:00:00+00:00",
+    "generated_at": "2026-09-29T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -2563,7 +2563,7 @@
       "expected_outcome_score": 0.491,
       "impact_drivers": [
         {
-          "contribution": 0.1332,
+          "contribution": 0.1331,
           "feature": "pick_value"
         },
         {
@@ -14112,7 +14112,7 @@
           "feature": "k_bb_pct_x_level"
         },
         {
-          "contribution": 0.0382,
+          "contribution": 0.0383,
           "feature": "k_per_9_x_level"
         }
       ],
@@ -24880,7 +24880,7 @@
           "feature": "k_bb_pct"
         },
         {
-          "contribution": 0.0426,
+          "contribution": 0.0425,
           "feature": "start_rate"
         },
         {
@@ -45833,7 +45833,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": 0.0365,
+          "contribution": 0.0364,
           "feature": "level"
         },
         {
@@ -47268,7 +47268,7 @@
           "feature": "k_bb_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.178,
+      "expected_category_impact_score": 0.1781,
       "expected_outcome_score": 0.1521,
       "impact_drivers": [
         {
@@ -55727,7 +55727,7 @@
           "feature": "is_starter"
         }
       ],
-      "expected_category_impact_score": 0.0913,
+      "expected_category_impact_score": 0.0912,
       "expected_outcome_score": 0.1312,
       "impact_drivers": [
         {
@@ -56938,7 +56938,7 @@
           "feature": "whip_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1515,
+      "expected_category_impact_score": 0.1516,
       "expected_outcome_score": 0.1289,
       "impact_drivers": [
         {
@@ -64567,7 +64567,7 @@
           "feature": "log_ip"
         },
         {
-          "contribution": 0.0288,
+          "contribution": 0.0287,
           "feature": "k_bb_pct"
         }
       ],
@@ -67816,7 +67816,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": 0.0434,
+          "contribution": 0.0433,
           "feature": "start_rate"
         },
         {
@@ -84276,7 +84276,7 @@
       "expected_outcome_score": 0.0809,
       "impact_drivers": [
         {
-          "contribution": -0.0558,
+          "contribution": -0.0557,
           "feature": "start_rate"
         },
         {
@@ -85684,7 +85684,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": 0.0385,
+          "contribution": 0.0384,
           "feature": "level"
         },
         {
@@ -93051,7 +93051,7 @@
       "expected_outcome_score": 0.0641,
       "impact_drivers": [
         {
-          "contribution": -0.0558,
+          "contribution": -0.0557,
           "feature": "start_rate"
         },
         {
@@ -93209,7 +93209,7 @@
       "expected_outcome_score": 0.0638,
       "impact_drivers": [
         {
-          "contribution": 0.0431,
+          "contribution": 0.043,
           "feature": "start_rate"
         },
         {
@@ -98216,7 +98216,7 @@
       "expected_outcome_score": 0.0549,
       "impact_drivers": [
         {
-          "contribution": 0.0434,
+          "contribution": 0.0433,
           "feature": "level"
         },
         {
@@ -113283,7 +113283,7 @@
       "expected_outcome_score": 0.0294,
       "impact_drivers": [
         {
-          "contribution": -0.0619,
+          "contribution": -0.0618,
           "feature": "start_rate"
         },
         {
@@ -117042,7 +117042,7 @@
           "feature": "k_bb_pct"
         },
         {
-          "contribution": -0.0609,
+          "contribution": -0.0608,
           "feature": "start_rate"
         },
         {
@@ -130289,7 +130289,7 @@
       "expected_outcome_score": 0.0039,
       "impact_drivers": [
         {
-          "contribution": -0.0645,
+          "contribution": -0.0644,
           "feature": "start_rate"
         },
         {
@@ -147915,7 +147915,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0628,
+          "contribution": -0.0627,
           "feature": "start_rate"
         },
         {
@@ -160792,7 +160792,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0602,
+          "contribution": -0.0601,
           "feature": "start_rate"
         },
         {
@@ -166872,7 +166872,7 @@
         "inverse_draft_pick"
       ],
       "gate": {
-        "activated_at": "2026-09-28T13:46:37.809739+00:00",
+        "activated_at": "2026-09-29T11:43:19.156972+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.131269,
         "cv_method": "walk_forward",
@@ -167205,7 +167205,7 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-09-28T13:46:37.809739+00:00",
+        "activated_at": "2026-09-29T11:43:19.156972+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.14933,
         "cv_method": "walk_forward",

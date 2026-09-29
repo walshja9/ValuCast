@@ -1,9 +1,9 @@
 {
   "artifact": "valucast_prospect_peak_projection_v1",
-  "generated_at": "2026-09-28T00:00:00+00:00",
+  "generated_at": "2026-09-29T00:00:00+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "prospect_rank_v1_generated_at": "2026-09-28T00:00:00+00:00",
+    "prospect_rank_v1_generated_at": "2026-09-29T00:00:00+00:00",
     "prospect_rank_v1_status": "candidate_ready",
     "prospect_rank_v1_version": "0.2.9"
   },
@@ -54162,9 +54162,9 @@
         "card_copy": "Ceiling is depth arm; floor is depth arm. Medium risk, medium confidence.",
         "ceiling_band": "depth_arm",
         "confidence": "medium",
-        "current_score": 22.59,
+        "current_score": 22.6,
         "floor_band": "depth_arm_floor",
-        "peak_score": 35.29,
+        "peak_score": 35.3,
         "risk_band": "medium",
         "role_probabilities": {
           "depth_or_relief": 0.437,
@@ -54183,7 +54183,7 @@
       "mlbam_id": 694696,
       "name": "Cade Smith",
       "peak_role": "depth_arm",
-      "peak_score": 35.29,
+      "peak_score": 35.3,
       "peak_v2": {
         "ceiling_band": "depth_arm",
         "delta_vs_v1_peak_score": 0.0,
@@ -54215,7 +54215,7 @@
         },
         "model_version": "2.1.0",
         "peak_role": "depth_arm",
-        "peak_score": 35.29,
+        "peak_score": 35.3,
         "risk_band": "medium",
         "role_probabilities": {
           "bust_risk": 0.72,
@@ -54251,7 +54251,7 @@
         "status": "shadow_observe_only"
       },
       "rank_v1_rank": 408,
-      "rank_v1_score": 22.59,
+      "rank_v1_score": 22.6,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
       "role": "pitcher",
@@ -93392,139 +93392,6 @@
       "usage": "card_visual_context_not_live_rank_or_value"
     },
     {
-      "age": 21,
-      "card_v2": {
-        "card_copy": "Ceiling is depth arm; floor is depth arm. Medium risk, medium confidence.",
-        "ceiling_band": "depth_arm",
-        "confidence": "medium",
-        "current_score": 18.16,
-        "floor_band": "depth_arm_floor",
-        "peak_score": 31.78,
-        "risk_band": "medium",
-        "role_probabilities": {
-          "depth_or_relief": 0.369,
-          "starter_or_late_inning": 0.482,
-          "useful_mlb_arm": 0.149
-        },
-        "score_delta": 13.62,
-        "trajectory": "more_peak_than_current_value",
-        "visual_version": "2.0.0"
-      },
-      "ceiling_band": "depth_arm",
-      "confidence": "medium",
-      "eta_window": "two_to_three_years",
-      "floor_band": "depth_arm_floor",
-      "level": "A+",
-      "mlbam_id": 801249,
-      "name": "Julio Mendez",
-      "peak_role": "depth_arm",
-      "peak_score": 31.78,
-      "peak_v2": {
-        "ceiling_band": "depth_arm",
-        "delta_vs_v1_peak_score": 0.0,
-        "floor_band": "depth_arm_floor",
-        "mlb_equivalent": {
-          "confidence": "low",
-          "level_label": "A+ & A",
-          "low_sample": false,
-          "rates": {
-            "bb_per_9": {
-              "milb": 4.5,
-              "mlb": 4.9,
-              "mlb_avg": 3.2
-            },
-            "k_bb_pct": {
-              "milb": 20.6,
-              "mlb": 12.0,
-              "mlb_avg": 13.5
-            },
-            "k_per_9": {
-              "milb": 12.4,
-              "mlb": 8.5,
-              "mlb_avg": 8.6
-            }
-          },
-          "sample": 110,
-          "sample_unit": "IP",
-          "season": 2026
-        },
-        "model_version": "2.1.0",
-        "peak_role": "depth_arm",
-        "peak_score": 31.78,
-        "risk_band": "medium",
-        "role_probabilities": {
-          "bust_risk": 0.76,
-          "reaches_role_or_better": 0.24,
-          "reaches_star_ceiling": 0.2
-        },
-        "role_probability_basis": "cumulative_uncalibrated_outcome_distribution",
-        "role_probability_source": "model_dynasty_signal",
-        "shape": [
-          {
-            "grade": 35,
-            "label": "Miss",
-            "source": "K/9"
-          },
-          {
-            "grade": 35,
-            "label": "Command",
-            "source": "BB/9"
-          },
-          {
-            "grade": 35,
-            "label": "Dominance",
-            "source": "K-BB%"
-          },
-          {
-            "grade": 60,
-            "label": "Run Prevention",
-            "source": "ERA / WHIP"
-          }
-        ],
-        "shape_average": 41.25,
-        "shape_basis": "current",
-        "status": "shadow_observe_only"
-      },
-      "rank_v1_rank": 703,
-      "rank_v1_score": 18.16,
-      "rank_v1_score_source": "prospect_model_v0_6",
-      "risk_band": "medium",
-      "role": "pitcher",
-      "sample_context": {
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
-        "sample": 71.7,
-        "sample_reliability": 43.4,
-        "sample_unit": "IP",
-        "skill_band": "starter_volume"
-      },
-      "shape": [
-        {
-          "grade": 35,
-          "label": "Miss",
-          "source": "K/9"
-        },
-        {
-          "grade": 35,
-          "label": "Command",
-          "source": "BB/9"
-        },
-        {
-          "grade": 35,
-          "label": "Dominance",
-          "source": "K-BB%"
-        },
-        {
-          "grade": 60,
-          "label": "Run Prevention",
-          "source": "ERA / WHIP"
-        }
-      ],
-      "shape_average": 41.25,
-      "summary": "Peak read: depth arm with medium risk. The current pitching shape is starter volume over 71.7 A IP; this is a role and skill-shape projection, not a full stat forecast.",
-      "usage": "card_visual_context_not_live_rank_or_value"
-    },
-    {
       "age": 23,
       "card_v2": {
         "card_copy": "Ceiling is depth arm; floor is depth arm. Medium risk, medium confidence.",
@@ -93618,7 +93485,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 704,
+      "rank_v1_rank": 703,
       "rank_v1_score": 18.15,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -93655,6 +93522,139 @@
       ],
       "shape_average": 46.25,
       "summary": "Peak read: depth arm with medium risk. The current pitching shape is mixed over 34 A+ IP; this is a role and skill-shape projection, not a full stat forecast.",
+      "usage": "card_visual_context_not_live_rank_or_value"
+    },
+    {
+      "age": 21,
+      "card_v2": {
+        "card_copy": "Ceiling is depth arm; floor is depth arm. Medium risk, medium confidence.",
+        "ceiling_band": "depth_arm",
+        "confidence": "medium",
+        "current_score": 18.15,
+        "floor_band": "depth_arm_floor",
+        "peak_score": 31.77,
+        "risk_band": "medium",
+        "role_probabilities": {
+          "depth_or_relief": 0.369,
+          "starter_or_late_inning": 0.481,
+          "useful_mlb_arm": 0.15
+        },
+        "score_delta": 13.62,
+        "trajectory": "more_peak_than_current_value",
+        "visual_version": "2.0.0"
+      },
+      "ceiling_band": "depth_arm",
+      "confidence": "medium",
+      "eta_window": "two_to_three_years",
+      "floor_band": "depth_arm_floor",
+      "level": "A+",
+      "mlbam_id": 801249,
+      "name": "Julio Mendez",
+      "peak_role": "depth_arm",
+      "peak_score": 31.77,
+      "peak_v2": {
+        "ceiling_band": "depth_arm",
+        "delta_vs_v1_peak_score": 0.0,
+        "floor_band": "depth_arm_floor",
+        "mlb_equivalent": {
+          "confidence": "low",
+          "level_label": "A+ & A",
+          "low_sample": false,
+          "rates": {
+            "bb_per_9": {
+              "milb": 4.5,
+              "mlb": 4.9,
+              "mlb_avg": 3.2
+            },
+            "k_bb_pct": {
+              "milb": 20.6,
+              "mlb": 12.0,
+              "mlb_avg": 13.5
+            },
+            "k_per_9": {
+              "milb": 12.4,
+              "mlb": 8.5,
+              "mlb_avg": 8.6
+            }
+          },
+          "sample": 110,
+          "sample_unit": "IP",
+          "season": 2026
+        },
+        "model_version": "2.1.0",
+        "peak_role": "depth_arm",
+        "peak_score": 31.77,
+        "risk_band": "medium",
+        "role_probabilities": {
+          "bust_risk": 0.76,
+          "reaches_role_or_better": 0.24,
+          "reaches_star_ceiling": 0.2
+        },
+        "role_probability_basis": "cumulative_uncalibrated_outcome_distribution",
+        "role_probability_source": "model_dynasty_signal",
+        "shape": [
+          {
+            "grade": 35,
+            "label": "Miss",
+            "source": "K/9"
+          },
+          {
+            "grade": 35,
+            "label": "Command",
+            "source": "BB/9"
+          },
+          {
+            "grade": 35,
+            "label": "Dominance",
+            "source": "K-BB%"
+          },
+          {
+            "grade": 60,
+            "label": "Run Prevention",
+            "source": "ERA / WHIP"
+          }
+        ],
+        "shape_average": 41.25,
+        "shape_basis": "current",
+        "status": "shadow_observe_only"
+      },
+      "rank_v1_rank": 704,
+      "rank_v1_score": 18.15,
+      "rank_v1_score_source": "prospect_model_v0_6",
+      "risk_band": "medium",
+      "role": "pitcher",
+      "sample_context": {
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "sample": 71.7,
+        "sample_reliability": 43.4,
+        "sample_unit": "IP",
+        "skill_band": "starter_volume"
+      },
+      "shape": [
+        {
+          "grade": 35,
+          "label": "Miss",
+          "source": "K/9"
+        },
+        {
+          "grade": 35,
+          "label": "Command",
+          "source": "BB/9"
+        },
+        {
+          "grade": 35,
+          "label": "Dominance",
+          "source": "K-BB%"
+        },
+        {
+          "grade": 60,
+          "label": "Run Prevention",
+          "source": "ERA / WHIP"
+        }
+      ],
+      "shape_average": 41.25,
+      "summary": "Peak read: depth arm with medium risk. The current pitching shape is starter volume over 71.7 A IP; this is a role and skill-shape projection, not a full stat forecast.",
       "usage": "card_visual_context_not_live_rank_or_value"
     },
     {
