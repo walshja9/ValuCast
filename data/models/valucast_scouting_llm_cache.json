@@ -112,7 +112,7 @@
     },
     "529017_pitcher": {
       "hard_ok": true,
-      "hash": "d8257fdf3ec21696c62a29ed465fb6bf",
+      "hash": "d354ce92a54669d0905e3f55f0155a05",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1028,7 +1028,7 @@
     },
     "621439_hitter": {
       "hard_ok": true,
-      "hash": "df60359415baa3d6ae4be6c9e3126ac6",
+      "hash": "044371af0ba8c6af2e32187943b6b45b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1213,7 +1213,7 @@
     },
     "624413_hitter": {
       "hard_ok": true,
-      "hash": "5fbec78b9b10c63f7e3a803ee76f66b6",
+      "hash": "07a48ee5267f8f860595c5a6ddc1f5cb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1295,7 +1295,7 @@
     },
     "641343_hitter": {
       "hard_ok": true,
-      "hash": "77dc80f26536130fd889d5ab996ab512",
+      "hash": "6f5445225b9b50747930da78a757bd5b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1574,7 +1574,7 @@
     },
     "646240_hitter": {
       "hard_ok": true,
-      "hash": "e9db1657cb5e19c0ce872f8cf5ba98f5",
+      "hash": "003cf53a915d82dff28772670a4f6719",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1600,7 +1600,7 @@
     },
     "647304_hitter": {
       "hard_ok": true,
-      "hash": "1054fa4d6fb74a33407a0fb99c57059b",
+      "hash": "9ae0b2eecd9aceace642a19296b4736f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -2720,21 +2720,23 @@
         "hard_ok": true,
         "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
-        "ok": true,
+        "ok": false,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
         "triple_slash_problems": [],
         "uncalibrated_projection_claims": [],
-        "unsupported_numbers": []
+        "unsupported_numbers": [
+          "93"
+        ]
       },
       "prompt": "31bce485da6cd11f",
       "text": "The xBA sits at .268 against a .277 projection, which tells you the hit tool is outrunning the contact quality, and that's the whole tension in this profile. Pe\u00f1a chases at 39.3% and whiffs at 31.8%, both sitting near the bottom of the league, yet his 93rd-percentile sprint speed turns weak contact into hits and keeps the batting average propped up. The projected .801 OPS with 22 home runs looks reasonable given the .431 xSLG, but if the speed ever erodes, the plate discipline numbers leave almost no floor to fall back on. A 5.0% walk rate paired with a 24.0% strikeout rate is a combination that demands the ball find gaps.",
-      "valid": true
+      "valid": false
     },
     "665487_hitter": {
       "hard_ok": true,
-      "hash": "d5744828b67fbe76d100585b3c844457",
+      "hash": "02fe5b8bbce9abcc55c1027a19f9e705",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -2882,7 +2884,7 @@
     },
     "665862_hitter": {
       "hard_ok": true,
-      "hash": "37bd622f7aaab4dfaa647d6b006d136e",
+      "hash": "04cc06a6a4db1b6a99ab01c09ba07898",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -3145,7 +3147,7 @@
     },
     "666200_pitcher": {
       "hard_ok": true,
-      "hash": "256a0298dd9ec8a7bb84771aeca0e4ea",
+      "hash": "80669b0f88a8521f650040433d69f3e8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -3164,6 +3166,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "PHI",
       "text": "The xERA sits at 2.83 and the strikeout rate at 30.3%, both in the 93rd percentile, and the contact profile backs both of them up: a 31.9% whiff rate, 33.2% hard-hit rate, 5.9% barrels allowed. Luzardo isn't beating hitters with deception or a weak schedule; the shape of what he does to contact is genuinely suppressive. The walk rate at 7.1% is the one lever that keeps this from being a fully locked-in ace profile, because if the command softens even a tick, that 2.86 projected ERA with 222 strikeouts over 180.7 innings gets harder to sustain. Everything else in the Statcast card says front-of-rotation starter; the walk number says don't assume the floor is as high as the ceiling.",
       "valid": true
     },
@@ -4222,7 +4226,7 @@
     },
     "671655_hitter": {
       "hard_ok": true,
-      "hash": "30e753c6c3d7d77ed9043682bd3dc6d0",
+      "hash": "f6f7f6b66c844fa1ffa78c52e05cd08b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -4370,7 +4374,7 @@
     },
     "672012_hitter": {
       "hard_ok": true,
-      "hash": "d5be54ee184866c6c0a66ee3313aea7f",
+      "hash": "336feb18706abd1f5f39210f02f374ab",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -4727,7 +4731,7 @@
     },
     "675085_hitter": {
       "hard_ok": true,
-      "hash": "d55aefad030bd78c6c78105aafbba420",
+      "hash": "c1bed77ba2ccf3a2e3f870340211d248",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -4779,7 +4783,7 @@
     },
     "675455_hitter": {
       "hard_ok": true,
-      "hash": "9ccc062327692fd37feaa8ec6414a285",
+      "hash": "969a093cd6d54954e9518d790751d9f6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5185,7 +5189,7 @@
     },
     "677337_pitcher": {
       "hard_ok": true,
-      "hash": "a5ce146c74bd3b8d8580c0eb97b11db6",
+      "hash": "b2e4c8b936b58000b69ce389c8ec1ea5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5241,7 +5245,7 @@
     },
     "677578_hitter": {
       "hard_ok": true,
-      "hash": "49cf03b410ad1693446b6297369fcc8e",
+      "hash": "f98adc7755d8aa338cd6b5ddbc0c779e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5570,23 +5574,25 @@
         "hard_ok": true,
         "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
-        "ok": true,
+        "ok": false,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
         "triple_slash_problems": [],
         "uncalibrated_projection_claims": [],
-        "unsupported_numbers": []
+        "unsupported_numbers": [
+          "37"
+        ]
       },
       "prompt": "31bce485da6cd11f",
       "reused_against_updated_grounding": true,
       "team": "BOS",
       "text": "The .498 projected SLG in 330 plate appearances is the number that matters here, and it holds up because the power isn't coming from speed or defensive value propping a roster spot \u2014 it's the bat carrying everything. Fielding sits at the 3rd percentile, sprint speed at the 37th, so the profile is almost entirely offense, and a .851 OPS at that playing-time level is legitimate production if the contact rates stabilize into a regular role. If Boston gives him consistent at-bats, he profiles as a low-end everyday first baseman or a very productive platoon corner bat. The whole thing hinges on whether he earns the plate appearances, because at 330 projected, he's still on the outside looking in at a true regular's workload.",
-      "valid": true
+      "valid": false
     },
     "678577_hitter": {
       "hard_ok": true,
-      "hash": "9cf3afc745934ea98ecc8b73dd51a4a7",
+      "hash": "148e4df3f112eba95a116ba814c0a9e6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5732,7 +5738,7 @@
     },
     "679922_pitcher": {
       "hard_ok": true,
-      "hash": "3da72402c82ef70fe616ee26f2180318",
+      "hash": "ce9c8c316a928d43357add7b1a66736e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5758,7 +5764,7 @@
     },
     "680572_pitcher": {
       "hard_ok": true,
-      "hash": "2f8bceb14230c7a954a82f76cf38df79",
+      "hash": "1452a6728d7fb2610a6ac8719ddc7e89",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6264,7 +6270,7 @@
     },
     "682607_pitcher": {
       "hard_ok": true,
-      "hash": "0a925a006ef4f3a60f1641c950d079b3",
+      "hash": "4a788a50240d5291a2d04ecc3658eefd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6290,7 +6296,7 @@
     },
     "682617_hitter": {
       "hard_ok": true,
-      "hash": "e5a13e7d1c8e1d331aeab2b2f4f80c97",
+      "hash": "d87675fa97f3279672149d514077e4d5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6370,7 +6376,7 @@
     },
     "682634_hitter": {
       "hard_ok": true,
-      "hash": "7ee66ba8fdc0bcfa7e24de4f5f21a413",
+      "hash": "d0ad4aebf80d1fc5d101f92de430e2d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6550,7 +6556,7 @@
     },
     "682982_pitcher": {
       "hard_ok": true,
-      "hash": "58de874280579317bfe99c60b560dbf6",
+      "hash": "26a3503eb58f27fa328daca94aa74f55",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6662,7 +6668,7 @@
     },
     "682995_pitcher": {
       "hard_ok": true,
-      "hash": "08065afcd1cc5fba8a9e29103b613717",
+      "hash": "1cc186bfd8ff0bf788f8a513a54fab2a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6825,7 +6831,7 @@
     },
     "683090_hitter": {
       "hard_ok": true,
-      "hash": "8b8192a5f97ba205863ce634c9413ded",
+      "hash": "82316f76a48221db4b7039d17b0b14f5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6851,7 +6857,7 @@
     },
     "683093_pitcher": {
       "hard_ok": true,
-      "hash": "3f13a5fe9e535b974472c7a195c2a496",
+      "hash": "ec7eccddfec76f0363bec6a79bc5870c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6877,7 +6883,7 @@
     },
     "683100_pitcher": {
       "hard_ok": true,
-      "hash": "17b635ba368ade8ce5ca3f2cfcf13588",
+      "hash": "8a2b5886bd300ad18f01f762fde5d999",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6927,7 +6933,7 @@
     },
     "683235_pitcher": {
       "hard_ok": true,
-      "hash": "1ee3bf706efca93f3ee2d468b4fb8eab",
+      "hash": "32a54996ab53b224e3675b138d7a9419",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6983,7 +6989,7 @@
     },
     "683352_pitcher": {
       "hard_ok": true,
-      "hash": "9e8b7af058cf6bdfae0422340349bebc",
+      "hash": "d0f8511bae6b21a2539979de7b9e16cb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7035,7 +7041,7 @@
     },
     "683363_pitcher": {
       "hard_ok": true,
-      "hash": "9288c6f5ccade1acce990c018f33b4d2",
+      "hash": "efa0994a0fa238193351a5fe006a7f40",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7061,7 +7067,7 @@
     },
     "683454_hitter": {
       "hard_ok": true,
-      "hash": "895e3c70f7a1418feb889013cde7ba19",
+      "hash": "4e2452dc8d5b1283e48258bd8fa7676c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7135,7 +7141,7 @@
     },
     "683679_hitter": {
       "hard_ok": true,
-      "hash": "e7e00cfc020451cfa6c661a395674c7b",
+      "hash": "502d27e45fd99707f5bdcec181968b2e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7286,7 +7292,7 @@
     },
     "684516_pitcher": {
       "hard_ok": true,
-      "hash": "37787bc3124db0171b582872678d98cc",
+      "hash": "ad0893d9b335fa03fe6e446166b029c7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7312,7 +7318,7 @@
     },
     "685326_pitcher": {
       "hard_ok": true,
-      "hash": "db9b8438a42af4969ae47d72b6decb24",
+      "hash": "47f35ddc8406725ec1422bfc3a23570a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7513,17 +7519,19 @@
         "hard_ok": true,
         "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
-        "ok": true,
+        "ok": false,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
         "triple_slash_problems": [],
         "uncalibrated_projection_claims": [],
-        "unsupported_numbers": []
+        "unsupported_numbers": [
+          "94"
+        ]
       },
       "prompt": "31bce485da6cd11f",
       "text": "The contact and walk rates are the problem. Crews makes hard contact, 43.3% hard-hit rate and 90.3 mph average exit velocity, but he chases 32.1% of pitches and whiffs on 29.4%, which is why a .419 xSLG doesn't translate into an OBP that does anything useful. The projection lands at .289 OBP over 450 PA, which is bench-bat territory regardless of the power underneath it. He's a 94th-percentile runner with real defensive value in the outfield, so the floor isn't nothing, but he profiles as a second-division regular at best unless the plate discipline tightens enough to let the exit-velo profile breathe.",
-      "valid": true
+      "valid": false
     },
     "686613_pitcher": {
       "hard_ok": true,
@@ -7616,7 +7624,7 @@
     },
     "686796_pitcher": {
       "hard_ok": true,
-      "hash": "70dc0c096bddf67f58a16ff645feb66b",
+      "hash": "3d0ca4491d824d03ea00894beec44686",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7874,7 +7882,7 @@
     },
     "687238_pitcher": {
       "hard_ok": true,
-      "hash": "124121d23599cf7b9d20ebea84b0b7f3",
+      "hash": "31b37d77ad23def31a1c7446cf2c4436",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7926,7 +7934,7 @@
     },
     "687273_pitcher": {
       "hard_ok": true,
-      "hash": "28b983bd86bbea1d2cb73aff8ca97368",
+      "hash": "90913ba54653d03176b6c1b288171b58",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8231,7 +8239,7 @@
     },
     "687627_hitter": {
       "hard_ok": true,
-      "hash": "fb01dd0218bbfc28f026a955d261bd60",
+      "hash": "5bff492ca740a56b468cb18f10a39eec",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8295,7 +8303,7 @@
     },
     "687749_hitter": {
       "hard_ok": true,
-      "hash": "38b2cf9ab8ac06f2d7a1d502e6240003",
+      "hash": "c32e06e0874ba26b4e5f69f300d6b58a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8321,7 +8329,7 @@
     },
     "687762_pitcher": {
       "hard_ok": true,
-      "hash": "e6377c473332ef40feddf228b2156281",
+      "hash": "fff5b91d372b6a691c566bf083cab853",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8452,7 +8460,7 @@
     },
     "688422_pitcher": {
       "hard_ok": true,
-      "hash": "8f4d7858c45a27b0b8b8d8b8535493e0",
+      "hash": "23970e20ec7b6f5f8d58b8dc79eda341",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8478,7 +8486,7 @@
     },
     "688457_hitter": {
       "hard_ok": true,
-      "hash": "967ca7cfef5705ccfdba4e72f3c9c8d3",
+      "hash": "7f067746f8a70e15629efee234835a19",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8504,7 +8512,7 @@
     },
     "688460_hitter": {
       "hard_ok": true,
-      "hash": "a3a5ea2e2f9798238891a64ee4a43457",
+      "hash": "b3a49bca178b8b1784d21b2272845f90",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8530,7 +8538,7 @@
     },
     "688867_pitcher": {
       "hard_ok": true,
-      "hash": "8d6c9fe24d59336c21c5496073bd3ff5",
+      "hash": "a1ec66cefcf8b5977fe4bee7838ed3a1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8612,7 +8620,7 @@
     },
     "689200_hitter": {
       "hard_ok": true,
-      "hash": "cab45738f32f122b81293a586fa4dcb5",
+      "hash": "08022a6c415dca4bf98f7a913cbad05d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8662,7 +8670,7 @@
     },
     "689275_pitcher": {
       "hard_ok": true,
-      "hash": "57febc023b35e2509a2510ed84285e85",
+      "hash": "5b848fc0175a1f201e63fc233324453e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8726,7 +8734,7 @@
     },
     "689441_pitcher": {
       "hard_ok": true,
-      "hash": "2ae3451c8c7dbfbe3d03880e95123709",
+      "hash": "cf568825ef789410078e8299ec8f31be",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8778,7 +8786,7 @@
     },
     "689818_pitcher": {
       "hard_ok": true,
-      "hash": "68418fbf9717383394c40f46b3aa755d",
+      "hash": "9079e8043214d5864337d168bd1d2e8d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8843,7 +8851,7 @@
     },
     "690667_pitcher": {
       "hard_ok": true,
-      "hash": "56c19ad8747856bf163c5a6442bef6fa",
+      "hash": "788fc1a9783355d22814091ec8e0ae0a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8895,7 +8903,7 @@
     },
     "690961_hitter": {
       "hard_ok": true,
-      "hash": "215a4d2a1da3a40d9853dbacdedb4d96",
+      "hash": "ab41fc2436aef91f6f2e2cbe4122f725",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8921,7 +8929,7 @@
     },
     "690971_hitter": {
       "hard_ok": true,
-      "hash": "08bebc0a5d82514604f1ea552089bb1e",
+      "hash": "4391cd92fd3928d264ed8db4429ab469",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8947,7 +8955,7 @@
     },
     "690978_pitcher": {
       "hard_ok": true,
-      "hash": "c5c818ca9cb75a48660bae7123614764",
+      "hash": "35a9be9dee0ac799cdf1c6560e79233e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8973,7 +8981,7 @@
     },
     "690981_pitcher": {
       "hard_ok": true,
-      "hash": "1e91823d57f9d6cd5a84cd96e0f48270",
+      "hash": "56ae30e29530cf43ad71790d9d436071",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9127,7 +9135,7 @@
     },
     "691001_hitter": {
       "hard_ok": true,
-      "hash": "1ab665a8edb3aff7767fd27f19ae2d66",
+      "hash": "6eab75f412bb5c631babb2b556c61f6f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9153,7 +9161,7 @@
     },
     "691002_hitter": {
       "hard_ok": true,
-      "hash": "8edc796da99ea592df4c338b14702143",
+      "hash": "116b7988ce84d9d36be9ada4218ac920",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9229,7 +9237,7 @@
     },
     "691016_hitter": {
       "hard_ok": true,
-      "hash": "7ac1b011f497275c18fd79725fe8d82e",
+      "hash": "8421f8c24f9ee6c34f5e4b5e8c85ab84",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9255,7 +9263,7 @@
     },
     "691021_hitter": {
       "hard_ok": true,
-      "hash": "a6ae4f185a147540330999b2c80eedb6",
+      "hash": "e14dc55457219cafcff1ecffbe0adb6c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9305,7 +9313,7 @@
     },
     "691024_hitter": {
       "hard_ok": true,
-      "hash": "9f76db4cf47287498f65980d8659d530",
+      "hash": "f7351d241a5efb6bbb9c28c41fbce5a1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9393,7 +9401,7 @@
     },
     "691181_hitter": {
       "hard_ok": true,
-      "hash": "b9547683045aefc76143ba06466be480",
+      "hash": "80672f7c68b457c4591b133039313ff0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9419,7 +9427,7 @@
     },
     "691251_pitcher": {
       "hard_ok": true,
-      "hash": "b7e98e772e6151a7434e88db08add324",
+      "hash": "fee830a7ee9674e9b0a28d832ea5cec3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9462,7 +9470,7 @@
     },
     "691277_hitter": {
       "hard_ok": true,
-      "hash": "89863f2c4aaa7b180e2e845d52979263",
+      "hash": "54dd3bf721252de978eb0b6a8b034600",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9488,7 +9496,7 @@
     },
     "691292_hitter": {
       "hard_ok": true,
-      "hash": "e94e003787d933718d76c87c39a47579",
+      "hash": "8adc19075f035f7e9d31876aacf3f7c5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9529,7 +9537,7 @@
     },
     "691369_hitter": {
       "hard_ok": true,
-      "hash": "0e9a96d40ba9be0e00db18670f92aa74",
+      "hash": "c7712271b7a38d9e09a60e2e0b352be2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9555,7 +9563,7 @@
     },
     "691373_hitter": {
       "hard_ok": true,
-      "hash": "9fe762454606c04c2da4669ddeaf0f4d",
+      "hash": "d97d74b539dedac8684a79d2ed716c6c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9581,7 +9589,7 @@
     },
     "691384_pitcher": {
       "hard_ok": true,
-      "hash": "ff27d2c96a3c76c7d583f378101e82c0",
+      "hash": "fc45cbbfb95c55d3910277fceb46ef26",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9659,7 +9667,7 @@
     },
     "691441_pitcher": {
       "hard_ok": true,
-      "hash": "dc85c76fc70bcf39a939a6513d11351b",
+      "hash": "349a0375fc7d70d0a8afe77520a78046",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9761,7 +9769,7 @@
     },
     "691620_hitter": {
       "hard_ok": true,
-      "hash": "35e7312f0ba1c6aa2373adfcf68f00e6",
+      "hash": "208082b75752f834b54f210f7a50872e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9802,7 +9810,7 @@
     },
     "691641_pitcher": {
       "hard_ok": true,
-      "hash": "aa64ac70d55c2a5f3fdb9d2165954702",
+      "hash": "d77a637c3d0a6125c9b46f41e5f51334",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9955,7 +9963,7 @@
     },
     "691739_pitcher": {
       "hard_ok": true,
-      "hash": "81454f7e37037e5143edc5382dbe5e66",
+      "hash": "75b248d87f9ee95957736ca1f72278a1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9981,7 +9989,7 @@
     },
     "691765_pitcher": {
       "hard_ok": true,
-      "hash": "a6845ad61ed0a3d7541d38b8b4f5125a",
+      "hash": "7a6e24232a0d18272316d7b8bb7b611f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10007,7 +10015,7 @@
     },
     "691775_hitter": {
       "hard_ok": true,
-      "hash": "33878aa25c5f1fac165d0aa787f301c8",
+      "hash": "2c6130ef4d14eef8286924f59f614ed8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10033,7 +10041,7 @@
     },
     "691776_pitcher": {
       "hard_ok": true,
-      "hash": "136c2fdb45770ba7a4b20c53f603a44a",
+      "hash": "3562e1a7efb8c2b0c63d661981e0cd42",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10100,7 +10108,7 @@
     },
     "691786_pitcher": {
       "hard_ok": true,
-      "hash": "f25897e36c8943aa7d26d868b1cf02e5",
+      "hash": "ed11fa920e749e664b77f136e3a44b05",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10126,7 +10134,7 @@
     },
     "691789_hitter": {
       "hard_ok": true,
-      "hash": "35ebcf33807d9a516c5f45a934af8543",
+      "hash": "a501b487f6ba9ded2233d1af5b374094",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10152,7 +10160,7 @@
     },
     "691795_pitcher": {
       "hard_ok": true,
-      "hash": "aa77cce989162ed6e1c2fe28cd3fcda9",
+      "hash": "91acb0c312a85f88bc1517c3e7484b5b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10230,7 +10238,7 @@
     },
     "691858_hitter": {
       "hard_ok": true,
-      "hash": "190b2962af928fdd37dda5ad27f35bb2",
+      "hash": "4eca2dc79763cec9f40cd778824a0ac1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10256,7 +10264,7 @@
     },
     "691907_hitter": {
       "hard_ok": true,
-      "hash": "eb66420de4722c061cd1b59b74fbe27c",
+      "hash": "5ae410eece0d731abbd6c38bf5c592ee",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10311,7 +10319,7 @@
     },
     "691946_pitcher": {
       "hard_ok": true,
-      "hash": "7b464339841786fd82b0f82ab38d56d8",
+      "hash": "0115a24d958e2069a19c58560b25275f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10363,7 +10371,7 @@
     },
     "692150_hitter": {
       "hard_ok": true,
-      "hash": "4341d45af61e50bf1b62107d51ceea8f",
+      "hash": "6bdd449293b92a35fa6425d381ead79f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10462,7 +10470,7 @@
     },
     "692371_hitter": {
       "hard_ok": true,
-      "hash": "5de711a69cf9ec643f56a836e96b3292",
+      "hash": "cf480b0da35fd4e9116d1839a80f6c05",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10514,7 +10522,7 @@
     },
     "692416_hitter": {
       "hard_ok": true,
-      "hash": "b8b869635a094f59fa476e3ef4a7aaae",
+      "hash": "f711ad3eb18802184765823008ce871d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10866,7 +10874,7 @@
     },
     "694183_hitter": {
       "hard_ok": true,
-      "hash": "eece703bc350bccbe79171caa4510121",
+      "hash": "503f387db9824614639f82dff3eef6e2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10916,7 +10924,7 @@
     },
     "694196_hitter": {
       "hard_ok": true,
-      "hash": "27c9953acc7476d38800311db13623e2",
+      "hash": "809a7833e429ba5250de26ae917f061d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10942,7 +10950,7 @@
     },
     "694197_hitter": {
       "hard_ok": true,
-      "hash": "78de72db95ca008fa0d0d6a01f5d9242",
+      "hash": "7fe7f8c85b96cebe07f8770b7916c179",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11013,7 +11021,7 @@
     },
     "694211_hitter": {
       "hard_ok": true,
-      "hash": "43e917f3170cc382da64166672d7d4bd",
+      "hash": "5510df4eaea4bfc96158f16598e21675",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11065,7 +11073,7 @@
     },
     "694214_hitter": {
       "hard_ok": true,
-      "hash": "f8aa1bb192f784752c280f91414bb25b",
+      "hash": "21f0174457ce6e0d132e0b2ad42401d7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11091,7 +11099,7 @@
     },
     "694224_hitter": {
       "hard_ok": true,
-      "hash": "ee0ad8878faa29847e6f38f6733f2a23",
+      "hash": "a4c7038ccaba25c047d51ced6342fd8a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11117,7 +11125,7 @@
     },
     "694230_hitter": {
       "hard_ok": true,
-      "hash": "7fe51fd6d6e07edeaf41676341fe9331",
+      "hash": "4a292872a7115107d93cc2eabc67a092",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11193,7 +11201,7 @@
     },
     "694345_pitcher": {
       "hard_ok": true,
-      "hash": "ab7e71fb24bf3ca03687bd69d27cf783",
+      "hash": "57855a8505c2d098bcde4f9cc2d210ed",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11219,7 +11227,7 @@
     },
     "694346_pitcher": {
       "hard_ok": true,
-      "hash": "f1a09524c0336e448e58ec5dff0b8e52",
+      "hash": "090667644ba0699745279a477cfa6d96",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11245,7 +11253,7 @@
     },
     "694351_hitter": {
       "hard_ok": true,
-      "hash": "b1d93b63efdb3a6f596141b9efe94cbc",
+      "hash": "d5edbdadb23a02716a78be96c35e6237",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11297,7 +11305,7 @@
     },
     "694358_pitcher": {
       "hard_ok": true,
-      "hash": "e584eb9ed72fd67d8a8e7de95d805e9b",
+      "hash": "cc17637e78435cbd28d5878d4cbf8b10",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11323,7 +11331,7 @@
     },
     "694370_pitcher": {
       "hard_ok": true,
-      "hash": "36f12114fb621ac6454a2e44a88f0d03",
+      "hash": "d08d802f17714592aefa98915eb91b4b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11349,7 +11357,7 @@
     },
     "694371_hitter": {
       "hard_ok": true,
-      "hash": "cd92b7ae2a383eb4e808e2210abbb144",
+      "hash": "9a0a695e0d33c195668cb58b1337b252",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11422,7 +11430,7 @@
     },
     "694385_hitter": {
       "hard_ok": true,
-      "hash": "e2ad338baf37cebaf3378fdcebfc081f",
+      "hash": "dca443893f1065a20ff9a7508993fb37",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11474,7 +11482,7 @@
     },
     "694395_pitcher": {
       "hard_ok": true,
-      "hash": "2bfa5ef7f328df5dae65eea5689ad4d0",
+      "hash": "bb5559ec9374bf13e1027b6b4aa5c38e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11500,7 +11508,7 @@
     },
     "694397_pitcher": {
       "hard_ok": true,
-      "hash": "be58170780babe194bd88ce1711a252a",
+      "hash": "babc404995e479ae75d1149ca4d414e7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11526,7 +11534,7 @@
     },
     "694410_hitter": {
       "hard_ok": true,
-      "hash": "662f4b26c8cccc85054edf1c437ba2ca",
+      "hash": "0bfa842c27ed422cb3ae03751dc0014d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11576,7 +11584,7 @@
     },
     "694494_pitcher": {
       "hard_ok": true,
-      "hash": "58f35588b5d49557b6d846dd024291d6",
+      "hash": "a06f3f4115df18a78088ff25bf9ca2f0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11626,7 +11634,7 @@
     },
     "694514_hitter": {
       "hard_ok": true,
-      "hash": "55f4b54baa4f636aa4523f7f6c971bc2",
+      "hash": "c9425108efc5eb335d1f793b82502de4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11652,7 +11660,7 @@
     },
     "694545_pitcher": {
       "hard_ok": true,
-      "hash": "e3701a27d9c8844ab49db731523ae53f",
+      "hash": "287a97bb82c08a0f442db33700d4ae27",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11693,7 +11701,7 @@
     },
     "694580_hitter": {
       "hard_ok": true,
-      "hash": "4412db339cfdd4d1e77c5ea9739de617",
+      "hash": "800d7ce8cc2ee4d7b309a68e15074df1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11758,7 +11766,7 @@
     },
     "694673_hitter": {
       "hard_ok": true,
-      "hash": "a9538398ef995208994ae310e2c30b26",
+      "hash": "101dc46f4c0e9d64e9a6061c304a1427",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11784,7 +11792,7 @@
     },
     "694680_pitcher": {
       "hard_ok": true,
-      "hash": "d4819cab90a89c6ed99f3b5e99668d97",
+      "hash": "29860bf4a409da4518655788bd510c1f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11810,7 +11818,7 @@
     },
     "694696_pitcher": {
       "hard_ok": true,
-      "hash": "45ddf07de8712198eb918fb891e163aa",
+      "hash": "b106aa7fc90df8f4669da1b39151bbea",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11860,7 +11868,7 @@
     },
     "694749_hitter": {
       "hard_ok": true,
-      "hash": "716d89382e5818b2cca554f470a9fec2",
+      "hash": "8af603249f39634319ef514df046ac36",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11886,7 +11894,7 @@
     },
     "694753_pitcher": {
       "hard_ok": true,
-      "hash": "184b765a71828393581d8ff5cfb63145",
+      "hash": "30e4ba054089617f9b1c60961c6559cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11912,7 +11920,7 @@
     },
     "694754_hitter": {
       "hard_ok": true,
-      "hash": "ecc56a6effb9970442727b358f3c0751",
+      "hash": "78900946c19fbfe8e50332848d9fb3ba",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11953,7 +11961,7 @@
     },
     "694805_pitcher": {
       "hard_ok": true,
-      "hash": "dba7e74cca347be078eb2a16652d1e63",
+      "hash": "bfceedafe99bb5c0c48c82ec68fd6f91",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11979,7 +11987,7 @@
     },
     "694815_hitter": {
       "hard_ok": true,
-      "hash": "3c4afcbbcfe2dbb64406eb5b91a2e6ea",
+      "hash": "6ed888c77a9ac89f87ff59dfca85130f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12005,7 +12013,7 @@
     },
     "694818_pitcher": {
       "hard_ok": true,
-      "hash": "093f9be15721f7830cb0680d00c8de28",
+      "hash": "cec036cdcc4e4043be1bfed34ed9bf9f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12078,7 +12086,7 @@
     },
     "694876_hitter": {
       "hard_ok": true,
-      "hash": "1d567ef30256f67cc67e7ceba4066cae",
+      "hash": "41f1a3dbb7d0a2702a12a1657916d565",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12130,7 +12138,7 @@
     },
     "694966_hitter": {
       "hard_ok": true,
-      "hash": "46efcdc98551be921be9a8dee4d959a6",
+      "hash": "29b85fcdc17cc495a4ad00f737a9f7a5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12156,7 +12164,7 @@
     },
     "694968_pitcher": {
       "hard_ok": true,
-      "hash": "79ce9340158f45abaeef6d65b8a402b3",
+      "hash": "dd2da6f71b64984e83a6d0712b19322d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12206,7 +12214,7 @@
     },
     "694991_hitter": {
       "hard_ok": true,
-      "hash": "ded856b42e030fe5c9bc9544567625cf",
+      "hash": "a734bd81d74c0149676056d49ee6e799",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12232,7 +12240,7 @@
     },
     "695033_pitcher": {
       "hard_ok": true,
-      "hash": "e3720f571504904420823d7cb96317e7",
+      "hash": "02841882af2df42b7ee8636313d2fbe8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12258,7 +12266,7 @@
     },
     "695034_pitcher": {
       "hard_ok": true,
-      "hash": "fef9af8dea066678bda29bbe363dee89",
+      "hash": "196cfca4421719cd8690f7ec646c1461",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12284,7 +12292,7 @@
     },
     "695065_pitcher": {
       "hard_ok": true,
-      "hash": "0354cdb4bf615a76261f33c4f92ca376",
+      "hash": "2c4a386e80d238c602a5a499371aac57",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12360,7 +12368,7 @@
     },
     "695372_hitter": {
       "hard_ok": true,
-      "hash": "1a99553f583a7579dd7cc163e70cad8d",
+      "hash": "cfc0dc573f2fe138ca6334b959509a35",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12386,7 +12394,7 @@
     },
     "695481_hitter": {
       "hard_ok": true,
-      "hash": "f4a8fb0bc248d244adb75c3357633627",
+      "hash": "3faff463eeed4b4e892098bde8cda481",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12453,7 +12461,7 @@
     },
     "695491_hitter": {
       "hard_ok": true,
-      "hash": "1fbfbb37a7c067d88a8c61b67f968ca9",
+      "hash": "078a8a3c301de706774bcb8d801aa1cd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12479,7 +12487,7 @@
     },
     "695501_hitter": {
       "hard_ok": true,
-      "hash": "aecb20ba279d118d72895d62f7c2ee19",
+      "hash": "e0c5ee6cdfc0af37ed8475582a853678",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12557,7 +12565,7 @@
     },
     "695508_hitter": {
       "hard_ok": true,
-      "hash": "8fe58d32c081444adb9aeaf8607e4e14",
+      "hash": "255fa0fb76924edfb10a4279a6921a77",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12583,7 +12591,7 @@
     },
     "695521_hitter": {
       "hard_ok": true,
-      "hash": "b45553dddd1e452efe182901f8c0fd07",
+      "hash": "cca70079e817a7532550f936df6dfd37",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12609,7 +12617,7 @@
     },
     "695534_pitcher": {
       "hard_ok": true,
-      "hash": "ff3e7f22f8f593dfbc9c49306c837948",
+      "hash": "6ce861d2548ab461b2e782a47039ef02",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12635,7 +12643,7 @@
     },
     "695558_pitcher": {
       "hard_ok": true,
-      "hash": "dea6aae49677f15beced9b9aedd3cc4d",
+      "hash": "69cf7acd81c78a6f7afd629f0a66ba11",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12737,7 +12745,7 @@
     },
     "695620_pitcher": {
       "hard_ok": true,
-      "hash": "8bd184693b4784bc97db592f35cdeec7",
+      "hash": "2013ad11f63281cc2ba6aefeb5f9fd21",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12778,7 +12786,7 @@
     },
     "695653_hitter": {
       "hard_ok": true,
-      "hash": "c21250a1d4e01503f5fd8c3701574b8f",
+      "hash": "faeae506a1b15172bc0cfaef0cb148e8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12830,7 +12838,7 @@
     },
     "695667_pitcher": {
       "hard_ok": true,
-      "hash": "4777bd74648d9a866488a8bdfdea5aeb",
+      "hash": "e7da952ba34d4b2bd3792b8fade37dad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12856,7 +12864,7 @@
     },
     "695670_hitter": {
       "hard_ok": true,
-      "hash": "39358299e3083fb3c06337a91d5b1011",
+      "hash": "0ca6dd29f608d650aafadc96b921d0fb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12882,7 +12890,7 @@
     },
     "695684_pitcher": {
       "hard_ok": true,
-      "hash": "6d2b99b6b1add7a3b0b81bd648d819ef",
+      "hash": "38d0004cb50a571c9e7d545bf3206a2e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12908,7 +12916,7 @@
     },
     "695692_hitter": {
       "hard_ok": true,
-      "hash": "68f911e723464891c68a7ec0da01771a",
+      "hash": "7634f1691b295ab3900665701395a045",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12977,7 +12985,7 @@
     },
     "695721_pitcher": {
       "hard_ok": true,
-      "hash": "3fb92d13e034b90d702dbcb5668b643c",
+      "hash": "0665c2ae66a8b0a3fb447bdb8085bdcb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13003,7 +13011,7 @@
     },
     "695722_hitter": {
       "hard_ok": true,
-      "hash": "e4b7dd9d202f06889cc5675974f7ab15",
+      "hash": "19ffa2ba22727ca706f90c63494d856c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13081,7 +13089,7 @@
     },
     "695735_hitter": {
       "hard_ok": true,
-      "hash": "204e93034ba4adc95b76ed03c837196f",
+      "hash": "3d95be7e69f2aa000a66729c80d7986b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13107,7 +13115,7 @@
     },
     "695741_pitcher": {
       "hard_ok": true,
-      "hash": "c2ce3effcfa42a7a90f8e0410041294f",
+      "hash": "21af5c0572cc52c7f4bccc89eedd8693",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13133,7 +13141,7 @@
     },
     "695761_pitcher": {
       "hard_ok": true,
-      "hash": "c09e2d4658e872e13db88952f4ed4c77",
+      "hash": "d69b9f39940bb7b21b638ef6ad95025a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13184,7 +13192,7 @@
     },
     "695766_pitcher": {
       "hard_ok": true,
-      "hash": "72cee2c90e981508987d03be7c67d8f9",
+      "hash": "283bc6ea0af43b07454e4a8cbcd56409",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13210,7 +13218,7 @@
     },
     "695776_pitcher": {
       "hard_ok": true,
-      "hash": "b6cd382a85c4a6fbed74a4ad515b4569",
+      "hash": "aae607102fb45517b4a3e29f538460cb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13236,7 +13244,7 @@
     },
     "695778_pitcher": {
       "hard_ok": true,
-      "hash": "af094f76f45e00231f77db7284f78e8e",
+      "hash": "76487ee68b81c80bfb3d03742e370e11",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13262,7 +13270,7 @@
     },
     "695780_hitter": {
       "hard_ok": true,
-      "hash": "e9d4edfd041c233309580edae09873a4",
+      "hash": "5fb215f4b1015d6a8302064d6f2066f5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13326,7 +13334,7 @@
     },
     "696070_pitcher": {
       "hard_ok": true,
-      "hash": "9da27eb350d6bb7eb841a35fa06df2af",
+      "hash": "18e18b7d7d8135218700a0ff5fb24700",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13376,7 +13384,7 @@
     },
     "696135_hitter": {
       "hard_ok": true,
-      "hash": "343f9f3332fb702ba1c8efa0806e2b7f",
+      "hash": "00ce24218664561a54fdb21e9212901a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13402,7 +13410,7 @@
     },
     "696143_pitcher": {
       "hard_ok": true,
-      "hash": "b8f90a04850413c669f56c3df9bec9e8",
+      "hash": "a7f904d7dd94cd26a44c101646b3c868",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13428,7 +13436,7 @@
     },
     "696145_hitter": {
       "hard_ok": true,
-      "hash": "e863b37869b179f15e1bad5232c3235a",
+      "hash": "a043ef5f030ba966706db2663a02de5c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13454,7 +13462,7 @@
     },
     "696146_pitcher": {
       "hard_ok": true,
-      "hash": "69f27b381e247deed0b7281e90856e3b",
+      "hash": "850c9ec3209c2627455fa9d797acef34",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13575,7 +13583,7 @@
     },
     "696292_pitcher": {
       "hard_ok": true,
-      "hash": "4a8293b1fbbb97e48540941a109068de",
+      "hash": "089f13df1c3b2d538a39bb8d63eca566",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13601,7 +13609,7 @@
     },
     "696486_hitter": {
       "hard_ok": true,
-      "hash": "e1835350c97d41b2d7797fc83aed53b2",
+      "hash": "43c0640b30608b0dc3ec78bde8d85863",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13691,7 +13699,7 @@
     },
     "699008_pitcher": {
       "hard_ok": true,
-      "hash": "996874cd86930ada18dddefd6b3a3a15",
+      "hash": "97e3fab7a70f80d2991f49e59aa3ff5a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13717,7 +13725,7 @@
     },
     "699013_hitter": {
       "hard_ok": true,
-      "hash": "3da32d38d31f05d06ff3edc5d6ac2166",
+      "hash": "be70deb7fdef2c870b221adf9eb32170",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13743,7 +13751,7 @@
     },
     "699024_hitter": {
       "hard_ok": true,
-      "hash": "08ad35c3de586a7321a5cde1253dfa6b",
+      "hash": "56503fac8434bcf3c4aadd1cf66f0eac",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13769,7 +13777,7 @@
     },
     "699043_hitter": {
       "hard_ok": true,
-      "hash": "58587d3457e9b78e79a7b50edd93173f",
+      "hash": "46a0d8a383070f3411f0379fefb663a9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13795,7 +13803,7 @@
     },
     "699044_pitcher": {
       "hard_ok": true,
-      "hash": "fa732a03d487f9be7dfaae76e5dc0861",
+      "hash": "8af34ed5ef75d8fc51fe177025cef137",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13821,7 +13829,7 @@
     },
     "699071_pitcher": {
       "hard_ok": true,
-      "hash": "5b9d1d330115ee2baddaf9e848c82ead",
+      "hash": "da2114d8991610c7fd7d1c1cf127b671",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13847,7 +13855,7 @@
     },
     "699073_hitter": {
       "hard_ok": true,
-      "hash": "8b1d6b623272cacd7282cd192550b2e7",
+      "hash": "75ef3d471dda095287c5e1fdf439e355",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13890,7 +13898,7 @@
     },
     "699115_hitter": {
       "hard_ok": true,
-      "hash": "381cb305730f051e99993a8d400f4d6a",
+      "hash": "623111c8760eea3b81b2fa51b02c1b45",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13916,7 +13924,7 @@
     },
     "699130_hitter": {
       "hard_ok": true,
-      "hash": "604202e0054b80a05e46e067cbf45ff2",
+      "hash": "e5d81d02029ba8b82414fb6b8313d7d6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13966,7 +13974,7 @@
     },
     "699151_pitcher": {
       "hard_ok": true,
-      "hash": "f1dd3f18af8909f0ce9e3e45fe3e177d",
+      "hash": "97310914c99587b08101fa17c3114a58",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13992,7 +14000,7 @@
     },
     "699232_hitter": {
       "hard_ok": true,
-      "hash": "6f7360923b3ab1c1b1255a1cf8c1b484",
+      "hash": "0f59afd3e3b5ce931be772e41a42c07d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14120,7 +14128,7 @@
     },
     "699712_hitter": {
       "hard_ok": true,
-      "hash": "b945fbb839c0ca2a267293ce7f360c39",
+      "hash": "3b287b00a070f5cd6812ff390a6a6b6d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14146,7 +14154,7 @@
     },
     "699944_pitcher": {
       "hard_ok": true,
-      "hash": "b839010bf2ea1c6fdf07a7740c8883d1",
+      "hash": "c741e04f9deed31cac827da2d61d6974",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14172,7 +14180,7 @@
     },
     "700072_pitcher": {
       "hard_ok": true,
-      "hash": "51989b8738fcea6123a54204ffb640ae",
+      "hash": "3bf12d222758ffb089513ca7145a658e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14198,7 +14206,7 @@
     },
     "700164_hitter": {
       "hard_ok": true,
-      "hash": "b913eee51eac14f19e4a95d7db642e52",
+      "hash": "19ac7dee4fb84ee69f5b3739abd217f8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14367,7 +14375,7 @@
     },
     "700280_pitcher": {
       "hard_ok": true,
-      "hash": "63e18d11c1c61f5baeb1e0e0b49ae230",
+      "hash": "d7673035a29fef557fd75539960635a6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14519,7 +14527,7 @@
     },
     "700924_pitcher": {
       "hard_ok": true,
-      "hash": "96e183a1328fd0bfdd5f1b146a2f8ee1",
+      "hash": "7c12144dbebbc52d3d58e22b201d7d42",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14601,7 +14609,7 @@
     },
     "701178_pitcher": {
       "hard_ok": true,
-      "hash": "3a9b2b0adf1d2994610d81f1b07ecd8c",
+      "hash": "7e15be608151add1364d3d52c8d1c83e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14642,7 +14650,7 @@
     },
     "701328_pitcher": {
       "hard_ok": true,
-      "hash": "f07634a2d2a4dce86d4d0122939fac95",
+      "hash": "ddc8ed25a2bc06b4b75554846301550d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14720,7 +14728,7 @@
     },
     "701339_hitter": {
       "hard_ok": true,
-      "hash": "ca14fca8588686146ada5a243e25f4ed",
+      "hash": "3dc7e25406aa201c4e460ea13fba0201",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14789,7 +14797,7 @@
     },
     "701364_pitcher": {
       "hard_ok": true,
-      "hash": "640efd778244706df980ce6c70df37f1",
+      "hash": "0d2842233499e77a03ee902615e967f0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14815,7 +14823,7 @@
     },
     "701388_pitcher": {
       "hard_ok": true,
-      "hash": "528358d5226719b8bfbe4698a95c30eb",
+      "hash": "5f64f0f99ed9c50e5d65bda9953417bd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14860,7 +14868,7 @@
     },
     "701394_hitter": {
       "hard_ok": true,
-      "hash": "3ba4e673c24528d178f311a009e1963c",
+      "hash": "45cd3e59b59c524edd7b44ee5e9b8373",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14910,7 +14918,7 @@
     },
     "701411_pitcher": {
       "hard_ok": true,
-      "hash": "bd7661b0fd3974a803e76c9a69cb993e",
+      "hash": "0565ac5c4b0906b80a86371422786677",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14936,7 +14944,7 @@
     },
     "701480_pitcher": {
       "hard_ok": true,
-      "hash": "92728073f3307058d1016c6b25ed72fd",
+      "hash": "540174daf6b4223bf2565d66540ec44b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14986,7 +14994,7 @@
     },
     "701527_hitter": {
       "hard_ok": true,
-      "hash": "ec3c7774fc54b690e572cd2ea91b6b00",
+      "hash": "798806134efa82e4098715178eaaff33",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15060,7 +15068,7 @@
     },
     "701590_pitcher": {
       "hard_ok": true,
-      "hash": "8cc3c13674285a352b1321a3894ecf52",
+      "hash": "a9c99f327214ce2e6489ff1e801b1b7a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15086,7 +15094,7 @@
     },
     "701616_hitter": {
       "hard_ok": true,
-      "hash": "f6ad7ca9a72d7ad7dd852628d5cd5d1c",
+      "hash": "0a4b5587104c450e2a52bc9620a61999",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15112,7 +15120,7 @@
     },
     "701649_hitter": {
       "hard_ok": true,
-      "hash": "5cd4a29ebc120c5cead25296357200ea",
+      "hash": "7b905533d65ffa796e29d028fa8057cf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15241,7 +15249,7 @@
     },
     "701717_pitcher": {
       "hard_ok": true,
-      "hash": "3a6a27375cf0f9bae93f3cb5ea8611e2",
+      "hash": "690cfb5ff9b957e6f22ec3574587dd99",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15307,7 +15315,7 @@
     },
     "701771_hitter": {
       "hard_ok": true,
-      "hash": "d2300eacb558cbde671f941491a073b5",
+      "hash": "40125ca3479d973c4e210d2115fbeeb3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15333,7 +15341,7 @@
     },
     "701778_hitter": {
       "hard_ok": true,
-      "hash": "ba1c0a67bcf41b73b13e661f5c3a76ef",
+      "hash": "a6136ad4fe2e33cf302c535f24255168",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15374,7 +15382,7 @@
     },
     "701785_hitter": {
       "hard_ok": true,
-      "hash": "58e11ac1c9b969a8305a93c76fc0de3f",
+      "hash": "cdf1cc3492e0235b4dfd7430144dec03",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15400,7 +15408,7 @@
     },
     "701795_pitcher": {
       "hard_ok": true,
-      "hash": "9882bf990a8d60846b3bd0d2d3627bfd",
+      "hash": "6705b7a1874032f657aa76d8c9ef7305",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15450,7 +15458,7 @@
     },
     "701831_hitter": {
       "hard_ok": true,
-      "hash": "beba698cf9a5d570762fba900cde6940",
+      "hash": "df81988d3d28ea86181e9f5b3da57248",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15502,7 +15510,7 @@
     },
     "701906_hitter": {
       "hard_ok": true,
-      "hash": "d23d6370e904d35bcf1a3391d0c26357",
+      "hash": "ec138b76ddccb209cecd3290371faf2e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15528,7 +15536,7 @@
     },
     "701908_pitcher": {
       "hard_ok": true,
-      "hash": "792ef894e4c4083c6a145515d7288616",
+      "hash": "b1b882f5a77174d57180fbca0625148f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15652,7 +15660,7 @@
     },
     "702253_hitter": {
       "hard_ok": true,
-      "hash": "9e7dead27c27c84da91adb7c59784d2c",
+      "hash": "46dd9cff7fdffd4293025634064d784a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15678,7 +15686,7 @@
     },
     "702255_pitcher": {
       "hard_ok": true,
-      "hash": "a9d0912b0a7b09465c6ba915df2a33aa",
+      "hash": "5c8a876c4775933eec92db5cc58f1bad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15704,7 +15712,7 @@
     },
     "702258_hitter": {
       "hard_ok": true,
-      "hash": "da1809917504906efcde423ae2b995c7",
+      "hash": "9c37994eb220d3583d7dad99e3f67264",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15730,7 +15738,7 @@
     },
     "702261_hitter": {
       "hard_ok": true,
-      "hash": "23f9c6f43d0a431712449f1702513892",
+      "hash": "9f6a7bd85f9a6efe29f6656520b31b6f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15770,7 +15778,7 @@
     },
     "702264_hitter": {
       "hard_ok": true,
-      "hash": "c19247fda4401033a45e937da2a1acd5",
+      "hash": "8c7bde7a58cffc44fae4e05a97ccef13",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15835,7 +15843,7 @@
     },
     "702271_pitcher": {
       "hard_ok": true,
-      "hash": "b1b53786a900ac7915da374219922b74",
+      "hash": "ea418d23efd45e0505ee4dfb4a4c6c80",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15876,7 +15884,7 @@
     },
     "702274_pitcher": {
       "hard_ok": true,
-      "hash": "747c0af2d50b9587531c174b66e12775",
+      "hash": "f1aebc965f0f5244107144563a075ef5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15926,7 +15934,7 @@
     },
     "702281_pitcher": {
       "hard_ok": true,
-      "hash": "040cbf678edbc2da47ebe2c6aeb30066",
+      "hash": "f09b859de1103cf706e400fc124940bd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16005,7 +16013,7 @@
     },
     "702302_hitter": {
       "hard_ok": true,
-      "hash": "12ccb6568c03eb925b2342dfab4e8525",
+      "hash": "5a928b86bdb54c306d80b7b8bfb819cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16057,7 +16065,7 @@
     },
     "702419_pitcher": {
       "hard_ok": true,
-      "hash": "1f8bbbc50e546567a459379aeec783d7",
+      "hash": "dd241423560c6ddc53c5c95015428d93",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16083,7 +16091,7 @@
     },
     "702436_pitcher": {
       "hard_ok": true,
-      "hash": "ab08be408b00e88665b3dd94a4973ded",
+      "hash": "38e0338650f06152338311633cc65bcd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16124,7 +16132,7 @@
     },
     "702484_pitcher": {
       "hard_ok": true,
-      "hash": "65246ea2da5e3d6439e1e27bded881a8",
+      "hash": "a0d5c7a0852f960752b7f40f87a1f4ef",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16164,7 +16172,7 @@
     },
     "702491_hitter": {
       "hard_ok": true,
-      "hash": "545910679476f68207ffba1ce5a0c97d",
+      "hash": "d29621ab1c3b90efee84db59c23ac426",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16190,7 +16198,7 @@
     },
     "702505_pitcher": {
       "hard_ok": true,
-      "hash": "2a02551b887249adf4031759e50d57c0",
+      "hash": "0e0294df85509cc7b42cd563b150e943",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16231,7 +16239,7 @@
     },
     "702518_hitter": {
       "hard_ok": true,
-      "hash": "c6f9e45fa3d3964d5773d117e3311363",
+      "hash": "ff293a9367c685436b58a038d5764de8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16271,7 +16279,7 @@
     },
     "702539_pitcher": {
       "hard_ok": true,
-      "hash": "a7d8dd5e3744fe6f6d2908a8dfe1d733",
+      "hash": "c9b24605972ecc688326de83fd0539d6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16297,7 +16305,7 @@
     },
     "702540_hitter": {
       "hard_ok": true,
-      "hash": "3a9a77f398a1e3017fca2d365ab1b494",
+      "hash": "71630d842d05c5562ef8f087f6b9445d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16323,7 +16331,7 @@
     },
     "702544_hitter": {
       "hard_ok": true,
-      "hash": "693d58b65aa6ab581b17a8aaae6e668f",
+      "hash": "74c16a38f711a1c1e76cad375741f775",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16363,7 +16371,7 @@
     },
     "702556_hitter": {
       "hard_ok": true,
-      "hash": "16ccff0e0c30cac1752707a70c240222",
+      "hash": "e748b36c2591146bd8b40a67a7010cab",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16389,7 +16397,7 @@
     },
     "702566_pitcher": {
       "hard_ok": true,
-      "hash": "31649dc38e72ea2a19cfaf82375123cf",
+      "hash": "d9bfe3ab5878cde1af8bb7c0820b1d95",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16415,7 +16423,7 @@
     },
     "702571_pitcher": {
       "hard_ok": true,
-      "hash": "362212f9984b3b6422e4ce356871ef3c",
+      "hash": "8c153d8300435581bf86a82a6b1cef43",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16470,7 +16478,7 @@
     },
     "702610_hitter": {
       "hard_ok": true,
-      "hash": "ffc012adc5cefe4b08ba1d23bf1d9434",
+      "hash": "5e50487f829feb5cc0394783291cb30b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16520,7 +16528,7 @@
     },
     "702619_hitter": {
       "hard_ok": true,
-      "hash": "8d5e1cad4cfe7e429ee4885915d39e0f",
+      "hash": "e152275b3a8b80192d433319a00c94e5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16561,7 +16569,7 @@
     },
     "702650_pitcher": {
       "hard_ok": true,
-      "hash": "6a455f3dde4b71554c84a5eae16ab8a2",
+      "hash": "530c0259f8d5b291745b4e77fa3cad75",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16587,7 +16595,7 @@
     },
     "702652_hitter": {
       "hard_ok": true,
-      "hash": "0d2c4a5369d2c1c7d78b33b8cf078fdd",
+      "hash": "9d9429fc1e91cd1cceab5c2a0ea20dad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16613,7 +16621,7 @@
     },
     "702662_hitter": {
       "hard_ok": true,
-      "hash": "d7f432646251b97c5d22580233652ac8",
+      "hash": "2ec17f5c81af6eee22220b94abef1aa2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16639,7 +16647,7 @@
     },
     "702674_pitcher": {
       "hard_ok": true,
-      "hash": "f4206dcfe72d3ff96b844fc062e96029",
+      "hash": "c3a06a1bf5e1ea7b394f96e084d7260e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16665,7 +16673,7 @@
     },
     "702679_hitter": {
       "hard_ok": true,
-      "hash": "b1d3c25a0231264a33723799432098e8",
+      "hash": "bcb56116bcb92ef4989d02a95e5d64b4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16691,7 +16699,7 @@
     },
     "702693_hitter": {
       "hard_ok": true,
-      "hash": "7b2fa3aa8da492cbd1e0456dc30e25fb",
+      "hash": "857ae950f42e348595cbfde287405d7b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16732,7 +16740,7 @@
     },
     "702726_hitter": {
       "hard_ok": true,
-      "hash": "c47dfa98fe0362abfc554a5402102b0d",
+      "hash": "2a653acb25e4de5209b7d261692d8328",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16773,7 +16781,7 @@
     },
     "702882_pitcher": {
       "hard_ok": true,
-      "hash": "9a66f1e298ce7446122871ba221934dc",
+      "hash": "c4f1d660d80fdaa293f0969a3ad96fb6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16799,7 +16807,7 @@
     },
     "702885_pitcher": {
       "hard_ok": true,
-      "hash": "fedf76bec3085f496864f553ee81803a",
+      "hash": "018c8674dd35286d0fb689a52dee82e6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16908,7 +16916,7 @@
     },
     "703155_hitter": {
       "hard_ok": true,
-      "hash": "e7891a2806d10b3c78ad0330441e97a1",
+      "hash": "34fe84efe76532dd00c58b865e316fc7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16934,7 +16942,7 @@
     },
     "703156_hitter": {
       "hard_ok": true,
-      "hash": "5ac19cf28892caa7dcaaaf7d1d6dbe01",
+      "hash": "a23e00f947d471daf37a65f29311c900",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16960,7 +16968,7 @@
     },
     "703177_hitter": {
       "hard_ok": true,
-      "hash": "8bccb77772425b2bbd5897b8d0906118",
+      "hash": "5174b5cf7e276f61569c9c7c63e5ec2d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16986,7 +16994,7 @@
     },
     "703185_hitter": {
       "hard_ok": true,
-      "hash": "da78119f0ecde819584478338b97b3ac",
+      "hash": "4227c0cebd6e96f870e169d41a0fd5c1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17038,7 +17046,7 @@
     },
     "703190_hitter": {
       "hard_ok": true,
-      "hash": "eb40c8b1eed6fe2727afa4fcf4750877",
+      "hash": "b1faa153efebdc2134107402e0ca2724",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17064,7 +17072,7 @@
     },
     "703197_hitter": {
       "hard_ok": true,
-      "hash": "552b34177f9a7369766540f132322ea1",
+      "hash": "2f22f82ef466bf5e8c27f33aec8b3a3e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17090,7 +17098,7 @@
     },
     "703445_pitcher": {
       "hard_ok": true,
-      "hash": "4b40b18013d933dbde974f434daa0ba6",
+      "hash": "a65638421161f46173e76b6de04c203a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17116,7 +17124,7 @@
     },
     "703448_hitter": {
       "hard_ok": true,
-      "hash": "151efe151d9fb2998454ed0263aba39b",
+      "hash": "f7ab0c05ed3ec44e1a40c40ffbf405e2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17142,7 +17150,7 @@
     },
     "703469_pitcher": {
       "hard_ok": true,
-      "hash": "415ff07dd5d1e69b57b0ff1c9be760f3",
+      "hash": "9899e02423a14508d0e5a3a815fc979f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17168,7 +17176,7 @@
     },
     "703477_hitter": {
       "hard_ok": true,
-      "hash": "8baf57cafb2eabe2c064181d3822b854",
+      "hash": "e11f77b38a83b14d9241773e6f5eba27",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17194,7 +17202,7 @@
     },
     "703492_hitter": {
       "hard_ok": true,
-      "hash": "2d2fcf62cf186ea21044d44589ddc005",
+      "hash": "010d8007017ced1ddc73c21c54038a8f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17271,7 +17279,7 @@
     },
     "703596_pitcher": {
       "hard_ok": true,
-      "hash": "6d1dc5094b9719cb7955bb3ea400bf3c",
+      "hash": "94010b40a6f6884ce9b0abb2ff59450b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17388,7 +17396,7 @@
     },
     "703610_pitcher": {
       "hard_ok": true,
-      "hash": "1afe412ae90198a228a54d95f8ee6e08",
+      "hash": "51f109a1d86c4e682a3987b993bb9a33",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17414,7 +17422,7 @@
     },
     "703615_pitcher": {
       "hard_ok": true,
-      "hash": "0ccf525c1e10d6fa7515585f4a9cbb23",
+      "hash": "5f54ffc11c278c2e69a2387ebc82e8d9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17440,7 +17448,7 @@
     },
     "703639_hitter": {
       "hard_ok": true,
-      "hash": "d7a6e114aae47a666df9d63ec53e62d5",
+      "hash": "528cf20ecf7b0d340ffbfebdaedc72c0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17528,7 +17536,7 @@
     },
     "800060_hitter": {
       "hard_ok": true,
-      "hash": "88276f7822ebe286bbe98267b9b06043",
+      "hash": "fd48c33200a1dd12e930f9cbc4538a7d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17569,7 +17577,7 @@
     },
     "800169_hitter": {
       "hard_ok": true,
-      "hash": "c86f7f057ca09c82152ec721ba715a3f",
+      "hash": "316306b284356f5783889a295d61c65b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17595,7 +17603,7 @@
     },
     "800176_hitter": {
       "hard_ok": true,
-      "hash": "705ae34c7fbe7b6ca793641e093b0ce7",
+      "hash": "f60855795a64c75ed2b496eede5f4846",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17621,7 +17629,7 @@
     },
     "800198_hitter": {
       "hard_ok": true,
-      "hash": "dbee623612aa777439e66634c565a8b0",
+      "hash": "76f746883e2b8dab405333170d3e390c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17647,7 +17655,7 @@
     },
     "800208_hitter": {
       "hard_ok": true,
-      "hash": "55dbf16749acb52847531b6e61f09e8f",
+      "hash": "a6c15c3e0ff2373b93b75a441bc6e6d1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17724,7 +17732,7 @@
     },
     "800305_hitter": {
       "hard_ok": true,
-      "hash": "22dbe1c653f94537c0785f6b5195165d",
+      "hash": "25e9ae25c41b23828cd4e0d9e4187483",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17750,7 +17758,7 @@
     },
     "800306_hitter": {
       "hard_ok": true,
-      "hash": "b2160a21fb07aedf64008c6981170074",
+      "hash": "72a71b99507364b05d3aaddfe03ff0bd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17826,7 +17834,7 @@
     },
     "800338_pitcher": {
       "hard_ok": true,
-      "hash": "9580bde2aa7d23ba79ba1ff557fb2e13",
+      "hash": "205826e8e2a6cc189e8ec1c2ed23cde9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17906,7 +17914,7 @@
     },
     "800406_hitter": {
       "hard_ok": true,
-      "hash": "7e8609afad1cfd219982fc4f18a4a443",
+      "hash": "7f9be99f1fd36916b8e5b5764197d4cd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17947,7 +17955,7 @@
     },
     "800421_hitter": {
       "hard_ok": true,
-      "hash": "534ff66881e6b36fba31447f29bb39e8",
+      "hash": "32c94ae4fddbbb220b9591e3e3713981",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17973,7 +17981,7 @@
     },
     "800449_hitter": {
       "hard_ok": true,
-      "hash": "5bf4a1cd285195fe341ac3d9516fc510",
+      "hash": "001cf086d22c09ffedc7d0eb92e76c6d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17999,7 +18007,7 @@
     },
     "800452_pitcher": {
       "hard_ok": true,
-      "hash": "7d65ffa3a3c7378c494dc28eeef5b537",
+      "hash": "f4b520eb8b9cd61efd016c17507efa3c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18025,7 +18033,7 @@
     },
     "800473_hitter": {
       "hard_ok": true,
-      "hash": "dd2e610f6c876b40297d70d6a81ecd06",
+      "hash": "d971f7453abb1fcae07b0f65e7478e31",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18094,7 +18102,7 @@
     },
     "800522_hitter": {
       "hard_ok": true,
-      "hash": "f09807e2e4289c826a2b4d8e5af508a2",
+      "hash": "fed938c7e874de8b7b03ec7b2418d309",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18120,7 +18128,7 @@
     },
     "800537_pitcher": {
       "hard_ok": true,
-      "hash": "1960583bc450b059c56e889b230d5e7a",
+      "hash": "2ee853d59c6ad8b7bed581a62cb44dd0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18146,7 +18154,7 @@
     },
     "800540_hitter": {
       "hard_ok": true,
-      "hash": "101833b889bee8fc263c3855a2bfb5e2",
+      "hash": "408a5edec306986802bec8525128e2cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18172,7 +18180,7 @@
     },
     "800543_hitter": {
       "hard_ok": true,
-      "hash": "2f12e4b7030e2fbdc59906a531cb83ff",
+      "hash": "e0814b630c708474d6900fb5175dfa53",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18198,7 +18206,7 @@
     },
     "800571_pitcher": {
       "hard_ok": true,
-      "hash": "f09d279f00e419b0350c5e54fed88afe",
+      "hash": "0166c7552febac96456e564f686c0587",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18224,7 +18232,7 @@
     },
     "800600_pitcher": {
       "hard_ok": true,
-      "hash": "405e25f4980d1c27560678a970cefb42",
+      "hash": "229c6b51c0f7798cc4fdc5c5b61160d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18290,7 +18298,7 @@
     },
     "800614_hitter": {
       "hard_ok": true,
-      "hash": "58d6159270537e4183385605bc39cba0",
+      "hash": "b627a1b74e24005dc381ed55915bd80e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18331,7 +18339,7 @@
     },
     "800624_pitcher": {
       "hard_ok": true,
-      "hash": "40fe6d41c1b318d9fb50314f14e66ed5",
+      "hash": "e3945f26ecc3b60711cc0afd0e6926ab",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18357,7 +18365,7 @@
     },
     "800724_hitter": {
       "hard_ok": true,
-      "hash": "4c997f05d8a6e576827f8fddca9fe4e8",
+      "hash": "b85e0576bac9bf037bbb2cc9ab5375d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18400,7 +18408,7 @@
     },
     "801078_pitcher": {
       "hard_ok": true,
-      "hash": "517617e9d56b420e7519732afc3ddf93",
+      "hash": "042a714a3c90a59be328a340aea2da32",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18426,7 +18434,7 @@
     },
     "801129_pitcher": {
       "hard_ok": true,
-      "hash": "43bd99da5c4da80a92523982d1197a20",
+      "hash": "61c5a785acb5cb6a582a8ae3d08c7c38",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18476,7 +18484,7 @@
     },
     "801179_pitcher": {
       "hard_ok": true,
-      "hash": "bfde30f8961a99c45b711c4d0688b09a",
+      "hash": "364a39027e44e04e994e08256d4ef3ec",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18502,7 +18510,7 @@
     },
     "801194_hitter": {
       "hard_ok": true,
-      "hash": "4cc95d8d27a02ad1aa2927e951582a8d",
+      "hash": "6ad3b2513fcb452be8b78692b47e8d3a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18603,7 +18611,7 @@
     },
     "801406_hitter": {
       "hard_ok": true,
-      "hash": "1ee05115311c22cea3672884e8623658",
+      "hash": "622d4afa6a570f0bc2a3278502e8544b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18629,7 +18637,7 @@
     },
     "801464_hitter": {
       "hard_ok": true,
-      "hash": "600d43cace3bb52e6b4bd63221641347",
+      "hash": "5b13007cbcfa3e4cb4e2bad01791611c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18655,7 +18663,7 @@
     },
     "801501_hitter": {
       "hard_ok": true,
-      "hash": "912fc56114f66724e9dd1920eb995e60",
+      "hash": "2771cdf8cccd351d6244bee6dff562ec",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18712,7 +18720,7 @@
     },
     "801523_hitter": {
       "hard_ok": true,
-      "hash": "492db317ac0ce421b7058c47b258cac9",
+      "hash": "46e7a49ecb6a1df82ccb4d857b4237e8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18763,7 +18771,7 @@
     },
     "801594_pitcher": {
       "hard_ok": true,
-      "hash": "180b1907721a3a66dff0814752542260",
+      "hash": "657df380476ecab07906b7a84a382325",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18789,7 +18797,7 @@
     },
     "801639_pitcher": {
       "hard_ok": true,
-      "hash": "d730cdc20605fdf85336649dcfd67dc8",
+      "hash": "90e595932c56c062e2eb6a588afe99e5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18815,7 +18823,7 @@
     },
     "801725_pitcher": {
       "hard_ok": true,
-      "hash": "67a67ec208737accc2262244288fba02",
+      "hash": "fee64289f9ccf3e1263d981c23d3e40b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18841,7 +18849,7 @@
     },
     "801737_pitcher": {
       "hard_ok": true,
-      "hash": "33294e3f45c88bdeec7c6ed445a50940",
+      "hash": "01a0b0f86f591e1aa34a1844ee94f4cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18867,7 +18875,7 @@
     },
     "801739_pitcher": {
       "hard_ok": true,
-      "hash": "4617dedc9b14edea8046b9b07325a857",
+      "hash": "66753b01a4b32362cd37615b9ddc3f8f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18908,7 +18916,7 @@
     },
     "801957_hitter": {
       "hard_ok": true,
-      "hash": "b78e41a6de9d5cfe7cd6ebc20b168c1f",
+      "hash": "43e598d37e703eef7c882b362858fc87",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18960,7 +18968,7 @@
     },
     "802126_pitcher": {
       "hard_ok": true,
-      "hash": "0c385188ccc1544ca2fdf2a5c12ed6e3",
+      "hash": "9144236c10abec5aa678038d12984b8d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19029,7 +19037,7 @@
     },
     "802357_pitcher": {
       "hard_ok": true,
-      "hash": "0629cb19ca66f1b31fe9c6b3ccde4b87",
+      "hash": "91f670ce11ef7769db472410342c1f53",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19080,7 +19088,7 @@
     },
     "802408_pitcher": {
       "hard_ok": true,
-      "hash": "9b7ed8da0bb3942cf89a807c437ef5e0",
+      "hash": "7c2612cff68a03508eee73a9e1d62696",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19132,7 +19140,7 @@
     },
     "802411_pitcher": {
       "hard_ok": true,
-      "hash": "3e0dfe60166eaa60a634e1e05607459a",
+      "hash": "6ed0143b1a95ec7a2828c0d8f2bb6c9d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19158,7 +19166,7 @@
     },
     "802412_pitcher": {
       "hard_ok": true,
-      "hash": "7b1857dd4c52944eebffa906536ef70c",
+      "hash": "ad01bc6c1ec040428df06261087cad53",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19208,7 +19216,7 @@
     },
     "802416_pitcher": {
       "hard_ok": true,
-      "hash": "e751251aa016011ce44c68095b983e19",
+      "hash": "b4113548cabd96a4a795e77f9fe1ae4f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19234,7 +19242,7 @@
     },
     "802419_pitcher": {
       "hard_ok": true,
-      "hash": "c39d9a0a643dca6a21af68a76de6248f",
+      "hash": "1f1a2f31ad9c21280f65e092cc337c0a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19279,7 +19287,7 @@
     },
     "802506_hitter": {
       "hard_ok": true,
-      "hash": "67fd64bb51a8133f59a23271f0353d65",
+      "hash": "8bf2372dd34817199a5e9587bffe18cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19370,7 +19378,7 @@
     },
     "803033_hitter": {
       "hard_ok": true,
-      "hash": "76f8b0c23e5174748e031a824bc51e1a",
+      "hash": "831bb55dbae902d3a1f9b45b9e186a83",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19396,7 +19404,7 @@
     },
     "803135_pitcher": {
       "hard_ok": true,
-      "hash": "6801db27334c6351b0348cd83e0b857a",
+      "hash": "9c08373cb530cda230ee360c1a112a23",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19451,7 +19459,7 @@
     },
     "803175_hitter": {
       "hard_ok": true,
-      "hash": "783d17bc046b9ecfc96b088de72e2af0",
+      "hash": "34a954516ec57dcf684ecc1f9f1718a5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19501,7 +19509,7 @@
     },
     "803244_pitcher": {
       "hard_ok": true,
-      "hash": "a6194d5a5d68ae3ad9560f1eb90a3422",
+      "hash": "e7bd432809baed4e83d47663b2d5f81a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19541,7 +19549,7 @@
     },
     "803285_pitcher": {
       "hard_ok": true,
-      "hash": "4e8e44060aa0540cd330c5352e1129cc",
+      "hash": "ebff99bc2621fde10e89aed49916f96b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19567,7 +19575,7 @@
     },
     "803349_pitcher": {
       "hard_ok": true,
-      "hash": "5334658a43c757e2d17c46bb535124b5",
+      "hash": "c147f70dd7164e6f4dacd82340b62c56",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19593,7 +19601,7 @@
     },
     "803385_hitter": {
       "hard_ok": true,
-      "hash": "7144619fb8d8b9dd0c10ed544f8c806b",
+      "hash": "88792148cd2b7f97d201451a05a55c28",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19619,7 +19627,7 @@
     },
     "803516_pitcher": {
       "hard_ok": true,
-      "hash": "acb59171bbd6c0a8ddf9af8e71552c7d",
+      "hash": "3197cc8d192f5cfddfaaf50182b6e25b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19645,7 +19653,7 @@
     },
     "803679_hitter": {
       "hard_ok": true,
-      "hash": "a8edcf606d7bd5c80499f16ce6f05fd7",
+      "hash": "f814c4d70696c01f77fd7ebc82f69879",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19671,7 +19679,7 @@
     },
     "803723_hitter": {
       "hard_ok": true,
-      "hash": "5500cc220e3ebdee6087ab97dd9ad680",
+      "hash": "484e73f741043d17918e81b5223b2b9e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19697,7 +19705,7 @@
     },
     "803745_hitter": {
       "hard_ok": true,
-      "hash": "101101e680f6e9d163565645790942ad",
+      "hash": "9c99e85580d991f691dc4e243c3d362e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19723,7 +19731,7 @@
     },
     "803833_pitcher": {
       "hard_ok": true,
-      "hash": "8bfb16fb17e62a4f1da8c8f1bd52ca50",
+      "hash": "fb4712607247c867532d6331f54a2b8e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19764,7 +19772,7 @@
     },
     "803849_hitter": {
       "hard_ok": true,
-      "hash": "bb59cdbc6e4a0d33d88d993e2af0d7e4",
+      "hash": "bc0db8cbf1029639dc373b761851291e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19790,7 +19798,7 @@
     },
     "804109_hitter": {
       "hard_ok": true,
-      "hash": "f45c2e5aa29a26fc5b045da7f8c9a490",
+      "hash": "44e01695d517ae90dab3e345da0e45df",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19816,7 +19824,7 @@
     },
     "804249_pitcher": {
       "hard_ok": true,
-      "hash": "029b9ff27d5539114663116d02f2cd87",
+      "hash": "eaec4131c8622e7419e11d709b19d48e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19868,7 +19876,7 @@
     },
     "804465_pitcher": {
       "hard_ok": true,
-      "hash": "cb1604c9b42e2494fc15f20a41b91f54",
+      "hash": "f6d053ba6574cb58d6bac6cb7af33bfe",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19894,7 +19902,7 @@
     },
     "804526_pitcher": {
       "hard_ok": true,
-      "hash": "2aba5070e4355bac6108045f71a4de59",
+      "hash": "60aa0736ce82d6dd652998b6f725ce5a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19920,7 +19928,7 @@
     },
     "804530_pitcher": {
       "hard_ok": true,
-      "hash": "707c9f0d5030a6ec07c05914ec299e63",
+      "hash": "7d7726bc58a934d09ebd4467d69de95c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19946,7 +19954,7 @@
     },
     "804541_pitcher": {
       "hard_ok": true,
-      "hash": "339bc77cc8e5158f7a04788907214907",
+      "hash": "bfef2617111cd44841ced30199093957",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20015,7 +20023,7 @@
     },
     "804560_hitter": {
       "hard_ok": true,
-      "hash": "b859e832a8b166699925a908400ba024",
+      "hash": "353b07e41320cd39e8165bfe1f69d2ee",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20067,7 +20075,7 @@
     },
     "804614_hitter": {
       "hard_ok": true,
-      "hash": "5446665f3d0eef372377459e810dddc8",
+      "hash": "f43b3bb95b60f5ce3d8aa62fbca60584",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20093,7 +20101,7 @@
     },
     "804619_pitcher": {
       "hard_ok": true,
-      "hash": "526bcc437e2efd1d92302dd6d716a24a",
+      "hash": "0bb41867da388d858632b2bf328580c7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20119,7 +20127,7 @@
     },
     "804636_pitcher": {
       "hard_ok": true,
-      "hash": "eb64aa149fed52d4adfbdba757f522e6",
+      "hash": "4c57b6b3850323697d7f6043ec494b88",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20162,7 +20170,7 @@
     },
     "804670_pitcher": {
       "hard_ok": true,
-      "hash": "061629b1774815fb726e71453065a770",
+      "hash": "7004acf6eac2c29adbfc52b94f229f90",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20188,7 +20196,7 @@
     },
     "804817_pitcher": {
       "hard_ok": true,
-      "hash": "eac0f1f652b00b45543dff99093b4411",
+      "hash": "d5338ad3edfc4e744461ebec0f48838f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20214,7 +20222,7 @@
     },
     "804858_hitter": {
       "hard_ok": true,
-      "hash": "f8cb1812a3e7a98e5d68f123f9773bc5",
+      "hash": "171676f758370b86b2c630e40ee302b5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20240,7 +20248,7 @@
     },
     "804942_pitcher": {
       "hard_ok": true,
-      "hash": "706d27aeed9f3e5d174e5054d5832d7e",
+      "hash": "70a65c3172fbef3d8142e222d805cd93",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20266,7 +20274,7 @@
     },
     "804948_pitcher": {
       "hard_ok": true,
-      "hash": "76717f0798c075f923ec6c6219bc3e59",
+      "hash": "32c80cbf43227a9ff799557a9d61b48b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20292,7 +20300,7 @@
     },
     "804973_pitcher": {
       "hard_ok": true,
-      "hash": "02eaa086247a7ff6cfa6fbbe0f639857",
+      "hash": "78abe8116b305aff0e3bb8507518bac3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20318,7 +20326,7 @@
     },
     "804981_pitcher": {
       "hard_ok": true,
-      "hash": "b08003f820088d1221e568b1afa05dad",
+      "hash": "83b481931a865530ca5be69ea99bd7a9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20344,7 +20352,7 @@
     },
     "805031_pitcher": {
       "hard_ok": true,
-      "hash": "156695078bd762c01e525ac17eca4870",
+      "hash": "cd63d86fb7857cfa1875fe78f282081f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20370,7 +20378,7 @@
     },
     "805074_pitcher": {
       "hard_ok": true,
-      "hash": "768f8271827ab565d55beb10eee5fe1c",
+      "hash": "96c8f9950140f8ebebaee054526807ae",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20396,7 +20404,7 @@
     },
     "805082_hitter": {
       "hard_ok": true,
-      "hash": "585772f970d57f5d9e41c65c5ac989ab",
+      "hash": "5b6cf85962da08ba9c29f7fbf960b19f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20446,7 +20454,7 @@
     },
     "805127_hitter": {
       "hard_ok": true,
-      "hash": "d70629cd944b6dffd81a8f68b9d653dc",
+      "hash": "b1a1f9a62d6877dc91de4dcbc0a59e51",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20472,7 +20480,7 @@
     },
     "805207_hitter": {
       "hard_ok": true,
-      "hash": "4001eb6b20ad2f571e465eedb0cb94ed",
+      "hash": "b9cdc7f74369d0138e10f60afbabccee",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20498,7 +20506,7 @@
     },
     "805214_pitcher": {
       "hard_ok": true,
-      "hash": "2995f8662914f334a4bce020c65e404e",
+      "hash": "c91854ff3a56168c630aaa9a6e96299f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20573,7 +20581,7 @@
     },
     "805346_hitter": {
       "hard_ok": true,
-      "hash": "e25ae233ad26ac861ae6b136563adc22",
+      "hash": "5343730d3f9ce84e656e7520ad26c356",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20599,7 +20607,7 @@
     },
     "805347_hitter": {
       "hard_ok": true,
-      "hash": "36d3644e3e63bf2e55a5cde45d8fcc25",
+      "hash": "19076e4015780f4b5182f00f095e359b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20644,7 +20652,7 @@
     },
     "805367_hitter": {
       "hard_ok": true,
-      "hash": "a2f07b014abf4c002378b8c8feef225b",
+      "hash": "67006e3f9d9484f691db694bdf80d92c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20663,12 +20671,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "CHW",
       "text": "The Statcast contact profile is genuinely modest, 87.2 mph average exit velocity, 4.6% barrel rate, xSLG at .348, and yet the projection says .275/.350/.415 with 16 home runs over 650 plate appearances. That gap is the whole tension in this profile. What makes it hold together is an elite fielding grade (95th percentile OAA) paired with a whiff rate of 19.7% that sits well above league average for contact quality, meaning he's making enough contact at enough volume to let his on-base skills breathe. The 9.5% walk rate does real work here; without it, the light power doesn't carry a big-league lineup spot. If his exit velocity profile softens further or the walks regress, this becomes a glove-first bench piece at second; if the contact shape holds for a full season, he's a low-end everyday middle infielder who earns his at-bats the quiet way.",
       "valid": true
     },
     "805422_pitcher": {
       "hard_ok": true,
-      "hash": "a0bab41f64aee21a36eac31ea7f4678a",
+      "hash": "778b7ee40cb2c70aae2e4d9460f1e9cb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20772,7 +20782,7 @@
     },
     "805706_pitcher": {
       "hard_ok": true,
-      "hash": "68aac586d91fc89f1e34b9403cc3fba0",
+      "hash": "02919822ed9fec486e2658019b2bd343",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20866,7 +20876,7 @@
     },
     "805795_hitter": {
       "hard_ok": true,
-      "hash": "09f91d17054600845de22b4ff6022255",
+      "hash": "c09254530d546dffc4bfe0e6e41147d6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20892,7 +20902,7 @@
     },
     "805796_hitter": {
       "hard_ok": true,
-      "hash": "d2be3dec28d6ef967336ecec5f298029",
+      "hash": "9a15f0ad9ac6c7161d85e0a57a570946",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20941,7 +20951,7 @@
     },
     "805805_hitter": {
       "hard_ok": true,
-      "hash": "8180b3be96e7d3b925b4e78f5acc7aa2",
+      "hash": "9e10591ff447afbdbe887b643551aee2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20967,7 +20977,7 @@
     },
     "805807_pitcher": {
       "hard_ok": true,
-      "hash": "1f36db97766c82218df4e7ccf7857604",
+      "hash": "f3421f8b97c3aef2b2f25515a74056ad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21017,7 +21027,7 @@
     },
     "805809_pitcher": {
       "hard_ok": true,
-      "hash": "60801a78add508e8243a34b3498a0e33",
+      "hash": "a91f3e91fa700316a3c2360cb56d5220",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21043,7 +21053,7 @@
     },
     "805810_hitter": {
       "hard_ok": true,
-      "hash": "f6d135ce3a79aef8f124df9d09700ccd",
+      "hash": "5b5399394eecd6bc8948168025c36377",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21095,7 +21105,7 @@
     },
     "805906_pitcher": {
       "hard_ok": true,
-      "hash": "74f04ce42de6ec4fa565b3f6fa2c1698",
+      "hash": "04ec91a1f0305f2341ba485d2bb1d2d7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21177,7 +21187,7 @@
     },
     "806046_pitcher": {
       "hard_ok": true,
-      "hash": "dfc5d4450d25c053d2e1d55f07f9a6a0",
+      "hash": "3f5c8509129147ac05582b5831c7100d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21229,7 +21239,7 @@
     },
     "806064_pitcher": {
       "hard_ok": true,
-      "hash": "79047fef8031e4594513856ca6536755",
+      "hash": "d4203d5f0be11cdc1f44b7da61619378",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21276,7 +21286,7 @@
     },
     "806071_hitter": {
       "hard_ok": true,
-      "hash": "91efa82cfbfdc27190eb625978df1566",
+      "hash": "ab64a0ade96cd5500343cb51bc21313d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21302,7 +21312,7 @@
     },
     "806077_hitter": {
       "hard_ok": true,
-      "hash": "5dc8fac35db00e6680b0233fafeca67f",
+      "hash": "52c0eacc8bcf26c264ff3473a10463e4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21354,7 +21364,7 @@
     },
     "806191_hitter": {
       "hard_ok": true,
-      "hash": "c841cdf5dc4ca8f4020115c027ab60ff",
+      "hash": "e1346faee6be7a8c41492ce18de04977",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21406,7 +21416,7 @@
     },
     "806210_hitter": {
       "hard_ok": true,
-      "hash": "be38bae92ccb34cc31956b378236874c",
+      "hash": "68190ecd21dbcd65f084ece6eb206499",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21432,7 +21442,7 @@
     },
     "806221_hitter": {
       "hard_ok": true,
-      "hash": "17639f5bc2e5b24568010f25740264be",
+      "hash": "27a2da2eb896261056d6e73cb39348c8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21458,7 +21468,7 @@
     },
     "806224_pitcher": {
       "hard_ok": true,
-      "hash": "8e78b2ae3fd4b8da4748c9e6ccbd6c7e",
+      "hash": "c88c6267e15cd4ee216296e28dc96feb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21484,7 +21494,7 @@
     },
     "806230_hitter": {
       "hard_ok": true,
-      "hash": "d8c04338cf4ecd4ea03d92419f4941cb",
+      "hash": "26433165af7df13d8e5b9b2d51676d88",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21510,7 +21520,7 @@
     },
     "806233_hitter": {
       "hard_ok": true,
-      "hash": "a89e0ac628ce234c7448da6dec157c09",
+      "hash": "7817a57f3b96f78bc2d10e3d70842b9f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21550,7 +21560,7 @@
     },
     "806252_hitter": {
       "hard_ok": true,
-      "hash": "e1bd47d049b97efa7161010af6f12710",
+      "hash": "7de8b94c1c623c2bb31e1d6f5ab63c75",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21576,7 +21586,7 @@
     },
     "806258_pitcher": {
       "hard_ok": true,
-      "hash": "a6f78f2c546510b3a761dedbb84f3c81",
+      "hash": "22fd4fb7276980ccd13739686a276703",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21617,7 +21627,7 @@
     },
     "806265_pitcher": {
       "hard_ok": true,
-      "hash": "1c8b505ac7791ecaba2fa3a53fd711e8",
+      "hash": "4fbc9eeb1c7e03dda8462eda627b6cc9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21669,7 +21679,7 @@
     },
     "806413_pitcher": {
       "hard_ok": true,
-      "hash": "04f98361da99249c433dc6fef3dd52f8",
+      "hash": "cbb14a1ee93406deab0180327d470f65",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21695,7 +21705,7 @@
     },
     "806872_hitter": {
       "hard_ok": true,
-      "hash": "83310a711a695c3f1ebc5b763a03b2cf",
+      "hash": "2d6d5191806220892c5ed3e714199bca",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21721,7 +21731,7 @@
     },
     "806884_hitter": {
       "hard_ok": true,
-      "hash": "7a33b0f8dd769dad2a06bb470793c96c",
+      "hash": "8864b3068a044afa54cbe1b122e38544",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21747,7 +21757,7 @@
     },
     "806953_hitter": {
       "hard_ok": true,
-      "hash": "265de9209a0499edff563e85e80c5b60",
+      "hash": "3780ce9c851b0663a13775770dc21c75",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21773,7 +21783,7 @@
     },
     "806956_hitter": {
       "hard_ok": true,
-      "hash": "8e373bd0f8aef36ed2a8dc025225cbc1",
+      "hash": "28672ef74077c9a17267a93bac08c720",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21799,7 +21809,7 @@
     },
     "806957_hitter": {
       "hard_ok": true,
-      "hash": "2ebf770d2b1dd16b402d490ec268eebb",
+      "hash": "6181f6a6b625b74f7a6fc79a036c7c11",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21825,7 +21835,7 @@
     },
     "806958_hitter": {
       "hard_ok": true,
-      "hash": "5e16ed74baa0991c397b30c8d9b4502a",
+      "hash": "fdf9bb465f55722b2fc42ea3cfc558de",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21851,7 +21861,7 @@
     },
     "806964_hitter": {
       "hard_ok": true,
-      "hash": "e461ef590f616c206bb54add725c688f",
+      "hash": "2dd616bd2f28fddfe1aee55035981c97",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21877,7 +21887,7 @@
     },
     "806965_hitter": {
       "hard_ok": true,
-      "hash": "aaf4edfc70f7ef504cc1b8805024ac98",
+      "hash": "436a08d52027057534f8b4ea6c4d6342",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21929,7 +21939,7 @@
     },
     "806985_hitter": {
       "hard_ok": true,
-      "hash": "d9e5d8a6298c74a872f20e5f0012b0d0",
+      "hash": "a064350f0b854bfc08bf26304f08e5de",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21955,7 +21965,7 @@
     },
     "806988_hitter": {
       "hard_ok": true,
-      "hash": "f1f5752a2a4389f6301cbca2611a2e1e",
+      "hash": "c9960cfc7a82aee8d40294db6518d3d1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22021,7 +22031,7 @@
     },
     "807080_hitter": {
       "hard_ok": true,
-      "hash": "d4596555d3922ad8e28da9cf29ff0cf5",
+      "hash": "75e86d6b540b8fd90882022dd479de1c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22047,7 +22057,7 @@
     },
     "807083_hitter": {
       "hard_ok": true,
-      "hash": "16ded6134a24f684da507570d93e9615",
+      "hash": "1df4f147975f1ccf3700fcd783c26f10",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22073,7 +22083,7 @@
     },
     "807257_hitter": {
       "hard_ok": true,
-      "hash": "8c8ad1699d09c6fab0fc401dd7454ba6",
+      "hash": "251988224a3aadcca52253be98d7085f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22118,7 +22128,7 @@
     },
     "807276_hitter": {
       "hard_ok": true,
-      "hash": "df8a071c12e1e62d6d14ede35c3a317a",
+      "hash": "f3afb8f6bf037498622973caf034f7e6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22169,7 +22179,7 @@
     },
     "807284_pitcher": {
       "hard_ok": true,
-      "hash": "307ec7e7a9558b72352db1d147f15534",
+      "hash": "154386e13174f46e5db0620a3bc691f8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22219,7 +22229,7 @@
     },
     "807314_pitcher": {
       "hard_ok": true,
-      "hash": "a565cfd8dcc3e98bf07cefe07c50411f",
+      "hash": "ee5f3f5afef04f27b3818cc50e2c90e9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22324,7 +22334,7 @@
     },
     "807720_hitter": {
       "hard_ok": true,
-      "hash": "8936dfe27d998f77f0e7e01eed28565e",
+      "hash": "10e1afb67e03bd31fa963379558abdc8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22350,7 +22360,7 @@
     },
     "807726_hitter": {
       "hard_ok": true,
-      "hash": "cafcbf61bea896ec71a483b138fd1b90",
+      "hash": "5de1c5926e52e2bc33a31c874ad20016",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22376,7 +22386,7 @@
     },
     "807727_hitter": {
       "hard_ok": true,
-      "hash": "4b03fecb6698fba9efeaf6d89668f988",
+      "hash": "73f7d6a05f51b72546227b93836e0d51",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22402,7 +22412,7 @@
     },
     "807739_pitcher": {
       "hard_ok": true,
-      "hash": "436797eacafd97e812b3965b3b0cf55e",
+      "hash": "7e995fdabde821815dce83be9c039173",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22428,7 +22438,7 @@
     },
     "807742_hitter": {
       "hard_ok": true,
-      "hash": "59878a4a0597108467327c14597d87f2",
+      "hash": "4872f5029f04a1f0f4fe5e04f9f2d248",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22454,7 +22464,7 @@
     },
     "807743_pitcher": {
       "hard_ok": true,
-      "hash": "ac7277936c38a8765d79431ce1cf1796",
+      "hash": "428ea54f9f0993bc3912bb17809a076b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22539,7 +22549,7 @@
     },
     "807993_pitcher": {
       "hard_ok": true,
-      "hash": "30b94ea1356bc02ae335462ce6c09da0",
+      "hash": "e3e36ef8bec8b14dd672eff00827ca15",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22630,7 +22640,7 @@
     },
     "808064_pitcher": {
       "hard_ok": true,
-      "hash": "ed5cd6e3e885e0b132f34796b218fa98",
+      "hash": "815176f6083ac5bd4e7d09e637ab6bfa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22656,7 +22666,7 @@
     },
     "808087_pitcher": {
       "hard_ok": true,
-      "hash": "aab826d5353e38f11bff724dd0ba54f3",
+      "hash": "22b690e56629b9150d579572d4e183f7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22723,7 +22733,7 @@
     },
     "808161_pitcher": {
       "hard_ok": true,
-      "hash": "4828bfe64d5d36ef1d29e27259c97d68",
+      "hash": "c1d17c21354e70deb09d79f28f376944",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22766,7 +22776,7 @@
     },
     "808234_hitter": {
       "hard_ok": true,
-      "hash": "fc0222afdb268955670d1fedcd0af873",
+      "hash": "38835882ff343101fdf3fe70b7263323",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22816,7 +22826,7 @@
     },
     "808250_pitcher": {
       "hard_ok": true,
-      "hash": "94cbfa80b1bc2032da63677c9ab1f82b",
+      "hash": "5902ec3f870c4e79ecc6ca8499e8e54b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22842,7 +22852,7 @@
     },
     "808265_hitter": {
       "hard_ok": true,
-      "hash": "849af63bc24f2119bde2994c20fddf28",
+      "hash": "3331900b1bfccd944e78965b936eb4ea",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22924,7 +22934,7 @@
     },
     "808307_hitter": {
       "hard_ok": true,
-      "hash": "641259e98d72d8f9d222c48a88090ccf",
+      "hash": "abd7cd072ab9374b42feadf05c7ff9cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22964,7 +22974,7 @@
     },
     "808329_pitcher": {
       "hard_ok": true,
-      "hash": "60c41d7b7f8750a9ce736f00a56a1d7a",
+      "hash": "d092a90ac5a71487ba7155ad25a22a6a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23005,7 +23015,7 @@
     },
     "808365_hitter": {
       "hard_ok": true,
-      "hash": "20be2355ba27df6dc1e789c9cbdcebc8",
+      "hash": "5c269dbf70d787d5d0e13293f63ae9fa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23046,7 +23056,7 @@
     },
     "808510_pitcher": {
       "hard_ok": true,
-      "hash": "540efdeb6ebc22b56def28c268a75d3d",
+      "hash": "bc199c8b9bf432bb6371baa08c63cdc9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23072,7 +23082,7 @@
     },
     "808535_hitter": {
       "hard_ok": true,
-      "hash": "54e1966d067bf50610cdd213bd48b917",
+      "hash": "4170a1ed5a97b613446662a7086ed23c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23236,7 +23246,7 @@
     },
     "809092_hitter": {
       "hard_ok": true,
-      "hash": "df7fe7e8a73b32dd23879d377a1fc881",
+      "hash": "caf3cea98c87ef8fc44075b3ac8a2486",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23287,7 +23297,7 @@
     },
     "809100_pitcher": {
       "hard_ok": true,
-      "hash": "f3474785c2698add3a8b662f019c06b8",
+      "hash": "7185a8b16038bf966869ea4c73c0ec6c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23313,7 +23323,7 @@
     },
     "809229_pitcher": {
       "hard_ok": true,
-      "hash": "3652950766efda2f6ab615823acc6c20",
+      "hash": "11edad9afab245e146680b22c201bd9e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23339,7 +23349,7 @@
     },
     "809254_pitcher": {
       "hard_ok": true,
-      "hash": "8c989142c9b31d3610df70e3ebb0c73d",
+      "hash": "4b851542b2070c7fcf1c06269c5066c8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23365,7 +23375,7 @@
     },
     "809343_pitcher": {
       "hard_ok": true,
-      "hash": "3482d2036a689502877a9080cc944fef",
+      "hash": "e09f582526dcd982a1a8a132e13ff292",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23405,7 +23415,7 @@
     },
     "809707_hitter": {
       "hard_ok": true,
-      "hash": "e3e213a1a774bb44bf30a07a74c7c168",
+      "hash": "67ad649676cc4d617a78e417565050c4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23431,7 +23441,7 @@
     },
     "809733_pitcher": {
       "hard_ok": true,
-      "hash": "9e92e1d86ef50abe42502a15d2b31b4d",
+      "hash": "5f38403dd8de5d1c72ba9c1190d51536",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23457,7 +23467,7 @@
     },
     "809840_pitcher": {
       "hard_ok": true,
-      "hash": "515aa55f6df4a417cb67c8e5d85003c3",
+      "hash": "e24c3f331b10ab624182149ecf86449a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23569,7 +23579,7 @@
     },
     "811290_pitcher": {
       "hard_ok": true,
-      "hash": "2fcc1ef945c828dafc1788e508f8ef95",
+      "hash": "0b68fc788158b08b08ef193db352bc00",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23647,7 +23657,7 @@
     },
     "811307_pitcher": {
       "hard_ok": true,
-      "hash": "90baee995dcc71f4f33afde789325088",
+      "hash": "b1c98eb9ee0c1f945608dd297dc7d212",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23673,7 +23683,7 @@
     },
     "811309_pitcher": {
       "hard_ok": true,
-      "hash": "b8e3538fc394a2dbde85942b1fff6716",
+      "hash": "ec3f5bed61af3cbaec94c07e797554b5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23699,7 +23709,7 @@
     },
     "811315_pitcher": {
       "hard_ok": true,
-      "hash": "9a6bd23a66cc386e286774057419a661",
+      "hash": "a03034b1debb4cd6c5c12f479376cf3a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23739,7 +23749,7 @@
     },
     "811666_pitcher": {
       "hard_ok": true,
-      "hash": "f70459ff2f197d0a75288a287477fbed",
+      "hash": "af11c9deee399442a72fb34c1802d779",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23765,7 +23775,7 @@
     },
     "811765_hitter": {
       "hard_ok": true,
-      "hash": "600b888eb968aac0d8c656c6be560650",
+      "hash": "a8168a32d77ceb257f4f93c3a5231a22",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23791,7 +23801,7 @@
     },
     "811965_hitter": {
       "hard_ok": true,
-      "hash": "6d6f917655a2bde9a4ba760712eb04d9",
+      "hash": "a52c0e81230440041371a17f50dc3f59",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23831,7 +23841,7 @@
     },
     "812431_pitcher": {
       "hard_ok": true,
-      "hash": "2a4adf850d03e26ebe1e7f1e39dc1718",
+      "hash": "d3949dab73eaf21d1b0ae867b8be3bdf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23857,7 +23867,7 @@
     },
     "813335_pitcher": {
       "hard_ok": true,
-      "hash": "d8d8d8778e9563fb8e767fefde67c194",
+      "hash": "7061e6d5a783fe8dac77abd7d8d0380e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23909,7 +23919,7 @@
     },
     "813533_pitcher": {
       "hard_ok": true,
-      "hash": "cea0937487e530f8d88a1c689b8cf446",
+      "hash": "f391c7f70561a6ac1bb1f215407c1ef4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23972,7 +23982,7 @@
     },
     "813820_pitcher": {
       "hard_ok": true,
-      "hash": "bbda19d21070aafb7f7fe3b9d6f334e3",
+      "hash": "58836d2035f6bc21e01d8e7709964645",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24023,7 +24033,7 @@
     },
     "813838_pitcher": {
       "hard_ok": true,
-      "hash": "b5714f8da159966aca03f96d13da91e8",
+      "hash": "2734dffc03360c3a37b63d4309df1e90",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24100,7 +24110,7 @@
     },
     "813895_pitcher": {
       "hard_ok": true,
-      "hash": "0c322efd0fc5b79c0367f7a1e3f41058",
+      "hash": "2a553a1bdfc1d05fe332f5c34242c970",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24126,7 +24136,7 @@
     },
     "813916_hitter": {
       "hard_ok": true,
-      "hash": "5fc290e15940ef745183db6bb6f70274",
+      "hash": "41756a409dcae839114afcd27be3e58a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24152,7 +24162,7 @@
     },
     "813930_hitter": {
       "hard_ok": true,
-      "hash": "aae3e60794088d65e8efbfb91183bf48",
+      "hash": "edb27bb1ce764ec69175e0156adc040d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24193,7 +24203,7 @@
     },
     "813989_pitcher": {
       "hard_ok": true,
-      "hash": "de4631fd92636cf809efeb867f0bf52b",
+      "hash": "142f5bd6ff7c9d318092adebd805a6fe",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24234,7 +24244,7 @@
     },
     "814154_hitter": {
       "hard_ok": true,
-      "hash": "77463c8b1c3c70a451093923d532dc9c",
+      "hash": "a0a6c5a759ce942c14b12799aac1d31d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24275,7 +24285,7 @@
     },
     "814299_hitter": {
       "hard_ok": true,
-      "hash": "37847a92e6a9eb81747e55188a06c889",
+      "hash": "ca7d860e6b9ffccf43427e8748635c6c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24301,7 +24311,7 @@
     },
     "814307_hitter": {
       "hard_ok": true,
-      "hash": "2e0c9e995fec712c55fd54d13693119f",
+      "hash": "1075d96840ecbdef06d7814ec63d6752",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24327,7 +24337,7 @@
     },
     "814351_pitcher": {
       "hard_ok": true,
-      "hash": "758dedc5ecc24266314ab2bde6c0a35e",
+      "hash": "d150f134a1c336352cea0f36c14b3eaf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24368,7 +24378,7 @@
     },
     "814392_pitcher": {
       "hard_ok": true,
-      "hash": "28d902728f350ce12d1664eaa284970f",
+      "hash": "91a36adfd7603da8475c280906ed7a59",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24394,7 +24404,7 @@
     },
     "814409_hitter": {
       "hard_ok": true,
-      "hash": "773d5d1ba6d815d632cd0666910425bf",
+      "hash": "2e1ee89b02d118702d60abcb1e073b23",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24420,7 +24430,7 @@
     },
     "814414_hitter": {
       "hard_ok": true,
-      "hash": "07cb852240de33cc1d666411094c0f6d",
+      "hash": "a6ef81e668c667f4c8700b799600fc7c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24489,7 +24499,7 @@
     },
     "814444_hitter": {
       "hard_ok": true,
-      "hash": "4b03ef80bda1e37960c01043f827ecab",
+      "hash": "59d702728ed78ef5f70b0a8ca72b35f4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24529,7 +24539,7 @@
     },
     "814455_hitter": {
       "hard_ok": true,
-      "hash": "1d4c1790486acd98d57c322a624f583e",
+      "hash": "955438c06a89038ca72636acf391c5af",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24555,7 +24565,7 @@
     },
     "814458_hitter": {
       "hard_ok": true,
-      "hash": "4d50bf4620e21cfcac4d0e77286b4570",
+      "hash": "1332b2070ce0a926c694e5feb72858b5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24596,7 +24606,7 @@
     },
     "814490_pitcher": {
       "hard_ok": true,
-      "hash": "46771412623860b5ecd09f5dd341ce4f",
+      "hash": "5849a4532445b9f4472bf15c76db713e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24622,7 +24632,7 @@
     },
     "814527_pitcher": {
       "hard_ok": true,
-      "hash": "e960018ee908d7f399b468bec033355b",
+      "hash": "a644e354b0b30916f4db06259b393e04",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24663,7 +24673,7 @@
     },
     "815071_pitcher": {
       "hard_ok": true,
-      "hash": "52b208fa102d2ca42459116235f98e26",
+      "hash": "3bae770d92de9b487ea96bb9508f1a88",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24703,7 +24713,7 @@
     },
     "815119_pitcher": {
       "hard_ok": true,
-      "hash": "6814ba301815dd746d6a0f59f0a0cfbc",
+      "hash": "67aafffc219b549f46fba81e6a8ca181",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24729,7 +24739,7 @@
     },
     "815147_hitter": {
       "hard_ok": true,
-      "hash": "9e014ff327b68d0a8abdddf4b2a13f9a",
+      "hash": "e1bf543021db5a13d8b2f49d5f6d91b4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24755,7 +24765,7 @@
     },
     "815148_pitcher": {
       "hard_ok": true,
-      "hash": "3ad86317ec47be8211de75ddf3992926",
+      "hash": "d0d8a726393efd2ac21e67b850e1f371",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24809,7 +24819,7 @@
     },
     "815195_hitter": {
       "hard_ok": true,
-      "hash": "095bf43c1237aed73a4ad8affed6468b",
+      "hash": "c275574e92a6a3ddfa789fc1b97629a9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24835,7 +24845,7 @@
     },
     "815212_pitcher": {
       "hard_ok": true,
-      "hash": "b1f7cb75f5cec89447974563b398e174",
+      "hash": "ce9975dda577e01a82084d8e0886416b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24882,7 +24892,7 @@
     },
     "815298_pitcher": {
       "hard_ok": true,
-      "hash": "f8469019046b947668ae8b5a779070ad",
+      "hash": "c968153627089691e441ca22e036a39b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24908,7 +24918,7 @@
     },
     "815304_hitter": {
       "hard_ok": true,
-      "hash": "d6afd929b7416e183806005ebc5fe818",
+      "hash": "b642fe4185548f90dfdb8c3fcbadbe36",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24934,7 +24944,7 @@
     },
     "815348_pitcher": {
       "hard_ok": true,
-      "hash": "555f169a2f12a0e663df3a7900ee8d5b",
+      "hash": "445d2e194eb5f999a1790c8c7ff9bbed",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24960,7 +24970,7 @@
     },
     "815352_hitter": {
       "hard_ok": true,
-      "hash": "642eb3cab826f3ea4dd713de7fe70d98",
+      "hash": "c41f7020e65687e7ba2a176916f8218c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24986,7 +24996,7 @@
     },
     "815380_hitter": {
       "hard_ok": true,
-      "hash": "b698a180ca6ffbae4658ecd4c6ff2449",
+      "hash": "2cf7dbcd3c0d630a74c4d9f61bb334d7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25012,7 +25022,7 @@
     },
     "815394_hitter": {
       "hard_ok": true,
-      "hash": "0c63edd0168e6370729a16b4ae00ee5b",
+      "hash": "fb2b32dcf0fef027569546aadf374800",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25038,7 +25048,7 @@
     },
     "815464_hitter": {
       "hard_ok": true,
-      "hash": "48b53ba209af01852d5692c41a976f85",
+      "hash": "aeb4fc3f4b78e7132092460ef55492f3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25080,7 +25090,7 @@
     },
     "815520_hitter": {
       "hard_ok": true,
-      "hash": "3d36f0c28481524a9e144d38badc4643",
+      "hash": "840cc7c454ebf8c288124d2d12f5f2c5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25106,7 +25116,7 @@
     },
     "815549_pitcher": {
       "hard_ok": true,
-      "hash": "0044597669d28cff5abb23ab93d9f573",
+      "hash": "c2a5eef2be1a54a61863b85b6a187403",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25132,7 +25142,7 @@
     },
     "815552_pitcher": {
       "hard_ok": true,
-      "hash": "28c2628a77e1dfecdec077d1a5414581",
+      "hash": "92eeb043ec64caf617324f426877aa42",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25158,7 +25168,7 @@
     },
     "815589_hitter": {
       "hard_ok": true,
-      "hash": "34ae46d111f3b6a67526879775774ee2",
+      "hash": "dc663f6b46b7bbaad2140279cd9323c7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25184,7 +25194,7 @@
     },
     "815598_pitcher": {
       "hard_ok": true,
-      "hash": "0880e77d268d72421f4a44550a6e8349",
+      "hash": "5c8113796734c4218fc2dd5353b3260f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25210,7 +25220,7 @@
     },
     "815608_hitter": {
       "hard_ok": true,
-      "hash": "d9e52531ab4f87d22395388c85b3a6fa",
+      "hash": "3869695462e3e7a4b0d2dd003e7181eb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25236,7 +25246,7 @@
     },
     "815617_hitter": {
       "hard_ok": true,
-      "hash": "273a67d2ec5fed5860e3f8d61a1a29c0",
+      "hash": "f8e0992fda4f8de81ecd0c3496535d45",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25262,7 +25272,7 @@
     },
     "815626_pitcher": {
       "hard_ok": true,
-      "hash": "1ad0a7ba3583c01e843566b158f7433e",
+      "hash": "58ff36db982817b637b50d2ccd140053",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25288,7 +25298,7 @@
     },
     "815785_pitcher": {
       "hard_ok": true,
-      "hash": "6ff9be90113e2c8685775dde1d05b971",
+      "hash": "343a02eafe89f16082b38b3a06d68402",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25314,7 +25324,7 @@
     },
     "815787_hitter": {
       "hard_ok": true,
-      "hash": "09e3593ab26ae6c67228390a2a980447",
+      "hash": "1e19a9c2d99d03137465cc5abf622edf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25340,7 +25350,7 @@
     },
     "815789_pitcher": {
       "hard_ok": true,
-      "hash": "cc3f9f943f40223f31c3ceed859de34f",
+      "hash": "aa936eb2dae89380f1e1ff63b89f92c9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25366,7 +25376,7 @@
     },
     "815792_hitter": {
       "hard_ok": true,
-      "hash": "60e43a8616e041dde100037590ee55f5",
+      "hash": "9ae937be15a1b23f0e3c1b7d5ac9d252",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25430,7 +25440,7 @@
     },
     "815816_hitter": {
       "hard_ok": true,
-      "hash": "516df1e79c59d0c5b6f331e60e4c33d7",
+      "hash": "d2253c6d9b329fb420e1960ebc51fac1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25472,7 +25482,7 @@
     },
     "815824_hitter": {
       "hard_ok": true,
-      "hash": "a6a40a55b918aa27849dce66ba11cf37",
+      "hash": "e8290fa711ebc655c2f63477e99bdedf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25498,7 +25508,7 @@
     },
     "815825_pitcher": {
       "hard_ok": true,
-      "hash": "c2f08f0292ff1bb96db159489025cd1a",
+      "hash": "c64c35adf228067a5bee56cdbf88c340",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25539,7 +25549,7 @@
     },
     "815832_hitter": {
       "hard_ok": true,
-      "hash": "72638079b3339c2eb5f3349e0a9e32e7",
+      "hash": "ecfaf4591bf13b7f43fa0bb01a757988",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25565,7 +25575,7 @@
     },
     "815841_pitcher": {
       "hard_ok": true,
-      "hash": "c493d956af09bbe3de0e0960c1b6ba79",
+      "hash": "5a8dbbf19006d104ae1626536b333eaa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25629,7 +25639,7 @@
     },
     "815873_hitter": {
       "hard_ok": true,
-      "hash": "d04b8af08bc74a162c8753464b1f7307",
+      "hash": "53e25b0c5a93dd44aac086a80040e1cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25655,7 +25665,7 @@
     },
     "815888_hitter": {
       "hard_ok": true,
-      "hash": "0e23809c996a1fc6e3aec2178511f9b1",
+      "hash": "a9244746c8bb2d95870a3f8d53316eb6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25695,7 +25705,7 @@
     },
     "815896_hitter": {
       "hard_ok": true,
-      "hash": "74b0bc0102e1d2e03b365cae49f3edc9",
+      "hash": "7435b8a7a69d079c19a8965ce8ad3d8f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25721,7 +25731,7 @@
     },
     "815897_hitter": {
       "hard_ok": true,
-      "hash": "1623f823ac9fafa6340bab1d4bc6b9de",
+      "hash": "a7f6683cb98656b7fe72ca37d212e091",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25762,7 +25772,7 @@
     },
     "815906_hitter": {
       "hard_ok": true,
-      "hash": "194cb247e8de527d56951d2091d44556",
+      "hash": "6cf8dcbd76caa4b39672c76908da582d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25788,7 +25798,7 @@
     },
     "815908_hitter": {
       "hard_ok": true,
-      "hash": "bcb372919e90325109deeb9fdecf7086",
+      "hash": "b10843dea3f1eb043efa1da26c557b0c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25829,7 +25839,7 @@
     },
     "815929_hitter": {
       "hard_ok": true,
-      "hash": "43e54d7647a3242dd75c97a035906712",
+      "hash": "72440b7d65db2f4adb994c3e6d1ab3c2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25855,7 +25865,7 @@
     },
     "815931_hitter": {
       "hard_ok": true,
-      "hash": "903d659c5a59d3ac61e446e10179dc9f",
+      "hash": "f8383bebd8861a2efde4f2bd94ba244f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25881,7 +25891,7 @@
     },
     "815983_hitter": {
       "hard_ok": true,
-      "hash": "b007ad5fe80d0f6870c8bc1b6d54ca25",
+      "hash": "f98277f3148e6653e6b7900d3d21a3a1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25907,7 +25917,7 @@
     },
     "816102_pitcher": {
       "hard_ok": true,
-      "hash": "bdc30b37d9846b60261ae240e7668ca1",
+      "hash": "3dd4dc90b96dc0dd5f979adca9c8eae6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25933,7 +25943,7 @@
     },
     "816111_hitter": {
       "hard_ok": true,
-      "hash": "317f3906dce12a143f6ce0da172d1e5f",
+      "hash": "634fc276243467db44ad894a1f1bcb33",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25959,7 +25969,7 @@
     },
     "816113_hitter": {
       "hard_ok": true,
-      "hash": "b22b2d4273d47ddac7c77173554d4468",
+      "hash": "c2b070ccff7a89a1b29871afd646dd3a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26030,7 +26040,7 @@
     },
     "820825_pitcher": {
       "hard_ok": true,
-      "hash": "7217468fc40c8c492967658d29d67c69",
+      "hash": "adfa96e7b7f4aeea628794b1b9b97827",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26096,7 +26106,7 @@
     },
     "820986_hitter": {
       "hard_ok": true,
-      "hash": "1b8c3be07c8a7af554db4910406b8ce4",
+      "hash": "3e6d0b5a8b39d8d7dfd74ee90d453bc4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26122,7 +26132,7 @@
     },
     "821041_hitter": {
       "hard_ok": true,
-      "hash": "d51955da2250f535165dd03ebbcf3c1b",
+      "hash": "2e8a1cf61b96953dfa5b64a0ae1bbd3e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26148,7 +26158,7 @@
     },
     "821100_hitter": {
       "hard_ok": true,
-      "hash": "99dfbe04e60cd4e5bcb34a77cdeb9819",
+      "hash": "6ef8cf670732de3fdb74b4400b05167e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26174,7 +26184,7 @@
     },
     "821116_pitcher": {
       "hard_ok": true,
-      "hash": "c3f9b6020e89dd2b62a82f2ae18e770f",
+      "hash": "2205da0ff3187d719b102ec48572a581",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26200,7 +26210,7 @@
     },
     "821136_hitter": {
       "hard_ok": true,
-      "hash": "a069a05d40422881322bdcacfad586d7",
+      "hash": "597b2879e9d79c81e3aebc655e4db928",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26226,7 +26236,7 @@
     },
     "821139_hitter": {
       "hard_ok": true,
-      "hash": "ba90cca8e82f3c1c97f599b5608465ad",
+      "hash": "7da63b723136aab6008bead54d55470c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26252,7 +26262,7 @@
     },
     "821150_hitter": {
       "hard_ok": true,
-      "hash": "3731fcf5f8bb72b2c6307ed20790c192",
+      "hash": "c1f7cd1a69f5b9c1ab12a4e2d7171c03",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26292,7 +26302,7 @@
     },
     "821181_hitter": {
       "hard_ok": true,
-      "hash": "66cf69fb29366e77901958ea7047309b",
+      "hash": "fae32dbe2cf7ab69911e197cb354ff5a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26318,7 +26328,7 @@
     },
     "821187_hitter": {
       "hard_ok": true,
-      "hash": "196b0924d431dda847d9d3d2f9cf180d",
+      "hash": "087d32913f30fecf0b2aed9ec44bbe49",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26344,7 +26354,7 @@
     },
     "821270_hitter": {
       "hard_ok": true,
-      "hash": "6dfebbdedf37ad758d6cf9ba1e2d6aef",
+      "hash": "882b5db2a8fde7f9f2e4a3cf50dd5a82",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26370,7 +26380,7 @@
     },
     "821273_hitter": {
       "hard_ok": true,
-      "hash": "e5c124e29adbf8e80173e813c5a87167",
+      "hash": "c6ec77fb6a9287a6d2c49258727b831f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26420,7 +26430,7 @@
     },
     "821783_pitcher": {
       "hard_ok": true,
-      "hash": "6b092976797cce43bd22588b7d73ecf6",
+      "hash": "5bda2e7ebdbcafa84a39d640cbf45c44",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26446,7 +26456,7 @@
     },
     "822578_hitter": {
       "hard_ok": true,
-      "hash": "a784a60ed63ef496e04e491802f64b05",
+      "hash": "425c0955e125fd6feeac7ac44c1c8cd7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26496,7 +26506,7 @@
     },
     "823369_pitcher": {
       "hard_ok": true,
-      "hash": "475ab855ec89f3d0e3f14330694f6228",
+      "hash": "aa62ad762634083b201800aa06f00938",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26522,7 +26532,7 @@
     },
     "823650_pitcher": {
       "hard_ok": true,
-      "hash": "b8ed08bb771bb174bacc4e840c23e1b7",
+      "hash": "e6fa2d4a4da1a5cc5132bc7b02562d4b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26548,7 +26558,7 @@
     },
     "823658_hitter": {
       "hard_ok": true,
-      "hash": "b1580ac4cf610f0a3141661dea994c17",
+      "hash": "bf07ccb7054d540bb272b6c0d5703973",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26588,7 +26598,7 @@
     },
     "823764_pitcher": {
       "hard_ok": true,
-      "hash": "aad4d8b90f5df3325a1165b8f344d2f2",
+      "hash": "06ceb0bc46a29a88d018df6c64c4f475",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26614,7 +26624,7 @@
     },
     "823779_hitter": {
       "hard_ok": true,
-      "hash": "aa5bf1959ecb417eceec6d1eb11a694b",
+      "hash": "65ad508ee9f97e5a80de7f5c95d892d9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26640,7 +26650,7 @@
     },
     "823787_hitter": {
       "hard_ok": true,
-      "hash": "4f6e55560139305f4a88ec3cffaf5706",
+      "hash": "6765f0b06126a56ca2f16641bf8d59e4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26666,7 +26676,7 @@
     },
     "823807_hitter": {
       "hard_ok": true,
-      "hash": "11472e5b69f8c8e39ea81e437ec58095",
+      "hash": "1e38a9a39a46c81438e9e8182e800f9f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26692,7 +26702,7 @@
     },
     "824026_pitcher": {
       "hard_ok": true,
-      "hash": "8f4a40e595a6c5980831682e2bcff5de",
+      "hash": "307ddcfc898c8fa73ff043e276cc555b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26718,7 +26728,7 @@
     },
     "824028_hitter": {
       "hard_ok": true,
-      "hash": "6ce260a0c542709bf9a568c1df5407ba",
+      "hash": "234f9f5f4486b78613be84ec0c1e9e44",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26744,7 +26754,7 @@
     },
     "824604_pitcher": {
       "hard_ok": true,
-      "hash": "579865658206a6e66b3ed7569048fbb5",
+      "hash": "f9db7224aa40c4e810ba57d4f1dd42bb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26770,7 +26780,7 @@
     },
     "824620_pitcher": {
       "hard_ok": true,
-      "hash": "237c06a993dbabdc711894def6ebcbed",
+      "hash": "bc469d7190959b2c898706167e14180c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26820,7 +26830,7 @@
     },
     "824624_pitcher": {
       "hard_ok": true,
-      "hash": "7c5d20cc560176cf4c61a75f2982dfed",
+      "hash": "09ecb7b699d5cc12aeca0712237d7a91",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26863,7 +26873,7 @@
     },
     "825576_pitcher": {
       "hard_ok": true,
-      "hash": "97252feb24927900ef4e9dd5460a340f",
+      "hash": "0425eab51aa3818078634016d7f6af90",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26905,7 +26915,7 @@
     },
     "825761_hitter": {
       "hard_ok": true,
-      "hash": "012b700d22e9a06324eeb4ea220b1b05",
+      "hash": "ecbbf2520720b911112d07c41e6de0aa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26931,7 +26941,7 @@
     },
     "826315_pitcher": {
       "hard_ok": true,
-      "hash": "f9a8f2c304457ca5074c9ad249fe9dd4",
+      "hash": "47e4788cdff1d5940b3efcd04f381dcd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26972,7 +26982,7 @@
     },
     "826536_pitcher": {
       "hard_ok": true,
-      "hash": "23f1a37bef4ffb1eae6d300675231155",
+      "hash": "6320bb6098bcf85ce1c4b50c35c4b95e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26998,7 +27008,7 @@
     },
     "826723_hitter": {
       "hard_ok": true,
-      "hash": "147864e4610bbdb3268547201479a1a0",
+      "hash": "4b01190d79d06c79020a21152ad0a941",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27024,7 +27034,7 @@
     },
     "826928_hitter": {
       "hard_ok": true,
-      "hash": "5cfad1c95fc7b89c28fcb2e897463d29",
+      "hash": "55855d0bad890abc3528774c3797f7ed",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27050,7 +27060,7 @@
     },
     "827110_pitcher": {
       "hard_ok": true,
-      "hash": "e49e6c656a93f2bb1b80ad8b43e88b40",
+      "hash": "0c7e7aca6f706b1f89d3d028db701ffd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27076,7 +27086,7 @@
     },
     "827265_pitcher": {
       "hard_ok": true,
-      "hash": "2c529554b4ef1f4ff55ff828781e278e",
+      "hash": "a2996f2919fcc3eeb87efafcbe9da918",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27102,7 +27112,7 @@
     },
     "827267_pitcher": {
       "hard_ok": true,
-      "hash": "891a8fdf24493b7bd40e88f4b058a853",
+      "hash": "1b3b1a6779aa78082df3a543fcc45e76",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27147,7 +27157,7 @@
     },
     "827292_pitcher": {
       "hard_ok": true,
-      "hash": "0d0d1852ec4863bf751c682fe2fbdd0f",
+      "hash": "ead943d1c53b07a9256e3376a5d2580e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27173,7 +27183,7 @@
     },
     "827408_pitcher": {
       "hard_ok": true,
-      "hash": "54f28598b89348fa8e498b295f205235",
+      "hash": "a16ea6889c6ea51a151e6b663fd3d254",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27224,7 +27234,7 @@
     },
     "827463_pitcher": {
       "hard_ok": true,
-      "hash": "4e113285581debebd34908e7942a8fe1",
+      "hash": "5af839efc6e456b4991768a1db1b9e9c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27274,7 +27284,7 @@
     },
     "827626_pitcher": {
       "hard_ok": true,
-      "hash": "3460e7e120e67c29906d70ee1b962a31",
+      "hash": "5f9a5e5fbe07f08e6560713ef5c92ed6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27300,7 +27310,7 @@
     },
     "827640_pitcher": {
       "hard_ok": true,
-      "hash": "731e16febfc466546c451e915b3691bb",
+      "hash": "60d410b6378ff6203f52832610be38b1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27351,7 +27361,7 @@
     },
     "827719_hitter": {
       "hard_ok": true,
-      "hash": "0c3cdc3c59becf6310924dbda6003d0f",
+      "hash": "df1c3d19b2e14b60c198434cb1dcc2d5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27377,7 +27387,7 @@
     },
     "827734_pitcher": {
       "hard_ok": true,
-      "hash": "0b1190c479fab0a789b9f6915949c29a",
+      "hash": "c2ad9282c275c979cf02c6721f5204ca",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27442,7 +27452,7 @@
     },
     "828098_hitter": {
       "hard_ok": true,
-      "hash": "50bdc76722d7b1c005d7815568bb3ccb",
+      "hash": "4d8c482a0c4004038c583fdcd4450ae9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27468,7 +27478,7 @@
     },
     "828137_pitcher": {
       "hard_ok": true,
-      "hash": "438021733594d8abc34a6c32bad893ac",
+      "hash": "ec19abb2eef37dd0e4d09fbc2722ea59",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27494,7 +27504,7 @@
     },
     "828148_hitter": {
       "hard_ok": true,
-      "hash": "f1228da1b8773b458ba5407e87f32253",
+      "hash": "66176e8af744d2187cfdb6f4187f74cb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27534,7 +27544,7 @@
     },
     "828237_hitter": {
       "hard_ok": true,
-      "hash": "d5b8aea998784210973fb777c49c171f",
+      "hash": "3efb319df8f61d0f668200f725ad33a7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27560,7 +27570,7 @@
     },
     "828244_pitcher": {
       "hard_ok": true,
-      "hash": "dc622ffa9296e6f1df6e0ab23ee27370",
+      "hash": "bacda77233f4a94703abdfd43739972b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27586,7 +27596,7 @@
     },
     "828262_hitter": {
       "hard_ok": true,
-      "hash": "b0a04314b10f9599ce89263f26ce49ce",
+      "hash": "dc3a336ea88b938050fd9f62d9dd3000",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27612,7 +27622,7 @@
     },
     "828318_hitter": {
       "hard_ok": true,
-      "hash": "b7287043635c93e87952e10a5901f134",
+      "hash": "b65e8ac57a2102c2602127d14a36609e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27655,7 +27665,7 @@
     },
     "828475_pitcher": {
       "hard_ok": true,
-      "hash": "42a704d551d0bb12f69e986e715e4848",
+      "hash": "08801b0ea5564ccc966b3b8a81bd902e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27695,7 +27705,7 @@
     },
     "828599_hitter": {
       "hard_ok": true,
-      "hash": "cf7ba146877b8c6ec55b12f66437d340",
+      "hash": "470b6cf6b35e2fe2612b8f743ecf33d9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27721,7 +27731,7 @@
     },
     "828667_hitter": {
       "hard_ok": true,
-      "hash": "b0ed6449bda5287909583bdd7d860f25",
+      "hash": "44d12889f0eb1312383a6f44cce70744",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27761,7 +27771,7 @@
     },
     "828685_hitter": {
       "hard_ok": true,
-      "hash": "82ca169b7acab2be23867f560d4c9080",
+      "hash": "a1bcdc4c7cf94c27e7be40f5c9aa93d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27835,7 +27845,7 @@
     },
     "829034_hitter": {
       "hard_ok": true,
-      "hash": "b84579b717525d017f9910a8a39f3411",
+      "hash": "b5ba3f48b8c1f4b947aee967dafd54db",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27861,7 +27871,7 @@
     },
     "829037_hitter": {
       "hard_ok": true,
-      "hash": "c192505883c4cb409bacacc89945372c",
+      "hash": "33ca91d1a4742f56b2d9ba74bb425d84",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27931,7 +27941,7 @@
     },
     "829398_hitter": {
       "hard_ok": true,
-      "hash": "7d5993caf4f02d77a1a0f9f3d4ef5090",
+      "hash": "906cefda20b42ad713ec721cf8bf7ba2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27957,7 +27967,7 @@
     },
     "829741_hitter": {
       "hard_ok": true,
-      "hash": "8de3170010427d9a5cb0e94aef887cd5",
+      "hash": "c0f7238abc033fb3cace147dd89a7ac3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28014,7 +28024,7 @@
     },
     "830336_pitcher": {
       "hard_ok": true,
-      "hash": "b4a135157f86037ab474be48e8e5ad1b",
+      "hash": "4eb87c7069a5422c77a440709f7f574f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28040,7 +28050,7 @@
     },
     "830402_pitcher": {
       "hard_ok": true,
-      "hash": "f6b1ab0407bc94ca00f489325809e1fa",
+      "hash": "0e0a300f8da7a207bf4271c5bc9af15d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28066,7 +28076,7 @@
     },
     "832562_pitcher": {
       "hard_ok": true,
-      "hash": "ca2288fb4c508370eeb83df8a82d0c54",
+      "hash": "f2f509663fe97914368641e1c4245157",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28117,7 +28127,7 @@
     },
     "834978_pitcher": {
       "hard_ok": true,
-      "hash": "3852c791e6ce3ed8a4963c3ef9be0603",
+      "hash": "81ecf07696d2464b7bf786ac8e0e7b14",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],

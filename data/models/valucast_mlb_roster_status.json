@@ -10,7 +10,7 @@
   },
   "contract_name": "ValuCast MLB Roster Status Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-09-29",
+  "generated_at": "2026-09-30",
   "profiles": [
     {
       "active_mlb_roster": true,
@@ -6401,6 +6401,19 @@
       "name": "Dalton Rushing",
       "position": "C",
       "position_name": "Catcher",
+      "source": "official_mlb_statsapi_active_roster",
+      "status_code": "A",
+      "status_description": "Active",
+      "team_abbreviation": "LAD",
+      "team_id": 119,
+      "team_name": "Los Angeles Dodgers"
+    },
+    {
+      "active_mlb_roster": true,
+      "mlbam_id": 683618,
+      "name": "Edgardo Henriquez",
+      "position": "P",
+      "position_name": "Pitcher",
       "source": "official_mlb_statsapi_active_roster",
       "status_code": "A",
       "status_description": "Active",
@@ -13793,7 +13806,7 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "active_roster_profile_count": 1059,
+    "active_roster_profile_count": 1060,
     "blockers": [],
     "duplicate_identity_count": 0,
     "ready_for_public_snapshot": true,
