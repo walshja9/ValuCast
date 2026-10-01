@@ -1,15 +1,15 @@
 {
   "artifact": "valucast_prospect_model_v0_7_preview",
-  "as_of": "2026-09-30",
+  "as_of": "2026-10-01",
   "bucket_comparison": {
     "bucket_count": 6,
     "bucket_definition": "role|level_band|score_source|availability_status",
     "buckets": [
       {
         "availability_context_coverage": 1.0,
-        "avg_rank_v1_score": 37.032,
+        "avg_rank_v1_score": 37.0318,
         "avg_v0_7_delta": -0.5569,
-        "avg_v0_7_shadow_score": 36.475,
+        "avg_v0_7_shadow_score": 36.4749,
         "bucket": "hitter|upper_level|prospect_model_v0_6|available",
         "count": 92,
         "factual_context_coverage": 1.0,
@@ -4501,11 +4501,11 @@
       "mlbam_id": 825761,
       "name": "Ryan Cesarini",
       "rank_v1_rank": 135,
-      "rank_v1_score": 30.74,
+      "rank_v1_score": 30.73,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.495,
-      "v0_7_shadow_score": 29.245
+      "v0_7_shadow_score": 29.235
     },
     {
       "candidate_features": {
@@ -9120,11 +9120,11 @@
       "mlbam_id": 809733,
       "name": "Connor Wietgrefe",
       "rank_v1_rank": 273,
-      "rank_v1_score": 25.78,
+      "rank_v1_score": 25.77,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 2.812,
-      "v0_7_shadow_score": 28.592
+      "v0_7_shadow_score": 28.582
     },
     {
       "candidate_features": {
@@ -10486,11 +10486,11 @@
       "mlbam_id": 672012,
       "name": "Tyler Black",
       "rank_v1_rank": 313,
-      "rank_v1_score": 24.61,
+      "rank_v1_score": 24.6,
       "role": "hitter",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -0.537,
-      "v0_7_shadow_score": 24.073
+      "v0_7_shadow_score": 24.063
     },
     {
       "candidate_features": {
@@ -13618,11 +13618,11 @@
       "mlbam_id": 694696,
       "name": "Cade Smith",
       "rank_v1_rank": 408,
-      "rank_v1_score": 22.6,
+      "rank_v1_score": 22.59,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": 3.245,
-      "v0_7_shadow_score": 25.845
+      "v0_7_shadow_score": 25.835
     },
     {
       "candidate_features": {
@@ -23723,39 +23723,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_per_9": 3.6,
-        "bucket_calibration": null,
-        "current_sample": 34.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": 13.9,
-        "k_per_9": 8.8,
-        "sample_reliability": 39.8,
-        "starter_role": true
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AA",
-      "mlbam_id": 804123,
-      "name": "Joey Volini",
-      "rank_v1_rank": 703,
-      "rank_v1_score": 18.15,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.073,
-      "v0_7_shadow_score": 17.077
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 4.7,
         "bucket_calibration": null,
         "current_sample": 71.7,
@@ -23777,12 +23744,45 @@
       "level": "A+",
       "mlbam_id": 801249,
       "name": "Julio Mendez",
+      "rank_v1_rank": 703,
+      "rank_v1_score": 18.16,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.374,
+      "v0_7_shadow_score": 19.534
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 3.6,
+        "bucket_calibration": null,
+        "current_sample": 34.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": 13.9,
+        "k_per_9": 8.8,
+        "sample_reliability": 39.8,
+        "starter_role": true
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AA",
+      "mlbam_id": 804123,
+      "name": "Joey Volini",
       "rank_v1_rank": 704,
       "rank_v1_score": 18.15,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.374,
-      "v0_7_shadow_score": 19.524
+      "v0_7_delta_vs_rank_v1": -1.073,
+      "v0_7_shadow_score": 17.077
     },
     {
       "candidate_features": {
@@ -25492,11 +25492,11 @@
       "mlbam_id": 697812,
       "name": "Joe Rock",
       "rank_v1_rank": 754,
-      "rank_v1_score": 17.57,
+      "rank_v1_score": 17.56,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -1.672,
-      "v0_7_shadow_score": 15.898
+      "v0_7_shadow_score": 15.888
     },
     {
       "candidate_features": {
@@ -29045,39 +29045,6 @@
         "age_level_context": null,
         "availability_risk_discount": 0.0,
         "availability_status": "available",
-        "bb_per_9": 5.3,
-        "bucket_calibration": null,
-        "current_sample": 59.0,
-        "current_sample_unit": "IP",
-        "current_skill_band": "mixed",
-        "factual_investment_context": null,
-        "k_bb_pct": 12.8,
-        "k_per_9": 9.9,
-        "sample_reliability": 54.1,
-        "starter_role": false
-      },
-      "feature_coverage": {
-        "availability_context": true,
-        "bucket_calibration": false,
-        "factual_current_context": true,
-        "factual_investment_context": false,
-        "sample_reliability": true
-      },
-      "level": "AAA",
-      "mlbam_id": 682992,
-      "name": "Erik Rivera",
-      "rank_v1_rank": 859,
-      "rank_v1_score": 16.36,
-      "role": "pitcher",
-      "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": -1.071,
-      "v0_7_shadow_score": 15.289
-    },
-    {
-      "candidate_features": {
-        "age_level_context": null,
-        "availability_risk_discount": 0.0,
-        "availability_status": "available",
         "bb_per_9": 6.6,
         "bucket_calibration": null,
         "current_sample": 69.7,
@@ -29099,12 +29066,45 @@
       "level": "A",
       "mlbam_id": 827445,
       "name": "Joel Lara",
+      "rank_v1_rank": 859,
+      "rank_v1_score": 16.37,
+      "role": "pitcher",
+      "score_source": "prospect_model_v0_6",
+      "v0_7_delta_vs_rank_v1": 1.133,
+      "v0_7_shadow_score": 17.503
+    },
+    {
+      "candidate_features": {
+        "age_level_context": null,
+        "availability_risk_discount": 0.0,
+        "availability_status": "available",
+        "bb_per_9": 5.3,
+        "bucket_calibration": null,
+        "current_sample": 59.0,
+        "current_sample_unit": "IP",
+        "current_skill_band": "mixed",
+        "factual_investment_context": null,
+        "k_bb_pct": 12.8,
+        "k_per_9": 9.9,
+        "sample_reliability": 54.1,
+        "starter_role": false
+      },
+      "feature_coverage": {
+        "availability_context": true,
+        "bucket_calibration": false,
+        "factual_current_context": true,
+        "factual_investment_context": false,
+        "sample_reliability": true
+      },
+      "level": "AAA",
+      "mlbam_id": 682992,
+      "name": "Erik Rivera",
       "rank_v1_rank": 860,
       "rank_v1_score": 16.36,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
-      "v0_7_delta_vs_rank_v1": 1.133,
-      "v0_7_shadow_score": 17.493
+      "v0_7_delta_vs_rank_v1": -1.071,
+      "v0_7_shadow_score": 15.289
     },
     {
       "candidate_features": {
@@ -61523,11 +61523,11 @@
       "mlbam_id": 800233,
       "name": "Ernesto Mercedes",
       "rank_v1_rank": 1762,
-      "rank_v1_score": 8.33,
+      "rank_v1_score": 8.35,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",
       "v0_7_delta_vs_rank_v1": -2.245,
-      "v0_7_shadow_score": 6.085
+      "v0_7_shadow_score": 6.105
     },
     {
       "candidate_features": {
@@ -125100,7 +125100,7 @@
       "bucket_calibration"
     ]
   },
-  "generated_at": "2026-09-30T00:00:00+00:00",
+  "generated_at": "2026-10-01T00:00:00+00:00",
   "input_artifacts": {
     "outcome_backtest_grade": "A-",
     "outcome_backtest_version": "0.2.0",

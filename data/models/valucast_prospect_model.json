@@ -1,6 +1,6 @@
 {
   "board_gate": {
-    "activated_at": "2026-09-30T11:43:07.820832+00:00",
+    "activated_at": "2026-10-01T11:44:30.803869+00:00",
     "baseline": "historical_neighbors_25",
     "baseline_score": 0.140745,
     "cv_method": "walk_forward",
@@ -14,13 +14,13 @@
   },
   "candidate_count": 3201,
   "impact_board_gate": {
-    "activated_at": "2026-09-30T11:43:07.820832+00:00",
+    "activated_at": "2026-10-01T11:44:30.803869+00:00",
     "baseline": "historical_neighbors_25",
     "baseline_score": 0.130787,
     "cv_method": "walk_forward",
     "improvement_pct": 3.031,
     "metric": "category_impact_mae",
-    "model_score": 0.126823,
+    "model_score": 0.126822,
     "reason": "beats historical_neighbors_25 by 3.03% OOS (category_impact_mae)",
     "sample_size": 2901,
     "status": "active",
@@ -393,13 +393,13 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-09-30T11:43:07.820832+00:00",
+        "activated_at": "2026-10-01T11:44:30.803869+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.161439,
         "cv_method": "walk_forward",
         "improvement_pct": 5.5467,
         "metric": "category_impact_mae",
-        "model_score": 0.152485,
+        "model_score": 0.152484,
         "reason": "beats historical_neighbors_25 by 5.55% OOS (category_impact_mae)",
         "sample_size": 1522,
         "status": "active",
@@ -444,7 +444,7 @@
         0.2458287
       ],
       "model_kind": "hurdle_ridge",
-      "model_mae": 0.152485,
+      "model_mae": 0.152484,
       "neighbor_mae": 0.161439,
       "prediction_model": {
         "arrival_model": {
@@ -642,49 +642,49 @@
             0.43657121
           ],
           "weights": [
-            0.50941881,
-            0.02932985,
-            0.00713638,
-            -0.00260524,
-            0.02398889,
-            0.0160241,
-            -0.01519787,
-            -0.00850649,
-            0.03333882,
-            0.03276981,
-            -0.0107646,
-            0.01228651,
-            0.00616948,
-            -0.02757091,
-            0.00858073,
-            -0.01177907,
+            0.50941769,
+            0.02932919,
+            0.00713619,
+            -0.00260507,
+            0.02398689,
+            0.01602381,
+            -0.0151969,
+            -0.00850544,
+            0.03333931,
+            0.0327701,
+            -0.01076456,
+            0.01228625,
+            0.00616933,
+            -0.0275713,
+            0.00858116,
+            -0.01177808,
             0.00356843,
-            0.00446839,
-            0.01203354,
-            0.00267142,
-            -0.03198536,
-            -0.00109264,
-            -0.01661041,
-            0.03256338,
-            0.01029609,
-            -0.00073824,
-            0.00699456,
+            0.00446657,
+            0.01203398,
+            0.00267159,
+            -0.03198428,
+            -0.00109319,
+            -0.01661162,
+            0.03256322,
+            0.01029549,
+            -0.00073742,
+            0.00699451,
             0.0,
-            0.00303426,
-            0.00555205,
-            0.00430439,
-            -0.01747171,
-            0.00958055,
-            -0.00962905,
-            -0.0066152,
-            -0.02030031,
-            0.005647
+            0.00303438,
+            0.00555192,
+            0.00430449,
+            -0.01747278,
+            0.00958058,
+            -0.00962863,
+            -0.00661534,
+            -0.02030025,
+            0.00564654
           ]
         },
         "model_kind": "hurdle_ridge"
       },
-      "prior_mae": 0.174179,
-      "rank_concordance": 0.708818,
+      "prior_mae": 0.174178,
+      "rank_concordance": 0.708816,
       "ridge_lambda": 10.0,
       "role": "pitcher",
       "stds": [
@@ -728,43 +728,43 @@
       "training_sample": 2697,
       "validation_sample": 1522,
       "weights": [
-        0.13561836,
-        0.02427222,
-        0.01079732,
-        0.06751738,
-        -0.00899518,
-        0.0183716,
-        -0.00269579,
-        0.0067488,
-        0.0147053,
-        0.01181519,
-        -0.01477277,
-        0.0066249,
-        0.0106011,
-        0.04935997,
-        0.00980431,
-        -0.02791796,
-        0.02963764,
-        -0.02355586,
-        0.00393368,
-        0.02645909,
-        -0.00503795,
-        0.01330424,
-        0.00390812,
-        0.03867496,
-        0.00526288,
-        -0.0028933,
-        0.00646871,
+        0.13561806,
+        0.02427187,
+        0.01079717,
+        0.06751728,
+        -0.00899614,
+        0.01837144,
+        -0.00269546,
+        0.00674924,
+        0.01470536,
+        0.01181517,
+        -0.01477272,
+        0.00662481,
+        0.01060096,
+        0.04935974,
+        0.00980445,
+        -0.02791754,
+        0.02963751,
+        -0.02355642,
+        0.00393402,
+        0.026459,
+        -0.00503727,
+        0.01330377,
+        0.00390765,
+        0.03867476,
+        0.00526256,
+        -0.00289276,
+        0.0064687,
         0.0,
-        0.0155825,
-        -0.00393964,
-        0.02594034,
-        -0.01916319,
-        -0.00130956,
-        -0.00613341,
-        -0.00264315,
-        -0.0036407,
-        -0.00208757
+        0.01558226,
+        -0.00393961,
+        0.0259403,
+        -0.01916339,
+        -0.00130952,
+        -0.0061333,
+        -0.00264317,
+        -0.00364068,
+        -0.00208771
       ]
     }
   },
@@ -847,7 +847,7 @@
     "validation": "expanding_window"
   },
   "input_contract": {
-    "generated_at": "2026-09-30T00:00:00+00:00",
+    "generated_at": "2026-10-01T00:00:00+00:00",
     "schema_version": "1.2",
     "source_policy": {
       "dynasty_values_used": false,
@@ -895,7 +895,7 @@
           "feature": "inverse_draft_pick"
         }
       ],
-      "expected_category_impact_score": 0.6777,
+      "expected_category_impact_score": 0.6776,
       "expected_outcome_score": 0.9946,
       "impact_drivers": [
         {
@@ -11817,7 +11817,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.3463,
+      "expected_category_impact_score": 0.3462,
       "expected_outcome_score": 0.2948,
       "impact_drivers": [
         {
@@ -12365,7 +12365,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": 0.0418,
+          "contribution": 0.0417,
           "feature": "k_bb_pct"
         }
       ],
@@ -12731,7 +12731,7 @@
           "feature": "pick_value"
         }
       ],
-      "expected_category_impact_score": 0.2714,
+      "expected_category_impact_score": 0.2713,
       "expected_outcome_score": 0.2868,
       "impact_drivers": [
         {
@@ -12989,7 +12989,7 @@
       "expected_outcome_score": 0.2861,
       "impact_drivers": [
         {
-          "contribution": 0.3927,
+          "contribution": 0.3926,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -14112,7 +14112,7 @@
           "feature": "k_bb_pct_x_level"
         },
         {
-          "contribution": 0.0383,
+          "contribution": 0.0382,
           "feature": "k_per_9_x_level"
         }
       ],
@@ -14258,7 +14258,7 @@
           "feature": "college_drafted"
         }
       ],
-      "expected_category_impact_score": 0.2916,
+      "expected_category_impact_score": 0.2915,
       "expected_outcome_score": 0.2715,
       "impact_drivers": [
         {
@@ -17053,7 +17053,7 @@
       "expected_outcome_score": 0.2532,
       "impact_drivers": [
         {
-          "contribution": 0.3738,
+          "contribution": 0.3737,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -18212,7 +18212,7 @@
           "feature": "start_rate"
         }
       ],
-      "expected_category_impact_score": 0.2349,
+      "expected_category_impact_score": 0.2348,
       "expected_outcome_score": 0.2493,
       "impact_drivers": [
         {
@@ -20053,7 +20053,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": 0.0439,
+          "contribution": 0.0438,
           "feature": "start_rate"
         }
       ],
@@ -20428,7 +20428,7 @@
           "feature": "h_per_9"
         }
       ],
-      "expected_category_impact_score": 0.4476,
+      "expected_category_impact_score": 0.4475,
       "expected_outcome_score": 0.239,
       "impact_drivers": [
         {
@@ -25137,11 +25137,11 @@
       "name": "AJ Russell",
       "normalized_name": "aj russell",
       "pedigree_shrink_correction": {
-        "impact_delta": -0.0354,
+        "impact_delta": -0.0353,
         "outcome_delta": -0.0627,
         "pedigree_shrunk_impact": 0.2291,
         "pedigree_shrunk_outcome": 0.2176,
-        "raw_impact": 0.2645,
+        "raw_impact": 0.2644,
         "raw_outcome": 0.2803,
         "reliability": 0.405
       },
@@ -26187,11 +26187,11 @@
       "name": "Brycen Mautz",
       "normalized_name": "brycen mautz",
       "pedigree_shrink_correction": {
-        "impact_delta": -0.0149,
+        "impact_delta": -0.0148,
         "outcome_delta": -0.03,
         "pedigree_shrunk_impact": 0.2411,
         "pedigree_shrunk_outcome": 0.2132,
-        "raw_impact": 0.256,
+        "raw_impact": 0.2559,
         "raw_outcome": 0.2432,
         "reliability": 0.632
       },
@@ -28348,7 +28348,7 @@
       "expected_outcome_score": 0.2053,
       "impact_drivers": [
         {
-          "contribution": -0.0694,
+          "contribution": -0.0695,
           "feature": "log_signing_bonus"
         },
         {
@@ -30464,7 +30464,7 @@
           "feature": "pick_value"
         }
       ],
-      "expected_category_impact_score": 0.2175,
+      "expected_category_impact_score": 0.2174,
       "expected_outcome_score": 0.1986,
       "impact_drivers": [
         {
@@ -39460,7 +39460,7 @@
       "expected_outcome_score": 0.1737,
       "impact_drivers": [
         {
-          "contribution": -0.0563,
+          "contribution": -0.0564,
           "feature": "log_signing_bonus"
         },
         {
@@ -41141,7 +41141,7 @@
       "expected_outcome_score": 0.1698,
       "impact_drivers": [
         {
-          "contribution": 0.2623,
+          "contribution": 0.2622,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -45833,7 +45833,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": 0.0364,
+          "contribution": 0.0365,
           "feature": "level"
         },
         {
@@ -47268,7 +47268,7 @@
           "feature": "k_bb_pct_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1781,
+      "expected_category_impact_score": 0.178,
       "expected_outcome_score": 0.1521,
       "impact_drivers": [
         {
@@ -49016,7 +49016,7 @@
           "feature": "starter_x_youth"
         }
       ],
-      "expected_category_impact_score": 0.182,
+      "expected_category_impact_score": 0.1819,
       "expected_outcome_score": 0.1458,
       "impact_drivers": [
         {
@@ -56938,7 +56938,7 @@
           "feature": "whip_x_level"
         }
       ],
-      "expected_category_impact_score": 0.1516,
+      "expected_category_impact_score": 0.1515,
       "expected_outcome_score": 0.1289,
       "impact_drivers": [
         {
@@ -63656,7 +63656,7 @@
           "feature": "batters_faced_per_ip"
         },
         {
-          "contribution": -0.067,
+          "contribution": -0.0669,
           "feature": "start_rate"
         },
         {
@@ -65919,7 +65919,7 @@
       "sample_reliability": 0.582,
       "sample_unit": "IP",
       "team": "St. Lucie Mets",
-      "valucast_impact_rank": 1062,
+      "valucast_impact_rank": 1061,
       "valucast_prospect_rank": 1221
     },
     {
@@ -77742,7 +77742,7 @@
       "expected_outcome_score": 0.0921,
       "impact_drivers": [
         {
-          "contribution": 0.0787,
+          "contribution": 0.0786,
           "feature": "k_bb_pct"
         },
         {
@@ -80227,7 +80227,7 @@
           "feature": "log_signing_bonus"
         },
         {
-          "contribution": -0.0384,
+          "contribution": -0.0383,
           "feature": "k_bb_pct"
         },
         {
@@ -82211,7 +82211,7 @@
       "sample_reliability": 0.648,
       "sample_unit": "PA",
       "team": "Fresno Grizzlies",
-      "valucast_impact_rank": 2100,
+      "valucast_impact_rank": 2099,
       "valucast_prospect_rank": 1534
     },
     {
@@ -86864,7 +86864,7 @@
           "feature": "batters_faced_per_ip"
         }
       ],
-      "expected_category_impact_score": 0.1336,
+      "expected_category_impact_score": 0.1335,
       "expected_outcome_score": 0.0759,
       "impact_drivers": [
         {
@@ -86892,7 +86892,7 @@
       "sample_reliability": 0.468,
       "sample_unit": "IP",
       "team": "Las Vegas Aviators",
-      "valucast_impact_rank": 1061,
+      "valucast_impact_rank": 1062,
       "valucast_prospect_rank": 1626
     },
     {
@@ -98216,7 +98216,7 @@
       "expected_outcome_score": 0.0549,
       "impact_drivers": [
         {
-          "contribution": 0.0433,
+          "contribution": 0.0434,
           "feature": "level"
         },
         {
@@ -107386,7 +107386,7 @@
       "expected_outcome_score": 0.039,
       "impact_drivers": [
         {
-          "contribution": -0.0508,
+          "contribution": -0.0507,
           "feature": "start_rate"
         },
         {
@@ -118908,7 +118908,7 @@
       "expected_outcome_score": 0.0218,
       "impact_drivers": [
         {
-          "contribution": -0.0674,
+          "contribution": -0.0673,
           "feature": "start_rate"
         },
         {
@@ -119817,7 +119817,7 @@
       "expected_outcome_score": 0.0203,
       "impact_drivers": [
         {
-          "contribution": -0.0682,
+          "contribution": -0.0681,
           "feature": "start_rate"
         },
         {
@@ -120516,7 +120516,7 @@
       "sample_reliability": 0.472,
       "sample_unit": "IP",
       "team": "St. Lucie Mets",
-      "valucast_impact_rank": 2099,
+      "valucast_impact_rank": 2098,
       "valucast_prospect_rank": 2280
     },
     {
@@ -124803,7 +124803,7 @@
           "feature": "inverse_draft_round"
         }
       ],
-      "expected_category_impact_score": 0.0453,
+      "expected_category_impact_score": 0.0452,
       "expected_outcome_score": 0.0125,
       "impact_drivers": [
         {
@@ -124831,7 +124831,7 @@
       "sample_reliability": 0.39,
       "sample_unit": "IP",
       "team": "Eugene Emeralds",
-      "valucast_impact_rank": 2098,
+      "valucast_impact_rank": 2100,
       "valucast_prospect_rank": 2363
     },
     {
@@ -145993,7 +145993,7 @@
       "expected_outcome_score": 0.0,
       "impact_drivers": [
         {
-          "contribution": -0.0369,
+          "contribution": -0.0368,
           "feature": "start_rate"
         },
         {
@@ -166190,7 +166190,7 @@
           "feature": "start_rate"
         },
         {
-          "contribution": -0.0272,
+          "contribution": -0.0271,
           "feature": "batters_faced_per_ip"
         },
         {
@@ -166872,7 +166872,7 @@
         "inverse_draft_pick"
       ],
       "gate": {
-        "activated_at": "2026-09-30T11:43:07.820832+00:00",
+        "activated_at": "2026-10-01T11:44:30.803869+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.131269,
         "cv_method": "walk_forward",
@@ -167205,7 +167205,7 @@
         "throws_left"
       ],
       "gate": {
-        "activated_at": "2026-09-30T11:43:07.820832+00:00",
+        "activated_at": "2026-10-01T11:44:30.803869+00:00",
         "baseline": "historical_neighbors_25",
         "baseline_score": 0.14933,
         "cv_method": "walk_forward",
