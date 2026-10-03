@@ -14,7 +14,7 @@
       "SLG",
       "OPS"
     ],
-    "horizon_days": 105,
+    "horizon_days": 107,
     "horizon_sufficient": true,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "min_horizon_days": 30,
@@ -8757,44 +8757,44 @@
         "SV": 1.79351,
         "W": 2.63802
       },
-      "marcel_mean_ratio_vs_steamer": 1.9537,
+      "marcel_mean_ratio_vs_steamer": 1.964,
       "per_stat_ratio": {
-        "BB": 2.0495,
-        "ER": 2.1766,
-        "HLD": 1.6088,
-        "HR": 1.6691,
-        "H_ALLOWED": 2.6092,
-        "K": 2.4345,
-        "R": 1.737,
-        "RBI": 1.758,
-        "SB": 1.9769,
+        "BB": 2.0558,
+        "ER": 2.1877,
+        "HLD": 1.5977,
+        "HR": 1.6875,
+        "H_ALLOWED": 2.6316,
+        "K": 2.4364,
+        "R": 1.7578,
+        "RBI": 1.7844,
+        "SB": 1.9907,
         "SV": 1.738,
-        "W": 1.7333
+        "W": 1.7367
       },
       "steamer_mae": {
-        "BB": 6.05752,
-        "ER": 7.09162,
-        "HLD": 1.90571,
-        "HR": 3.38827,
-        "H_ALLOWED": 11.88893,
-        "K": 13.98505,
-        "R": 9.95552,
-        "RBI": 9.98911,
-        "SB": 2.16055,
+        "BB": 6.03902,
+        "ER": 7.0559,
+        "HLD": 1.91888,
+        "HR": 3.3513,
+        "H_ALLOWED": 11.78769,
+        "K": 13.97425,
+        "R": 9.83758,
+        "RBI": 9.84133,
+        "SB": 2.14556,
         "SV": 1.03194,
-        "W": 1.52194
+        "W": 1.51895
       }
     },
     "status": "scored",
-    "steamer_ros_git_commit": "2e59439f8fea42a33c15108cc92e6208d4383d01",
+    "steamer_ros_git_commit": "3001f9f85e11fbd2569c7e07e3550357ba348ce2",
     "window": {
       "as_of": "2026-06-18",
-      "elapsed_days": 105,
-      "proration_factor": 1.0396,
+      "elapsed_days": 107,
+      "proration_factor": 1.0594,
       "proration_method": "calendar_days_elapsed_over_regular_season_days_remaining; projection rows are treated as rest-of-season counts",
       "remaining_days_at_freeze": 101,
       "season_end": "2026-09-27",
-      "through": "2026-10-01"
+      "through": "2026-10-03"
     }
   },
   "gate": {
@@ -8808,9 +8808,9 @@
     "reason": "does not beat steamer_ros: -9.84% < required 2.0%",
     "sample_size": 759,
     "status": "fallback",
-    "validated_through": "2026-10-01"
+    "validated_through": "2026-10-03"
   },
-  "generated_at": "2026-10-01T11:40:11.503792+00:00",
+  "generated_at": "2026-10-03T16:51:12.222702+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
@@ -8835,7 +8835,7 @@
       "reason": "does not beat steamer_ros: -4.91% < required 2.0%",
       "sample_size": 392,
       "status": "fallback",
-      "validated_through": "2026-10-01"
+      "validated_through": "2026-10-03"
     },
     "pitchers": {
       "activated_at": null,
@@ -8848,7 +8848,7 @@
       "reason": "does not beat steamer_ros: -19.69% < required 2.0%",
       "sample_size": 367,
       "status": "fallback",
-      "validated_through": "2026-10-01"
+      "validated_through": "2026-10-03"
     }
   },
   "role_scores": {
