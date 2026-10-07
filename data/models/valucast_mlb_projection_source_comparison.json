@@ -14,7 +14,7 @@
       "SLG",
       "OPS"
     ],
-    "horizon_days": 110,
+    "horizon_days": 111,
     "horizon_sufficient": true,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "min_horizon_days": 30,
@@ -8789,12 +8789,12 @@
     "steamer_ros_git_commit": "2e59439f8fea42a33c15108cc92e6208d4383d01",
     "window": {
       "as_of": "2026-06-18",
-      "elapsed_days": 110,
-      "proration_factor": 1.0891,
+      "elapsed_days": 111,
+      "proration_factor": 1.099,
       "proration_method": "calendar_days_elapsed_over_regular_season_days_remaining; projection rows are treated as rest-of-season counts",
       "remaining_days_at_freeze": 101,
       "season_end": "2026-09-27",
-      "through": "2026-10-06"
+      "through": "2026-10-07"
     }
   },
   "gate": {
@@ -8808,9 +8808,9 @@
     "reason": "does not beat steamer_ros: -9.84% < required 2.0%",
     "sample_size": 759,
     "status": "fallback",
-    "validated_through": "2026-10-06"
+    "validated_through": "2026-10-07"
   },
-  "generated_at": "2026-10-06T11:39:25.775917+00:00",
+  "generated_at": "2026-10-07T11:41:15.291625+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
@@ -8835,7 +8835,7 @@
       "reason": "does not beat steamer_ros: -4.91% < required 2.0%",
       "sample_size": 392,
       "status": "fallback",
-      "validated_through": "2026-10-06"
+      "validated_through": "2026-10-07"
     },
     "pitchers": {
       "activated_at": null,
@@ -8848,7 +8848,7 @@
       "reason": "does not beat steamer_ros: -19.69% < required 2.0%",
       "sample_size": 367,
       "status": "fallback",
-      "validated_through": "2026-10-06"
+      "validated_through": "2026-10-07"
     }
   },
   "role_scores": {
