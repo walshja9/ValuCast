@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-10-08",
+  "generated_at": "2026-10-09",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -603,21 +603,6 @@
       "transaction_id": 943597,
       "type_code": "ASG",
       "type_description": "Assigned"
-    },
-    {
-      "active_injury_risk": true,
-      "description": "San Diego Padres placed RHP Casey Mize on the 15-day injured list. Right ankle sprain.",
-      "effective_date": "2026-09-26",
-      "list_type": "15-day injured list",
-      "mlbam_id": 663554,
-      "name": "Casey Mize",
-      "source": "official_mlb_statsapi_transactions",
-      "status": "injured",
-      "team": "San Diego Padres",
-      "transaction_date": "2026-09-26",
-      "transaction_id": 944135,
-      "type_code": "SC",
-      "type_description": "Status Change"
     },
     {
       "active_injury_risk": true,
@@ -3796,6 +3781,21 @@
       "team": "Seattle Mariners",
       "transaction_date": "2026-08-21",
       "transaction_id": 938865,
+      "type_code": "SC",
+      "type_description": "Status Change"
+    },
+    {
+      "active_injury_risk": false,
+      "description": "San Diego Padres activated RHP Casey Mize from the 15-day injured list.",
+      "effective_date": "2026-10-08",
+      "list_type": "15-day injured list",
+      "mlbam_id": 663554,
+      "name": "Casey Mize",
+      "source": "official_mlb_statsapi_transactions",
+      "status": "available",
+      "team": "San Diego Padres",
+      "transaction_date": "2026-10-08",
+      "transaction_id": 945394,
       "type_code": "SC",
       "type_description": "Status Change"
     },
@@ -9921,7 +9921,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-10-08",
+    "end_date": "2026-10-09",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -9939,15 +9939,15 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "available_after_il_count": 468,
+    "available_after_il_count": 469,
     "blockers": [],
     "duplicate_identity_count": 0,
-    "injured_count": 147,
+    "injured_count": 146,
     "profile_count": 660,
     "ready_for_mlb_dynasty_layer": true,
     "rehab_count": 45,
-    "risk_profile_count": 192,
+    "risk_profile_count": 191,
     "tracked_mlbam_count": 11120,
-    "transaction_count": 12846
+    "transaction_count": 12891
   }
 }

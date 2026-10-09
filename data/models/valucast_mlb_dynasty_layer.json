@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-08",
+  "generated_at": "2026-10-09",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.6.0",
   "limitations": [],
@@ -22009,6 +22009,174 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 28,
+      "components": {
+        "age_adjustment": 1.06,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": false,
+          "effective_date": "2026-10-08",
+          "list_type": "15-day injured list",
+          "note": "San Diego Padres activated RHP Casey Mize from the 15-day injured list.",
+          "present": true,
+          "risk_discount": 0.0,
+          "risk_level": "clear",
+          "source": "official_mlb_statsapi_transactions",
+          "status": "available",
+          "transaction_date": "2026-10-08",
+          "transaction_id": 945394
+        },
+        "availability_adjusted": false,
+        "availability_risk_discount": 0.0,
+        "cross_role_calibration": {
+          "anchor": 0.92,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 24.95,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": 0.3031,
+        "horizon_years": [
+          {
+            "age": 28,
+            "age_factor": 1.0,
+            "projected_value": 2.3503,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 29,
+            "age_factor": 0.9151,
+            "projected_value": -1.1251,
+            "reliability_factor": 0.7462,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 30,
+            "age_factor": 0.8302,
+            "projected_value": -1.8194,
+            "reliability_factor": 0.7462,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 74.62,
+        "production_score": 22.96,
+        "projection_stability": {
+          "current_season_category_value": -0.9792,
+          "ros_category_value": 2.7651,
+          "ros_stability_weight": 0.4,
+          "ros_true_talent_annualization_scale": 180.0,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": 2.3503,
+          "stability_adjustment": 3.3295,
+          "true_talent_floor_applied": true,
+          "true_talent_floor_value": 2.3503
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 25.54,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 58.33,
+          "track_record_experience_band": "partial_track_record",
+          "track_record_floor_applied": true,
+          "track_record_floor_blocked_reason": null,
+          "track_record_floor_score": 41.13,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "season_category_value": 2.3503,
+        "track_record": {
+          "experience_band": "partial_track_record",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 58.33,
+          "track_record_floor_score": 41.13,
+          "volume": {
+            "career": 571.333,
+            "current_season": 131.333,
+            "prior_mlb": 440.0,
+            "recent_3yr_prior": 251.333
+          }
+        }
+      },
+      "confidence": "medium",
+      "drivers": [
+        "K +0.68",
+        "ERA -0.44",
+        "SV -0.38",
+        "WHIP +0.37",
+        "playing time reliability 75"
+      ],
+      "dynasty_horizon_value": 0.3031,
+      "id": "vc_mlb_663554_pitcher",
+      "mlb_team": "SDP",
+      "mlbam_id": 663554,
+      "name": "Casey Mize",
+      "player_type": "mlb",
+      "pool": "starter",
+      "positions": [
+        "SP"
+      ],
+      "projection_value": 2.3503,
+      "rank": 137,
+      "role": "pitcher",
+      "score": 41.13,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.0,
+          "ERA": -0.4365,
+          "HR": 0.0,
+          "K": 0.6827,
+          "R": 0.0,
+          "RBI": 0.0,
+          "SB": 0.0,
+          "SV": -0.3819,
+          "W": 0.3482,
+          "WHIP": 0.3673
+        },
+        "raw_values": {
+          "AVG": null,
+          "ERA": 4.3161,
+          "HR": null,
+          "K": 110.892,
+          "R": null,
+          "RBI": null,
+          "SB": null,
+          "SV": 0.0,
+          "W": 6.058,
+          "WHIP": 1.2262
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "ERA": 4.32,
+          "HLD": 0.0,
+          "IP": 132.333,
+          "K": 110.892,
+          "QS": 10.082,
+          "SV": 0.0,
+          "W": 6.058,
+          "WHIP": 1.23
+        }
+      },
+      "team": "SDP",
+      "value": 41.13,
+      "value_by_preset": {
+        "5x5": 41.13,
+        "6x6": 41.13,
+        "7x7": 41.13,
+        "7x7_ops": 41.13,
+        "obp": 41.13,
+        "points": 41.13,
+        "sv_hld": 41.13
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 25,
       "components": {
         "age_adjustment": 1.42,
@@ -22112,7 +22280,7 @@
         "SS"
       ],
       "projection_value": 6.3881,
-      "rank": 137,
+      "rank": 138,
       "role": "hitter",
       "score": 41.01,
       "stat_line": {
@@ -22270,7 +22438,7 @@
         "RP"
       ],
       "projection_value": 6.1625,
-      "rank": 138,
+      "rank": 139,
       "role": "pitcher",
       "score": 40.79,
       "stat_line": {
@@ -22439,7 +22607,7 @@
         "RP"
       ],
       "projection_value": 7.5846,
-      "rank": 139,
+      "rank": 140,
       "role": "pitcher",
       "score": 40.26,
       "stat_line": {
@@ -22607,7 +22775,7 @@
         "OF"
       ],
       "projection_value": 4.9131,
-      "rank": 140,
+      "rank": 141,
       "role": "hitter",
       "score": 40.04,
       "stat_line": {
@@ -22765,7 +22933,7 @@
         "OF"
       ],
       "projection_value": 5.9934,
-      "rank": 141,
+      "rank": 142,
       "role": "hitter",
       "score": 40.0,
       "stat_line": {
@@ -22923,7 +23091,7 @@
         "3B"
       ],
       "projection_value": 6.0844,
-      "rank": 142,
+      "rank": 143,
       "role": "hitter",
       "score": 39.88,
       "stat_line": {
@@ -23081,7 +23249,7 @@
         "SS"
       ],
       "projection_value": 5.7511,
-      "rank": 143,
+      "rank": 144,
       "role": "hitter",
       "score": 39.72,
       "stat_line": {
@@ -23239,7 +23407,7 @@
         "SP"
       ],
       "projection_value": 1.4105,
-      "rank": 144,
+      "rank": 145,
       "role": "pitcher",
       "score": 39.35,
       "stat_line": {
@@ -23410,7 +23578,7 @@
         "3B"
       ],
       "projection_value": 2.7201,
-      "rank": 145,
+      "rank": 146,
       "role": "hitter",
       "score": 39.34,
       "stat_line": {
@@ -23568,7 +23736,7 @@
         "OF"
       ],
       "projection_value": 6.1002,
-      "rank": 146,
+      "rank": 147,
       "role": "hitter",
       "score": 39.32,
       "stat_line": {
@@ -23736,7 +23904,7 @@
         "SS"
       ],
       "projection_value": 6.2791,
-      "rank": 147,
+      "rank": 148,
       "role": "hitter",
       "score": 39.24,
       "stat_line": {
@@ -23894,7 +24062,7 @@
         "1B"
       ],
       "projection_value": 5.434,
-      "rank": 148,
+      "rank": 149,
       "role": "hitter",
       "score": 39.03,
       "stat_line": {
@@ -24063,7 +24231,7 @@
         "DH"
       ],
       "projection_value": 5.6775,
-      "rank": 149,
+      "rank": 150,
       "role": "hitter",
       "score": 38.77,
       "stat_line": {
@@ -24231,7 +24399,7 @@
         "SP"
       ],
       "projection_value": 1.5635,
-      "rank": 150,
+      "rank": 151,
       "role": "pitcher",
       "score": 38.62,
       "stat_line": {
@@ -24400,7 +24568,7 @@
         "RP"
       ],
       "projection_value": 7.1534,
-      "rank": 151,
+      "rank": 152,
       "role": "pitcher",
       "score": 38.37,
       "stat_line": {
@@ -24558,7 +24726,7 @@
         "SP"
       ],
       "projection_value": 2.9256,
-      "rank": 152,
+      "rank": 153,
       "role": "pitcher",
       "score": 38.37,
       "stat_line": {
@@ -24716,7 +24884,7 @@
         "RP"
       ],
       "projection_value": 6.6214,
-      "rank": 153,
+      "rank": 154,
       "role": "pitcher",
       "score": 38.08,
       "stat_line": {
@@ -24875,7 +25043,7 @@
         "3B"
       ],
       "projection_value": 5.7385,
-      "rank": 154,
+      "rank": 155,
       "role": "hitter",
       "score": 37.94,
       "stat_line": {
@@ -25043,7 +25211,7 @@
         "SP"
       ],
       "projection_value": 7.2218,
-      "rank": 155,
+      "rank": 156,
       "role": "pitcher",
       "score": 37.53,
       "stat_line": {
@@ -25214,7 +25382,7 @@
         "3B"
       ],
       "projection_value": 2.4013,
-      "rank": 156,
+      "rank": 157,
       "role": "hitter",
       "score": 37.52,
       "stat_line": {
@@ -25382,7 +25550,7 @@
         "SP"
       ],
       "projection_value": 2.0577,
-      "rank": 157,
+      "rank": 158,
       "role": "pitcher",
       "score": 37.4,
       "stat_line": {
@@ -25540,7 +25708,7 @@
         "OF"
       ],
       "projection_value": 5.3947,
-      "rank": 158,
+      "rank": 159,
       "role": "hitter",
       "score": 37.2,
       "stat_line": {
@@ -25698,7 +25866,7 @@
         "OF"
       ],
       "projection_value": 5.1135,
-      "rank": 159,
+      "rank": 160,
       "role": "hitter",
       "score": 37.09,
       "stat_line": {
@@ -25867,7 +26035,7 @@
         "RP"
       ],
       "projection_value": 4.1021,
-      "rank": 160,
+      "rank": 161,
       "role": "pitcher",
       "score": 37.05,
       "stat_line": {
@@ -25917,176 +26085,6 @@
         "obp": 37.05,
         "points": 43.19,
         "sv_hld": 37.05
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 28,
-      "components": {
-        "age_adjustment": 1.06,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-09-26",
-          "list_type": "15-day injured list",
-          "note": "San Diego Padres placed RHP Casey Mize on the 15-day injured list. Right ankle sprain.",
-          "present": true,
-          "risk_discount": 0.1,
-          "risk_level": "high",
-          "score_before_availability_adjustment": 41.13,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-09-26",
-          "transaction_id": 944135
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.1,
-        "cross_role_calibration": {
-          "anchor": 0.92,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 24.95,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": 0.3031,
-        "horizon_years": [
-          {
-            "age": 28,
-            "age_factor": 1.0,
-            "projected_value": 2.3503,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 29,
-            "age_factor": 0.9151,
-            "projected_value": -1.1251,
-            "reliability_factor": 0.7462,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 30,
-            "age_factor": 0.8302,
-            "projected_value": -1.8194,
-            "reliability_factor": 0.7462,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 74.62,
-        "production_score": 22.96,
-        "projection_stability": {
-          "current_season_category_value": -0.9792,
-          "ros_category_value": 2.7651,
-          "ros_stability_weight": 0.4,
-          "ros_true_talent_annualization_scale": 180.0,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": 2.3503,
-          "stability_adjustment": 3.3295,
-          "true_talent_floor_applied": true,
-          "true_talent_floor_value": 2.3503
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 25.54,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 58.33,
-          "track_record_experience_band": "partial_track_record",
-          "track_record_floor_applied": true,
-          "track_record_floor_blocked_reason": null,
-          "track_record_floor_score": 41.13,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 41.13,
-        "season_category_value": 2.3503,
-        "track_record": {
-          "experience_band": "partial_track_record",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 58.33,
-          "track_record_floor_score": 41.13,
-          "volume": {
-            "career": 571.333,
-            "current_season": 131.333,
-            "prior_mlb": 440.0,
-            "recent_3yr_prior": 251.333
-          }
-        }
-      },
-      "confidence": "medium",
-      "drivers": [
-        "K +0.68",
-        "ERA -0.44",
-        "SV -0.38",
-        "WHIP +0.37",
-        "playing time reliability 75"
-      ],
-      "dynasty_horizon_value": 0.3031,
-      "id": "vc_mlb_663554_pitcher",
-      "mlb_team": "SDP",
-      "mlbam_id": 663554,
-      "name": "Casey Mize",
-      "player_type": "mlb",
-      "pool": "starter",
-      "positions": [
-        "SP"
-      ],
-      "projection_value": 2.3503,
-      "rank": 161,
-      "role": "pitcher",
-      "score": 37.02,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.0,
-          "ERA": -0.4365,
-          "HR": 0.0,
-          "K": 0.6827,
-          "R": 0.0,
-          "RBI": 0.0,
-          "SB": 0.0,
-          "SV": -0.3819,
-          "W": 0.3482,
-          "WHIP": 0.3673
-        },
-        "raw_values": {
-          "AVG": null,
-          "ERA": 4.3161,
-          "HR": null,
-          "K": 110.892,
-          "R": null,
-          "RBI": null,
-          "SB": null,
-          "SV": 0.0,
-          "W": 6.058,
-          "WHIP": 1.2262
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "ERA": 4.32,
-          "HLD": 0.0,
-          "IP": 132.333,
-          "K": 110.892,
-          "QS": 10.082,
-          "SV": 0.0,
-          "W": 6.058,
-          "WHIP": 1.23
-        }
-      },
-      "team": "SDP",
-      "value": 37.02,
-      "value_by_preset": {
-        "5x5": 37.02,
-        "6x6": 37.02,
-        "7x7": 37.02,
-        "7x7_ops": 37.02,
-        "obp": 37.02,
-        "points": 37.02,
-        "sv_hld": 37.02
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -153821,15 +153819,15 @@
     "age_coverage_count": 943,
     "age_coverage_rate": 1.0,
     "age_coverage_threshold": 0.95,
-    "availability_adjusted_count": 79,
+    "availability_adjusted_count": 78,
     "availability_present": true,
     "availability_profile_count": 660,
     "availability_ready": true,
-    "availability_risk_profile_count": 192,
+    "availability_risk_profile_count": 191,
     "blockers": [],
     "duplicate_identity_count": 0,
     "eligible_projection_count": 943,
-    "generated_date": "2026-10-08",
+    "generated_date": "2026-10-09",
     "horizon_year_count": 3,
     "missing_mlbam_count": 0,
     "ranks_contiguous": true,

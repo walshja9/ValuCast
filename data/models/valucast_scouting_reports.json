@@ -1,14 +1,14 @@
 {
   "artifact": "valucast_scouting_report_repository",
-  "generated_at": "2026-10-08T12:25:47.468825+00:00",
+  "generated_at": "2026-10-09T12:35:56.638408+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "card_data_audit_generated_at": "2026-10-08T12:18:13.556359+00:00",
+    "card_data_audit_generated_at": "2026-10-09T12:27:44.501685+00:00",
     "card_data_audit_path": "data/models/valucast_prospect_card_data_audit.json",
-    "public_snapshot_generated_at": "2026-10-08T12:18:01.781540+00:00",
+    "public_snapshot_generated_at": "2026-10-09T12:27:31.118246+00:00",
     "public_snapshot_path": "data/public/public_dynasty_snapshot.json",
     "public_snapshot_schema_version": "1.1",
-    "recent_signal_generated_at": "2026-10-08T12:17:21.982249+00:00",
+    "recent_signal_generated_at": "2026-10-09T12:26:49.749322+00:00",
     "recent_signal_path": "data/models/valucast_recent_signal_report.json"
   },
   "reports": [
@@ -151,7 +151,7 @@
       "published_report": "Forty-two home runs projected at 23 years old, and the Statcast profile makes the case without much argument. Caminero's average exit velocity sits at 92.7 mph, his xSLG lands at .500, and both rank in the 94th percentile \u2014 the contact quality is the kind that translates almost regardless of ballpark or lineup context. The discipline is the one wrinkle: his chase rate sits at the 44th percentile, and if pitchers find a consistent way to exploit it, the .887 OPS projection has more variance than the raw power suggests. What he is right now, at the contact-quality level, is a middle-of-the-order force waiting to finish growing up at the plate.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "The Statcast card is carried by elite Avg Exit Velo at the 95th percentile (92.7 mph), with well below-average Fielding (OAA) at the 2nd percentile as the drag. A power-first line projects to .276 AVG, .360 OBP, .884 OPS, 42 HR, 3 SB over 710 PA.",
+      "report": "The Statcast card is carried by elite Avg Exit Velo at the 95th percentile (92.7 mph), with well below-average Fielding (OAA) at the 1st percentile as the drag. A power-first line projects to .276 AVG, .360 OBP, .884 OPS, 42 HR, 3 SB over 710 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -266,7 +266,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 2,
+              "pct": 1,
               "raw": null
             }
           ]
@@ -437,7 +437,7 @@
       "published_report": "The .491 xSLG sits well above where the actual .441 SLG landed, which tells you the bat is outrunning the results \u2014 not the other way around. Merrill's 91.5 mph average exit velocity and 48.7% hard-hit rate are legitimate power drivers, and a 12.4% barrel rate at 23 puts real weight behind the 26-home-run projection. The problem is the plate discipline: a 37.6% chase rate ranks near the bottom of the league, and 6.2% walks aren't going to get better until he learns to lay off, which caps the ceiling at .303 OBP even when everything else is clicking. Add 29.0 ft/s sprint speed and a fielding profile that grades out elite, and you have a player who projects as a very good outfielder today and becomes a genuine middle-of-the-order piece the moment someone fixes his relationship with the breaking ball away.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "elite Fielding (OAA) at the 92nd percentile carries the Statcast card; well below-average Chase % at the 12th percentile (37.6%) is the drag. A power-first line projects to .255 AVG, .303 OBP, .744 OPS, 26 HR, 27 SB over 672 PA.",
+      "report": "The Statcast view starts with elite Fielding (OAA) at the 93rd percentile, but well below-average Chase % at the 12th percentile (37.6%) pulls down the profile. A power-first line projects to .255 AVG, .303 OBP, .744 OPS, 26 HR, 27 SB over 672 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -552,7 +552,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 92,
+              "pct": 93,
               "raw": null
             }
           ]
@@ -2450,7 +2450,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 97,
+              "pct": 98,
               "raw": null
             }
           ]
@@ -2968,7 +2968,7 @@
       "published_report": "The barrel rate is 11.9%, a real power source at shortstop, but a 30.5% strikeout rate and a 36.9% chase rate are the reason his xBA sits at .216, which is about as far below his xwOBA of .318 as a profile can stretch before something has to give. The power translates: 27 home runs in the projection with a .436 SLG against an xSLG of .412 in the Statcast profile is a coherent story, and the 24 stolen bases on top of it make him a legitimate five-category contributor. What this profile hinges on is whether he ever trims the chase enough to let that barrel rate breathe into a real average, because right now he's a .239 hitter with a 9.9% walk rate doing a lot of the damage-control work.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "plus Barrel % at the 77th percentile (11.9%) carries the Statcast card; well below-average Fielding (OAA) at the 5th percentile is the drag. A power-first line projects to .239 AVG, .329 OBP, .765 OPS, 27 HR, 24 SB over 712 PA.",
+      "report": "plus Barrel % at the 77th percentile (11.9%) carries the Statcast card; well below-average Whiff % at the 6th percentile (32.9%) is the drag. A power-first line projects to .239 AVG, .329 OBP, .765 OPS, 27 HR, 24 SB over 712 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -3083,7 +3083,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 5,
+              "pct": 6,
               "raw": null
             }
           ]
@@ -3263,7 +3263,7 @@
       "published_report": "The K-BB% across AA & A+ sits at 24%, and the translation puts that at 14.9% in an MLB context, a tick above league average, which is roughly what you'd expect from a back-end starter who misses bats without embarrassing himself in the walk column. A 12.4 K/9 against 3.3 BB/9 across 72.6 innings is the kind of combination that grades well against his peers, but the ERA sitting at 4.3 with a 1.3 WHIP suggests the stuff plays cleaner in counting terms than in results. If the strikeout rate translates and the control holds, he's a fifth starter who earns regular turns; if the walks tick up at the next level, the bullpen is the honest floor and the back-end ceiling shrinks with them.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 71,
+        "buy_rank": 72,
         "buy_reason": "ValuCast model strength",
         "buy_score": 50.4,
         "movement_label": "holding steady",
@@ -3328,7 +3328,7 @@
       "published_report": "A .378 xwOBA sits in the 96th percentile, and so does his 14.3% walk rate \u2014 that pairing is the argument. Vargas chases at just 20.9%, which is why the walks hold and why the .496 xSLG makes sense despite exit velocity that's merely average: he's getting to good counts and barreling at 13.0%. The projection, 33 home runs, .363 OBP, 22 steals across 712 plate appearances, reads like what you'd expect from the underlying profile if he gets to play every day on a real roster, which is the only dependency that matters given that fielding mark.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "The Statcast view starts with elite xwOBA at the 96th percentile (.378), but well below-average Fielding (OAA) at the 6th percentile pulls down the profile. A power-first line projects to .250 AVG, .363 OBP, .837 OPS, 33 HR, 22 SB over 712 PA.",
+      "report": "The Statcast view starts with elite xwOBA at the 96th percentile (.378), but well below-average Fielding (OAA) at the 5th percentile pulls down the profile. A power-first line projects to .250 AVG, .363 OBP, .837 OPS, 33 HR, 22 SB over 712 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -3443,7 +3443,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 6,
+              "pct": 5,
               "raw": null
             }
           ]
@@ -3542,10 +3542,10 @@
         "OF"
       ],
       "prospect_rank": null,
-      "published_report": "The Statcast card is carried by elite Hard-Hit % at the 98th percentile (54.7%), with well below-average Fielding (OAA) at the 3rd percentile as the drag. A steady line projects to .289 AVG, .340 OBP, .834 OPS, 23 HR, 7 SB over 560 PA.",
+      "published_report": "The Statcast card is carried by elite Hard-Hit % at the 98th percentile (54.7%), with well below-average Fielding (OAA) at the 2nd percentile as the drag. A steady line projects to .289 AVG, .340 OBP, .834 OPS, 23 HR, 7 SB over 560 PA.",
       "published_report_source": "deterministic",
       "recent_signal": null,
-      "report": "The Statcast card is carried by elite Hard-Hit % at the 98th percentile (54.7%), with well below-average Fielding (OAA) at the 3rd percentile as the drag. A steady line projects to .289 AVG, .340 OBP, .834 OPS, 23 HR, 7 SB over 560 PA.",
+      "report": "The Statcast card is carried by elite Hard-Hit % at the 98th percentile (54.7%), with well below-average Fielding (OAA) at the 2nd percentile as the drag. A steady line projects to .289 AVG, .340 OBP, .834 OPS, 23 HR, 7 SB over 560 PA.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -3637,7 +3637,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 3,
+              "pct": 2,
               "raw": null
             }
           ]
@@ -3780,7 +3780,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 90,
+              "pct": 88,
               "raw": null
             }
           ]
@@ -3923,7 +3923,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 73,
+              "pct": 72,
               "raw": null
             }
           ]
@@ -4223,7 +4223,7 @@
       "published_report": "The strikeout stuff is loud, 130 punchouts across 103 innings at AA, an 11.4 K/9 that translates to 9.1 at the MLB level, but the walk rate is the whole argument. At 4.7 BB/9, the 54 free passes he's issued translate to 4.6 at the big-league level against a 3.2 MLB average, and his K-BB% lands right at 12.9% translated, just below the 13.5% MLB mean despite the swing-and-miss. That gap, elite miss paired with below-average control, is what keeps the ceiling at rotation starter and the floor at depth arm, because if the walks don't tighten, the strikeouts are paying rent on a leaky house. If the command comes, he's a rotation piece in one to two years; if it doesn't, the stuff earns him a bullpen audition and not much else.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 58,
+        "buy_rank": 59,
         "buy_reason": "Model conviction",
         "buy_score": 51.7,
         "movement_label": "holding steady",
@@ -4539,7 +4539,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 63,
+              "pct": 75,
               "raw": null
             }
           ]
@@ -4714,7 +4714,7 @@
       "published_report": ".987 OPS across AA & A+, at 19, catching. That's the whole argument.\n\nRainiel Rodriguez has 27 home runs and a .324/.413/.574 slash across 530 plate appearances this season, with 60 walks against 101 strikeouts, a discipline profile that translates to a 9.4% walk rate and a 22.3% strikeout rate in MLB context, right at league average on the strikeout side and a tick above on walks. The .251 ISO in the minors compresses to a .176 MLB-equivalent, which is still meaningfully above a league-average power profile for a catcher. The ceiling here is a low-end everyday regular, and he gets there if the bat-to-ball skills hold as the competition sharpens; the floor, if the strikeout rate creeps and the BABIP normalizes down from .362, is a bench bat behind the dish, which for a 19-year-old with this much contact and power on the same card is still an acceptable miss.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 34,
+        "buy_rank": 32,
         "buy_reason": "Young runway",
         "buy_score": 54.6,
         "movement_label": "holding steady",
@@ -5141,7 +5141,7 @@
       "published_report": "The translation is the honest problem here. Across AAA & AA this season, Arnold has a 3.5 ERA and 130 strikeouts in 118.3 innings, and those numbers look like a rotation piece; the MLB-equivalent read is considerably quieter. His K/9 translates to 8.3, nearly identical to what a typical MLB starter produces, but his walk rate comes out at 4.1 per nine when the sport-wide baseline sits at 3.2, and the K-BB% lands at 11.6% against a 13.5% baseline. He can miss bats at a roughly league-rate clip, but the walks bleed the margin, and there isn't much cushion in that profile if the command doesn't sharpen. If it does tighten, he's a back-of-the-rotation starter; if it doesn't, what's left is a depth arm.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 92,
+        "buy_rank": 91,
         "buy_reason": "Model conviction",
         "buy_score": 48.4,
         "movement_label": "holding steady",
@@ -5215,7 +5215,7 @@
       "published_report": ".323 across AAA & AA at age 20, with 74 strikeouts against 53 walks in 520 plate appearances \u2014 that's a contact-and-discipline combination that scouts spend careers waiting to see this early. The MLB-equivalent translation puts his strikeout rate at 17.7%, well below where the league runs, which is the gap that makes everything else believable: the .400 OBP isn't a BABIP mirage and the .234 ISO across AAA & AA has genuine foundation behind it. If the contact holds at the highest level, Franklin Arias becomes an everyday shortstop, the kind who hits near the top of the order and stays there. The floor to watch is whether the walk rate, fine but not exceptional in translation at 8.9%, thins further against elite arms, which is the one lever that could reduce this to a second-division regular instead of something better.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 78,
+        "buy_rank": 77,
         "buy_reason": "Model conviction",
         "buy_score": 49.6,
         "movement_label": "holding steady",
@@ -5289,7 +5289,7 @@
       "published_report": "The .258 ISO across AAA & AA is the loudest thing in this profile, and it translates to .189 at the MLB level, well above the league mean. Ralphy Velazquez is hitting .290 with 29 home runs and 61 walks in 538 plate appearances across AAA & AA, and his translated strikeout rate lands right at league average, which makes the power less of a high-variance gamble than it might look from the raw numbers. The whole thing hinges on the position: first base has no margin for offensive adequacy, and the gap between a low-end everyday regular and a bench bat at 1B is narrower than it looks from the outside. If the power holds in MLB air, he's a useful corner piece; if the strikeout rate creeps and the contact thins, the walk rate alone won't carry him at a premium offensive position.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 65,
+        "buy_rank": 66,
         "buy_reason": "Model conviction",
         "buy_score": 50.8,
         "movement_label": "holding steady",
@@ -5613,7 +5613,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 65,
+              "pct": 66,
               "raw": null
             }
           ]
@@ -5787,7 +5787,7 @@
       "published_report": "The ISO is the argument: .241 at AAA across 598 plate appearances, translating to .182 at the MLB level while the league sits at .150. That power has a foundation \u2014 79 walks producing an .390 OBP that becomes 11.2% walk rate in translation, well above the 8.5% MLB baseline. The strikeout side is the honest tension: 25.8% translated K rate at a position where you can carry some swing-and-miss if the power holds, but if that ISO shrinks against better spin and the strikeouts don't, he slides from low-end everyday first baseman to a bench bat with a useful platoon floor.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 100,
+        "buy_rank": 103,
         "buy_reason": "Model conviction",
         "buy_score": 47.8,
         "movement_label": "holding steady",
@@ -7084,7 +7084,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 60,
+              "pct": 57,
               "raw": null
             }
           ]
@@ -7259,7 +7259,7 @@
       "published_report": "The K-BB% across AA & A is 27%, and that's the number that makes Gage Wood worth watching. He's struck out 139 across 95 innings while walking just 30, and when you level-adjust that profile, the K/9 translates to 9.6 at the MLB level, a full strikeout per nine above where the average MLB arm sits. The concern is the walk rate: his MLB-equivalent BB/9 of 3.3 lands almost exactly at the MLB mean, meaning the command that looks clean in the minors flattens almost entirely once you translate it, and if walks creep even a tick in a big-league zone, the strikeouts have to carry the full load. If the stuff plays up, he's a rotation starter; if the walk rate drifts and the strikeouts don't fully translate, what's left is a depth arm.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 56,
+        "buy_rank": 57,
         "buy_reason": "Model conviction",
         "buy_score": 51.8,
         "movement_label": "holding steady",
@@ -7765,7 +7765,7 @@
             {
               "display": "28.3 ft/s",
               "label": "Sprint Speed",
-              "pct": 76,
+              "pct": 75,
               "raw": 28.3
             },
             {
@@ -8358,7 +8358,7 @@
       "published_report": "The contact profile here is loud: a 21.1% chase rate and 15.0% whiff rate put DeLauter in rarefied company for plate discipline, and the 91.4 mph average exit velocity backs it up with real thump. What's odd is that the barrel rate sits at just 6.3%, which creates a gap between the quality-of-contact peripherals and the power output \u2014 he's hitting the ball hard enough, often enough, but not squaring it on the barrel with the same frequency, and whether that gap closes shapes everything about his ceiling. If it does, the .346 xwOBA and .277 xBA start pointing toward a legitimate middle-of-the-order piece; if it doesn't, the projection's .287/.363/.457 line profiles as an above-average regular who gets a lot of value from patience and contact rather than over-the-fence damage.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "The Statcast card is carried by elite Chase % at the 95th percentile (21.1%), with well below-average Sprint Speed at the 29th percentile (26.7 ft/s) as the drag. An on-base-led line projects to .287 AVG, .363 OBP, .820 OPS, 16 HR, 11 SB over 565 PA.",
+      "report": "The Statcast card is carried by elite Chase % at the 95th percentile (21.1%), with well below-average Sprint Speed at the 30th percentile (26.7 ft/s) as the drag. An on-base-led line projects to .287 AVG, .363 OBP, .820 OPS, 16 HR, 11 SB over 565 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -8467,7 +8467,7 @@
             {
               "display": "26.7 ft/s",
               "label": "Sprint Speed",
-              "pct": 29,
+              "pct": 30,
               "raw": 26.7
             }
           ]
@@ -9878,7 +9878,7 @@
       "recent_signal": {
         "buy_rank": 16,
         "buy_reason": "Young runway",
-        "buy_score": 56.0,
+        "buy_score": 56.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -10084,7 +10084,7 @@
       "published_report": "The contact-and-walk profile here is genuinely elite, and the power profile is genuinely not. Perdomo's 11.8% whiff rate and 14.1% walk rate both sit near the top of the league, which is how a shortstop with an 87.6 mph average exit velocity and a 3.1% barrel rate still projects to a .370 OBP. The nine projected home runs over 688 plate appearances tell you exactly what he is: a table-setter whose value lives entirely in the on-base column and whatever he creates on the bases, not in the damage he does when he connects. If Arizona needs more middle-of-the-diamond punch, Perdomo isn't the answer, but as the guy who gets on base and stays out of double plays, that .747 projected OPS probably undersells his lineup contribution.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "elite Fielding (OAA) at the 98th percentile carries the Statcast card; well below-average Barrel % at the 9th percentile (3.1%) is the drag. A speed-driven line projects to .262 AVG, .370 OBP, .747 OPS, 9 HR, 21 SB over 688 PA.",
+      "report": "The Statcast view starts with elite Fielding (OAA) at the 99th percentile, but well below-average Barrel % at the 9th percentile (3.1%) pulls down the profile. A speed-driven line projects to .262 AVG, .370 OBP, .747 OPS, 9 HR, 21 SB over 688 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -10199,7 +10199,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 98,
+              "pct": 99,
               "raw": null
             }
           ]
@@ -10629,9 +10629,9 @@
       "published_report": "The ISO is .300 across AA & A+, and that number alone makes this profile worth watching. Caleb Bonemer is a 20-year-old third baseman who has hit 37 home runs in 595 plate appearances at those levels, and the translated power, an MLB-equivalent ISO of .199 where the MLB average sits at .150, says the raw output isn't just a minor-league mirage. The strikeout rate is the obstacle: 161 strikeouts across AA & A+ translates to a 29.8% K rate at the MLB level, and the whole profile hinges on whether he tightens contact enough to stay in a lineup against upper-level velocity. If he does, you're looking at a low-end everyday regular; if he doesn't, the power still plays off the bench, but that's the ceiling that's left.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 44,
+        "buy_rank": 45,
         "buy_reason": "Model conviction",
-        "buy_score": 53.2,
+        "buy_score": 52.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -11064,7 +11064,7 @@
       "published_report": "The plate discipline is carrying this profile as much as anything else. Across 279 AAA plate appearances in 2026, Adams has walked 40 times against 39 strikeouts, and the translation says that holds: an 11.2% walk rate and 18.0% strikeout rate in MLB context, both better than league average in opposite directions. The .25 ISO at AAA translates to .179 at the big-league level, which is meaningful gap power for a first baseman without elite bat-to-ball or a name attached to it yet. Everything here hinges on whether a 1B profile with average contact rates earns everyday reps, because the floor without a left-field defensive home is a bench bat with a great eye.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 119,
+        "buy_rank": 114,
         "buy_reason": "Model conviction",
         "buy_score": 47.0,
         "movement_label": "holding steady",
@@ -11394,9 +11394,9 @@
       "published_report": "The .409 OBP is the loudest number here, and it's the one that travels. Tibbs has walked 108 times in 643 AAA plate appearances in 2026, a 17% clip that translates to 13.8% at the MLB level against a sport-wide norm of 8.5% \u2014 the strike-zone command is the engine of this profile. The power is genuine enough at AAA, .245 ISO and 30 home runs, but the MLB translation softens to .185 ISO, and the 23% AAA strikeout rate ticks up to 24.4% against major-league arms. If the walk rate holds in the show, you have a low-end everyday right fielder; if pitchers start burying him and the strikeouts spike, the walk advantage narrows and you're looking at a useful bench bat with a good eye.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 126,
+        "buy_rank": 124,
         "buy_reason": "Model conviction",
-        "buy_score": 46.2,
+        "buy_score": 46.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -12563,7 +12563,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 42,
+              "pct": 43,
               "raw": null
             }
           ]
@@ -13119,9 +13119,9 @@
       "published_report": "The walk rate is the whole argument: 16 free passes across 101.3 innings at AA, translating to a 2.1 BB/9 when the MLB average sits at 3.2. That kind of command at 20 years old in Double-A is genuinely rare, and the 27% K-BB% at AA backs up that it isn't just soft contact buying him outs. The strikeout rate translates to 9.1 per nine at the MLB level, a tick above average rather than a weapon, so the profile lives or dies on whether that command survives the jump. If it does, he's a back-end starter with real staying power; if the stuff plays down against better bats and the walks creep up, you're left with a depth arm.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 43,
+        "buy_rank": 40,
         "buy_reason": "Model conviction",
-        "buy_score": 53.2,
+        "buy_score": 53.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -13858,7 +13858,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 24,
+              "pct": 23,
               "raw": null
             }
           ]
@@ -14144,7 +14144,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 8,
+              "pct": 9,
               "raw": null
             }
           ]
@@ -14181,9 +14181,9 @@
       "published_report": "The .419 OBP across AA & A+ is what grabs you, but the tension in Theo Gillen's profile is whether the contact quality survives MLB pitching. A .382 BABIP inflating a .315 average is the honest concern, yet a 14% walk rate and 22 home runs across AA & A+ in 533 plate appearances tell you this isn't someone simply riding balls in play \u2014 there's genuine strike-zone control and developing power underneath the batting average. The MLB-equivalent translation does knock the strikeout rate above league average and the power back toward ordinary, which is exactly what you'd expect from a 20-year-old still moving through the system, and the 44 stolen bases add a real dimension that survives level changes better than hit tools do. If the walk rate holds and the strikeout rate doesn't balloon further, he's a low-end everyday right fielder; if the contact regresses and the BABIP corrects hard, you're looking at a useful bench bat with speed.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 59,
+        "buy_rank": 58,
         "buy_reason": "Model conviction",
-        "buy_score": 51.4,
+        "buy_score": 51.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -14391,9 +14391,9 @@
       "published_report": "The WHIP sits at 1.2 across AAA & AA, and that's the number that keeps this profile from being a quiet star. Owen Murphy has a 3.6 ERA over 117.4 innings, which translates to an 87th-percentile mark in his pitcher pool, and his strikeout-minus-walk rate translates to 12.0% at the MLB level \u2014 workable, but a back-end starter needs more margin than that. The issue is the walks: 52 of them across AAA & AA, and the translated 4.0 BB/9 is meaningfully above where MLB starters tend to live, while the strikeout rate doesn't compensate the way you'd need it to if the command stays this loose. Tighten the walk rate and you get a back-end starter who earns every start; leave it here and the floor is depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 111,
-        "buy_reason": "Model conviction",
-        "buy_score": 47.4,
+        "buy_rank": null,
+        "buy_reason": null,
+        "buy_score": null,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -14602,9 +14602,9 @@
       "published_report": "The translation tells the real story: 10.3 K/9 at AA shrinks to 8.5 against MLB hitters, right at league average, while 30 walks in 56.7 innings becomes a 4.3 BB/9 that sits a full run above what the majors typically absorb. The strikeout carry is there; the walk rate is the thing. If he tightens the zone, there's a back-end starter here, and the K-BB% of 14% at AA, translating to 11.6% against MLB competition, shows exactly how much margin he's burning against a 13.5% baseline. If the command doesn't improve, he's a depth arm who misses bats but misses the strike too often to stay in a rotation.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 102,
+        "buy_rank": 101,
         "buy_reason": "Model conviction",
-        "buy_score": 47.7,
+        "buy_score": 47.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -14804,7 +14804,7 @@
       "published_report": "The gap between a .272 xBA and a current .258 projection AVG is where the real Colt Keith lives. His chase rate sits at 24.6%, which is genuinely elite contact discipline, and the underlying expected batting average suggests he's making better contact than the raw results show. The problem is the power ceiling: 88.7 mph average exit velocity and a 7.6% barrel rate are both middle-of-the-pack, and the .406 projected SLG tells you the bat plays as a contact-first profile rather than a force in the middle of a lineup. If the hit tool translates and the walk rate climbs from 7.6%, he's a solid regular at second base; if the chase discipline is the whole r\u00e9sum\u00e9 and the power stays flat, you're looking at a high-contact, low-ceiling type who profiles as a second-division regular without much leverage.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "The Statcast card is carried by plus xBA at the 84th percentile (.272), with well below-average Fielding (OAA) at the 26th percentile as the drag. A steady line projects to .258 AVG, .322 OBP, .728 OPS, 10 HR, 6 SB over 424 PA.",
+      "report": "The Statcast card is carried by plus xBA at the 84th percentile (.272), with well below-average Fielding (OAA) at the 25th percentile as the drag. A steady line projects to .258 AVG, .322 OBP, .728 OPS, 10 HR, 6 SB over 424 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -14919,7 +14919,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 26,
+              "pct": 25,
               "raw": null
             }
           ]
@@ -15099,9 +15099,9 @@
       "published_report": "The .407 OBP across AA & A+ & A is the number that does the most work here, because at 19 years old producing 91 walks in 562 plate appearances suggests a feel for the strike zone that's genuinely ahead of schedule. The ISO sits at .233 in the minors, which translates to .152 at the MLB level, essentially league average power, so the bat-to-ball and patience profile is carrying the profile more than the pop. The ceiling hinges on whether a first baseman with near-league-average translated power can do enough damage against big-league arms to hold down an everyday job, and if the contact slips when the stuff gets harder, what's left looks like a good on-base bench piece.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 46,
+        "buy_rank": 44,
         "buy_reason": "Young runway",
-        "buy_score": 52.7,
+        "buy_score": 53.2,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -15279,7 +15279,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 68,
+              "pct": 67,
               "raw": null
             }
           ]
@@ -15460,9 +15460,9 @@
       "published_report": "A 1.5 ERA across AA & A+ is the kind of number that makes you squint, but the 141 strikeouts and 1.0 WHIP in 99.3 innings say the run prevention isn't a mirage. The translation is the grounding fact: his strikeout rate converts to a 9.7 K/9 in MLB-equivalent terms, a notch above where most starters operate, and his K-BB% moves to 17.5% against a minor-league line that already ranks 99th percentile in that pool. The whole profile hinges on whether a right-hander with a walk rate that already sits near average can hold that command as the opposition thickens, because if that slips, a back-end starter is the honest ceiling rather than the floor. Right now the arrow is pointed up.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 72,
+        "buy_rank": 64,
         "buy_reason": "Model conviction",
-        "buy_score": 50.3,
+        "buy_score": 51.0,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -15783,7 +15783,7 @@
       "published_report": "The tension in this profile is the gap between how hard he hits it and how often he misses. Bauers runs a 14.0% barrel rate and 51.9% hard-hit rate that put him among the game's genuine power threats, but a 27.0% strikeout rate cuts into what that contact can become. The 21.7% chase rate is exceptional, and the 16.3% walk rate is nearly off the chart, which is how you get a .371 xwOBA out of a profile that whiffs 29.8% of the time. If he can shave the strikeout rate without sacrificing the plate discipline that drives everything else, the .872 OPS projection looks conservative.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "The Statcast card is carried by elite BB % at the 98th percentile (16.3%), with well below-average Fielding (OAA) at the 7th percentile as the drag. A power-first line projects to .266 AVG, .389 OBP, .872 OPS, 26 HR, 11 SB over 586 PA.",
+      "report": "The Statcast card is carried by elite BB % at the 98th percentile (16.3%), with well below-average Fielding (OAA) at the 6th percentile as the drag. A power-first line projects to .266 AVG, .389 OBP, .872 OPS, 26 HR, 11 SB over 586 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -15898,7 +15898,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 7,
+              "pct": 6,
               "raw": null
             }
           ]
@@ -16173,13 +16173,13 @@
             {
               "display": "27.5 ft/s",
               "label": "Sprint Speed",
-              "pct": 51,
+              "pct": 50,
               "raw": 27.5
             },
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 9,
+              "pct": 10,
               "raw": null
             }
           ]
@@ -16218,7 +16218,7 @@
       "recent_signal": {
         "buy_rank": 4,
         "buy_reason": "Still in the buy window",
-        "buy_score": 60.1,
+        "buy_score": 59.7,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -17065,7 +17065,7 @@
       "published_report": "The Statcast profile here is almost entirely red, an 83.8 mph average exit velocity that ranks at the 1st percentile, a 25.6% hard-hit rate at the 4th, an xwOBA of .278 sitting at the 5th. The projection absorbs all of that and still lands at a .655 OPS across 457 plate appearances, which is roughly what you'd expect from a contact-free, soft-contact shortstop who steals 34 bases and doesn't walk much at 6.4%. The 34 projected steals are doing real work here, because his 28.0 ft/s sprint speed grades out well and is the one tool that makes this profile functional rather than just organizational. What you're getting is a bench-to-fringe-regular shortstop who survives on legs and glove, and the whole thing crumbles if the stolen-base environment tightens or the contact hole deepens beyond what it already is.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "plus Fielding (OAA) at the 77th percentile carries the Statcast card; well below-average Avg Exit Velo at the 1st percentile (83.8 mph) is the drag. A speed-driven line projects to .231 AVG, .290 OBP, .655 OPS, 14 HR, 34 SB over 457 PA.",
+      "report": "The Statcast card is carried by plus Fielding (OAA) at the 76th percentile, with well below-average Avg Exit Velo at the 1st percentile (83.8 mph) as the drag. A speed-driven line projects to .231 AVG, .290 OBP, .655 OPS, 14 HR, 34 SB over 457 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -17180,7 +17180,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 77,
+              "pct": 76,
               "raw": null
             }
           ]
@@ -18289,7 +18289,7 @@
       "recent_signal": {
         "buy_rank": 14,
         "buy_reason": "Still in the buy window",
-        "buy_score": 57.3,
+        "buy_score": 57.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -18349,10 +18349,10 @@
         "OF"
       ],
       "prospect_rank": null,
-      "published_report": "elite xSLG at the 93rd percentile (.495) carries the Statcast card; well below-average Fielding (OAA) at the 2nd percentile is the drag. A speed-driven line projects to .255 AVG, .346 OBP, .797 OPS, 20 HR, 21 SB over 477 PA.",
+      "published_report": "elite xSLG at the 93rd percentile (.495) carries the Statcast card; well below-average Fielding (OAA) at the 3rd percentile is the drag. A speed-driven line projects to .255 AVG, .346 OBP, .797 OPS, 20 HR, 21 SB over 477 PA.",
       "published_report_source": "deterministic",
       "recent_signal": null,
-      "report": "elite xSLG at the 93rd percentile (.495) carries the Statcast card; well below-average Fielding (OAA) at the 2nd percentile is the drag. A speed-driven line projects to .255 AVG, .346 OBP, .797 OPS, 20 HR, 21 SB over 477 PA.",
+      "report": "elite xSLG at the 93rd percentile (.495) carries the Statcast card; well below-average Fielding (OAA) at the 3rd percentile is the drag. A speed-driven line projects to .255 AVG, .346 OBP, .797 OPS, 20 HR, 21 SB over 477 PA.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -18444,7 +18444,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 2,
+              "pct": 3,
               "raw": null
             }
           ]
@@ -18617,9 +18617,9 @@
       "published_report": "Forty-eight home runs across AA & A+ at age 22, with an .ISO of .380 \u2014 that's the loudest number in this profile, and it translates to .243 ISO in an MLB context, well above the league norm. The walk rate is genuine too: 102 walks in 560 plate appearances across AA & A+ produces a 13.7% MLB-equivalent BB%, and that kind of patience usually survives the jump better than raw power does. The problem is the strikeout rate travels with it, 185 strikeouts in those same 560 PA translating to 34.8% at the MLB level, where the league average sits at 22.0%, and at that rate the bat has to carry everything because there's no margin for contact erosion. If the power and patience hold and the strikeout rate stays manageable, he's a real corner bat; if the contact slips further against better velocity and spin, what's left is a bench piece who can hurt you in a specific count.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 33,
+        "buy_rank": 35,
         "buy_reason": "Still in the buy window",
-        "buy_score": 54.7,
+        "buy_score": 54.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -18691,9 +18691,9 @@
       "published_report": "The strikeout rate translates well \u2014 163 punchouts across AAA & AA in 125 innings, and the MLB-equivalent K/9 of 9.5 is a tick above what the majors typically see. The walk rate is where this gets complicated: 66 free passes across the same stretch produce an MLB-equivalent BB/9 of 4.7, and the K-BB% that looks loud at the minor-league level flattens out to exactly 13.5% once you run it through the translation, right where the MLB average sits. If the command tightens in shorter stints, a multi-inning or setup role is a real outcome; if it doesn't, you're looking at a depth arm whose swing-and-miss doesn't survive the walk totals at the next level.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 81,
+        "buy_rank": 78,
         "buy_reason": "Still in the buy window",
-        "buy_score": 49.3,
+        "buy_score": 49.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -18767,7 +18767,7 @@
       "recent_signal": {
         "buy_rank": 1,
         "buy_reason": "Young runway",
-        "buy_score": 61.3,
+        "buy_score": 60.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -19090,9 +19090,9 @@
       "published_report": "The ERA sits at 3.40 across AA & A+, but the translation underneath it asks a harder question. Caminiti's 125 strikeouts in 114.6 innings look loud at 19, yet 53 walks produce a K-BB% that converts to 10.7% at the MLB level, and a BB/9 that lands at 4.4 when the average big-league starter sits closer to 3.2. The surface results are carrying him right now; if the command doesn't sharpen as he climbs, the ceiling compresses from a setup role into depth territory pretty fast. There's a real arm here, but the profile lives or dies on whether the walk rate bends.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 13,
+        "buy_rank": 10,
         "buy_reason": "Still in the buy window",
-        "buy_score": 57.5,
+        "buy_score": 57.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -19556,9 +19556,9 @@
       "published_report": "Thirty-nine home runs across AA & A+ at 21 years old is a number that demands attention, and the .305 ISO translates to .201 at the MLB level \u2014 well clear of what most big-league hitters produce. The contact is real enough: a 16% strikeout rate that translates below league average, and a .283 average against a .259 BABIP, meaning he's earning those hits rather than riding luck. What's genuinely puzzling is the walk rate: 28 walks in 500 plate appearances produces a 6% clip that translates to just 5.8%, and the gap between his .328 OBP and what the power deserves tells you the ceiling hinges entirely on whether he develops a better feel for the strike zone. If he doesn't, this profile becomes a bench bat who beats you once a week and disappears against pitchers who work the edges.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 18,
+        "buy_rank": 23,
         "buy_reason": "Still in the buy window",
-        "buy_score": 55.7,
+        "buy_score": 55.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -20015,7 +20015,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 54,
+              "pct": 59,
               "raw": null
             }
           ]
@@ -20188,9 +20188,9 @@
       "published_report": "The 0.9 WHIP across AA & A+ is the loudest number in this profile, and the walk rate behind it makes it believable: 30 walks in 131 innings translates to a 2.6 BB/9 at the MLB level, comfortably below where most big-league starters sit. The strikeout stuff translates to roughly league-average punch, so the whole case rests on that command holding, and if it softens under better competition the profile narrows fast toward the back of a rotation. Hold the walks and he's a back-end starter; lose them and you're looking at a depth arm.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 32,
+        "buy_rank": 27,
         "buy_reason": "Still in the buy window",
-        "buy_score": 54.7,
+        "buy_score": 54.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -20398,9 +20398,9 @@
       "published_report": "The walk rate is the loudest thing in this profile, and also the most complicated. At AAA in 2026, Termarr Johnson has drawn 68 walks against 101 strikeouts across 406 plate appearances, and that 17% walk rate translates to 13.1% at the MLB level, where most hitters sit around 8.5%. The power, though, is a different story: his .120 ISO at AAA translates to .114 in the majors, well short of the .150 MLB average, and a .199 average sitting on a .259 BABIP suggests the contact isn't beating defenders when it lands. The 24 stolen bases at AAA matter here, because if the legs can manufacture value that the bat isn't yet providing, the floor stays livable, but everything hinges on whether the contact quality catches up enough to make opposing pitchers respect the plate discipline instead of just pitching around it. Right now the ceiling is a bench or platoon bat, and the floor is the same.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 57,
+        "buy_rank": 60,
         "buy_reason": "Still in the buy window",
-        "buy_score": 51.8,
+        "buy_score": 51.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -20472,9 +20472,9 @@
       "published_report": "The walk rate is the whole argument. Cijntje's 4.5 BB/9 across AAA & AA doesn't compress in translation \u2014 the MLB equivalent holds at 4.5, well above where the league sits at 3.2. The strikeout side translates to 9.1 K/9, which clears the 8.6 MLB average, and 133 innings of K-BB% at 16% gives that number some weight. If the walks come down, he becomes a multi-inning reliever worth counting on; if they stay where they are, the strikeouts buy him depth-arm opportunities and not much more.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 74,
+        "buy_rank": 73,
         "buy_reason": "Still in the buy window",
-        "buy_score": 50.1,
+        "buy_score": 50.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -20652,7 +20652,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 44,
+              "pct": 38,
               "raw": null
             }
           ]
@@ -20969,9 +20969,9 @@
       "published_report": "The strikeout rate translates. Across AA & A+, 103 punchouts in 76.3 innings produces a 12.1 K/9, and the MLB-equivalent reads 9.0, which clears the 8.6 bar the average big-league arm clears. That's the good news, and it's genuinely good. The problem sitting right next to it is 36 walks in that same sample, a 4.2 BB/9 that translates to 4.3 while the typical MLB arm sits at 3.2, and a K-BB% that looks impressive at 21% against this prospect pool but lands right at the 13.5% MLB average once you run it through the translation. If the command sharpens, you have a setup arm. If it doesn't, the strikeouts keep him in a rotation conversation longer than he deserves, and you're settling for multi-inning bulk work.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 61,
+        "buy_rank": 50,
         "buy_reason": "Still in the buy window",
-        "buy_score": 51.2,
+        "buy_score": 52.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -21785,6 +21785,142 @@
       "usage": "scouting_repository_context_not_live_rank_or_value"
     },
     {
+      "age": 29,
+      "card_data_status": null,
+      "confidence": {
+        "level": "medium"
+      },
+      "id": "vc_mlb_663554_pitcher",
+      "identity_key": "663554_pitcher",
+      "level": null,
+      "mlbam_id": "663554",
+      "name": "Casey Mize",
+      "player_type": "mlb",
+      "positions": [
+        "SP"
+      ],
+      "prospect_rank": null,
+      "published_report": "The Statcast profile here is a puzzle: a 3.87 xERA with contact suppression that genuinely holds up, built almost entirely on a 6.9% walk rate rather than swing-and-miss. His 20.0% strikeout rate and 23.2% whiff rate are both below average, so he's not beating hitters with movement or deception on most pitches, he's just not giving them anything free. That's a functional formula until a lineup makes him work ahead in counts and punishes the 93.3 mph fastball, which opposing hitters are catching up to at an 89.2 mph average exit velo. If the command holds and the ball-in-play luck stays reasonably neutral, the 4.32 ERA projection looks like a fair ceiling; if he loses the zone at all, there's not enough swing-and-miss to bail him out and he becomes a fifth starter hanging on.",
+      "published_report_source": "llm",
+      "recent_signal": null,
+      "report": "The Statcast view starts with plus BB % at the 76th percentile (6.9%), but well below-average FB Velo at the 31st percentile (93.3 mph) pulls down the profile. The arm profiles for 4.32 ERA, 1.23 WHIP, 111 K, 6 W, 10 QS over 132.3 IP.",
+      "report_llm": {
+        "handedness_problems": [],
+        "hard_ok": true,
+        "model": "claude-sonnet-4-6",
+        "problems": {
+          "banned": [],
+          "count_role_problems": [],
+          "derived_word_number_problems": [],
+          "handedness_problems": [],
+          "hard_ok": true,
+          "league_average_scaffold_problems": [],
+          "level_attribution_problems": [],
+          "ok": true,
+          "pa_consistency_problems": [],
+          "role_vocab_problems": [],
+          "style_problems": [],
+          "triple_slash_problems": [],
+          "uncalibrated_projection_claims": [],
+          "unsupported_numbers": []
+        },
+        "text": "The Statcast profile here is a puzzle: a 3.87 xERA with contact suppression that genuinely holds up, built almost entirely on a 6.9% walk rate rather than swing-and-miss. His 20.0% strikeout rate and 23.2% whiff rate are both below average, so he's not beating hitters with movement or deception on most pitches, he's just not giving them anything free. That's a functional formula until a lineup makes him work ahead in counts and punishes the 93.3 mph fastball, which opposing hitters are catching up to at an 89.2 mph average exit velo. If the command holds and the ball-in-play luck stays reasonably neutral, the 4.32 ERA projection looks like a fair ceiling; if he loses the zone at all, there's not enough swing-and-miss to bail him out and he becomes a fifth starter hanging on.",
+        "valid": true
+      },
+      "report_status": "stat_grounded",
+      "role": "pitcher",
+      "source_fields": {
+        "stat_line_label": "projection",
+        "stat_line_source": "valucast_current_projection",
+        "statcast_percentiles": true
+      },
+      "stat_line_stats": {
+        "ERA": 4.32,
+        "HLD": 0.0,
+        "IP": 132.3,
+        "K": 111.0,
+        "QS": 10.0,
+        "SV": 0.0,
+        "W": 6.0,
+        "WHIP": 1.23
+      },
+      "statcast_groups": [
+        {
+          "label": "Pitching",
+          "metrics": [
+            {
+              "display": ".303",
+              "label": "xwOBA",
+              "pct": 60,
+              "raw": 0.303
+            },
+            {
+              "display": "3.87",
+              "label": "xERA",
+              "pct": 60,
+              "raw": 3.87
+            },
+            {
+              "display": "20.0%",
+              "label": "K %",
+              "pct": 32,
+              "raw": 20.0
+            },
+            {
+              "display": "6.9%",
+              "label": "BB %",
+              "pct": 76,
+              "raw": 6.9
+            },
+            {
+              "display": "23.2%",
+              "label": "Whiff %",
+              "pct": 35,
+              "raw": 23.2
+            },
+            {
+              "display": "29.4%",
+              "label": "Chase %",
+              "pct": 36,
+              "raw": 29.4
+            },
+            {
+              "display": "8.3%",
+              "label": "Barrel %",
+              "pct": 34,
+              "raw": 8.3
+            },
+            {
+              "display": "39.4%",
+              "label": "Hard-Hit %",
+              "pct": 38,
+              "raw": 39.4
+            },
+            {
+              "display": "89.2 mph",
+              "label": "Avg Exit Velo",
+              "pct": 35,
+              "raw": 89.2
+            },
+            {
+              "display": "93.3 mph",
+              "label": "FB Velo",
+              "pct": 31,
+              "raw": 93.3
+            },
+            {
+              "display": "2248 rpm",
+              "label": "FB Spin",
+              "pct": 45,
+              "raw": 2248.0
+            }
+          ]
+        }
+      ],
+      "team": "SDP",
+      "usage": "scouting_repository_context_not_live_rank_or_value"
+    },
+    {
       "age": 23,
       "bats": "R",
       "card_data_status": {
@@ -22029,9 +22165,9 @@
       "published_report": "The walk rate is doing serious heavy lifting here. At AA this season across 534 plate appearances, Rincon has drawn 95 walks against 111 strikeouts, a combination that translates to a 13.7% BB% against big-league competition, more than five points clear of where the average MLB hitter lands. The .41 OBP and 26 home runs at AA carry an ISO that translates to .179 in MLB context, and the discipline profile is what makes the power believable across a full season sample. The ceiling reads as a low-end everyday shortstop, not a star, and the floor is bench depth if the contact erodes at the next level.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 37,
+        "buy_rank": 39,
         "buy_reason": "Still in the buy window",
-        "buy_score": 54.1,
+        "buy_score": 53.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -22315,7 +22451,7 @@
       "recent_signal": {
         "buy_rank": 15,
         "buy_reason": "Still in the buy window",
-        "buy_score": 57.0,
+        "buy_score": 56.7,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -22598,9 +22734,9 @@
       "published_report": "The command-and-control profile here is almost absurdly clean for a 21-year-old at this level. Zazueta has walked 20 batters across 103.7 innings at AA & A+, a 1.7 BB/9 that translates to a 2.4 MLB equivalent, well below the league-average 3.2. The strikeout rate holds up too, with 144 punchouts producing a 30% K-BB% that would sit comfortably clear of the 13.5% MLB-average translation. Everything hinges on whether the stuff plays against better bats, because a back-end starter ceiling isn't a criticism, it's the outcome if the profile holds, and a multi-inning relief role is what's left if it doesn't carry past AAA.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 30,
+        "buy_rank": 24,
         "buy_reason": "Still in the buy window",
-        "buy_score": 54.7,
+        "buy_score": 55.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -23140,10 +23276,10 @@
         "SS"
       ],
       "prospect_rank": null,
-      "published_report": "elite Fielding (OAA) at the 98th percentile carries the Statcast card; well below-average xBA at the 1st percentile (.199) is the drag. A power-first line projects to .197 AVG, .282 OBP, .685 OPS, 31 HR, 1 SB over 646 PA.",
+      "published_report": "The Statcast card is carried by elite Fielding (OAA) at the 97th percentile, with well below-average xBA at the 1st percentile (.199) as the drag. A power-first line projects to .197 AVG, .282 OBP, .685 OPS, 31 HR, 1 SB over 646 PA.",
       "published_report_source": "deterministic",
       "recent_signal": null,
-      "report": "elite Fielding (OAA) at the 98th percentile carries the Statcast card; well below-average xBA at the 1st percentile (.199) is the drag. A power-first line projects to .197 AVG, .282 OBP, .685 OPS, 31 HR, 1 SB over 646 PA.",
+      "report": "The Statcast card is carried by elite Fielding (OAA) at the 97th percentile, with well below-average xBA at the 1st percentile (.199) as the drag. A power-first line projects to .197 AVG, .282 OBP, .685 OPS, 31 HR, 1 SB over 646 PA.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -23229,13 +23365,13 @@
             {
               "display": "26.6 ft/s",
               "label": "Sprint Speed",
-              "pct": 28,
+              "pct": 29,
               "raw": 26.6
             },
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 98,
+              "pct": 97,
               "raw": null
             }
           ]
@@ -23346,9 +23482,9 @@
       "published_report": "The .376 OBP at AAA is the whole argument, and it has a hollow center. Rada put up 72 walks against 109 strikeouts across 585 AAA plate appearances in 2026, and the discipline carries over \u2014 his MLB-equivalent walk rate comes out to 10.6%, with a strikeout rate that would sit below the MLB mean. That's a useful profile at the top of a lineup. The .085 ISO at AAA translates to .089 at the MLB level, well short of the MLB average, and 43 stolen bases can cover the gap in the minors longer than they can in the majors. If the speed plays and the on-base rate holds, he's a bench or platoon piece in center; if a big-league defense shades him and the power never develops, the hit tool and the legs are what remain.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 39,
+        "buy_rank": 38,
         "buy_reason": "Still in the buy window",
-        "buy_score": 53.8,
+        "buy_score": 53.7,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -23926,9 +24062,9 @@
       "published_report": "The .505 slugging across AAA & AA is doing real work here, and the 27 home runs in 554 plate appearances is the number that earns a conversation. Translated to the majors, his ISO reads as .17 where the MLB baseline sits at .15, and his strikeout rate actually comes in under the MLB average hitter, which keeps the power from being a one-dimensional profile. The catch is the OBP: 47 walks in 554 plate appearances produces a .338 mark in the minors, and the MLB-equivalent walk rate of 7.8% trails the 8.5% big-league figure, so if the hit tool regresses at all against big-league arms, there isn't much on-base cushion to hold the profile together. At 21 with genuine power and a 21-steal season, the upside is a solid-average regular; if the contact doesn't hold, the floor is a bench bat who punishes mistakes.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 51,
+        "buy_rank": 54,
         "buy_reason": "Still in the buy window",
-        "buy_score": 52.3,
+        "buy_score": 52.0,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -24065,7 +24201,7 @@
       "published_report": "Forty-one projected home runs from a guy whose .503 xSLG and 14.2% barrel rate both sit in the 95th-and-93rd-percentile range tells you the power is doing exactly what you'd expect from contact that averages 92.5 mph off the bat. The .247 xBA is the drag, a middling figure that explains why a massive slugging profile collapses to a .251 projection \u2014 he beats pitchers by hitting the ball harder than almost anyone, not by finding more holes. The strikeout rate at 24.5% pulls the OBP down to .321, which is about league average for a free-swinger with his walk rate, and at 32 that number probably doesn't improve. Everyday first baseman who banks his value almost entirely on thump, and the thump is durable enough to trust.",
       "published_report_source": "llm",
       "recent_signal": null,
-      "report": "The Statcast view starts with elite Fielding (OAA) at the 96th percentile, but well below-average Sprint Speed at the 9th percentile (25.3 ft/s) pulls down the profile. A power-first line projects to .251 AVG, .321 OBP, .823 OPS, 41 HR, 4 SB over 706 PA.",
+      "report": "The Statcast card is carried by elite Fielding (OAA) at the 97th percentile, with well below-average Sprint Speed at the 9th percentile (25.3 ft/s) as the drag. A power-first line projects to .251 AVG, .321 OBP, .823 OPS, 41 HR, 4 SB over 706 PA.",
       "report_llm": {
         "handedness_problems": [],
         "hard_ok": true,
@@ -24180,7 +24316,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 96,
+              "pct": 97,
               "raw": null
             }
           ]
@@ -24367,7 +24503,7 @@
       "recent_signal": {
         "buy_rank": 2,
         "buy_reason": "Young runway",
-        "buy_score": 61.0,
+        "buy_score": 60.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -24577,7 +24713,7 @@
       "published_report": "The walk rate is the loudest thing in this profile, and it doesn't fully survive the translation. At AAA in 2026, Williams has drawn 47 walks across 359 plate appearances, a 13% clip that maps to 10.8% in an MLB context, still above a league that walks at 8.5%, but his strikeout rate translates to 23.1% against that same league's 22.0%, and his ISO lands at .131 against a .15 MLB average, meaning the discipline shows up in the numbers but the power isn't carrying its weight once the level adjusts. The whole profile hinges on whether the batting average, currently sitting at .233 AAA with a .282 BABIP, can stabilize enough at the big-league level to keep the OBP functional without the power to compensate when it doesn't. Either a fringy everyday regular if the contact improves, or a bench bat whose walks keep him employed.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 73,
+        "buy_rank": 74,
         "buy_reason": "Still in the buy window",
         "buy_score": 50.1,
         "movement_label": "holding steady",
@@ -26291,142 +26427,6 @@
       "usage": "scouting_repository_context_not_live_rank_or_value"
     },
     {
-      "age": 29,
-      "card_data_status": null,
-      "confidence": {
-        "level": "medium"
-      },
-      "id": "vc_mlb_663554_pitcher",
-      "identity_key": "663554_pitcher",
-      "level": null,
-      "mlbam_id": "663554",
-      "name": "Casey Mize",
-      "player_type": "mlb",
-      "positions": [
-        "SP"
-      ],
-      "prospect_rank": null,
-      "published_report": "The Statcast profile here is a puzzle: a 3.87 xERA with contact suppression that genuinely holds up, built almost entirely on a 6.9% walk rate rather than swing-and-miss. His 20.0% strikeout rate and 23.2% whiff rate are both below average, so he's not beating hitters with movement or deception on most pitches, he's just not giving them anything free. That's a functional formula until a lineup makes him work ahead in counts and punishes the 93.3 mph fastball, which opposing hitters are catching up to at an 89.2 mph average exit velo. If the command holds and the ball-in-play luck stays reasonably neutral, the 4.32 ERA projection looks like a fair ceiling; if he loses the zone at all, there's not enough swing-and-miss to bail him out and he becomes a fifth starter hanging on.",
-      "published_report_source": "llm",
-      "recent_signal": null,
-      "report": "The Statcast view starts with plus BB % at the 76th percentile (6.9%), but well below-average FB Velo at the 31st percentile (93.3 mph) pulls down the profile. The arm profiles for 4.32 ERA, 1.23 WHIP, 111 K, 6 W, 10 QS over 132.3 IP.",
-      "report_llm": {
-        "handedness_problems": [],
-        "hard_ok": true,
-        "model": "claude-sonnet-4-6",
-        "problems": {
-          "banned": [],
-          "count_role_problems": [],
-          "derived_word_number_problems": [],
-          "handedness_problems": [],
-          "hard_ok": true,
-          "league_average_scaffold_problems": [],
-          "level_attribution_problems": [],
-          "ok": true,
-          "pa_consistency_problems": [],
-          "role_vocab_problems": [],
-          "style_problems": [],
-          "triple_slash_problems": [],
-          "uncalibrated_projection_claims": [],
-          "unsupported_numbers": []
-        },
-        "text": "The Statcast profile here is a puzzle: a 3.87 xERA with contact suppression that genuinely holds up, built almost entirely on a 6.9% walk rate rather than swing-and-miss. His 20.0% strikeout rate and 23.2% whiff rate are both below average, so he's not beating hitters with movement or deception on most pitches, he's just not giving them anything free. That's a functional formula until a lineup makes him work ahead in counts and punishes the 93.3 mph fastball, which opposing hitters are catching up to at an 89.2 mph average exit velo. If the command holds and the ball-in-play luck stays reasonably neutral, the 4.32 ERA projection looks like a fair ceiling; if he loses the zone at all, there's not enough swing-and-miss to bail him out and he becomes a fifth starter hanging on.",
-        "valid": true
-      },
-      "report_status": "stat_grounded",
-      "role": "pitcher",
-      "source_fields": {
-        "stat_line_label": "projection",
-        "stat_line_source": "valucast_current_projection",
-        "statcast_percentiles": true
-      },
-      "stat_line_stats": {
-        "ERA": 4.32,
-        "HLD": 0.0,
-        "IP": 132.3,
-        "K": 111.0,
-        "QS": 10.0,
-        "SV": 0.0,
-        "W": 6.0,
-        "WHIP": 1.23
-      },
-      "statcast_groups": [
-        {
-          "label": "Pitching",
-          "metrics": [
-            {
-              "display": ".303",
-              "label": "xwOBA",
-              "pct": 60,
-              "raw": 0.303
-            },
-            {
-              "display": "3.87",
-              "label": "xERA",
-              "pct": 60,
-              "raw": 3.87
-            },
-            {
-              "display": "20.0%",
-              "label": "K %",
-              "pct": 32,
-              "raw": 20.0
-            },
-            {
-              "display": "6.9%",
-              "label": "BB %",
-              "pct": 76,
-              "raw": 6.9
-            },
-            {
-              "display": "23.2%",
-              "label": "Whiff %",
-              "pct": 35,
-              "raw": 23.2
-            },
-            {
-              "display": "29.4%",
-              "label": "Chase %",
-              "pct": 36,
-              "raw": 29.4
-            },
-            {
-              "display": "8.3%",
-              "label": "Barrel %",
-              "pct": 34,
-              "raw": 8.3
-            },
-            {
-              "display": "39.4%",
-              "label": "Hard-Hit %",
-              "pct": 38,
-              "raw": 39.4
-            },
-            {
-              "display": "89.2 mph",
-              "label": "Avg Exit Velo",
-              "pct": 35,
-              "raw": 89.2
-            },
-            {
-              "display": "93.3 mph",
-              "label": "FB Velo",
-              "pct": 31,
-              "raw": 93.3
-            },
-            {
-              "display": "2248 rpm",
-              "label": "FB Spin",
-              "pct": 45,
-              "raw": 2248.0
-            }
-          ]
-        }
-      ],
-      "team": "SDP",
-      "usage": "scouting_repository_context_not_live_rank_or_value"
-    },
-    {
       "age": 23,
       "bats": "L",
       "card_data_status": {
@@ -26454,9 +26454,9 @@
       "published_report": "The walk rate is doing real work here. Watson is drawing 59 walks in 442 AAA plate appearances in 2026, and that 13% clip translates to an 11.1% MLB-equivalent rate when the league average sits at 8.5%. The .209 ISO in AAA translates to .161 at the MLB level, roughly league average, and 24 stolen bases say the legs show up whether the bat does or not. The hinge is 118 strikeouts in those same 442 plate appearances, because that 27% rate translates to 26.7% against big-league arms, and if the strikeouts climb when the pitching improves, the walks won't be enough to carry him, leaving a depth piece who runs well but doesn't get on base enough to matter; if the zone judgment holds, he's either a low-end regular or a bench bat worth carrying.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 93,
+        "buy_rank": 94,
         "buy_reason": "Still in the buy window",
-        "buy_score": 48.3,
+        "buy_score": 48.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -26739,9 +26739,9 @@
       "published_report": "The .303 average across AAA & AA looks loud until you notice the .358 BABIP sitting underneath it, and the MLB-equivalent translation brings the ISO down to .163 \u2014 above league average but not a power profile that carries a corner. Seaver King has hit 21 home runs and swiped 15 bases across 521 plate appearances this season, and the walk rate translates almost exactly to league average at the big-league level, so there's no discipline story to lean on when the BABIP normalizes. The whole profile hinges on whether the contact quality survives the translation; if it does, he's a second-division regular at shortstop, and if it doesn't, the bench-bat floor is the honest landing spot.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 96,
+        "buy_rank": 99,
         "buy_reason": "Still in the buy window",
-        "buy_score": 48.1,
+        "buy_score": 47.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -27272,7 +27272,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 23,
+              "pct": 26,
               "raw": null
             }
           ]
@@ -28082,9 +28082,9 @@
       "published_report": "The walk rate is the whole argument: 2.1 BB/9 across AA & A+, translating to 2.6 at the MLB level while the average sits at 3.2. Braylon Doughty has thrown 109.7 innings as a 20-year-old, posted a 21 K-BB% that lands at the 91st percentile of his pool, and done it with 25 walks against 123 strikeouts \u2014 the command is already present in a real sample, not something to wait on. The strikeout rate translates to 8.0 per nine at the MLB level, just a tick shy of the 8.6 MLB average, so if the swing-and-miss doesn't develop further, the ceiling caps around a quality multi-inning reliever rather than a rotation piece. Floor is a depth arm if the stuff doesn't carry to the upper levels; ceiling is a setup role if it does.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 27,
+        "buy_rank": 25,
         "buy_reason": "Still in the buy window",
-        "buy_score": 55.0,
+        "buy_score": 55.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -28293,9 +28293,9 @@
       "published_report": "The .443 OBP across AA & A+ is the loudest thing in this profile, and 88 walks in 506 plate appearances is why it holds up. Eduardo Quintero is 20, posting a 17% walk rate that translates to 12.6% at the MLB level, well above the league mean, and 44 stolen bases give him a real dimension beyond the bat. The power is the honest concern: a .191 ISO in the minors translates to .135 at the big-league level, below average, so what he becomes depends almost entirely on whether the hit tool and speed carry enough value to cover that gap. If they do, he's a table-setter who gets on base at a high clip; if the contact slips even a little against better arms, a bench outfielder is the ceiling.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 23,
+        "buy_rank": 29,
         "buy_reason": "Still in the buy window",
-        "buy_score": 55.3,
+        "buy_score": 54.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -28658,9 +28658,9 @@
       "published_report": "Twenty-nine home runs and 26 stolen bases at AA, age 21, is the kind of line that makes you sit up \u2014 and then you look at the translation and the sit-up becomes a squint. The raw power translates to a .166 ISO against MLB pitching, which clears the MLB average of .150, but the 27% strikeout rate against that same competition is the thing the whole profile hangs on. Hope has 62 walks in 564 AA plate appearances to cushion the contact risk, and he's punishing mistakes when he connects, but if the strikeout rate doesn't compress as pitchers get sharper, the hit tool erodes and you're left with a power/speed corner bat who can't stay in the lineup every day. Either a second-division regular with impact tool flashes, or a bench piece riding the tools he has right now.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 40,
+        "buy_rank": 41,
         "buy_reason": "Still in the buy window",
-        "buy_score": 53.6,
+        "buy_score": 53.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -28944,7 +28944,7 @@
       "recent_signal": {
         "buy_rank": 8,
         "buy_reason": "Still in the buy window",
-        "buy_score": 58.7,
+        "buy_score": 58.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -29016,9 +29016,9 @@
       "published_report": "The 2.50 ERA across 106.3 innings at AAA is the headline, but the translation is where this profile gets complicated. Those 54 walks in a season don't flatten out at the big-league level, with the MLB-equivalent BB/9 coming to 4.3, well above a league average that sits around 3.2. The K-BB% translates to 10.5%, in a context where roughly 13.5% is par, and his strikeout rate converts below average too, so the ERA is doing heavy lifting that command needs to sustain. If the walk rate tightens, there's a useful arm here with a ceiling as a multi-inning or setup piece, but if it doesn't, what's left is depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 76,
-        "buy_reason": "Still in the buy window",
-        "buy_score": 49.8,
+        "buy_rank": null,
+        "buy_reason": null,
+        "buy_score": null,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -29302,9 +29302,9 @@
       "published_report": "The walk rate is the whole argument here. At AA, Clemmey has issued 78 free passes across 128 innings, and the MLB-equivalent translation puts that at 5.3 per nine \u2014 where the MLB average sits at 3.2, the gap is wide enough to swallow a lot of what he does reasonably well elsewhere. The strikeout rate translates to 8.1 per nine, roughly matching the MLB average of 8.6, so the profile isn't leaning on swing-and-miss to offset the control problem. If the walk rate tightens into something livable, he's a multi-inning reliever or setup piece; if it doesn't, he's organizational depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 20,
+        "buy_rank": 18,
         "buy_reason": "Still in the buy window",
-        "buy_score": 55.4,
+        "buy_score": 55.7,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -29586,9 +29586,9 @@
       "published_report": "The contact is the whole conversation. Across AAA & AA & A+ & A this season, Bodine has struck out just 34 times in 543 plate appearances, a 6% clip that translates to 11.4% at the MLB level while the MLB average sits at 22.0%. The .411 OBP is genuine, built on 52 walks and a .342 average that probably retreats some, but a bat-to-ball skill this extreme holds value even when the power stays light, and his MLB-equivalent ISO translates to .128 where the MLB average is .150. The ceiling here is a bench or platoon catcher whose contact tool keeps him relevant; the floor is org depth, and everything hinges on whether the framing and receiving behind the plate is good enough to keep a light-power catcher on a big-league roster.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 87,
+        "buy_rank": 88,
         "buy_reason": "Still in the buy window",
-        "buy_score": 49.1,
+        "buy_score": 48.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -29660,9 +29660,9 @@
       "published_report": "The surface numbers are genuinely loud: .319/.395/.569 across AAA & AA in 180 plate appearances, with 12 stolen bases alongside 9 home runs and an ISO that translates to .169 at the MLB level. What complicates the picture is that Walcott spent the first chunk of 2026 on the 60-day injured list with a UCL injury, so these are return-from-injury numbers inflated by a .391 BABIP \u2014 the average will come in when the luck normalizes. The MLB-equivalent K% lands at 24.5% against a league that strikeouts roughly one in five, and the walk rate translates to 8.6%, essentially matching what a typical MLB hitter draws, which means the profile leans on contact quality and athleticism rather than discipline carrying any freight. DH-only at 20 with a ceiling flagged as organizational depth is a hard ceiling, and if the BABIP regresses and the power doesn't outrun the strikeouts, what's left is a bench bat with limited defensive utility.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 45,
+        "buy_rank": 47,
         "buy_reason": "Still in the buy window",
-        "buy_score": 53.0,
+        "buy_score": 52.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -29734,9 +29734,9 @@
       "published_report": "The .424 OBP is the whole argument, and at AAA it's not a mirage \u2014 86 walks in 473 plate appearances against a 23% strikeout rate is a discipline profile that translates. The MLB-equivalent walk rate comes out to 14.3%, nearly double the 8.5% league figure, and the ISO renders at .174, modest but functional for a catcher. Everything here hinges on whether that walk rate holds against major-league pitching with no margin on the swing-and-miss side, because if the strikeouts climb and the walks compress, what's left is a fringe regular rather than the bench-or-platoon piece the ceiling points to.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 105,
+        "buy_rank": 110,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.6,
+        "buy_score": 47.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -29808,9 +29808,9 @@
       "published_report": "The walk rate is the best thing in this profile, and the strikeout rate is the worst. Across AAA & AA, Isaac drew 94 walks against 142 strikeouts in 500 plate appearances, and when you translate those rates to an MLB context they land at 14.3% and 29.4%, the latter well above the league mean of 22.0%. The power translates to a .181 ISO at the big-league level, modest but functional for a first baseman who gets on base at a .402 clip in the minors. The whole thing hinges on whether that strikeout rate tightens against MLB arms, because a left-handed first baseman hitting .258 with a 28% K rate at the upper levels isn't getting the benefit of the doubt.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 86,
+        "buy_rank": 87,
         "buy_reason": "Still in the buy window",
-        "buy_score": 49.1,
+        "buy_score": 48.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -30099,9 +30099,9 @@
       "published_report": "The .393 OBP is doing the heavy lifting here, and the walk rate is why: 45 free passes across AA & A in 286 plate appearances, translating to an 11.5% MLB-equivalent clip when the MLB average sits at 8.5%. Deniel Ortiz doesn't hit for much raw power, the .185 ISO in the minors landing at a translated .143 at the MLB level, a tick below average, so the profile lives or dies on whether that plate discipline survives the jump to pitchers who can actually locate. If it does, the on-base foundation carries him to a functional bench or platoon role at third; if the walks compress the way they often do when the calendar reads Triple-A, what's left is a bat without a carrying tool.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 38,
+        "buy_rank": 37,
         "buy_reason": "Still in the buy window",
-        "buy_score": 53.9,
+        "buy_score": 53.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -30459,7 +30459,7 @@
       "recent_signal": {
         "buy_rank": 3,
         "buy_reason": "Still in the buy window",
-        "buy_score": 60.6,
+        "buy_score": 60.7,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -30533,7 +30533,7 @@
       "recent_signal": {
         "buy_rank": 5,
         "buy_reason": "Still in the buy window",
-        "buy_score": 59.8,
+        "buy_score": 59.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -30780,13 +30780,13 @@
             {
               "display": "28.0 ft/s",
               "label": "Sprint Speed",
-              "pct": 64,
+              "pct": 63,
               "raw": 28.0
             },
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 89,
+              "pct": 90,
               "raw": null
             }
           ]
@@ -30943,9 +30943,9 @@
       "published_report": "The walk rate is carrying this profile. Across AAA & AA in 2026, Hardin has issued 37 walks in 119.6 innings, a control mark that translates nearly even with MLB norms, while his strikeout rate edges past them at 8.9 K/9. The 5.30 ERA looks rough against those peripheral numbers, and the 1.40 WHIP signals contact damage that the walk and strikeout shape alone can't fully explain. If the contact suppression tightens, you've got a multi-inning or setup reliever; if it doesn't, the floor is depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 103,
+        "buy_rank": 97,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.6,
+        "buy_score": 47.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -31627,9 +31627,9 @@
       "published_report": "The contact grades out at the 94th percentile among hitters in this pool, and the translation makes it concrete: a 16.8% strikeout rate where the MLB average sits at 22.0% is the kind of discipline that travels. Max Anderson has put up .302/.386/.486 across AAA & A in 498 plate appearances this year, with 55 walks against just 67 strikeouts and enough pop to keep pitchers honest. The translated ISO lands right at the MLB mean, so the ceiling is a contact-first second baseman with passable power and real on-base skills, not a masher, and if the strikeout rate inflates against better velocity the profile narrows fast toward a bench bat.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 116,
+        "buy_rank": 115,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.1,
+        "buy_score": 47.0,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -31881,7 +31881,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 61,
+              "pct": 65,
               "raw": null
             }
           ]
@@ -32818,7 +32818,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 72,
+              "pct": 73,
               "raw": null
             }
           ]
@@ -33214,9 +33214,9 @@
       "published_report": "The K-BB% is the number that matters here, and 22% across AA & A+ is loud for a 19-year-old. That's 130 strikeouts against 33 walks in 101.3 innings, and the translation puts his K-BB% at 14.0 against a pool where 13.5 is the baseline, meaning the command is already doing real work. The stuff earns the strikeout rate; the question is whether it stays this clean against hitters who can actually hurt a fastball, because if the swing-and-miss drops even a little at the next level, he's threading a needle. Right now the profile says rotation floor and upside worth watching, but the evidence strength is thin enough that bullpen is the honest landing spot if anything slips.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 21,
+        "buy_rank": 19,
         "buy_reason": "Still in the buy window",
-        "buy_score": 55.4,
+        "buy_score": 55.5,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -33288,9 +33288,9 @@
       "published_report": "The 56 stolen bases are the loudest number in this profile, and they're also the most honest summary of where Eric Hartman stands. Across AA & A+, his .456 slugging and .207 ISO look like a power-speed combination worth tracking, but the MLB translation deflates the ISO to .144, right at league average, while his strikeout rate pushes to 28.3% against a league that sits at 22.0%. At 20 years old in Double-A with 583 plate appearances, the athleticism is clearly real and the walk rate translates to a usable 9.5%, so the floor isn't empty. The whole profile hinges on whether the bat-to-ball improves enough to let the speed play regularly, and if it doesn't, the ISO deflation and strikeout load leave him as an organizational depth piece rather than a left fielder who holds a roster spot.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 35,
+        "buy_rank": 34,
         "buy_reason": "Still in the buy window",
-        "buy_score": 54.5,
+        "buy_score": 54.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -33436,9 +33436,9 @@
       "published_report": "The K/9 at AA is 8.0, which translates to 7.5 at the MLB level \u2014 a rate that trails where big-league hitters will punish you. Khal Stephen's 3.40 ERA across 55 innings looks good on its face, but a K-BB% that translates to 10.6% when most MLB starters are clearing 13.5% tells you the results are running ahead of the profile. He's limiting damage, but 23 walks in 55 innings means the control isn't clean enough to compensate for the swing-and-miss deficit. If that K rate doesn't tick up as he climbs, the floor is exactly what it looks like: a depth arm.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 63,
+        "buy_rank": 62,
         "buy_reason": "Still in the buy window",
-        "buy_score": 51.0,
+        "buy_score": 51.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -33510,9 +33510,9 @@
       "published_report": "The numbers are loud and the ceiling is quiet. Wyatt Sanford is hitting .282/.417/.546 across A+ & A with 19 home runs and 33 stolen bases in 363 plate appearances, a profile that ranks at the 98th percentile in OPS and 96th in both ISO and slugging against his peer hitter pool. The translation to MLB is where the argument gets complicated: that 31% strikeout rate renders to roughly 32.6% against a league that averages 22.0%, and even with the walk rate translating to a useful 10.6%, that's a contact floor that has swallowed plenty of loud minor-league lines. If the strikeout rate doesn't compress significantly as pitching quality rises, the power and speed become assets on a bench bat rather than an everyday shortstop.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 11,
+        "buy_rank": 12,
         "buy_reason": "Still in the buy window",
-        "buy_score": 57.6,
+        "buy_score": 57.5,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -33584,7 +33584,7 @@
       "published_report": "The .385 OBP across AA & A+ at 19 years old is the number that makes you look twice. Gonzales has drawn 68 walks against 101 strikeouts in 507 plate appearances, a discipline profile that translates to a 10.4% walk rate at the MLB level, comfortably ahead of where most hitters sit. The power is the catch: his .183 ISO across AA & A+ softens to a translated .133, and the gap between that figure and the MLB average of .150 is wide enough that the ceiling hinges entirely on whether the raw pop develops rather than gets squeezed out by better arms. If the power fills in, you have an everyday right fielder with genuine on-base skills; if it doesn't, what remains is a patient hitter without the slug to profile as a regular.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 22,
+        "buy_rank": 21,
         "buy_reason": "Still in the buy window",
         "buy_score": 55.3,
         "movement_label": "holding steady",
@@ -33732,9 +33732,9 @@
       "published_report": "The translation is the whole argument: 120 strikeouts across 117 AAA innings look better than they are once you run them through the level adjustment. His 9.2 K/9 at AAA translates to 8.3 against big-league competition, and the MLB average sits at 8.6, so the strikeout rate barely clears the bar. His walk rate translates slightly worse too, landing the K-BB% at 12.3% against a league figure of 13.5%. The stuff works at AAA, a 4.1 ERA and 1.3 WHIP that grade well against his peers in the pool, but the translation says he's a touch short in the two things that travel most reliably. If the fastball or breaking ball plays up against major-league hitters, he gets to multi-inning reliever or setup work; if not, he's a depth arm soaking up innings at the back of a roster.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 110,
+        "buy_rank": 104,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.4,
+        "buy_score": 47.7,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -33806,9 +33806,9 @@
       "published_report": "The strikeouts are loud, the walks are a problem. Across AA & A+, King has 139 strikeouts over 105.3 innings, but he's also issued 62 walks, and that 5.3 BB/9 translates to roughly the same rate against MLB hitters while the league average sits at 3.2. A 17% K-BB% keeps him viable at 19, but it's the control, not the stuff, that determines whether he stays in a rotation.\n\nIf the walks tighten, there's a durable mid-level starter in here; if they don't, he's a reliever who can miss bats.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 25,
+        "buy_rank": 22,
         "buy_reason": "Still in the buy window",
-        "buy_score": 55.1,
+        "buy_score": 55.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -34171,9 +34171,9 @@
       "published_report": "The .417 OBP across AA & A+ is the loudest number in this profile, and 78 walks in 494 plate appearances is the engine behind it. That discipline translates to a 12.0% MLB-equivalent walk rate, well clear of where most big-league hitters land, which is a real skill, but the ISO translates to almost exactly league average at .151, so the ceiling hinges on whether the hit tool and patience hold up against premium spin at Triple-A and beyond. At 21 with 18 stolen bases and a 19% strikeout rate that competes comfortably in his pool, there's a legitimate everyday-player case if the bat stays this disciplined, and a second-division regular floor if the contact erodes and the power never develops past fringe-average.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 42,
+        "buy_rank": 43,
         "buy_reason": "Still in the buy window",
-        "buy_score": 53.4,
+        "buy_score": 53.2,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -34530,9 +34530,9 @@
       "published_report": "The contact-to-power combination here is legitimately unusual for a 22-year-old center fielder. Across AA & A+, Davalan is hitting .291/.400/.532 with 24 home runs, 63 walks, and only 57 strikeouts in 535 plate appearances, and that 11% strikeout rate translates to roughly 15.7% against a major-league population that strikes out at 22.0%. The power is right at league average in MLB translation terms, .160 ISO against a .150 benchmark, which is the honest tension: the contact skill is the carrying tool, and if that 11% strikeout rate inflates in a tougher environment, the power probably isn't enough on its own to make him an everyday outfielder. Ceiling here is a platoon bat with real on-base ability; floor is a bench piece who can take a walk.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 49,
+        "buy_rank": 52,
         "buy_reason": "Still in the buy window",
-        "buy_score": 52.4,
+        "buy_score": 52.2,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -34604,9 +34604,9 @@
       "published_report": "The hit tool is the story here, but the ceiling isn't. Across AAA & AA & A+, Crisantes is hitting .296 with a 17% strikeout rate and 40 walks in 385 plate appearances, contact that translates to a K% of 20.2 at the MLB level, comfortably under what the average big-leaguer runs. The ISO is the limitation: .185 in the minors becomes .146 as an MLB equivalent, and without more thump the profile consolidates around a useful bench bat rather than someone who can carry a lineup spot. He's either a contact-first backup who earns at-bats through plate discipline and bat-to-ball, or he slips into organizational depth if the power gap proves too wide at the next level.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 68,
+        "buy_rank": 71,
         "buy_reason": "Still in the buy window",
-        "buy_score": 50.6,
+        "buy_score": 50.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -35841,7 +35841,7 @@
       "recent_signal": {
         "buy_rank": 6,
         "buy_reason": "Still in the buy window",
-        "buy_score": 59.6,
+        "buy_score": 59.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -36093,7 +36093,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 83,
+              "pct": 82,
               "raw": null
             }
           ]
@@ -36130,9 +36130,9 @@
       "published_report": "The walk rate is the loudest thing in this profile, and it's also what makes the rest of it complicated. Across A+ & A, Parker is drawing 80 walks against 117 strikeouts in 496 plate appearances, a 16% clip that translates to 11.5% at the MLB level, while the 24% strikeout rate here becomes 28.8% in translation, well above what the average MLB hitter runs. That gap, fine plate discipline sitting alongside a swing-and-miss load that outpaces the league at translation, is the whole tension: the .399 OBP and 28 stolen bases paint a table-setter, but the power (.191 ISO here, .126 in translation) and the strikeout rate leave him short of a complete everyday profile. If the walk discipline holds as he climbs and the strikeouts don't worsen, he has a real shot at a second-division regular; if the strikeouts expand against better arms, the walks alone don't carry the profile and you're left with an organizational depth piece, which is exactly what the ceiling says.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 12,
+        "buy_rank": 13,
         "buy_reason": "Still in the buy window",
-        "buy_score": 57.6,
+        "buy_score": 57.5,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -36786,9 +36786,9 @@
       "published_report": "The .403 OBP and 13% walk rate across A+ & A are the loud part of this profile. At 19, Chase Harlan is doing real plate discipline work, 51 walks in 396 PA, and the .298/.403/.509 line puts him at the 93rd percentile in OPS among this hitter pool. The translation is where it gets honest: his ISO drops from .211 to .137 MLB-equivalent, below league average, and his strikeout rate lands at 25.4% where the MLB average sits at 22.0, so the power that reads as a weapon at A-ball may arrive as fringe-average at the highest level. If the approach holds and the in-zone contact gains enough quality, he's a second-division regular at third; if the hit tool stalls and the strikeouts inflate further, what remains is a patient bench bat with a narrow role.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 10,
+        "buy_rank": 11,
         "buy_reason": "Still in the buy window",
-        "buy_score": 57.8,
+        "buy_score": 57.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -36860,9 +36860,9 @@
       "published_report": "The power translates. Across AAA & AA in 2026, Blake Burke has 34 home runs and a .275 ISO in 568 plate appearances, and when you run that through an MLB lens it comes out .195 ISO, well clear of the .150 MLB average, which is genuine above-average pop even after the level discount. The strikeout rate is the problem: 146 punchouts against 58 walks gives you a contact profile that translates to a 27.2% K rate in the majors, well north of the 22.0% MLB average, which is a real ceiling compressor for a 23-year-old first baseman whose entire case rests on the bat. Add 29 stolen bases and a .351 OBP across AAA & AA and there's enough secondary value to dream a little, but if the strikeouts don't come down against sharper stuff, he's a bench bat who hits for power in good counts rather than an everyday presence.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 122,
+        "buy_rank": 121,
         "buy_reason": "Still in the buy window",
-        "buy_score": 46.7,
+        "buy_score": 46.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -37054,9 +37054,9 @@
       "published_report": "The strikeout rate is loud, the walk rate is the problem. Across AA & A+ & A in 2026, Riley Quick is punching out 12.1 per nine with 110 strikeouts over 81.6 innings, but the 5.3 BB/9 translates to 5.1 at the MLB level against a MLB average of 3.2, and a K-BB% that converts to 12.0 where the MLB average sits at 13.5. If he tightens the zone and the strikeout rate holds in translation, he's a back-end starter; if the command stays where it is, the strikeouts become a buffer rather than a differentiator, and the floor is a depth arm.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 69,
+        "buy_rank": 68,
         "buy_reason": "Still in the buy window",
-        "buy_score": 50.5,
+        "buy_score": 50.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -37128,9 +37128,9 @@
       "published_report": "The 21 stolen bases are doing real work here, because everything else in the translation says fringe. Across AA & A+, Arquette is hitting .272/.327/.459 with a .187 ISO, but once you run it through the MLB filter, the ISO softens to .143 and the walk rate drops to 6.6% while the MLB average sits closer to 8.5%. The bat-to-ball side is cleaner than the strikeout and walk numbers suggest, and a .314 BABIP on 291 PA at these levels isn't outrunning the profile, but the OBP translating well below his minor-league line is the ceiling's hard limit. If the speed holds and he stays at short, there's a low-end regular conversation; if the contact thins at Triple-A, what's left is a bench piece who runs well.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 62,
+        "buy_rank": 63,
         "buy_reason": "Still in the buy window",
-        "buy_score": 51.1,
+        "buy_score": 51.0,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -37202,9 +37202,9 @@
       "published_report": "The strikeout stuff jumps out \u2014 122 punchouts in 94 AAA innings, translating to 9.7 per nine at the MLB level. The problem lives right beside it: 92 walks in those same innings, which runs through the translation at 7.2 per nine, more than double what most MLB starters allow, and a K-BB% that comes out at 8.2% against a league figure of 13.5%. If the command doesn't tighten, the swing stuff becomes a footnote on a pitcher who can't find the zone.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 121,
+        "buy_rank": 118,
         "buy_reason": "Still in the buy window",
-        "buy_score": 46.8,
+        "buy_score": 46.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -37796,7 +37796,7 @@
             {
               "display": "27.5 ft/s",
               "label": "Sprint Speed",
-              "pct": 50,
+              "pct": 51,
               "raw": 27.5
             },
             {
@@ -38093,7 +38093,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 66,
+              "pct": 67,
               "raw": null
             }
           ]
@@ -39201,9 +39201,9 @@
       "published_report": "The strikeout rate is loud, the walk rate undercuts it. Across 64.3 innings at AAA, Lagrange has 85 strikeouts against 33 walks, and the translation is honest about what that means at the next level: a 9.6 K/9 that clears MLB average, and a 4.2 BB/9 that sits a full run above it. The K-BB% translates to 14.1%, barely a tick over the MLB mean, which is the whole shape of the profile in one number: swing-and-miss stuff that a shaky zone keeps from mattering as much as it should. If the walks tighten, there's a back-end arm here; if they don't, he's organizational depth with a good strikeout pitch.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 108,
+        "buy_rank": 102,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.5,
+        "buy_score": 47.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -39746,9 +39746,9 @@
       "published_report": "The .408 OBP across AA & A+ & A is the headline, and the 45 stolen bases in 419 plate appearances is what makes it more than a walk-rate story. At 19, Tate Southisene is running and getting on base at a level that translates to an 11.1% walk rate in MLB context, well clear of the 8.5% MLB average, but the ISO translates to just .129, and that gap between his plate discipline and his raw power is where the ceiling question lives. If the contact and speed hold and the power develops even modestly, he becomes an everyday shortstop; if the pop stalls, what's left is a high-OBP bench piece who can run.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 24,
+        "buy_rank": 26,
         "buy_reason": "Still in the buy window",
-        "buy_score": 55.2,
+        "buy_score": 55.0,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -39882,33 +39882,10 @@
         "3B"
       ],
       "prospect_rank": null,
-      "published_report": "The Statcast contact profile is genuinely strange for a guy with a 4.1% barrel rate: a 15.3% whiff rate and 12.7% strikeout rate that both sit near the top of the league, meaning he's making elite contact with ordinary exit velocity, which is exactly the shape of a hitter who runs a .266 xBA but can't find the gaps the way he used to. The projection's .235 AVG against an xBA of .266 tells you the current batted-ball luck is running cold, but the .369 projected SLG is where the age story gets uncomfortable \u2014 a 4.1% barrel rate with 88.6 mph average exit velocity just doesn't support a power line, and the 12 projected home runs say as much. What keeps this profile from being a full decline story is the 37 projected stolen bases and an 11.0% walk rate: he's still reading pitchers well, still running, still a factor in ways that don't require him to barrel anything. If the speed holds at 27.9 ft/s and the plate discipline doesn't erode, he's a useful everyday player with an ugly slash line; if the legs go, there's not much exit velocity left to catch him.",
-      "published_report_source": "llm",
+      "published_report": "The Statcast card is carried by elite K % at the 93rd percentile (12.7%), with well below-average Barrel % at the 16th percentile (4.1%) as the drag. A speed-driven line projects to .235 AVG, .321 OBP, .690 OPS, 12 HR, 37 SB over 552 PA.",
+      "published_report_source": "deterministic",
       "recent_signal": null,
       "report": "The Statcast card is carried by elite K % at the 93rd percentile (12.7%), with well below-average Barrel % at the 16th percentile (4.1%) as the drag. A speed-driven line projects to .235 AVG, .321 OBP, .690 OPS, 12 HR, 37 SB over 552 PA.",
-      "report_llm": {
-        "handedness_problems": [],
-        "hard_ok": true,
-        "model": "claude-sonnet-4-6",
-        "problems": {
-          "banned": [],
-          "count_role_problems": [],
-          "derived_word_number_problems": [],
-          "handedness_problems": [],
-          "hard_ok": true,
-          "league_average_scaffold_problems": [],
-          "level_attribution_problems": [],
-          "ok": true,
-          "pa_consistency_problems": [],
-          "role_vocab_problems": [],
-          "style_problems": [],
-          "triple_slash_problems": [],
-          "uncalibrated_projection_claims": [],
-          "unsupported_numbers": []
-        },
-        "text": "The Statcast contact profile is genuinely strange for a guy with a 4.1% barrel rate: a 15.3% whiff rate and 12.7% strikeout rate that both sit near the top of the league, meaning he's making elite contact with ordinary exit velocity, which is exactly the shape of a hitter who runs a .266 xBA but can't find the gaps the way he used to. The projection's .235 AVG against an xBA of .266 tells you the current batted-ball luck is running cold, but the .369 projected SLG is where the age story gets uncomfortable \u2014 a 4.1% barrel rate with 88.6 mph average exit velocity just doesn't support a power line, and the 12 projected home runs say as much. What keeps this profile from being a full decline story is the 37 projected stolen bases and an 11.0% walk rate: he's still reading pitchers well, still running, still a factor in ways that don't require him to barrel anything. If the speed holds at 27.9 ft/s and the plate discipline doesn't erode, he's a useful everyday player with an ugly slash line; if the legs go, there's not much exit velocity left to catch him.",
-        "valid": true
-      },
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -39992,15 +39969,15 @@
               "raw": 11.0
             },
             {
-              "display": "27.9 ft/s",
+              "display": "28.0 ft/s",
               "label": "Sprint Speed",
-              "pct": 63,
-              "raw": 27.9
+              "pct": 64,
+              "raw": 28.0
             },
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 83,
+              "pct": 79,
               "raw": null
             }
           ]
@@ -40693,9 +40670,9 @@
       "published_report": "The calling card here is a 19-year-old shortstop who has walked 70 times and struck out just 74 across 542 plate appearances at A+ & A, a zone-discipline profile that translates to a 19.3% strikeout rate and 9.6% walk rate, both sitting favorably against MLB norms. At that age, at that level, contact and patience at that scale are genuinely uncommon. The problem is everything else: a .128 ISO across A+ & A translates to .097 at the MLB level, a figure that trails the MLB average by a wide margin, and there's no signal in the data that plus raw power is coming. He becomes a useful everyday shortstop if the bat-to-ball skills hold and the power develops even modestly into his physical prime; if the game power stays where it is, the floor is a bench piece whose value lives entirely in those 55 stolen bases and his ability to get on base.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 29,
+        "buy_rank": 33,
         "buy_reason": "Young runway",
-        "buy_score": 54.8,
+        "buy_score": 54.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -40767,7 +40744,7 @@
       "published_report": "The surface numbers are loud: .569 slugging and .263 ISO across AA & A+ at age 20, with 15 stolen bases in 300 plate appearances. But the translation quiets them. That ISO shrinks to .170 in MLB context, roughly league average, and a 27% strikeout rate across AA & A+ becomes 28.3% against big-league arms, well above the 22.0% mean. The .392 BABIP is doing a lot of work on that .307 average, and when contact-dependent hitters run inflated BABIPs the question isn't whether the number will move, it's how far. If the strikeout rate firms up and the BABIP settles somewhere reasonable, you get a live-armed center fielder who can hurt you; if the contact doesn't develop, the power is fringe-average against MLB stuff and the rest of the line evaporates with the batting average.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 83,
+        "buy_rank": 82,
         "buy_reason": "Still in the buy window",
         "buy_score": 49.2,
         "movement_label": "holding steady",
@@ -40915,9 +40892,9 @@
       "published_report": "The contact and the power both translate, and that's the uncomfortable part of this profile. Across AAA & AA in 530 plate appearances, Estrada is hitting .281 with 25 home runs and an .807 OPS, and the MLB-equivalent read puts his ISO at .152, essentially matching what hitters produce on average in the majors, while his strikeout rate clocks in at 21% where the typical big-leaguer sits at 22%. The problem is the walk rate: his MLB-equivalent BB% translates to 6.3% against a pool where the average is 8.5%, and the .325 OBP reflects it, sitting at just the 30th percentile despite AVG and SLG grades that rank in the 80s. If he never develops patience at the plate, the ceiling stays organizational depth regardless of how the bat plays, because a hitter who doesn't draw walks lives and dies on BABIP fortune and can't sustain value through slumps.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 123,
+        "buy_rank": 122,
         "buy_reason": "Still in the buy window",
-        "buy_score": 46.7,
+        "buy_score": 46.5,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -41485,7 +41462,7 @@
       "published_report": "The .312 average across AA & A+ is the loudest number in this profile, but the .377 BABIP underneath it is the reason to squint. Fifty stolen bases in 554 plate appearances tell you the speed is genuine and probably propping that batting average up, and the contact rate is real enough \u2014 108 strikeouts against 61 walks translates to a K% just a tick above league average at the MLB level, with walk rate that clears the bar. The power doesn't translate: a .143 ISO across AA & A+ becomes .116 in MLB equivalent, well short of the .150 league average, which means if the speed fades or the BABIP regresses to something more mortal, the offensive profile thins fast. The ceiling here is a bench bat who steals bases and gets on base at a passable clip; the floor is a fringe roster piece whose hit tool looks more like a function of legs than bat.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 118,
+        "buy_rank": 116,
         "buy_reason": "Still in the buy window",
         "buy_score": 47.0,
         "movement_label": "holding steady",
@@ -42097,7 +42074,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 88,
+              "pct": 89,
               "raw": null
             }
           ]
@@ -42335,10 +42312,10 @@
         "3B"
       ],
       "prospect_rank": null,
-      "published_report": "The Statcast card is carried by elite Fielding (OAA) at the 97th percentile, with well below-average Sprint Speed at the 8th percentile (25.3 ft/s) as the drag. A power-first line projects to .218 AVG, .303 OBP, .711 OPS, 30 HR, 5 SB over 685 PA.",
+      "published_report": "The Statcast view starts with elite Fielding (OAA) at the 96th percentile, but well below-average Sprint Speed at the 8th percentile (25.3 ft/s) pulls down the profile. A power-first line projects to .218 AVG, .303 OBP, .711 OPS, 30 HR, 5 SB over 685 PA.",
       "published_report_source": "deterministic",
       "recent_signal": null,
-      "report": "The Statcast card is carried by elite Fielding (OAA) at the 97th percentile, with well below-average Sprint Speed at the 8th percentile (25.3 ft/s) as the drag. A power-first line projects to .218 AVG, .303 OBP, .711 OPS, 30 HR, 5 SB over 685 PA.",
+      "report": "The Statcast view starts with elite Fielding (OAA) at the 96th percentile, but well below-average Sprint Speed at the 8th percentile (25.3 ft/s) pulls down the profile. A power-first line projects to .218 AVG, .303 OBP, .711 OPS, 30 HR, 5 SB over 685 PA.",
       "report_status": "stat_grounded",
       "role": "hitter",
       "source_fields": {
@@ -42430,7 +42407,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 97,
+              "pct": 96,
               "raw": null
             }
           ]
@@ -42975,9 +42952,9 @@
       "published_report": "The .273/.363/.458 line across AA & A+ is genuinely tidy for a 20-year-old shortstop, but the translation softens it fast. That .185 ISO in the minors becomes a .135 MLB equivalent, which is below league average, and the 24% strikeout rate at the minor-league level translates to 27.2% up top. The 25 stolen bases and 54 walks across 498 PA suggest a player who does more than one thing, but none of them at the level that forces a team's hand. If the power develops and the strikeout rate doesn't climb with better pitching, he's a second-division regular; if neither moves in the right direction, he's a bench piece with speed.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 79,
+        "buy_rank": 81,
         "buy_reason": "Still in the buy window",
-        "buy_score": 49.6,
+        "buy_score": 49.2,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -43049,9 +43026,9 @@
       "published_report": "The walk rate is the whole argument here. Baumeister has struck out 111 batters across 103.3 innings at AA, but 55 walks in the same stretch pushes his translated BB/9 to 4.7, and the MLB average sits at 3.2 \u2014 a gap wide enough that the strikeout rate can't cover it. His MLB-equivalent K/9 comes in at 8.1, a tick below the league mean of 8.6, so there's no overwhelming strikeout upside to bail him out. The 1.3 WHIP and 5.1 ERA at AA tell you the walks are costing him now, and if the command doesn't tighten, the strikeouts aren't enough to carry a 4.7-walk pitcher into a big-league rotation, and you're looking at a depth arm at best.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 124,
+        "buy_rank": 120,
         "buy_reason": "Model conviction",
-        "buy_score": 46.6,
+        "buy_score": 46.7,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -44134,9 +44111,9 @@
       "published_report": "The surface numbers are loud: a 2.5 ERA and 80 strikeouts across 55 innings at A+ & A, with a K-BB% that translates almost exactly to what a league-average arm produces. That last part is the tension. The 13.1 K/9 across A+ & A looks like a weapon, but once you run it through the level adjustment it lands at 8.7, just above the MLB translation for K/9 at 8.6, and the 26 walks across A+ & A come out to a 4.4 BB/9 against an MLB average of 3.2. The strikeout volume is doing the surface work; the control is doing the damage underneath. Everything here hinges on whether the walk rate tightens as competition rises, because if it doesn't, the strikeout gains get quietly erased and what's left is a depth arm, ceiling and floor both.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 77,
+        "buy_rank": 76,
         "buy_reason": "Still in the buy window",
-        "buy_score": 49.8,
+        "buy_score": 49.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -44344,9 +44321,9 @@
       "published_report": "The strikeout rate is loud \u2014 12.7 K/9 at A-ball, 124 punchouts across 88 innings, but the walk rate is the story that keeps interrupting it. At 5.3 BB/9, the command is shaky enough that when you translate the profile to MLB context, the strikeout advantage essentially vanishes: 8.5 K/9 against a baseline of 8.6, and a K-BB% that flips from a strength at A-ball to a below-average 11.1 against the 13.5 MLB figure. The ceiling here is a depth arm, and the floor is the same. This profile hinges entirely on whether the control tightens enough to keep batters from taking free passes at a higher level, because if it doesn't, the swing-and-miss loses its leverage completely.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 54,
+        "buy_rank": 55,
         "buy_reason": "Model conviction",
-        "buy_score": 51.9,
+        "buy_score": 52.0,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -44418,7 +44395,7 @@
       "published_report": "Thirty-six stolen bases across AA & A at 21 years old is the loudest thing on this card, and the contact rate backs it up: a .329 average and .419 OBP suggest a real on-base skill, with the walk rate translating to 9.9% at the MLB level. The .424 BABIP will draw the side-eye, and it should, because the MLB-equivalent translation shows his ISO dropping to .092 while the MLB average sits at .150, meaning the whole offensive profile runs through contact and speed rather than power the ball doesn't have. If the bat-to-ball skill and legs translate, he's a low-end regular or a very useful bench piece with a specific gear; if the BABIP normalizes and the zero home runs across 278 PA stay zero, what's left is a depth outfielder who gets on base often enough to matter but not enough to hold a lineup spot.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 94,
+        "buy_rank": 92,
         "buy_reason": "Still in the buy window",
         "buy_score": 48.2,
         "movement_label": "holding steady",
@@ -45620,9 +45597,9 @@
       "published_report": "The K-BB% at 96th percentile among AAA pitchers this season is the number that matters, and it's not a small-sample quirk \u2014 84 strikeouts against 25 walks across 62.3 innings at AAA is a real body of work. That 1.0 WHIP and 3.0 ERA sit on top of a translation that puts his K/9 at 9.8 in MLB context, which means the swing-and-miss carries, but the walks translate to 3.5 and the MLB average sits at 3.2, and that gap will define the ceiling. If the command sharpens, he's a legitimate setup option; if it plateaus where it is, he's a depth arm who misses enough bats to survive in a middle-relief role without ever threatening the high-leverage door.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 145,
+        "buy_rank": 143,
         "buy_reason": "Model conviction",
-        "buy_score": 42.0,
+        "buy_score": 42.1,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -46126,9 +46103,9 @@
       "published_report": "The walk rate is the whole profile. Across AA & A+, Kepley has drawn 120 walks against just 89 strikeouts in 595 plate appearances, a 20% walk rate that translates to 14.7% at the MLB level, well above the league norm of 8.5%. The .422 OBP stands on a foundation the contact backs up, a 15% strikeout rate that would play below league average at the big-league level, but the ISO translates to .12, a tick below MLB average, and 70 stolen bases tell you he's betting his value on getting on base rather than doing damage. If the plate discipline holds in Triple-A and the speed stays viable, there's a legitimate bench piece here; if the walks compress under better pitching and the power doesn't grow, what's left is a .243 hitter with nothing to carry him.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 127,
+        "buy_rank": 125,
         "buy_reason": "Still in the buy window",
-        "buy_score": 46.1,
+        "buy_score": 46.0,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -46627,9 +46604,9 @@
       "published_report": "The ISO is the argument. Across AAA, AA, and A in 2026, Josu\u00e9 Brice\u00f1o is slugging .504 with a .244 ISO in 160 plate appearances, and the MLB-equivalent translation puts that raw power at a .164 ISO, meaningfully above what most big-league hitters produce. That's a real gap at first base from a 21-year-old. The problem is everything else: the translation also sees a 24.9% strikeout rate in the majors, and the walk rate, 14% in the minors translating to 10.0%, gives him a floor but not a carrying tool. If the power translates and the strikeouts don't balloon against better velocity, there's a second-division regular in here; if the contact doesn't firm up, he's a bench bat who gets platooned until the power alone isn't enough to keep him on a roster.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 131,
+        "buy_rank": 130,
         "buy_reason": "Still in the buy window",
-        "buy_score": 44.5,
+        "buy_score": 44.2,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -46955,7 +46932,7 @@
             {
               "display": null,
               "label": "Fielding (OAA)",
-              "pct": 49,
+              "pct": 47,
               "raw": null
             }
           ]
@@ -46992,7 +46969,7 @@
       "published_report": "The A+ line is genuinely pretty \u2014 .305/.389/.513 through 412 plate appearances, with 18 home runs and a 10% walk rate sitting comfortably alongside a 17% strikeout rate. At the catcher position, that contact-and-patience combination is unusual enough to notice. But the MLB translation is where the ceiling conversation gets complicated: A+ power at .207 ISO softens to .144 at the big-league level, landing just below a league-average mark of .150, and the walk rate follows a similar path downward. If the bat speed and recognition that produce those A+ results translate cleanly, a real question across two to three years and several levels, you get a functional big-league catcher with a serviceable floor; if the hit tool fades when pitching gets sharper, what's left is organizational depth behind the plate.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 52,
+        "buy_rank": 51,
         "buy_reason": "Young runway",
         "buy_score": 52.3,
         "movement_label": "holding steady",
@@ -47066,9 +47043,9 @@
       "published_report": "The walk rate is the whole profile. At AA, 21 walks across 126 innings translates to a 2.1 BB/9 in MLB-equivalent terms, well below the 3.2 mark most pitchers run at that level, and that gap is wide enough to carry a guy whose 99 strikeouts don't translate to missing bats up top \u2014 the MLB-equivalent K/9 comes out at 6.6, well short of the 8.6 average. The control is real enough to keep him viable, but the ceiling math doesn't clear the bar: even with pinpoint command, a pitcher who misses few bats and works toward the middle of the zone doesn't have the margin for error a backend starter needs. Suarez is a depth arm if it stays together, and a depth arm if something slips.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 82,
+        "buy_rank": 79,
         "buy_reason": "Model conviction",
-        "buy_score": 49.2,
+        "buy_score": 49.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -47214,7 +47191,7 @@
       "published_report": "The contact and patience hold up \u2014 .260/.350/.434 across AAA & A+ with 51 walks against 100 strikeouts in 463 plate appearances is a catcher profile that scouts can work with. Translated to the big league level, the walk rate edges above average and the ISO shrinks to .14, right at the MLB mean, which is honest about what he actually provides. The question isn't the bat; it's whether a catcher who grades this way earns a roster spot or spends his career as the best option nobody needs. Bench bat or depth piece, full stop, and the ceiling lives or dies on whether his receiving keeps him in the conversation behind the plate.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 142,
+        "buy_rank": 140,
         "buy_reason": "Still in the buy window",
         "buy_score": 42.8,
         "movement_label": "holding steady",
@@ -48729,7 +48706,7 @@
       "published_report": "The 53 stolen bases are the loudest thing in this profile, and they're also the thing that matters most for whether any of this translates. Across A+ & A, Alvarez is hitting .289/.391/.456 with 75 walks against 109 strikeouts in 551 plate appearances, a contact-and-patience line that looks real at this level but softens considerably when you run it through MLB-equivalent context: the walk rate holds up, translating to 10.2% where MLB average sits at 8.5%, but the ISO drops to .115 and the strikeout rate climbs to 25.2%. The speed is the separator, because without plus run value the power floor is thin and the OBP doesn't carry a lineup spot on its own. Either the speed stays elite and he becomes a table-setter who earns a bench role through his legs, or the bat thins out against better velocity and he's organizational depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 48,
+        "buy_rank": 49,
         "buy_reason": "Young runway",
         "buy_score": 52.4,
         "movement_label": "holding steady",
@@ -48863,9 +48840,9 @@
       "published_report": "The .311 average across A+ & A is the loudest thing in this profile, and the 96th-percentile contact rate among hitters at his level is what makes it worth taking seriously rather than waving away as a soft-level number. At 19, Jhonny Level is hitting with 18 home runs, 43 walks, and 26 stolen bases in 548 plate appearances, a combination of contact, emerging pop, and speed that reads well on paper. The translation dims it: his walk rate shrinks to 6.9% in MLB context while strikeouts climb to 22.4%, and the ISO drops to .135, below where most big-league hitters settle. If the contact holds against better velocity and the power grows with age, he becomes a solid regular; if the hit tool softens and the walks don't develop, what's left is a bench piece with wheels.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 41,
+        "buy_rank": 42,
         "buy_reason": "Young runway",
-        "buy_score": 53.5,
+        "buy_score": 53.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -48997,9 +48974,9 @@
       "published_report": "The walk rate is the whole argument, and it's also the ceiling. Stevenson has drawn 98 walks across 474 plate appearances at A+, a BB% that ranks in the 98th percentile of his pool, sitting next to a .405 OBP and 22 home runs that give the profile real shape on paper. But the MLB-equivalent translation puts his strikeout rate at 32.3%, well past the 22.0% MLB average, and ISO translates to .162, roughly league-average power, not the plus-power the raw A+ line implies. The discipline is loud and likely real at the next level; the one dependency the whole profile rests on is whether that contact rate tightens, and if it doesn't, what's left is a catching prospect with a patient eye and marginal bat-to-ball skills whose ceiling is organizational depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 66,
+        "buy_rank": 67,
         "buy_reason": "Still in the buy window",
-        "buy_score": 50.7,
+        "buy_score": 50.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -49131,9 +49108,9 @@
       "published_report": "The walk rate is the thing. Across AA & A+, Alfredo Duno has drawn 66 walks against 102 strikeouts in 433 plate appearances, and the translation puts his walk rate at 11.4% when MLB hitters average 8.5%, which is unusual plate discipline for a 20-year-old catcher. The .395 OBP and .223 ISO across AA & A+ are genuine production at a real level, not a paper line. Where it gets complicated is the strikeout rate: 24% in the minors translates to 26.8% at MLB difficulty, and if that's what he is at full difficulty, the ISO translating to .155 means you're betting heavily on the walk rate holding to make the profile work. The ceiling here is modest, and if the walks regress and the strikeouts don't, what's left is a depth catcher.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 90,
+        "buy_rank": 89,
         "buy_reason": "Still in the buy window",
-        "buy_score": 48.6,
+        "buy_score": 48.5,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -49198,9 +49175,9 @@
       "published_report": "The walk rate is the loudest thing in this profile, and the strikeout rate is almost as loud. Across A+ & A in 466 plate appearances, Neyens has walked 114 times against 155 strikeouts, a 24% walk rate that sits at the 99th percentile of his hitter pool, paired with a 33% strikeout rate that lands at the 10th. The .429 OBP is genuine because he earns first base constantly, but that on-base engine is running alongside a BABIP of .351, and if contact quality doesn't improve the average falls further from the already-modest .231. The translated profile is the honest reckoning: the walk rate stays elite at 16.1%, but the strikeout rate translates to 37.1% while the ISO, which looks respectable on the farm, comes out below the MLB mean at the big-league level, so the ceiling here is either a disciplined bench piece who finds a platoon niche or, more likely, organizational depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 47,
+        "buy_rank": 46,
         "buy_reason": "Young runway",
-        "buy_score": 52.7,
+        "buy_score": 52.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -49265,7 +49242,7 @@
       "published_report": "The .413 BABIP is the whole conversation. Across AAA & AA & A+, Devin Taylor is hitting .308/.411/.493 in 647 plate appearances, and that surface line is doing a lot of work a high BABIP is quietly carrying. Translate the underlying skills to an MLB context and the picture tightens: the K% moves to 29.6% against an MLB baseline of 22.0%, and ISO lands at .139, a tick below the MLB mean of .150. The 96 walks across AAA & AA & A+ translate to 11.7% at the big-league level, genuine discipline, but walk rate alone can't carry a profile where contact regresses and the power grades below average against major-league pitching. If the BABIP normalizes, there isn't enough ISO or contact quality left to be an everyday right fielder; what remains is a bench outfielder at best, organizational depth at the floor.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 144,
+        "buy_rank": 142,
         "buy_reason": "Still in the buy window",
         "buy_score": 42.5,
         "movement_label": "holding steady",
@@ -49567,7 +49544,7 @@
       "recent_signal": {
         "buy_rank": 109,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.5,
+        "buy_score": 47.4,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -50241,9 +50218,9 @@
       "published_report": "The walk rate is the loudest thing on this card, and it's also the problem. At A+ in 2026, Blake Mitchell has drawn 113 walks in 511 plate appearances, a 22% clip that sits at the 99th percentile of his pool, and he's added 27 stolen bases and 23 home runs on top of it, a legitimately unusual combination for a catcher at 21. But the .234 average against a .346 BABIP tells you the strikeouts aren't disappearing, and when that contact rate translates to an MLB-equivalent 36.8% K%, what survives the jump is a 15.4% walk rate propped up against average power at .152 ISO. The whole profile hinges on whether the discipline holds as pitchers locate better, because if the strikeouts climb and the walks compress even modestly, the .234 average becomes the story rather than the footnote. If it works, he's a patient, borderline-average offensive catcher who runs; if it doesn't, the bench is the ceiling.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 67,
+        "buy_rank": 69,
         "buy_reason": "Still in the buy window",
-        "buy_score": 50.7,
+        "buy_score": 50.5,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -50308,9 +50285,9 @@
       "published_report": "Forty-two stolen bases across AA & A+ is the loudest thing on this card, and the plate discipline behind it, 74 walks against 107 strikeouts in 522 PA, is what makes the speed sustainable rather than reckless. His translated walk rate of 11.2% clears the MLB average of 8.5% by a meaningful margin, suggesting a hitter who can get on base without leaning on contact, which is exactly the profile you want underneath that kind of baserunning aggression. The power doesn't travel: his .134 ISO across AA & A+ translates to .113 at the MLB level, well short of the .150 MLB average, and that gap is the whole tension in the profile. If the speed holds and the OBP replicates, you have a usable everyday center fielder; if the ISO stays buried and the strikeout rate ticks toward its translated 23.4%, what's left is a bench piece who steals bases when he gets on.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 97,
+        "buy_rank": 98,
         "buy_reason": "Still in the buy window",
-        "buy_score": 48.1,
+        "buy_score": 47.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -50839,9 +50816,9 @@
       "published_report": "96 strikeouts across A+ & A in 60.7 innings is a loud number, and the 14.2 K/9 sits at the 98th percentile of this pitcher pool. The walk rate is the whole problem: 31 free passes in that same stretch, a 4.6 BB/9 that translates to MLB territory where the average arm is giving up far fewer bases on balls, and a K-BB% that looks elite on the raw line but only holds together if the command actually develops. If it does, the strikeout rate translates to 9.4 at the MLB level, above average, and there's a real arm here worth watching. If the walks don't come down, the ceiling is a depth piece with a loud strikeout rate and a leaky WHIP, which is more or less what the profile already shows at 1.4.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 101,
+        "buy_rank": 100,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.8,
+        "buy_score": 47.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -51756,9 +51733,9 @@
       "published_report": "The .444 OBP at A-ball is loud, but a .439 BABIP is the whole conversation right now. Gonzalez is hitting .357 with 21 walks and 13 stolen bases across 153 plate appearances at age 18, and every rate sits near the top of his peer pool \u2014 but the translation tells you the ceiling is modest: his ISO at A converts to .139 in MLB-equivalent context, and the K% ticks up to 23.9% once you account for the level. If the contact quality sticks as competition rises and the BABIP finds a floor somewhere reasonable, he's a low-end regular or useful bench piece; if the average regresses hard when the strikeout rate climbs, you're looking at organizational depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 26,
+        "buy_rank": 28,
         "buy_reason": "Young runway",
-        "buy_score": 55.0,
+        "buy_score": 54.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -52077,7 +52054,7 @@
       "published_report": "The profile that stands out here isn't the bat \u2014 it's the discipline and the legs. Across 569 plate appearances at AA, Escobar has drawn 67 walks against 92 strikeouts, and that patience translates to a 9.9% walk rate at the MLB-equivalent level, a tick better than the 8.5% MLB average. Twenty-seven stolen bases give him a carrying tool the bat doesn't yet provide. The contact quality isn't hiding anything: a .230 average, .117 ISO, and .258 BABIP are exactly what they look like, and the MLB-equivalent ISO of .105 sits well short of the .150 MLB average. If the discipline and speed translate, he's a bench bat with genuine on-base utility; if the bat never develops even modest pop, the ceiling is organizational depth and not much else.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 99,
+        "buy_rank": 96,
         "buy_reason": "Still in the buy window",
         "buy_score": 47.9,
         "movement_label": "holding steady",
@@ -52398,9 +52375,9 @@
       "published_report": "The .389 OBP at A-ball is loud for an 18-year-old, and 40 walks in 312 plate appearances shows the zone-reading is something he's doing intentionally. The trouble is everything else translates down hard: the MLB-equivalent ISO comes out at .119, well short of the .150 MLB average, and a first baseman who can't hit for power at the big-league level is asking a lot of the profile. If the raw .165 ISO at A grows as he ages into his frame, he's a passable regular; if it doesn't, he's a bench bat with a good eye and nowhere to play.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 19,
+        "buy_rank": 20,
         "buy_reason": "Young runway",
-        "buy_score": 55.6,
+        "buy_score": 55.5,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -52532,7 +52509,7 @@
       "published_report": "The walk rate is the thing worth watching \u2014 3.2 BB/9 at A, which translates to 3.8 at the MLB level, a tick above where big-league starters typically land. The 93 strikeouts across 77 innings are loud, but a K-BB% that translates to 11.4% when the MLB average sits at 13.5% tells you the whiffs aren't fully covering for the free passes. If the walk rate tightens, there's a back-end conversation to be had; if it doesn't, the stuff alone doesn't carry him past depth-arm territory.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 50,
+        "buy_rank": 48,
         "buy_reason": "Young runway",
         "buy_score": 52.4,
         "movement_label": "holding steady",
@@ -52733,9 +52710,9 @@
       "published_report": "The numbers at A+ are loud enough to make you lean in: 1.2 ERA, 0.7 WHIP, 14.3 K/9 against 2.4 BB/9 across 29.7 innings. That's the problem too. Twenty-nine innings is a conversation starter, not a verdict, and the sample is already stale. Translated across AA & A+ & A, the strikeout rate softens to 9.6 K/9 and the walk rate climbs to 3.7, which puts him above a league-average K-BB% but not by a margin that carries a rotation dream. If the stuff translates and the workload builds, there's a back-end starter in there; if it doesn't, you're left with a reliever with good peripherals.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 113,
+        "buy_rank": 105,
         "buy_reason": "Still in the buy window",
-        "buy_score": 47.3,
+        "buy_score": 47.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -52934,7 +52911,7 @@
       "published_report": "The surface numbers at AA are genuinely loud: .309/.395/.565 with 48 stolen bases and 15 home runs across 282 plate appearances, and the percentile pool rates his OPS and slugging at 97. Then you run the translation and the BABIP is .430. That's the whole problem \u2014 a contact profile running this hot on balls in play, paired with a strikeout rate that translates to 30.4% at the MLB level, means you're betting the batting average holds when the luck normalizes. If it doesn't, the ISO translates to .176, the walk rate lands at 9.0%, and you're left with a bench profile that runs well. The speed and the raw power are both present, but until the strikeout-BABIP combination sorts itself out at a higher level, this is a lottery ticket with a bench bat as the floor.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 132,
+        "buy_rank": 129,
         "buy_reason": "Still in the buy window",
         "buy_score": 44.3,
         "movement_label": "holding steady",
@@ -53001,9 +52978,9 @@
       "published_report": "The ISO translates. Across AAA & AA in 447 plate appearances, Rosario has posted a .230 ISO at the minor-league level, and that shapes to a .169 MLB-equivalent, above a league average of .150 \u2014 a real gap for a 22-year-old right fielder with 18 home runs and 17 stolen bases. The problem is everything around the power: 155 strikeouts translate to a 33.6% MLB-equivalent strikeout rate, and the .313 OBP across AAA & AA relies on that contact holding at a .324 BABIP. If the bat-to-ball doesn't tighten, the power and speed become noise attached to a profile that can't get on base enough to matter, and the ceiling never clears organizational depth.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 140,
+        "buy_rank": 139,
         "buy_reason": "Still in the buy window",
-        "buy_score": 42.9,
+        "buy_score": 42.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -53271,7 +53248,7 @@
       "recent_signal": {
         "buy_rank": 36,
         "buy_reason": "Young runway",
-        "buy_score": 54.2,
+        "buy_score": 54.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -53537,9 +53514,9 @@
       "published_report": "The strikeout rate is loud: 12.8 K/9 across AAA & A, which translates to 9.2 per nine at the MLB level. The control is the problem. Fifteen walks in 24.7 innings translates to a 4.2 BB/9, a full tick above where MLB starters typically live, and that gap is why the K-BB% lands at 19% but the WHIP sits at 1.5. Everything here hinges on whether he can tighten the zone enough to make the swing-and-miss matter, and 24.7 innings is genuinely too thin to say whether that's coming. If the command improves, there's a back-end rotation piece to develop; if it doesn't, this stays a bullpen profile.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 137,
+        "buy_rank": 134,
         "buy_reason": "Still in the buy window",
-        "buy_score": 43.3,
+        "buy_score": 43.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -53673,7 +53650,7 @@
       "recent_signal": {
         "buy_rank": 31,
         "buy_reason": "Young runway",
-        "buy_score": 54.7,
+        "buy_score": 54.6,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -54676,7 +54653,7 @@
       "published_report": "The 3.4 ERA and 1.2 WHIP across AA & A+ paint a controlled, contact-suppressing arm, and the 89th-percentile WHIP among starters with meaningful innings backs the picture up. The translation is the complication: his 10.0 K/9 softens to 7.8 against big-league hitters, a rate that sits below what the average MLB starter posts, and his walk rate edges from manageable to slightly above the mean in the same conversion. What he has is command feel and a contact-suppression profile that's held over 116.7 innings; what he lacks is a strikeout weapon that survives the climb. Everything hinges on whether the control is real enough to carry him as a starter when the strikeout gap widens \u2014 if it is, he works as a back-end rotation piece; if it isn't, he's a depth arm in bulk innings.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 130,
+        "buy_rank": 128,
         "buy_reason": "Still in the buy window",
         "buy_score": 44.6,
         "movement_label": "holding steady",
@@ -54810,7 +54787,7 @@
       "published_report": "The .461 OBP is the loudest number here, but the translation is what matters: 100 walks across AAA & AA & A+ in 501 plate appearances becomes a 14.7% walk rate against an MLB average of 8.5%, and that kind of zone discipline doesn't evaporate at the next level. The power translates leaner, a .157 ISO equivalent right at league average, so he isn't the slugger the .526 slugging across AAA & AA & A+ implies. The .398 BABIP sitting behind the .307 average is the one thread to pull \u2014 if that normalizes hard, the hit-tool story softens considerably, and what's left is a patient, average-power center fielder who either grows into a low-end regular or stays a bench bat.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 147,
+        "buy_rank": 145,
         "buy_reason": "Still in the buy window",
         "buy_score": 41.7,
         "movement_label": "holding steady",
@@ -55145,7 +55122,7 @@
       "published_report": "The .916 OPS across 343 A+ plate appearances is loud, and so is the .241 ISO. Ike Irish is hitting 16 home runs and stealing 20 bases while drawing 43 walks against 75 strikeouts, a profile that earns attention even at this level. The translation is where the story gets complicated: an MLB-equivalent K% of 25.4 is above league average, suggesting the swing-and-miss doesn't disappear when the stuff gets better, and the ISO translates to .159, essentially average power once you strip the level away. If the contact quality holds and the strikeout rate doesn't climb, he's a low-end regular; if the translation is what it looks like, he's a bench bat with pop.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 95,
+        "buy_rank": 93,
         "buy_reason": "Still in the buy window",
         "buy_score": 48.2,
         "movement_label": "holding steady",
@@ -55212,9 +55189,9 @@
       "published_report": "The strikeout rate is the whole argument, and it doesn't resolve cleanly. Across A+ & A in 2026, Bryce Rainer has hit 19 home runs with 69 walks in 478 plate appearances, and the walk rate translates to a respectable 10.8% MLB-equivalent \u2014 the plate patience is genuine, the power shapes into something. But he has also struck out 171 times, and that 36% rate at this level translates to 38.3% against big-league pitching, well past the point where carrying an everyday shortstop becomes comfortable. The ISO sits at .205 across A+ & A, and the raw production looks loud, but a .396 BABIP is doing real work to prop the average up, and when that normalizes the contact problem gets harder to paper over. If the strikeouts compress as he climbs, there's a second-division regular hiding in the profile; if they don't, what remains is a bench bat with a good eye and fringe power.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 60,
+        "buy_rank": 61,
         "buy_reason": "Young runway",
-        "buy_score": 51.4,
+        "buy_score": 51.3,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -55815,9 +55792,9 @@
       "published_report": "The .407 OBP across A+ & A is the loudest thing in this profile, and the 30 stolen bases make it louder. Kayson Cunningham is hitting .307 with 69 walks against 100 strikeouts in 490 plate appearances, which translates to a 10.5% walk rate and 25.1% strikeout rate at the MLB equivalent \u2014 a contact-and-baserunning profile that runs slightly above league average on patience and slightly above on chases. The power is the dependency: a .133 ISO across A+ & A translates to .105 at the MLB level, well shy of a league average that demands more than a shortstop's glove to carry a corner if he ever moves off the position. If the hit tool and legs hold and even modest pull-side authority develops, he's a low-end everyday regular; if the bat stays this light, what's left is a bench piece who gets on base and runs.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 64,
+        "buy_rank": 65,
         "buy_reason": "Young runway",
-        "buy_score": 51.0,
+        "buy_score": 50.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -55949,9 +55926,9 @@
       "published_report": "The walk rate is the lead. Forty-four walks in 255 plate appearances at A-ball, a 17% clip that translates to 11.3% at the MLB level while the MLB average sits at 8.5%, is a disciplined zone approach on an 18-year-old shortstop who isn't supposed to have that skill yet. The .400 OBP is carrying a .246 average, which tells you exactly where the value lives. What's uncertain is the power: a .191 ISO at A looks promising, but the MLB-equivalent lands at .130, below average, and a 27.5% strikeout translation suggests the bat-to-ball side will be tested hard as the level rises. If the walk rate survives the jump and the contact improves even a little, he becomes a low-end regular; if the strikeouts spike and the discipline regresses, what's left is a bench bat with a useful on-base skill.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 28,
+        "buy_rank": 30,
         "buy_reason": "Young runway",
-        "buy_score": 54.9,
+        "buy_score": 54.8,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -56016,7 +55993,7 @@
       "published_report": "The strikeout rate translates almost exactly to the MLB mean, which is the whole problem with this profile. Across AA & A+, Franklin has struck out 133 batters in 105 innings, an 11.4 K/9 that looks electric until the translation lands at 8.7, essentially what an average MLB arm produces. The walk rate, already 3.9 per nine in the minors, comes out to 4.1 in translation, above a typical starter's 3.2, and the whole shape hinges on whether those strikeouts survive the jump. If the swing-and-miss flattens even a little, the walk rate has nowhere to hide, and you're left with a depth arm now and a depth arm if it works.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 129,
+        "buy_rank": 127,
         "buy_reason": "Still in the buy window",
         "buy_score": 44.7,
         "movement_label": "holding steady",
@@ -56083,9 +56060,9 @@
       "published_report": "The gap between the A+ line and what it translates to is where this profile gets honest. Urbina's 10.3 K/9 across 77.7 innings looks like a swing-and-miss arm, but the MLB-equivalent strips that to 8.0 while his walk rate blooms from 3.7 to 4.0 against a translation average of 3.2. The K-BB% tells the same story: 16% at A+, landing at 11.5% in translation where the average pitcher clears 13.5%. Everything hinges on whether the command sharpens as he climbs, because without it there's no margin \u2014 the strikeout rate won't carry a walk problem at upper levels the way it can in the High-A run environment.",
       "published_report_source": "llm",
       "recent_signal": {
-        "buy_rank": 55,
+        "buy_rank": 56,
         "buy_reason": "Young runway",
-        "buy_score": 51.8,
+        "buy_score": 51.9,
         "movement_label": "holding steady",
         "rank_delta_3d": 0,
         "score_delta_3d": 0.0,
@@ -68057,18 +68034,18 @@
     "recent_signal_used_for_context": true
   },
   "summary": {
-    "deterministic_published_report_count": 43,
-    "llm_published_report_count": 713,
+    "deterministic_published_report_count": 44,
+    "llm_published_report_count": 712,
     "llm_shadow": {
       "available": true,
       "enabled": true,
-      "errored": 43,
+      "errored": 44,
       "flagged": 0,
       "generated": 0,
       "generation_limit": 300,
       "report_count": 1204,
-      "reused": 204,
-      "reused_stale": 509,
+      "reused": 206,
+      "reused_stale": 506,
       "skipped_due_to_budget": 0
     },
     "max_dynasty_rank": 500,
