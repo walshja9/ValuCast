@@ -3357,6 +3357,19 @@
       "team": "CHC"
     },
     {
+      "claim_consensus_rank": 250,
+      "claim_date": "2026-10-11",
+      "claim_divergence": 107,
+      "claim_valucast_rank": 143,
+      "identity_key": "800724_hitter",
+      "mlbam_id": "800724",
+      "name": "Eric Bitonti",
+      "outcome": "open",
+      "role": "hitter",
+      "side": "higher",
+      "team": "MIL"
+    },
+    {
       "age_days": 60,
       "claim_consensus_rank": 108,
       "claim_date": "2026-06-24",
@@ -6252,6 +6265,7 @@
       "team": "DET"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 261,
       "claim_date": "2026-08-12",
       "claim_divergence": -38,
@@ -6259,7 +6273,8 @@
       "identity_key": "701908_pitcher",
       "mlbam_id": "701908",
       "name": "David Hagaman",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-10-11",
       "role": "pitcher",
       "side": "lower",
       "team": "ARI"
@@ -7282,7 +7297,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-10-10T12:25:47.280173+00:00",
+  "generated_at": "2026-10-11T12:19:43.274169+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7303,15 +7318,15 @@
     "expiry_days": 60,
     "higher": {
       "expired_unresolved": 12,
-      "open": 40,
+      "open": 41,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 42,
       "retracted_by_model_move": 127,
-      "total": 229
+      "total": 230
     },
     "lower": {
-      "expired_unresolved": 45,
-      "open": 28,
+      "expired_unresolved": 46,
+      "open": 27,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 39,
       "retracted_by_model_move": 150,
