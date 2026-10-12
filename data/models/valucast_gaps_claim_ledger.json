@@ -7114,10 +7114,12 @@
       "claim_date": "2026-09-17",
       "claim_divergence": -28,
       "claim_valucast_rank": 156,
+      "consensus_move_spots": 10,
       "identity_key": "701339_hitter",
       "mlbam_id": "701339",
       "name": "Marek Houston",
-      "outcome": "open",
+      "outcome": "resolved_by_consensus_move",
+      "resolved_date": "2026-10-12",
       "role": "hitter",
       "side": "lower",
       "team": "MIN"
@@ -7297,7 +7299,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-10-11T12:19:43.274169+00:00",
+  "generated_at": "2026-10-12T12:23:17.217949+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7326,9 +7328,9 @@
     },
     "lower": {
       "expired_unresolved": 46,
-      "open": 27,
+      "open": 26,
       "resolved_by_callup": 3,
-      "resolved_by_consensus_move": 39,
+      "resolved_by_consensus_move": 40,
       "retracted_by_model_move": 150,
       "total": 265
     }
