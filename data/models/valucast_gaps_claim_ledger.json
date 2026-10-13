@@ -3361,10 +3361,12 @@
       "claim_date": "2026-10-11",
       "claim_divergence": 107,
       "claim_valucast_rank": 143,
+      "consensus_move_spots": -34,
       "identity_key": "800724_hitter",
       "mlbam_id": "800724",
       "name": "Eric Bitonti",
-      "outcome": "open",
+      "outcome": "resolved_by_consensus_move",
+      "resolved_date": "2026-10-13",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
@@ -7299,7 +7301,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-10-12T12:23:17.217949+00:00",
+  "generated_at": "2026-10-13T12:24:08.087722+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7320,9 +7322,9 @@
     "expiry_days": 60,
     "higher": {
       "expired_unresolved": 12,
-      "open": 41,
+      "open": 40,
       "resolved_by_callup": 8,
-      "resolved_by_consensus_move": 42,
+      "resolved_by_consensus_move": 43,
       "retracted_by_model_move": 127,
       "total": 230
     },
