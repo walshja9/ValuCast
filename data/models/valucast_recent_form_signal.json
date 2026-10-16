@@ -1,42 +1,15 @@
 {
   "artifact": "valucast_recent_form_signal",
-  "by_identity": {
-    "702065_pitcher": {
-      "level": "AAA",
-      "mlbam_id": "702065",
-      "momentum_label": "Steady",
-      "momentum_score": 0.114,
-      "name": "Aaron Rozek",
-      "recent_line": {
-        "bb_per_9": 0.9,
-        "era": 3.6,
-        "innings_pitched": 10.0,
-        "k_bb_pct": 19.5,
-        "k_per_9": 8.1
-      },
-      "recent_sample": 10.0,
-      "role": "pitcher",
-      "season_line": {
-        "bb_per_9": 1.84,
-        "era": 2.45,
-        "innings_pitched": 14.7,
-        "k_bb_pct": 16.9,
-        "k_per_9": 8.59
-      },
-      "team": "St. Paul Saints",
-      "usage": "recent_form_context_not_live_rank_or_value",
-      "window_days": 30
-    }
-  },
+  "by_identity": {},
   "cooling_off": [],
-  "generated_at": "2026-10-15T12:26:20.950666+00:00",
+  "generated_at": "2026-10-16T12:24:03.313330+00:00",
   "generated_by": "valucast",
   "heating_up": [],
   "input_artifacts": {
-    "recent_end_date": "2026-10-15",
-    "recent_start_date": "2026-09-16",
+    "recent_end_date": "2026-10-16",
+    "recent_start_date": "2026-09-17",
     "recent_window_days": 30,
-    "season_fetched_date": "2026-10-15"
+    "season_fetched_date": "2026-10-16"
   },
   "signal_version": "0.1.0",
   "source_policy": {
@@ -50,15 +23,17 @@
     "kind": "valucast_recent_form_signal",
     "market_values_used": false
   },
-  "status": "candidate_ready",
+  "status": "blocked",
   "summary": {
     "cooling_off_count": 0,
-    "evaluated_count": 1,
+    "evaluated_count": 0,
     "heating_up_count": 0,
     "window_days": 30
   },
   "validation": {
-    "blockers": [],
-    "ready_for_recent_form": true
+    "blockers": [
+      "No prospect cleared the recent-form sample guard."
+    ],
+    "ready_for_recent_form": false
   }
 }

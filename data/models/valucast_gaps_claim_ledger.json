@@ -2507,6 +2507,7 @@
       "team": "TEX"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 127,
       "claim_date": "2026-08-17",
       "claim_divergence": 53,
@@ -2514,7 +2515,8 @@
       "identity_key": "805207_hitter",
       "mlbam_id": "805207",
       "name": "Caden Bodine",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-10-16",
       "role": "hitter",
       "side": "higher",
       "team": "TBR"
@@ -7301,7 +7303,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-10-15T12:33:41.917403+00:00",
+  "generated_at": "2026-10-16T12:31:26.751750+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7321,8 +7323,8 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 12,
-      "open": 40,
+      "expired_unresolved": 13,
+      "open": 39,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 43,
       "retracted_by_model_move": 127,
