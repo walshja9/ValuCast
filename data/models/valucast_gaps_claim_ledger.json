@@ -2537,6 +2537,7 @@
       "team": "BOS"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 246,
       "claim_date": "2026-08-18",
       "claim_divergence": 146,
@@ -2544,12 +2545,14 @@
       "identity_key": "701649_hitter",
       "mlbam_id": "701649",
       "name": "James Triantos",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-10-17",
       "role": "hitter",
       "side": "higher",
       "team": "CHC"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 104,
       "claim_date": "2026-08-18",
       "claim_divergence": 26,
@@ -2557,7 +2560,8 @@
       "identity_key": "815789_pitcher",
       "mlbam_id": "815789",
       "name": "David Shields",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-10-17",
       "role": "pitcher",
       "side": "higher",
       "team": "KC"
@@ -6853,10 +6857,12 @@
       "claim_date": "2026-09-07",
       "claim_divergence": -33,
       "claim_valucast_rank": 87,
+      "consensus_move_spots": 10,
       "identity_key": "815896_hitter",
       "mlbam_id": "815896",
       "name": "Emil Morales",
-      "outcome": "open",
+      "outcome": "resolved_by_consensus_move",
+      "resolved_date": "2026-10-17",
       "role": "hitter",
       "side": "lower",
       "team": "LAD"
@@ -7303,7 +7309,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-10-16T12:31:26.751750+00:00",
+  "generated_at": "2026-10-17T12:23:59.838662+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7323,8 +7329,8 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 13,
-      "open": 39,
+      "expired_unresolved": 15,
+      "open": 37,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 43,
       "retracted_by_model_move": 127,
@@ -7332,9 +7338,9 @@
     },
     "lower": {
       "expired_unresolved": 46,
-      "open": 26,
+      "open": 25,
       "resolved_by_callup": 3,
-      "resolved_by_consensus_move": 40,
+      "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
       "total": 265
     }
