@@ -289,13 +289,23 @@ def _prior_row_count(path: Path) -> int:
     return _row_count(payload) if isinstance(payload, dict) else 0
 
 
-def _assert_not_tiny_refresh(payload: dict, path: Path) -> None:
+def _assert_not_tiny_refresh(
+    payload: dict, path: Path, *, empty_window_ok: bool = False
+) -> None:
     if os.environ.get("VALUCAST_SKIP_MILB_TINY_GUARD") == "1":
         return  # offseason/season-rollover windows legitimately go tiny
     prior = _prior_row_count(path)
     if prior <= 0:
         return
     rows = _row_count(payload)
+    if rows == 0 and empty_window_ok:
+        # Zero rows from a trailing-window fetch means the API reported no
+        # affiliated games in the window — the offseason, every October.
+        # That is a real-world state the recent-form consumer renders as "no
+        # momentum" by design, not a partial fetch; a partial fetch yields
+        # SOME rows and still trips the floor below. Raising here killed the
+        # whole daily refresh for eight days (Oct 19-26, 2026).
+        return
     floor = max(500, int(prior * 0.5))
     if rows < floor:
         raise ValueError(
@@ -305,8 +315,10 @@ def _assert_not_tiny_refresh(payload: dict, path: Path) -> None:
         )
 
 
-def write_milb_season_stats(payload: dict, path: Path = OUTPUT_PATH) -> Path:
-    _assert_not_tiny_refresh(payload, path)
+def write_milb_season_stats(
+    payload: dict, path: Path = OUTPUT_PATH, *, empty_window_ok: bool = False
+) -> Path:
+    _assert_not_tiny_refresh(payload, path, empty_window_ok=empty_window_ok)
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -336,7 +348,13 @@ def main() -> int:
         start_date=args.start_date,
         end_date=args.end_date,
     )
-    path = write_milb_season_stats(payload, output_path)
+    path = write_milb_season_stats(
+        payload,
+        output_path,
+        # Only window refreshes can legitimately come back empty; the
+        # season-aggregate file keeps the full guard.
+        empty_window_ok=args.stats_type == "byDateRange",
+    )
     print(
         "MiLB season stats refresh: "
         f"season={payload['season']} "
