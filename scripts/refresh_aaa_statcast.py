@@ -70,9 +70,10 @@ _FLUSH_EVERY = 25
 # the endpoint returns 0 rows for empty days (skipped without caching).
 _SEASON_START_MONTH_DAY = (3, 20)
 
-# Incremental-mode safety budget: more than this many NEW game_dates since the cache
-# max aborts before any fetch (a cold/stale cache must never turn the daily increment
-# into a full-season backfill inside the publish job — the plan-023 posture).
+# Incremental-mode safety budget: at most this many NEW game_dates per run (a stale
+# cache must never turn the daily increment into a full-season backfill inside the
+# publish job — the plan-023 posture). A longer gap catches up oldest-first across
+# runs; aborting instead left a 15-day outage unable to ever recover by itself.
 _INCREMENTAL_NEW_DATE_BUDGET = 14
 
 # The compact per-pitch fields we keep. Everything else in the 119-column CSV is
@@ -416,11 +417,11 @@ def main(argv: list[str] | None = None) -> int:
         if len(days) > _INCREMENTAL_NEW_DATE_BUDGET:
             print(
                 f"incremental new-date budget exceeded ({len(days)} > "
-                f"{_INCREMENTAL_NEW_DATE_BUDGET}); skipping fetch, keeping stale cache "
-                "(stale cache -- run --backfill manually to catch up)",
+                f"{_INCREMENTAL_NEW_DATE_BUDGET}); fetching the oldest "
+                f"{_INCREMENTAL_NEW_DATE_BUDGET}, later runs continue the catch-up",
                 flush=True,
             )
-            return 0
+            days = days[:_INCREMENTAL_NEW_DATE_BUDGET]
 
     if not days:
         print("no new game-dates to fetch; cache is current", flush=True)

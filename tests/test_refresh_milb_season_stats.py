@@ -155,3 +155,40 @@ def test_write_allows_tiny_refresh_when_skip_flag_set(tmp_path, monkeypatch):
     refresh.write_milb_season_stats(tiny, path)
 
     assert json.loads(path.read_text(encoding="utf-8")) == tiny
+
+
+def test_window_refresh_may_write_empty_but_not_partial(tmp_path):
+    # Offseason reality (Oct 2026 outage): the 30-day byDateRange window has no
+    # games, so zero rows is a true state, not a failed fetch — and raising on
+    # it killed every daily refresh for eight days. A PARTIAL window fetch
+    # (some rows, below floor) must still be refused even with the flag.
+    path = tmp_path / "milb_recent_stats.json"
+    existing = {
+        "hitters": [{"mlbam_id": i} for i in range(400)],
+        "pitchers": [{"mlbam_id": 1000 + i} for i in range(400)],
+    }
+    path.write_text(json.dumps(existing), encoding="utf-8")
+
+    partial = {"hitters": [{"mlbam_id": 42}], "pitchers": []}
+    with pytest.raises(ValueError, match="refusing to write tiny MiLB stats refresh"):
+        refresh.write_milb_season_stats(partial, path, empty_window_ok=True)
+    assert json.loads(path.read_text(encoding="utf-8")) == existing
+
+    empty = {"hitters": [], "pitchers": []}
+    refresh.write_milb_season_stats(empty, path, empty_window_ok=True)
+    assert json.loads(path.read_text(encoding="utf-8")) == empty
+
+
+def test_season_refresh_still_refuses_empty_write(tmp_path):
+    # The season-aggregate file never legitimately shrinks to zero mid-cycle;
+    # only the explicit env escape may bypass its guard.
+    path = tmp_path / "milb_season_stats.json"
+    existing = {
+        "hitters": [{"mlbam_id": i} for i in range(400)],
+        "pitchers": [{"mlbam_id": 1000 + i} for i in range(400)],
+    }
+    path.write_text(json.dumps(existing), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="refusing to write tiny MiLB stats refresh"):
+        refresh.write_milb_season_stats({"hitters": [], "pitchers": []}, path)
+    assert json.loads(path.read_text(encoding="utf-8")) == existing

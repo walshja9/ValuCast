@@ -203,6 +203,38 @@ def test_incremental_with_ready_marker_proceeds(tmp_path, monkeypatch):
     assert calls.get("gather") is True
 
 
+def test_incremental_over_budget_catches_up_oldest_first(tmp_path, monkeypatch):
+    # A gap past the budget used to abort with no fetch, so coverage never moved
+    # and a long outage could not recover without a manual backfill.
+    marker = tmp_path / ".ready"
+    marker.write_text("", encoding="utf-8")
+    monkeypatch.setattr(r, "READY_MARKER_PATH", marker)
+    budget = r._INCREMENTAL_NEW_DATE_BUDGET
+    covered = date.today() - timedelta(days=budget + 5)
+    monkeypatch.setattr(
+        r, "load_cache",
+        lambda *a, **k: {"games": {}, "checked_through": covered.isoformat()},
+    )
+    monkeypatch.setattr(r, "fetch_aaa_abbreviations", lambda season: {"BUF"})
+    monkeypatch.setattr(r, "flush_cache", lambda *a, **k: None)
+
+    seen = {}
+
+    def _gather(days, *a, **k):
+        seen["days"] = days
+        return {
+            "days_fetched": len(days), "days_empty": 0, "new_games": 0,
+            "skipped_games": 0, "pitches_added": 0, "cached_total": 0,
+        }
+
+    monkeypatch.setattr(r, "gather_days", _gather)
+
+    assert r.main([]) == 0
+    assert len(seen["days"]) == budget
+    assert seen["days"][0] == (covered + timedelta(days=1)).isoformat()
+    assert seen["days"] == sorted(seen["days"])
+
+
 def test_backfill_ignores_ready_marker(tmp_path, monkeypatch):
     # --backfill is the bootstrap's own entry point: it must run WITHOUT the
     # marker (it is what creates the conditions for the marker to be written).
