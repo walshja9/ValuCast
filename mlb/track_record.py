@@ -15,6 +15,7 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 from scraper.mlb_actuals import normalize_ip
+from scraper.season import context_season
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECTION_PATH = ROOT / "data" / "projections" / "current.json"
@@ -54,10 +55,10 @@ def _season_from_generated_at(value: str | None) -> int:
     date_part = _date_part(value)
     if date_part:
         try:
-            return int(date_part[:4])
+            return context_season(int(date_part[:4]))
         except ValueError:
             pass
-    return datetime.now(timezone.utc).year
+    return context_season()
 
 
 def _clean_float(value: Any) -> float | None:

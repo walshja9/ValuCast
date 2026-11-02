@@ -31,6 +31,7 @@ from league_values.models import PlayerPool, ValuationResult
 from mlb.dynasty import _percentile, _scale_value
 from mlb.playing_time_role import TRACKER_VERSION as ROLE_TRACKER_VERSION
 from mlb.playing_time_role import role_watch_rows
+from scraper.season import context_season
 from scripts.validate_playing_time_role_tracker import validate_playing_time_role_tracker
 from scouting.voice import uncalibrated_projection_claims
 
@@ -6419,7 +6420,7 @@ def _team_board_affiliate_context_is_current(context):
             break
         except (TypeError, ValueError):
             continue
-    return season is None or season >= date.today().year
+    return season is None or season >= context_season()
 
 
 def _team_board_context_for(row):

@@ -30,12 +30,13 @@ import argparse
 import json
 import os
 import sys
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from scraper.season import context_season  # noqa: E402
 from scripts.refresh_aaa_statcast import CACHE_PATH, load_cache  # noqa: E402
 
 # --- Paths -----------------------------------------------------------------
@@ -432,7 +433,7 @@ def write_artifact(payload: dict, path: Path = ARTIFACT_PATH) -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--season", type=int, default=date.today().year)
+    parser.add_argument("--season", type=int, default=context_season())
     parser.add_argument("--cache-path", type=Path, default=CACHE_PATH)
     parser.add_argument("--out", type=Path, default=ARTIFACT_PATH)
     args = parser.parse_args(argv)

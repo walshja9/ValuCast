@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import re
+import sys
 import unicodedata
 import urllib.parse
 import urllib.request
@@ -13,6 +14,11 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scraper.season import context_season  # noqa: E402
+
 RAW_DIR = ROOT / "data" / "prospects" / "raw"
 OUTPUT_PATH = RAW_DIR / "milb_season_stats.json"
 RECENT_OUTPUT_PATH = RAW_DIR / "milb_recent_stats.json"
@@ -202,7 +208,7 @@ def build_milb_season_stats(
     end_date: str | None = None,
     generated_at: str | None = None,
 ) -> dict:
-    season = season or date.today().year
+    season = season or context_season()
     fetched_date = fetched_date or date.today().isoformat()
     if stats_type not in {"season", "byDateRange"}:
         raise ValueError("stats_type must be season or byDateRange")
@@ -328,7 +334,7 @@ def write_milb_season_stats(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--season", type=int, default=date.today().year)
+    parser.add_argument("--season", type=int, default=context_season())
     parser.add_argument("--fetched-date", default=date.today().isoformat())
     parser.add_argument("--stats-type", choices=("season", "byDateRange"), default="season")
     parser.add_argument("--window-days", type=int, default=30)

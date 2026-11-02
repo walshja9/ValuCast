@@ -9,6 +9,7 @@ from .fangraphs import fetch_all, save_raw
 from .blend import blend_projections
 from .mlb_actuals import build_actuals, regular_season_games_final
 from .combine import combine_outlook
+from .season import context_season
 
 _BASE = os.path.join(os.path.dirname(__file__), "..")
 DEFAULT_OUTPUT = os.path.join(_BASE, "data", "projections", "current.json")
@@ -37,7 +38,7 @@ def refresh(
     season: int | None = None,
 ) -> list[dict]:
     as_of = date.today().isoformat()
-    season = season or int(os.environ.get("VALUCAST_ACTUALS_SEASON") or date.today().year)
+    season = season or int(os.environ.get("VALUCAST_ACTUALS_SEASON") or context_season())
 
     # Step 1: Fetch and blend ROS projections
     print("Fetching ROS projections from FanGraphs...")

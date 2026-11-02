@@ -19,6 +19,12 @@ import urllib.request
 from datetime import date
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scraper.season import context_season  # noqa: E402
+
 URL = "https://baseballsavant.mlb.com/leaderboard/percentile-rankings?type={kind}&year={year}&csv=true"
 CUSTOM_URL = (
     "https://baseballsavant.mlb.com/leaderboard/custom?"
@@ -169,7 +175,7 @@ def _combine(
 
 
 def main() -> int:
-    year = int(sys.argv[1]) if len(sys.argv) > 1 else date.today().year
+    year = int(sys.argv[1]) if len(sys.argv) > 1 else context_season()
 
     batters_pct = _parse(_fetch_csv("batter", year))
     pitchers_pct = _parse(_fetch_csv("pitcher", year))

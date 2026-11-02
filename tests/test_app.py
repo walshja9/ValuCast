@@ -2780,14 +2780,17 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         # 7/14 declutter: the qualification fineprint describes rows on the board,
         # so it renders only when movers exist; empty states carry their own honest
         # drought/sparse copy instead of caveats about rows that don't exist. The
-        # expectation reads the committed artifact so the lock holds in both states.
+        # expectation reads the committed artifact so the lock holds in both states,
+        # counting the window the page serves by default.
         import json
         from pathlib import Path as _Path
+        from app import DEFAULT_MOVER_WINDOW
 
         payload = json.loads(
             _Path("data/models/valucast_prospect_movers.json").read_text(encoding="utf-8")
         )
-        mover_count = len(payload.get("rising") or []) + len(payload.get("cooling") or [])
+        sides = (payload.get("windows") or {}).get(f"{DEFAULT_MOVER_WINDOW}d") or payload
+        mover_count = len(sides.get("rising") or []) + len(sides.get("cooling") or [])
         html = self.client.get("/movers").data.decode("utf-8")
         if mover_count:
             # Plan 013: the cap fineprint is two-sided — Rising capped at the current

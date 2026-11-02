@@ -232,7 +232,12 @@ def test_mlb_player_detail_surfaces_role_tracker_context():
         p for p in tracker["profiles"] if str(p.get("mlbam_id")) == "677951"
     )
     from app import _format_context_label
-    assert _format_context_label(profile["projected_role"]) in html
+    # The page shows a blocked role as "Not rated".
+    assert (
+        "Not rated"
+        if profile.get("role_context_status") == "blocked"
+        else _format_context_label(profile["projected_role"])
+    ) in html
 
 
 def test_footer_links_to_scouting_reports_from_main_page():

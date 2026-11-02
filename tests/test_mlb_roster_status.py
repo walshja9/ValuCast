@@ -179,7 +179,10 @@ def test_truncated_refetch_keeps_prior_cached_rows(tmp_path):
     assert len(saved_rows) == 26
 
 
-def test_mass_empty_refetch_raises(tmp_path):
+def test_mass_empty_refetch_raises(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "mlb.roster_status.regular_season_games_final", lambda _start, _end: 5
+    )
     paths = _run_paths(tmp_path)
     teams = [
         {"id": 100 + i, "name": f"Team {i}", "abbreviation": f"T{i}"}

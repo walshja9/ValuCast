@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from prospects.input_contract import VALUCAST_INPUT_PATH
+from scraper.season import context_season
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "prospects" / "raw"
@@ -573,7 +574,7 @@ def _age_for_current_context(age, sample_season, fetched_date):
     sample_year = _year(sample_season)
     current_year = _year(fetched_date)
     if sample_year is not None and current_year is not None:
-        numeric_age += max(0, current_year - sample_year)
+        numeric_age += max(0, context_season(current_year) - sample_year)
     return int(numeric_age) if float(numeric_age).is_integer() else round(numeric_age, 1)
 
 
@@ -671,7 +672,7 @@ def _sanitize_current_row(
     )
     sample_year = _num(sample_season)
     if current_season is not None and sample_year is not None:
-        out["sample_staleness_years"] = int(current_season - sample_year)
+        out["sample_staleness_years"] = int(context_season(int(current_season)) - sample_year)
     if role == "hitter" and out.get("ops") is None:
         obp = _num(out.get("obp"))
         slg = _num(out.get("slg"))

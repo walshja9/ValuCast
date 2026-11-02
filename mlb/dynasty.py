@@ -23,6 +23,7 @@ from mlb.availability import (
     availability_lookup as mlb_availability_lookup,
 )
 from projections.data.identity import age_for, load_identity_store
+from scraper.season import context_season
 from web.config_builder import build_config
 from web.category_registry import DYNASTY_VALUE_PRESETS, expected_category_count
 from web.projection_store import ProjectionStore
@@ -188,10 +189,10 @@ def _season_from_generated_at(value: str | None) -> int:
     date_part = _date_part(value)
     if date_part:
         try:
-            return int(date_part[:4])
+            return context_season(int(date_part[:4]))
         except ValueError:
             pass
-    return datetime.now(timezone.utc).year
+    return context_season()
 
 
 def _generated_at(store: ProjectionStore, generated_at: str | None = None) -> str:
