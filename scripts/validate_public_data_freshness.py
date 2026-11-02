@@ -5,10 +5,16 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scraper.season import context_season  # noqa: E402
+
 VALUCAST_PROSPECT_INPUTS = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
 REDRAFT_METADATA = ROOT / "data" / "projections" / "metadata.json"
 REDRAFT_CURRENT = ROOT / "data" / "projections" / "current.json"
@@ -202,7 +208,7 @@ def validate_public_data(expected_date: str, max_age_days: int = 0) -> list[str]
                 )
         # The actuals metadata re-stamps as_of=today daily, so a stale-season
         # scrape can pass the date gate while silently serving last year's stats.
-        # Assert the recorded season matches the expected year (env override lets
+        # Assert the recorded season matches the context season (env override lets
         # an intentional cross-year backfill through).
         if path is REDRAFT_METADATA and not os.environ.get("VALUCAST_ACTUALS_SEASON"):
             season = payload.get("season")
@@ -211,10 +217,10 @@ def validate_public_data(expected_date: str, max_age_days: int = 0) -> list[str]
                     f"{_display_path(path)} season is missing -- "
                     "cannot verify actuals are current-year"
                 )
-            elif int(season) != int(expected_date[:4]):
+            elif int(season) != context_season(int(expected_date[:4])):
                 problems.append(
                     f"{_display_path(path)} season={season}, "
-                    f"expected {expected_date[:4]}"
+                    f"expected {context_season(int(expected_date[:4]))}"
                 )
 
     list_artifacts = [REDRAFT_CURRENT, REDRAFT_ROS]

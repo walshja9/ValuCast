@@ -8,7 +8,9 @@ from datetime import date, timedelta
 from .fangraphs import fetch_all, save_raw
 from .blend import blend_projections
 from .mlb_actuals import build_actuals, regular_season_games_final
-from .combine import combine_outlook
+from .combine import attach_actuals, combine_outlook
+from . import season as season_config
+from .season import context_season
 
 _BASE = os.path.join(os.path.dirname(__file__), "..")
 DEFAULT_OUTPUT = os.path.join(_BASE, "data", "projections", "current.json")
@@ -37,16 +39,26 @@ def refresh(
     season: int | None = None,
 ) -> list[dict]:
     as_of = date.today().isoformat()
-    season = season or int(os.environ.get("VALUCAST_ACTUALS_SEASON") or date.today().year)
+    season = season or int(os.environ.get("VALUCAST_ACTUALS_SEASON") or context_season())
 
     # Step 1: Fetch and blend ROS projections
     print("Fetching ROS projections from FanGraphs...")
-    raw = fetch_all(delay=delay)
+    preseason = season_config.is_preseason()
+    raw = fetch_all(delay=delay, system="steamer") if preseason else fetch_all(delay=delay)
     for key, players in raw.items():
         print(f"  {key}: {len(players)} players")
     if all(not players for players in raw.values()) and regular_season_games_final(
         (date.fromisoformat(as_of) - timedelta(days=7)).isoformat(), as_of
     ) == 0:
+        if preseason:
+            try:
+                with open(metadata_path, encoding="utf-8") as f:
+                    prior_metadata = json.load(f)
+            except (OSError, ValueError) as exc:
+                raise RuntimeError("Cannot verify prior ROS target_season") from exc
+            if (not isinstance(prior_metadata, dict)
+                    or prior_metadata.get("target_season") != season_config.TARGET_SEASON):
+                raise RuntimeError("Prior ROS target_season must match TARGET_SEASON")
         try:
             with open(ros_output_path, encoding="utf-8") as f:
                 ros_players = json.load(f)
@@ -76,7 +88,7 @@ def refresh(
 
     # Step 3: Combine into season outlook
     print("Combining actuals + ROS into season outlook...")
-    outlook = combine_outlook(ros_players, actual_players)
+    outlook = attach_actuals(ros_players, actual_players) if preseason else combine_outlook(ros_players, actual_players)
     ros_count_h = sum(1 for p in ros_players if p["pool"] == "hitter")
     ros_count_p = len(ros_players) - ros_count_h
     no_ros = sum(1 for p in outlook if not p.get("metadata", {}).get("has_ros", True))
@@ -89,8 +101,10 @@ def refresh(
     metadata = {
         "as_of": as_of,
         "season": season,
+        "target_season": season_config.TARGET_SEASON,
+        "projection_phase": "preseason_full_season" if preseason else "in_season_outlook",
         "actuals_source": "mlb_stats_api",
-        "ros_source": "fangraphs_steamer_ros",
+        "ros_source": "fangraphs_steamer_full_season" if preseason else "fangraphs_steamer_ros",
         "ros_status": ros_status,
         "actuals_hitters": actual_hitters,
         "actuals_pitchers": actual_pitchers,

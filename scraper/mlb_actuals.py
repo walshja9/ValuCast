@@ -7,13 +7,15 @@ import time
 from datetime import date, datetime
 from urllib.request import Request, urlopen
 
+from .season import context_season
+
 MLB_API_BASE = "https://statsapi.mlb.com/api/v1"
 USER_AGENT = "Mozilla/5.0"
 
 
 def _default_season() -> int:
-    """Resolve the actuals season: env override, else current calendar year."""
-    return int(os.environ.get("VALUCAST_ACTUALS_SEASON") or date.today().year)
+    """Resolve the actuals season: env override, else the context season."""
+    return int(os.environ.get("VALUCAST_ACTUALS_SEASON") or context_season())
 
 HITTER_GAME_LOG_COUNTING = (
     "hits", "homeRuns", "runs", "rbi", "doubles", "triples", "strikeOuts",

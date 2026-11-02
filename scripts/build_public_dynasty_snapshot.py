@@ -59,6 +59,7 @@ BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json
 MOVERS_PATH = ROOT / "data" / "models" / "valucast_prospect_movers.json"
 ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
 IDENTITY_PATH = ROOT / "projections" / "data" / "identity.json"
+PROSPECT_ORG_PATH = ROOT / "data" / "prospects" / "raw" / "prospect_current_org.json"
 OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
 MLB_VALUE_HISTORY_ARCHIVE_DIR = (
     ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
@@ -661,6 +662,17 @@ def _mlb_stat_line_by_id(actuals: list | None) -> dict[tuple[str, str], dict]:
         if line:
             by_id[(str(mlbam_id), role)] = line
     return by_id
+
+
+def _with_prospect_birth_dates(identities: dict | None, path: Path = PROSPECT_ORG_PATH) -> dict:
+    """The identity store covers MLB players; the org cache supplies prospects' birth dates."""
+    birth_dates = (_load_json(path).get("birth_dates") or {}) if path.exists() else {}
+    merged = dict(identities or {})
+    for mlbam_id, birth_date in birth_dates.items():
+        identity = merged.get(mlbam_id) or {}
+        if not identity.get("birth_date"):
+            merged[mlbam_id] = {**identity, "birth_date": birth_date}
+    return merged
 
 
 def _prospect_rows(
@@ -1632,7 +1644,9 @@ def main() -> None:
     buy_review = _load_json(BUY_REVIEW_PATH) if BUY_REVIEW_PATH.exists() else None
     movers = _load_json(MOVERS_PATH) if MOVERS_PATH.exists() else None
     actuals = _load_json(ACTUALS_PATH) if ACTUALS_PATH.exists() else None
-    identities = _load_json(IDENTITY_PATH) if IDENTITY_PATH.exists() else None
+    identities = _with_prospect_birth_dates(
+        _load_json(IDENTITY_PATH) if IDENTITY_PATH.exists() else None
+    )
     payload = build_snapshot(
         rank_payload,
         previous_prospect_rank=previous_prospect_rank,

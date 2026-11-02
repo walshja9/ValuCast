@@ -13,6 +13,11 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scraper.season import context_season  # noqa: E402
+
 RAW_DIR = ROOT / "data" / "prospects" / "raw"
 CURRENT_STATS_PATH = RAW_DIR / "milb_season_stats.json"
 
@@ -242,7 +247,7 @@ def refresh_milb_player_stats(
     season: int | None = None,
     fetched_date: str | None = None,
 ) -> dict:
-    season = season or date.today().year
+    season = season or context_season()
     fetched_date = fetched_date or date.today().isoformat()
     page = _fetch_player_page(mlbam_id)
     rows = extract_mlb_stats_data(page)
@@ -263,7 +268,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mlbam-id", type=int, required=True)
     parser.add_argument("--role", choices=["hitter", "pitcher"], default="hitter")
-    parser.add_argument("--season", type=int, default=date.today().year)
+    parser.add_argument("--season", type=int, default=context_season())
     parser.add_argument("--fetched-date", default=date.today().isoformat())
     args = parser.parse_args()
 

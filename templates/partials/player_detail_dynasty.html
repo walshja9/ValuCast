@@ -542,7 +542,7 @@
                 <div class="stat-item"><span class="stat-label">Current Level</span><span class="stat-value">{{ row.current_level_sample_label }}</span></div>
                 {% endif %}
                 {% if row.availability_sample_label and row.has_split_level_sample %}
-                <div class="stat-item"><span class="stat-label">2026 Total</span><span class="stat-value">{{ row.availability_sample_label }}</span></div>
+                <div class="stat-item"><span class="stat-label">{{ served_season }} Total</span><span class="stat-value">{{ row.availability_sample_label }}</span></div>
                 {% endif %}
                 {% if row.availability_risk_discount %}
                 <div class="stat-item"><span class="stat-label">Risk Adjustment</span><span class="stat-value">-{{ "%.1f%%" | format(row.availability_risk_discount * 100) }}</span></div>
@@ -562,7 +562,7 @@
 
         {% if row.level == 'MLB' and row.mlb_stat_line %}
         <div class="detail-section">
-            <h4>2026 MLB Stats
+            <h4>{{ served_season }} MLB Stats
                 <span class="statcast-asof">current season - via MLB Stats API</span>
                 {% if row.mlb_stat_line.get('pa') is not none and row.mlb_stat_line.get('pa') < 100 %}<span class="small-sample">small sample - {{ row.mlb_stat_line.get('pa') | int }} PA</span>
                 {% elif row.mlb_stat_line.get('ip') is not none and row.mlb_stat_line.get('ip') < 30 %}<span class="small-sample">small sample - {{ row.mlb_stat_line.get('ip') }} IP</span>{% endif %}
@@ -930,7 +930,7 @@
 
         {# 7/14 declutter: Projected performance stays the visible headline table; Actual Stats
            and the ROS projection collapse like MiLB Stats / MLB-Equivalent Rates do. #}
-        {% for title, stats, split in [('2026 Season Outlook', mlb_stats, mlb_stats_split), ('2026 Actual Stats', mlb_stats_actual, mlb_stats_actual_split), ('Rest-of-Season Projection (Steamer)', mlb_stats_ros, mlb_stats_ros_split)] %}
+        {% for title, stats, split in [('2026 Season Outlook', mlb_stats, mlb_stats_split), (served_season ~ ' Actual Stats', mlb_stats_actual, mlb_stats_actual_split), ('Rest-of-Season Projection (Steamer)', mlb_stats_ros, mlb_stats_ros_split)] %}
         {% if stats %}
         {% if loop.first %}
         <div class="detail-section">

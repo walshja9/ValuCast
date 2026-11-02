@@ -1218,8 +1218,8 @@ class TestConfidenceIntegration(unittest.TestCase):
         reader = csv.reader(io.StringIO(text))
         header = next(reader)
         self.assertIn("Confidence Level", header)
-        self.assertIn("Value Low", header)
-        self.assertIn("Value High", header)
+        self.assertNotIn("Value Low", header)
+        self.assertNotIn("Value High", header)
         self.assertNotIn("Risk Drivers", header)
 
     def test_prospects_export_includes_confidence_columns(self):
@@ -1231,9 +1231,29 @@ class TestConfidenceIntegration(unittest.TestCase):
         reader = csv.reader(io.StringIO(text))
         header = next(reader)
         self.assertIn("Confidence Level", header)
-        self.assertIn("Value Low", header)
-        self.assertIn("Value High", header)
+        self.assertNotIn("Value Low", header)
+        self.assertNotIn("Value High", header)
         self.assertNotIn("Risk Drivers", header)
+        eta = header.index("ETA")
+        self.assertTrue(any(row[eta] for row in reader))
+
+    def test_redraft_says_when_it_shows_final_stats_not_a_forecast(self):
+        from unittest.mock import patch
+        from app import store
+
+        with patch.object(store, "_ros_status", "retained"):
+            redraft = self.client.get("/rankings?mode=categories&horizon=redraft").data.decode("utf-8")
+            dynasty = self.client.get("/rankings?mode=dd_dynasty").data.decode("utf-8")
+        self.assertIn("2026 season final.", redraft)
+        self.assertIn("not a 2027 forecast", redraft)
+        self.assertIn("final 2026 stats", redraft)
+        self.assertNotIn("rest-of-season projections", redraft)
+        self.assertNotIn("season final.", dynasty)
+
+        with patch.object(store, "_ros_status", "fetched"):
+            redraft = self.client.get("/rankings?mode=categories&horizon=redraft").data.decode("utf-8")
+        self.assertNotIn("season final.", redraft)
+        self.assertIn("rest-of-season projections", redraft)
 
 
 class TestComputeTiers(unittest.TestCase):
@@ -2780,14 +2800,17 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         # 7/14 declutter: the qualification fineprint describes rows on the board,
         # so it renders only when movers exist; empty states carry their own honest
         # drought/sparse copy instead of caveats about rows that don't exist. The
-        # expectation reads the committed artifact so the lock holds in both states.
+        # expectation reads the committed artifact so the lock holds in both states,
+        # counting the window the page serves by default.
         import json
         from pathlib import Path as _Path
+        from app import DEFAULT_MOVER_WINDOW
 
         payload = json.loads(
             _Path("data/models/valucast_prospect_movers.json").read_text(encoding="utf-8")
         )
-        mover_count = len(payload.get("rising") or []) + len(payload.get("cooling") or [])
+        sides = (payload.get("windows") or {}).get(f"{DEFAULT_MOVER_WINDOW}d") or payload
+        mover_count = len(sides.get("rising") or []) + len(sides.get("cooling") or [])
         html = self.client.get("/movers").data.decode("utf-8")
         if mover_count:
             # Plan 013: the cap fineprint is two-sided — Rising capped at the current

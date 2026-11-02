@@ -101,6 +101,35 @@ def _combine_pitcher(ros: dict, actual: dict) -> dict:
     }
 
 
+def attach_actuals(ros_players: list[dict], actual_players: list[dict]) -> list[dict]:
+    """Attach finished-season actuals without changing projection stats."""
+    actuals_by_key: dict[tuple[str, str], dict] = {}
+    for p in actual_players:
+        mlbam_id = p.get("metadata", {}).get("mlbam_id", "")
+        if mlbam_id:
+            key = (mlbam_id, _pool_family(p["pool"]))
+            actuals_by_key[key] = p
+
+    outlook: list[dict] = []
+    for ros in ros_players:
+        meta = dict(ros.get("metadata", {}))
+        meta["has_ros"] = True
+        mlbam_id = meta.get("mlbam_id", "")
+        if mlbam_id:
+            meta["base_id"] = f"mlbam_{mlbam_id}"
+            actual = actuals_by_key.get((mlbam_id, _pool_family(ros["pool"])))
+            if actual:
+                meta["stats_actual"] = actual["stats"]
+                actual_meta = actual.get("metadata", {})
+                if "as_of" in actual_meta:
+                    meta["as_of"] = actual_meta["as_of"]
+        ros_copy = dict(ros)
+        ros_copy["metadata"] = meta
+        outlook.append(ros_copy)
+
+    return outlook
+
+
 def combine_outlook(ros_players: list[dict], actual_players: list[dict]) -> list[dict]:
     """Join actuals to ROS projections and produce season outlook.
 

@@ -394,3 +394,36 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/build_post_drafts.py --send
+
+  alert-on-missed-day:
+    # Hourly retries mean one failure isn't an outage, so only the day's last
+    # slot alerts. The refresh was down for two weeks in Oct-Nov 2026 with no
+    # signal. Cancelled counts because a job timeout reports as cancelled. An
+    # open issue gets a comment instead of a duplicate.
+    needs: refresh
+    if: >-
+      always() && github.event_name == 'schedule' &&
+      (needs.refresh.result == 'failure' || needs.refresh.result == 'cancelled')
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      issues: write
+    steps:
+      - name: Open or update the missed-refresh issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          hour=$(gh run view "$GITHUB_RUN_ID" --json createdAt --jq '.createdAt[11:13]')
+          if [ "$hour" -lt 19 ]; then
+            echo "Run created at ${hour}:xx UTC; later slots can still publish."
+            exit 0
+          fi
+          title="Daily public data refresh missed"
+          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --body "Failed again: $RUN_URL"
+          else
+            gh issue create --title "$title" --body "Today's last scheduled refresh failed: $RUN_URL"
+          fi

@@ -97,7 +97,9 @@ def _availability_lookup(availability: dict | None) -> dict[str, dict]:
 # REST-OF-SEASON — without annualization every player in the league decays
 # toward bench_or_depth as the calendar advances (found 7/2: Bobby Witt Jr.
 # at 257 ROS PA labeled "bench_or_depth"). Thresholds are applied to
-# season-pace volume; displayed volumes stay honest ROS numbers.
+# season-pace volume; displayed volumes stay honest ROS numbers. Pace only means
+# something during a season, so it is 1.0 outside these dates. A season flip must
+# add the new season's dates.
 MLB_2026_REGULAR_SEASON_START = "2026-03-26"
 MLB_2026_REGULAR_SEASON_END = "2026-09-27"
 MAX_PACE_FACTOR = 4.0  # late-season ROS volumes are tiny + noisy; cap the blowup
@@ -113,7 +115,7 @@ def _season_pace_factor(as_of: str | None) -> float:
     start = _date.fromisoformat(MLB_2026_REGULAR_SEASON_START)
     end = _date.fromisoformat(MLB_2026_REGULAR_SEASON_END)
     total = (end - start).days
-    if current <= start or total <= 0:
+    if current <= start or current > end or total <= 0:
         return 1.0
     remaining = max((end - current).days, 1)
     return _clamp(total / remaining, 1.0, MAX_PACE_FACTOR)

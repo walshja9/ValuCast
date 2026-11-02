@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from scraper.mlb_actuals import regular_season_games_final
 from scraper.refresh import refresh
+from scraper.season import context_season
 
 _FAKE_ROS_HITTER = {
     "name": "Test Player",
@@ -148,15 +149,15 @@ class TestRefresh(unittest.TestCase):
             self.assertEqual(meta["actuals_hitters"], 1)
             self.assertEqual(meta["actuals_pitchers"], 0)
 
-    def test_refresh_season_defaults_to_current_year(self):
-        """With no season arg and no env override, season derives from today."""
+    def test_refresh_season_defaults_to_context_season(self):
+        """With no season arg and no env override, season is the context season."""
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("VALUCAST_ACTUALS_SEASON", None)
             with tempfile.TemporaryDirectory() as tmpdir:
                 _, _, _, _, metadata_path, _ = _run_refresh(tmpdir)
                 with open(metadata_path) as f:
                     meta = json.load(f)
-                self.assertEqual(meta["season"], date.today().year)
+                self.assertEqual(meta["season"], context_season())
 
     def test_refresh_season_env_override_respected(self):
         """VALUCAST_ACTUALS_SEASON overrides the derived current-year season."""

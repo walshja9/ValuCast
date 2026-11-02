@@ -5,7 +5,6 @@ import argparse
 import json
 import os
 import sys
-from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -13,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scraper.season import context_season
 from scripts.refresh_milb_season_stats import (
     RAW_DIR,
     _normalize_name,
@@ -162,7 +162,7 @@ def refresh_season_caches(
     *,
     current_year: int | None = None,
 ) -> list[Path]:
-    current_year = current_year or date.today().year
+    current_year = current_year or context_season()
     paths: list[Path] = []
     for season in range(start_season, end_season + 1):
         path = season_cache_path(season)
@@ -181,7 +181,7 @@ def load_season_payloads(raw_dir: Path = RAW_DIR) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-season", type=int, default=2022)
-    parser.add_argument("--end-season", type=int, default=date.today().year)
+    parser.add_argument("--end-season", type=int, default=context_season())
     args = parser.parse_args()
     if args.start_season > args.end_season:
         parser.error("--start-season must be <= --end-season")

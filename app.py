@@ -31,6 +31,7 @@ from league_values.models import PlayerPool, ValuationResult
 from mlb.dynasty import _percentile, _scale_value
 from mlb.playing_time_role import TRACKER_VERSION as ROLE_TRACKER_VERSION
 from mlb.playing_time_role import role_watch_rows
+from scraper.season import context_season
 from scripts.validate_playing_time_role_tracker import validate_playing_time_role_tracker
 from scouting.voice import uncalibrated_projection_claims
 
@@ -494,6 +495,10 @@ def _snapshot_staleness():
         "snapshot_stale": not _artifact_is_fresh(generated_at),
         "snapshot_as_of": str(generated_at or "")[:10],
         "snapshot_age_days": age_days,
+        "ros_retained": store.ros_status == "retained",
+        "served_season": context_season(),
+        "preseason": store.projection_phase == "preseason_full_season",
+        "target_season": store.target_season,
     }
 
 
@@ -6419,7 +6424,7 @@ def _team_board_affiliate_context_is_current(context):
             break
         except (TypeError, ValueError):
             continue
-    return season is None or season >= date.today().year
+    return season is None or season >= context_season()
 
 
 def _team_board_context_for(row):
@@ -11078,12 +11083,11 @@ def export_csv():
         writer = csv.writer(output)
         writer.writerow(["Overall Dynasty Rank", "Player", "Type", "Positions", "Team",
                          "Age", "Dynasty Value", "Dynasty $", "Confidence Level",
-                         "Value Low", "Value High", "Prospect Rank", "Level", "ETA",
+                         "Prospect Rank", "Level", "ETA",
                          "Board Rank", "MLBAM ID", "Role", "As Of", "Publication Status",
                          "Publication Note", "League Rank"])
         for board_rank, row in enumerate(rows, 1):
             confidence = row.confidence or {}
-            value_range = confidence.get("range") or {}
             writer.writerow([
                 ctx["preset_rank_by_id"].get(row.id, row.dynasty_rank),
                 _csv_safe(row.name), row.player_type.upper(),
@@ -11091,9 +11095,8 @@ def export_csv():
                 row.value_for(active_preset) if active_preset else row.dynasty_value,
                 dynasty_dollars.get(row.id, 0),
                 confidence.get("level", ""),
-                value_range.get("low", ""),
-                value_range.get("high", ""),
-                row.prospect_rank or "", row.level or "", row.eta or "",
+                row.prospect_rank or "", row.level or "",
+                (row.eta_display or "") if row.is_prospect else "",
                 board_rank, row.mlbam_id or "", row.role or "", dd_store.generated_at or "",
                 publication_status if row.is_prospect else "",
                 _csv_safe(publication_note) if row.is_prospect else "",

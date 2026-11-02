@@ -35,10 +35,10 @@ def fetch_projections(system: str, stats: str) -> list[dict]:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def fetch_all(delay: float = 1.0) -> dict[str, list[dict]]:
+def fetch_all(delay: float = 1.0, system: str = "steamerr") -> dict[str, list[dict]]:
     sets = [
-        ("steamer_hitters", "steamerr", "bat"),
-        ("steamer_pitchers", "steamerr", "pit"),
+        ("steamer_hitters", system, "bat"),
+        ("steamer_pitchers", system, "pit"),
     ]
     result = {}
     for i, (key, system, stats) in enumerate(sets):

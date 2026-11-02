@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+
+from scraper.mlb_actuals import regular_season_games_final
+from scraper.season import context_season
 
 ROOT = Path(__file__).resolve().parents[1]
 METADATA_PATH = ROOT / "data" / "projections" / "metadata.json"
@@ -45,10 +48,10 @@ def _season_from_generated_at(value: str | None) -> int:
     date_part = _date_part(value)
     if date_part:
         try:
-            return int(date_part[:4])
+            return context_season(int(date_part[:4]))
         except ValueError:
             pass
-    return datetime.now(timezone.utc).year
+    return context_season()
 
 
 def _clean_int(value: Any) -> int | None:
@@ -327,12 +330,24 @@ def run_mlb_roster_status(
         fetched_rosters += int(fetched)
     _save_cache(cache, cache_path)
 
+    roster_feed_status = "live"
     if len(degraded_teams) > 5:
-        raise RuntimeError(
-            f"roster refetch returned empty for {len(degraded_teams)} teams "
-            "(> 5) -- likely a league-wide statsapi outage; refusing to publish"
+        # A lockout may strip the feed league-wide. Hold the prior rosters only
+        # while no games are being played; otherwise this is a real outage.
+        as_of = datetime.fromisoformat(_date_part(generated_at))
+        if regular_season_games_final(
+            (as_of - timedelta(days=7)).date().isoformat(), as_of.date().isoformat()
+        ):
+            raise RuntimeError(
+                f"roster refetch returned empty for {len(degraded_teams)} teams "
+                "(> 5) -- likely a league-wide statsapi outage; refusing to publish"
+            )
+        roster_feed_status = "held"
+        print(
+            f"::warning::roster refetch returned empty for {len(degraded_teams)} teams "
+            "with no regular-season games in the last 7 days; holding the prior rosters"
         )
-    if degraded_teams:
+    elif degraded_teams:
         print(
             "WARNING: kept prior cached roster for "
             f"{len(degraded_teams)} team(s) that refetched empty: "
@@ -345,6 +360,7 @@ def run_mlb_roster_status(
         teams=teams,
         rosters_by_team=rosters_by_team,
     )
+    payload["roster_feed_status"] = roster_feed_status
     _write_json(payload, artifact_path)
     archive_path, archive_changed = archive_mlb_roster_status(payload, archive_dir)
     validation = payload["validation"]
@@ -357,4 +373,5 @@ def run_mlb_roster_status(
         "ready_for_public_snapshot": validation["ready_for_public_snapshot"],
         "fetched_teams": fetched_teams,
         "fetched_rosters": fetched_rosters,
+        "roster_feed_status": roster_feed_status,
     }

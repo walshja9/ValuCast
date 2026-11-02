@@ -46,6 +46,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from scraper.season import context_season  # noqa: E402
+
 # --- Paths -----------------------------------------------------------------
 CACHE_PATH = ROOT / "data" / "prospects" / "raw" / "aaa_statcast_pitch_cache.json"
 # Written by the aaa-statcast-bootstrap workflow ONLY after a complete --backfill
@@ -348,7 +350,7 @@ def gather_days(
 # ---------------------------------------------------------------------------
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--season", type=int, default=date.today().year)
+    parser.add_argument("--season", type=int, default=context_season())
     parser.add_argument("--backfill", action="store_true",
                         help="Season-wide checkpointed backfill (resumable).")
     parser.add_argument("--date", action="append",

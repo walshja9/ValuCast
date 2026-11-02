@@ -2253,3 +2253,23 @@ def test_prospect_rows_carry_no_uncalibrated_probability_numerics():
                 block = peak.get(block_key)
                 if isinstance(block, dict):
                     assert "role_probabilities" not in block
+
+
+def test_prospect_birth_dates_fill_gaps_without_replacing_identity(tmp_path):
+    import json
+
+    from scripts.build_public_dynasty_snapshot import _with_prospect_birth_dates
+
+    path = tmp_path / "orgs.json"
+    path.write_text(
+        json.dumps({"birth_dates": {"1": "2005-03-01", "2": "2006-04-02", "3": "2007-05-03"}}),
+        encoding="utf-8",
+    )
+    merged = _with_prospect_birth_dates(
+        {"1": {"birth_date": "2000-01-01", "name": "A"}, "2": {"birth_date": "", "name": "B"}},
+        path,
+    )
+    assert merged["1"] == {"birth_date": "2000-01-01", "name": "A"}
+    assert merged["2"] == {"birth_date": "2006-04-02", "name": "B"}
+    assert merged["3"] == {"birth_date": "2007-05-03"}
+    assert _with_prospect_birth_dates(None, tmp_path / "missing.json") == {}

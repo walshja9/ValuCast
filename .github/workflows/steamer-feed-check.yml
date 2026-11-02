@@ -1,0 +1,40 @@
+name: Steamer feed check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "10 12 * * *"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+
+      - name: Check full-season Steamer feed
+        id: feed
+        run: python scripts/check_steamer_season.py
+
+      - name: Open the season flip review issue
+        if: steps.feed.outputs.verdict == 'live'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          preseason=$(python -c "from scraper.season import is_preseason; print(is_preseason())")
+          if [ "$preseason" != "False" ]; then
+            exit 0
+          fi
+          title="Steamer 2027 looks live: review the season flip"
+          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -z "$issue" ]; then
+            gh issue create --title "$title" --body "The full-season Steamer feed includes at least 50 rows for 2026 draftees. Review the feed and TARGET_SEASON before flipping. Check: $RUN_URL"
+          fi
