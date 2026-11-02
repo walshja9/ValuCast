@@ -1,9 +1,10 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-from app import app
+from app import app, store
 
 
 class TestSourceSelection(unittest.TestCase):
@@ -112,7 +113,8 @@ class TestSourceSelection(unittest.TestCase):
         self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
 
     def test_footer_steamer_board_unchanged(self):
-        r = self.client.get("/")
+        with patch.object(store, "_ros_status", "fetched"):
+            r = self.client.get("/")
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
         self.assertIn(
             b'all built in-house by ValuCast',
@@ -129,7 +131,8 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'fully ValuCast-built', vc)               # footer OOB content
         self.assertIn(self.CAPTION_ANCHOR, vc)                   # caption OOB content
 
-        st = self.client.get("/rankings").data
+        with patch.object(store, "_ros_status", "fetched"):
+            st = self.client.get("/rankings").data
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
         self.assertIn(b'all built in-house by ValuCast', st)
