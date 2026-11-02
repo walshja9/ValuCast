@@ -23,6 +23,7 @@ from mlb.availability import (
     availability_lookup as mlb_availability_lookup,
 )
 from projections.data.identity import age_for, load_identity_store
+from scraper import season as season_config
 from scraper.season import context_season
 from web.config_builder import build_config
 from web.category_registry import DYNASTY_VALUE_PRESETS, expected_category_count
@@ -297,7 +298,7 @@ def _player_age(
     season: int,
 ) -> tuple[int | None, str]:
     metadata_age = _coerce_age(player.metadata.get("age"))
-    if metadata_age is not None:
+    if metadata_age is not None and not season_config.is_preseason():
         return metadata_age, "projection_metadata"
 
     mlbam_id = player.metadata.get("mlbam_id")
@@ -924,7 +925,7 @@ def _scores_for_config(
     availability_by_mlbam = availability_by_mlbam or {}
 
     results = engine.value_players(players, league)
-    ros_by_key = _ros_lookup(engine, players, league)
+    ros_by_key = {} if season_config.is_preseason() else _ros_lookup(engine, players, league)
     stability_by_player_id: dict[str, dict[str, Any]] = {}
     adjusted_results = []
     for result in results:
@@ -1117,7 +1118,7 @@ def build_mlb_dynasty_layer(
     projection_source: str = "data/projections/current.json",
     projection_source_kind: str = "valucast_current_projection",
 ) -> dict:
-    season = _season_from_generated_at(generated_at)
+    season = season_config.TARGET_SEASON if season_config.is_preseason() else _season_from_generated_at(generated_at)
     players = _attach_ages(players, identities or {}, season)
     track_record_by_key = _track_record_lookup(track_record)
     availability_by_mlbam = mlb_availability_lookup(availability)

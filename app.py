@@ -497,6 +497,8 @@ def _snapshot_staleness():
         "snapshot_age_days": age_days,
         "ros_retained": store.ros_status == "retained",
         "served_season": context_season(),
+        "preseason": store.projection_phase == "preseason_full_season",
+        "target_season": store.target_season,
     }
 
 

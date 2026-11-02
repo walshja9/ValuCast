@@ -16,6 +16,8 @@ class ProjectionStore:
         self._by_id: dict[str, PlayerProjection] = {}
         self._as_of: str | None = None
         self._ros_status: str | None = None
+        self._target_season: int | None = None
+        self._projection_phase: str | None = None
         self._load(Path(path))
 
     def _load(self, path: Path) -> None:
@@ -29,6 +31,8 @@ class ProjectionStore:
                 meta_data = json.load(mf)
             self._as_of = meta_data.get("as_of")
             self._ros_status = meta_data.get("ros_status")
+            self._target_season = meta_data.get("target_season")
+            self._projection_phase = meta_data.get("projection_phase")
 
         seen_ids: set[str] = set()
 
@@ -102,3 +106,11 @@ class ProjectionStore:
     @property
     def ros_status(self) -> str | None:
         return self._ros_status
+
+    @property
+    def target_season(self) -> int | None:
+        return self._target_season
+
+    @property
+    def projection_phase(self) -> str | None:
+        return self._projection_phase

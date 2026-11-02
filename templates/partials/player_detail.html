@@ -111,7 +111,7 @@
         {% set stats_actual = player.metadata.get('stats_actual') %}
         {% if stats_actual %}
         <div class="detail-section">
-            <h4>2026 Actual Stats{% if player.metadata.get('as_of') %} (through {{ player.metadata.get('as_of') }}){% endif %}</h4>
+            <h4>{{ served_season }} Actual Stats{% if player.metadata.get('as_of') %} (through {{ player.metadata.get('as_of') }}){% endif %}</h4>
             <div class="stat-grid">
                 {% for key, value in stats_actual.items() %}
                 {% if key not in HIDDEN_STATS %}
