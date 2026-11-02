@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18",
+  "generated_at": "2026-11-02",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.6.0",
   "limitations": [],
@@ -50268,6 +50268,175 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 28,
+      "components": {
+        "age_adjustment": 1.1567,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": false,
+          "effective_date": "2026-09-18",
+          "list_type": "10-day injured list",
+          "note": "Cincinnati Reds activated 1B Spencer Steer from the 10-day injured list.",
+          "present": true,
+          "risk_discount": 0.0,
+          "risk_level": "clear",
+          "source": "official_mlb_statsapi_transactions",
+          "status": "available",
+          "transaction_date": "2026-09-18",
+          "transaction_id": 947261
+        },
+        "availability_adjusted": false,
+        "availability_risk_discount": 0.0,
+        "cross_role_calibration": {
+          "anchor": 1.0,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 20.58,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": -0.9145,
+        "horizon_years": [
+          {
+            "age": 28,
+            "age_factor": 1.0,
+            "projected_value": 0.9763,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 29,
+            "age_factor": 0.9193,
+            "projected_value": -2.2676,
+            "reliability_factor": 0.7196,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 30,
+            "age_factor": 0.8386,
+            "projected_value": -2.8241,
+            "reliability_factor": 0.7196,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 71.96,
+        "production_score": 20.58,
+        "projection_stability": {
+          "current_season_category_value": -1.1129,
+          "ros_category_value": 1.1486,
+          "ros_stability_weight": 0.4,
+          "ros_true_talent_annualization_scale": 600.0,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": 0.9763,
+          "stability_adjustment": 2.0892,
+          "true_talent_floor_applied": true,
+          "true_talent_floor_value": 0.9763
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 23.15,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 68.15,
+          "track_record_experience_band": "established",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": "production_far_below_track_record_floor",
+          "track_record_floor_score": 51.49,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "season_category_value": 0.9763,
+        "track_record": {
+          "experience_band": "established",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 68.15,
+          "track_record_floor_score": 51.49,
+          "volume": {
+            "career": 2381.0,
+            "current_season": 384.0,
+            "prior_mlb": 1997.0,
+            "recent_3yr_prior": 1889.0
+          }
+        }
+      },
+      "confidence": "medium",
+      "drivers": [
+        "HR +0.46",
+        "SB -0.46",
+        "R +0.33",
+        "AVG -0.25",
+        "playing time reliability 72"
+      ],
+      "dynasty_horizon_value": -0.9145,
+      "id": "vc_mlb_668715_hitter",
+      "mlb_team": "CIN",
+      "mlbam_id": 668715,
+      "name": "Spencer Steer",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "1B",
+        "OF"
+      ],
+      "projection_value": 0.9763,
+      "rank": 311,
+      "role": "hitter",
+      "score": 23.15,
+      "stat_line": {
+        "category_values": {
+          "AVG": -0.2523,
+          "ERA": 0.0,
+          "HR": 0.4613,
+          "K": 0.0,
+          "R": 0.326,
+          "RBI": -0.1356,
+          "SB": -0.4552,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.2382,
+          "ERA": null,
+          "HR": 16.035,
+          "K": null,
+          "R": 54.114,
+          "RBI": 40.117,
+          "SB": 3.012,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "AVG": 0.238,
+          "HR": 16.035,
+          "OBP": 0.319,
+          "OPS": 0.74,
+          "PA": 385.0,
+          "R": 54.114,
+          "RBI": 40.117,
+          "SB": 3.012
+        }
+      },
+      "team": "CIN",
+      "value": 23.15,
+      "value_by_preset": {
+        "5x5": 23.15,
+        "6x6": 22.83,
+        "7x7": 24.85,
+        "7x7_ops": 25.17,
+        "obp": 24.49,
+        "points": 28.7,
+        "sv_hld": 23.57
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 27,
       "components": {
         "age_adjustment": 1.25,
@@ -50371,7 +50540,7 @@
         "OF"
       ],
       "projection_value": 0.5558,
-      "rank": 311,
+      "rank": 312,
       "role": "hitter",
       "score": 22.99,
       "stat_line": {
@@ -50539,7 +50708,7 @@
         "OF"
       ],
       "projection_value": 0.5165,
-      "rank": 312,
+      "rank": 313,
       "role": "hitter",
       "score": 22.93,
       "stat_line": {
@@ -50697,7 +50866,7 @@
         "RP"
       ],
       "projection_value": 1.0643,
-      "rank": 313,
+      "rank": 314,
       "role": "pitcher",
       "score": 22.91,
       "stat_line": {
@@ -50855,7 +51024,7 @@
         "OF"
       ],
       "projection_value": 0.6335,
-      "rank": 314,
+      "rank": 315,
       "role": "hitter",
       "score": 22.85,
       "stat_line": {
@@ -51025,7 +51194,7 @@
         "SP"
       ],
       "projection_value": 2.2555,
-      "rank": 315,
+      "rank": 316,
       "role": "pitcher",
       "score": 22.8,
       "stat_line": {
@@ -51193,7 +51362,7 @@
         "OF"
       ],
       "projection_value": 0.324,
-      "rank": 316,
+      "rank": 317,
       "role": "hitter",
       "score": 22.76,
       "stat_line": {
@@ -51351,7 +51520,7 @@
         "RP"
       ],
       "projection_value": 1.0455,
-      "rank": 317,
+      "rank": 318,
       "role": "pitcher",
       "score": 22.5,
       "stat_line": {
@@ -51509,7 +51678,7 @@
         "OF"
       ],
       "projection_value": 0.5386,
-      "rank": 318,
+      "rank": 319,
       "role": "hitter",
       "score": 22.45,
       "stat_line": {
@@ -51677,7 +51846,7 @@
         "RP"
       ],
       "projection_value": 0.9969,
-      "rank": 319,
+      "rank": 320,
       "role": "pitcher",
       "score": 22.41,
       "stat_line": {
@@ -51835,7 +52004,7 @@
         "3B"
       ],
       "projection_value": 0.4127,
-      "rank": 320,
+      "rank": 321,
       "role": "hitter",
       "score": 22.39,
       "stat_line": {
@@ -51992,7 +52161,7 @@
         "RP"
       ],
       "projection_value": 0.8056,
-      "rank": 321,
+      "rank": 322,
       "role": "pitcher",
       "score": 22.34,
       "stat_line": {
@@ -52160,7 +52329,7 @@
         "OF"
       ],
       "projection_value": 0.2528,
-      "rank": 322,
+      "rank": 323,
       "role": "hitter",
       "score": 22.11,
       "stat_line": {
@@ -52318,7 +52487,7 @@
         "RP"
       ],
       "projection_value": 0.7764,
-      "rank": 323,
+      "rank": 324,
       "role": "pitcher",
       "score": 22.05,
       "stat_line": {
@@ -52487,7 +52656,7 @@
         "OF"
       ],
       "projection_value": 0.3442,
-      "rank": 324,
+      "rank": 325,
       "role": "hitter",
       "score": 21.96,
       "stat_line": {
@@ -52655,7 +52824,7 @@
         "SS"
       ],
       "projection_value": 0.0499,
-      "rank": 325,
+      "rank": 326,
       "role": "hitter",
       "score": 21.9,
       "stat_line": {
@@ -52823,7 +52992,7 @@
         "1B"
       ],
       "projection_value": 0.2761,
-      "rank": 326,
+      "rank": 327,
       "role": "hitter",
       "score": 21.88,
       "stat_line": {
@@ -52993,7 +53162,7 @@
         "RP"
       ],
       "projection_value": 0.6552,
-      "rank": 327,
+      "rank": 328,
       "role": "pitcher",
       "score": 21.85,
       "stat_line": {
@@ -53161,7 +53330,7 @@
         "RP"
       ],
       "projection_value": 1.1513,
-      "rank": 328,
+      "rank": 329,
       "role": "pitcher",
       "score": 21.79,
       "stat_line": {
@@ -53320,7 +53489,7 @@
         "OF"
       ],
       "projection_value": 0.3587,
-      "rank": 329,
+      "rank": 330,
       "role": "hitter",
       "score": 21.65,
       "stat_line": {
@@ -53478,7 +53647,7 @@
         "SP"
       ],
       "projection_value": 0.7864,
-      "rank": 330,
+      "rank": 331,
       "role": "pitcher",
       "score": 21.58,
       "stat_line": {
@@ -53636,7 +53805,7 @@
         "SS"
       ],
       "projection_value": -0.2089,
-      "rank": 331,
+      "rank": 332,
       "role": "hitter",
       "score": 21.54,
       "stat_line": {
@@ -53794,7 +53963,7 @@
         "SP"
       ],
       "projection_value": 0.3151,
-      "rank": 332,
+      "rank": 333,
       "role": "pitcher",
       "score": 21.53,
       "stat_line": {
@@ -53962,7 +54131,7 @@
         "SP"
       ],
       "projection_value": 1.937,
-      "rank": 333,
+      "rank": 334,
       "role": "pitcher",
       "score": 21.47,
       "stat_line": {
@@ -54120,7 +54289,7 @@
         "SP"
       ],
       "projection_value": 0.2746,
-      "rank": 334,
+      "rank": 335,
       "role": "pitcher",
       "score": 21.34,
       "stat_line": {
@@ -54170,177 +54339,6 @@
         "obp": 21.04,
         "points": 46.2,
         "sv_hld": 20.79
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 28,
-      "components": {
-        "age_adjustment": 1.1567,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-09-18",
-          "list_type": "60-day injured list",
-          "note": "Cincinnati Reds transferred 1B Spencer Steer from the 10-day injured list to the 60-day injured list. Right wrist sprain.",
-          "present": true,
-          "risk_discount": 0.08,
-          "risk_level": "high",
-          "score_before_availability_adjustment": 23.15,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-09-18",
-          "transaction_id": 943125
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.08,
-        "cross_role_calibration": {
-          "anchor": 1.0,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 20.58,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": -0.9145,
-        "horizon_years": [
-          {
-            "age": 28,
-            "age_factor": 1.0,
-            "projected_value": 0.9763,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 29,
-            "age_factor": 0.9193,
-            "projected_value": -2.2676,
-            "reliability_factor": 0.7196,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 30,
-            "age_factor": 0.8386,
-            "projected_value": -2.8241,
-            "reliability_factor": 0.7196,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 71.96,
-        "production_score": 20.58,
-        "projection_stability": {
-          "current_season_category_value": -1.1129,
-          "ros_category_value": 1.1486,
-          "ros_stability_weight": 0.4,
-          "ros_true_talent_annualization_scale": 600.0,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": 0.9763,
-          "stability_adjustment": 2.0892,
-          "true_talent_floor_applied": true,
-          "true_talent_floor_value": 0.9763
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 23.15,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 68.15,
-          "track_record_experience_band": "established",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": "production_far_below_track_record_floor",
-          "track_record_floor_score": 51.49,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 23.15,
-        "season_category_value": 0.9763,
-        "track_record": {
-          "experience_band": "established",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 68.15,
-          "track_record_floor_score": 51.49,
-          "volume": {
-            "career": 2381.0,
-            "current_season": 384.0,
-            "prior_mlb": 1997.0,
-            "recent_3yr_prior": 1889.0
-          }
-        }
-      },
-      "confidence": "medium",
-      "drivers": [
-        "HR +0.46",
-        "SB -0.46",
-        "R +0.33",
-        "AVG -0.25",
-        "playing time reliability 72"
-      ],
-      "dynasty_horizon_value": -0.9145,
-      "id": "vc_mlb_668715_hitter",
-      "mlb_team": "CIN",
-      "mlbam_id": 668715,
-      "name": "Spencer Steer",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "1B",
-        "OF"
-      ],
-      "projection_value": 0.9763,
-      "rank": 335,
-      "role": "hitter",
-      "score": 21.3,
-      "stat_line": {
-        "category_values": {
-          "AVG": -0.2523,
-          "ERA": 0.0,
-          "HR": 0.4613,
-          "K": 0.0,
-          "R": 0.326,
-          "RBI": -0.1356,
-          "SB": -0.4552,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.2382,
-          "ERA": null,
-          "HR": 16.035,
-          "K": null,
-          "R": 54.114,
-          "RBI": 40.117,
-          "SB": 3.012,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "AVG": 0.238,
-          "HR": 16.035,
-          "OBP": 0.319,
-          "OPS": 0.74,
-          "PA": 385.0,
-          "R": 54.114,
-          "RBI": 40.117,
-          "SB": 3.012
-        }
-      },
-      "team": "CIN",
-      "value": 21.3,
-      "value_by_preset": {
-        "5x5": 21.3,
-        "6x6": 21.0,
-        "7x7": 22.86,
-        "7x7_ops": 23.16,
-        "obp": 22.53,
-        "points": 26.4,
-        "sv_hld": 21.68
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -121164,6 +121162,174 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 27,
+      "components": {
+        "age_adjustment": 1.25,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": false,
+          "effective_date": "2026-10-29",
+          "list_type": "60-day injured list",
+          "note": "Cincinnati Reds activated CF Blake Dunn from the 60-day injured list.",
+          "present": true,
+          "risk_discount": 0.0,
+          "risk_level": "clear",
+          "source": "official_mlb_statsapi_transactions",
+          "status": "available",
+          "transaction_date": "2026-10-29",
+          "transaction_id": 947259
+        },
+        "availability_adjusted": false,
+        "availability_risk_discount": 0.0,
+        "cross_role_calibration": {
+          "anchor": 1.0,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 5.18,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": -5.2007,
+        "horizon_years": [
+          {
+            "age": 27,
+            "age_factor": 1.0,
+            "projected_value": -3.8966,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 28,
+            "age_factor": 0.9253,
+            "projected_value": -6.2101,
+            "reliability_factor": 0.55,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 29,
+            "age_factor": 0.8507,
+            "projected_value": -6.4036,
+            "reliability_factor": 0.55,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 50.98,
+        "production_score": 5.18,
+        "projection_stability": {
+          "current_season_category_value": -6.2498,
+          "ros_category_value": -0.367,
+          "ros_stability_weight": 0.4,
+          "ros_true_talent_annualization_scale": 600.0,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": -3.8966,
+          "stability_adjustment": 2.3531,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 7.47,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 12.72,
+          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
+          "track_record_floor_score": null,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "season_category_value": -3.8966,
+        "track_record": {
+          "experience_band": "current_year_only_or_limited",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 12.72,
+          "track_record_floor_score": 30.52,
+          "volume": {
+            "career": 259.0,
+            "current_season": 155.0,
+            "prior_mlb": 104.0,
+            "recent_3yr_prior": 104.0
+          }
+        }
+      },
+      "confidence": "low",
+      "drivers": [
+        "RBI -1.41",
+        "HR -1.06",
+        "R -0.97",
+        "AVG +0.48",
+        "playing time reliability 51"
+      ],
+      "dynasty_horizon_value": -5.2007,
+      "id": "vc_mlb_694362_hitter",
+      "mlb_team": "CIN",
+      "mlbam_id": 694362,
+      "name": "Blake Dunn",
+      "player_type": "mlb",
+      "pool": "hitter",
+      "positions": [
+        "OF"
+      ],
+      "projection_value": -3.8966,
+      "rank": 745,
+      "role": "hitter",
+      "score": 7.47,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.4758,
+          "ERA": 0.0,
+          "HR": -1.0616,
+          "K": 0.0,
+          "R": -0.9697,
+          "RBI": -1.4053,
+          "SB": -0.1011,
+          "SV": 0.0,
+          "W": 0.0,
+          "WHIP": 0.0
+        },
+        "raw_values": {
+          "AVG": 0.2814,
+          "ERA": null,
+          "HR": 2.019,
+          "K": null,
+          "R": 20.11,
+          "RBI": 7.086,
+          "SB": 6.033,
+          "SV": null,
+          "W": null,
+          "WHIP": null
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "AVG": 0.281,
+          "HR": 2.019,
+          "OBP": 0.335,
+          "OPS": 0.722,
+          "PA": 156.0,
+          "R": 20.11,
+          "RBI": 7.086,
+          "SB": 6.033
+        }
+      },
+      "team": "CIN",
+      "value": 7.47,
+      "value_by_preset": {
+        "5x5": 7.47,
+        "6x6": 7.38,
+        "7x7": 7.67,
+        "7x7_ops": 7.48,
+        "obp": 7.14,
+        "points": 6.12,
+        "sv_hld": 7.6
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 35,
       "components": {
         "age_adjustment": 0.5433,
@@ -121268,7 +121434,7 @@
         "RP"
       ],
       "projection_value": -4.449,
-      "rank": 745,
+      "rank": 746,
       "role": "pitcher",
       "score": 7.43,
       "stat_line": {
@@ -121426,7 +121592,7 @@
         "RP"
       ],
       "projection_value": -4.3533,
-      "rank": 746,
+      "rank": 747,
       "role": "pitcher",
       "score": 7.41,
       "stat_line": {
@@ -121595,7 +121761,7 @@
         "OF"
       ],
       "projection_value": -4.5946,
-      "rank": 747,
+      "rank": 748,
       "role": "hitter",
       "score": 7.4,
       "stat_line": {
@@ -121763,7 +121929,7 @@
         "RP"
       ],
       "projection_value": -3.8339,
-      "rank": 748,
+      "rank": 749,
       "role": "pitcher",
       "score": 7.37,
       "stat_line": {
@@ -121921,7 +122087,7 @@
         "RP"
       ],
       "projection_value": -4.4894,
-      "rank": 749,
+      "rank": 750,
       "role": "pitcher",
       "score": 7.34,
       "stat_line": {
@@ -122079,7 +122245,7 @@
         "RP"
       ],
       "projection_value": -4.9002,
-      "rank": 750,
+      "rank": 751,
       "role": "pitcher",
       "score": 7.34,
       "stat_line": {
@@ -122237,7 +122403,7 @@
         "C"
       ],
       "projection_value": -4.2412,
-      "rank": 751,
+      "rank": 752,
       "role": "hitter",
       "score": 7.32,
       "stat_line": {
@@ -122395,7 +122561,7 @@
         "OF"
       ],
       "projection_value": -3.9245,
-      "rank": 752,
+      "rank": 753,
       "role": "hitter",
       "score": 7.3,
       "stat_line": {
@@ -122564,7 +122730,7 @@
         "OF"
       ],
       "projection_value": -3.82,
-      "rank": 753,
+      "rank": 754,
       "role": "hitter",
       "score": 7.25,
       "stat_line": {
@@ -122735,7 +122901,7 @@
         "RP"
       ],
       "projection_value": -3.7297,
-      "rank": 754,
+      "rank": 755,
       "role": "pitcher",
       "score": 7.24,
       "stat_line": {
@@ -122904,7 +123070,7 @@
         "3B"
       ],
       "projection_value": -3.8173,
-      "rank": 755,
+      "rank": 756,
       "role": "hitter",
       "score": 7.23,
       "stat_line": {
@@ -123074,7 +123240,7 @@
         "SP"
       ],
       "projection_value": -4.0483,
-      "rank": 756,
+      "rank": 757,
       "role": "pitcher",
       "score": 7.16,
       "stat_line": {
@@ -123232,7 +123398,7 @@
         "SP"
       ],
       "projection_value": -3.9283,
-      "rank": 757,
+      "rank": 758,
       "role": "pitcher",
       "score": 7.14,
       "stat_line": {
@@ -123402,7 +123568,7 @@
         "SS"
       ],
       "projection_value": -4.2526,
-      "rank": 758,
+      "rank": 759,
       "role": "hitter",
       "score": 7.11,
       "stat_line": {
@@ -123452,6 +123618,174 @@
         "obp": 8.2,
         "points": 8.24,
         "sv_hld": 7.5
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
+      "age": 33,
+      "components": {
+        "age_adjustment": 0.715,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": false,
+          "effective_date": "2026-10-23",
+          "list_type": "60-day injured list",
+          "note": "Milwaukee Brewers activated RHP Brandon Woodruff from the 60-day injured list.",
+          "present": true,
+          "risk_discount": 0.0,
+          "risk_level": "clear",
+          "source": "official_mlb_statsapi_transactions",
+          "status": "available",
+          "transaction_date": "2026-10-23",
+          "transaction_id": 946894
+        },
+        "availability_adjusted": false,
+        "availability_risk_discount": 0.0,
+        "cross_role_calibration": {
+          "anchor": 0.92,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 5.2,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": -5.1935,
+        "horizon_years": [
+          {
+            "age": 33,
+            "age_factor": 1.0,
+            "projected_value": -3.7948,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 34,
+            "age_factor": 0.9091,
+            "projected_value": -6.2012,
+            "reliability_factor": 0.55,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 35,
+            "age_factor": 0.7599,
+            "projected_value": -6.5961,
+            "reliability_factor": 0.55,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 50.73,
+        "production_score": 4.78,
+        "projection_stability": {
+          "current_season_category_value": -6.898,
+          "ros_category_value": 0.8601,
+          "ros_stability_weight": 0.4,
+          "ros_true_talent_annualization_scale": 180.0,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": -3.7948,
+          "stability_adjustment": 3.1033,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 7.08,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 68.87,
+          "track_record_experience_band": "established",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
+          "track_record_floor_score": 54.82,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "season_category_value": -3.7948,
+        "track_record": {
+          "experience_band": "established",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 68.87,
+          "track_record_floor_score": 54.82,
+          "volume": {
+            "career": 790.333,
+            "current_season": 45.333,
+            "prior_mlb": 745.0,
+            "recent_3yr_prior": 131.667
+          }
+        }
+      },
+      "confidence": "low",
+      "drivers": [
+        "WHIP +1.18",
+        "W -0.75",
+        "K -0.63",
+        "ERA +0.47",
+        "playing time reliability 51"
+      ],
+      "dynasty_horizon_value": -5.1935,
+      "id": "vc_mlb_605540_pitcher",
+      "mlb_team": "MIL",
+      "mlbam_id": 605540,
+      "name": "Brandon Woodruff",
+      "player_type": "mlb",
+      "pool": "starter",
+      "positions": [
+        "SP"
+      ],
+      "projection_value": -3.7948,
+      "rank": 760,
+      "role": "pitcher",
+      "score": 7.08,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.0,
+          "ERA": 0.4706,
+          "HR": 0.0,
+          "K": -0.6317,
+          "R": 0.0,
+          "RBI": 0.0,
+          "SB": 0.0,
+          "SV": -0.3819,
+          "W": -0.7474,
+          "WHIP": 1.1771
+        },
+        "raw_values": {
+          "AVG": null,
+          "ERA": 2.9968,
+          "HR": null,
+          "K": 48.061,
+          "R": null,
+          "RBI": null,
+          "SB": null,
+          "SV": 0.0,
+          "W": 2.062,
+          "WHIP": 0.8455
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "ERA": 3.0,
+          "HLD": 0.0,
+          "IP": 46.333,
+          "K": 48.061,
+          "QS": 3.088,
+          "SV": 0.0,
+          "W": 2.062,
+          "WHIP": 0.85
+        }
+      },
+      "team": "MIL",
+      "value": 7.08,
+      "value_by_preset": {
+        "5x5": 7.08,
+        "6x6": 8.62,
+        "7x7": 7.96,
+        "7x7_ops": 9.41,
+        "obp": 6.87,
+        "points": 12.38,
+        "sv_hld": 6.5
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -123570,7 +123904,7 @@
         "RP"
       ],
       "projection_value": -4.3335,
-      "rank": 759,
+      "rank": 761,
       "role": "pitcher",
       "score": 7.08,
       "stat_line": {
@@ -123728,7 +124062,7 @@
         "OF"
       ],
       "projection_value": -3.9741,
-      "rank": 760,
+      "rank": 762,
       "role": "hitter",
       "score": 7.06,
       "stat_line": {
@@ -123896,7 +124230,7 @@
         "1B"
       ],
       "projection_value": -4.7588,
-      "rank": 761,
+      "rank": 763,
       "role": "hitter",
       "score": 7.01,
       "stat_line": {
@@ -124054,7 +124388,7 @@
         "RP"
       ],
       "projection_value": -4.4089,
-      "rank": 762,
+      "rank": 764,
       "role": "pitcher",
       "score": 6.98,
       "stat_line": {
@@ -124212,7 +124546,7 @@
         "OF"
       ],
       "projection_value": -4.0375,
-      "rank": 763,
+      "rank": 765,
       "role": "hitter",
       "score": 6.94,
       "stat_line": {
@@ -124380,7 +124714,7 @@
         "SS"
       ],
       "projection_value": -4.1137,
-      "rank": 764,
+      "rank": 766,
       "role": "hitter",
       "score": 6.93,
       "stat_line": {
@@ -124551,7 +124885,7 @@
         "3B"
       ],
       "projection_value": -4.0216,
-      "rank": 765,
+      "rank": 767,
       "role": "hitter",
       "score": 6.91,
       "stat_line": {
@@ -124709,7 +125043,7 @@
         "C"
       ],
       "projection_value": -4.5132,
-      "rank": 766,
+      "rank": 768,
       "role": "hitter",
       "score": 6.9,
       "stat_line": {
@@ -124879,7 +125213,7 @@
         "SP"
       ],
       "projection_value": -4.5876,
-      "rank": 767,
+      "rank": 769,
       "role": "pitcher",
       "score": 6.88,
       "stat_line": {
@@ -124929,176 +125263,6 @@
         "obp": 6.7,
         "points": 17.21,
         "sv_hld": 6.47
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 27,
-      "components": {
-        "age_adjustment": 1.25,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-08-06",
-          "list_type": "60-day injured list",
-          "note": "Cincinnati Reds transferred CF Blake Dunn from the 10-day injured list to the 60-day injured list. Right elbow sprain.",
-          "present": true,
-          "risk_discount": 0.08,
-          "risk_level": "high",
-          "score_before_availability_adjustment": 7.47,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-08-06",
-          "transaction_id": 935812
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.08,
-        "cross_role_calibration": {
-          "anchor": 1.0,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 5.18,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": -5.2007,
-        "horizon_years": [
-          {
-            "age": 27,
-            "age_factor": 1.0,
-            "projected_value": -3.8966,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 28,
-            "age_factor": 0.9253,
-            "projected_value": -6.2101,
-            "reliability_factor": 0.55,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 29,
-            "age_factor": 0.8507,
-            "projected_value": -6.4036,
-            "reliability_factor": 0.55,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 50.98,
-        "production_score": 5.18,
-        "projection_stability": {
-          "current_season_category_value": -6.2498,
-          "ros_category_value": -0.367,
-          "ros_stability_weight": 0.4,
-          "ros_true_talent_annualization_scale": 600.0,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": -3.8966,
-          "stability_adjustment": 2.3531,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 7.47,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 12.72,
-          "track_record_experience_band": "current_year_only_or_limited",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
-          "track_record_floor_score": null,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 7.47,
-        "season_category_value": -3.8966,
-        "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 12.72,
-          "track_record_floor_score": 30.52,
-          "volume": {
-            "career": 259.0,
-            "current_season": 155.0,
-            "prior_mlb": 104.0,
-            "recent_3yr_prior": 104.0
-          }
-        }
-      },
-      "confidence": "low",
-      "drivers": [
-        "RBI -1.41",
-        "HR -1.06",
-        "R -0.97",
-        "AVG +0.48",
-        "playing time reliability 51"
-      ],
-      "dynasty_horizon_value": -5.2007,
-      "id": "vc_mlb_694362_hitter",
-      "mlb_team": "CIN",
-      "mlbam_id": 694362,
-      "name": "Blake Dunn",
-      "player_type": "mlb",
-      "pool": "hitter",
-      "positions": [
-        "OF"
-      ],
-      "projection_value": -3.8966,
-      "rank": 768,
-      "role": "hitter",
-      "score": 6.87,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.4758,
-          "ERA": 0.0,
-          "HR": -1.0616,
-          "K": 0.0,
-          "R": -0.9697,
-          "RBI": -1.4053,
-          "SB": -0.1011,
-          "SV": 0.0,
-          "W": 0.0,
-          "WHIP": 0.0
-        },
-        "raw_values": {
-          "AVG": 0.2814,
-          "ERA": null,
-          "HR": 2.019,
-          "K": null,
-          "R": 20.11,
-          "RBI": 7.086,
-          "SB": 6.033,
-          "SV": null,
-          "W": null,
-          "WHIP": null
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "AVG": 0.281,
-          "HR": 2.019,
-          "OBP": 0.335,
-          "OPS": 0.722,
-          "PA": 156.0,
-          "R": 20.11,
-          "RBI": 7.086,
-          "SB": 6.033
-        }
-      },
-      "team": "CIN",
-      "value": 6.87,
-      "value_by_preset": {
-        "5x5": 6.87,
-        "6x6": 6.79,
-        "7x7": 7.06,
-        "7x7_ops": 6.88,
-        "obp": 6.57,
-        "points": 5.63,
-        "sv_hld": 6.99
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -125218,7 +125382,7 @@
         "RP"
       ],
       "projection_value": -4.2997,
-      "rank": 769,
+      "rank": 770,
       "role": "pitcher",
       "score": 6.85,
       "stat_line": {
@@ -125388,7 +125552,7 @@
         "OF"
       ],
       "projection_value": -4.1976,
-      "rank": 770,
+      "rank": 771,
       "role": "hitter",
       "score": 6.83,
       "stat_line": {
@@ -125546,7 +125710,7 @@
         "OF"
       ],
       "projection_value": -4.0688,
-      "rank": 771,
+      "rank": 772,
       "role": "hitter",
       "score": 6.82,
       "stat_line": {
@@ -125716,7 +125880,7 @@
         "OF"
       ],
       "projection_value": -4.2024,
-      "rank": 772,
+      "rank": 773,
       "role": "hitter",
       "score": 6.79,
       "stat_line": {
@@ -125874,7 +126038,7 @@
         "RP"
       ],
       "projection_value": -4.385,
-      "rank": 773,
+      "rank": 774,
       "role": "pitcher",
       "score": 6.73,
       "stat_line": {
@@ -126032,7 +126196,7 @@
         "RP"
       ],
       "projection_value": -4.0924,
-      "rank": 774,
+      "rank": 775,
       "role": "pitcher",
       "score": 6.69,
       "stat_line": {
@@ -126190,7 +126354,7 @@
         "2B"
       ],
       "projection_value": -4.27,
-      "rank": 775,
+      "rank": 776,
       "role": "hitter",
       "score": 6.67,
       "stat_line": {
@@ -126348,7 +126512,7 @@
         "2B"
       ],
       "projection_value": -4.1689,
-      "rank": 776,
+      "rank": 777,
       "role": "hitter",
       "score": 6.59,
       "stat_line": {
@@ -126518,7 +126682,7 @@
         "SP"
       ],
       "projection_value": -4.5446,
-      "rank": 777,
+      "rank": 778,
       "role": "pitcher",
       "score": 6.5,
       "stat_line": {
@@ -126676,7 +126840,7 @@
         "SS"
       ],
       "projection_value": -4.2153,
-      "rank": 778,
+      "rank": 779,
       "role": "hitter",
       "score": 6.49,
       "stat_line": {
@@ -126844,7 +127008,7 @@
         "SS"
       ],
       "projection_value": -4.7936,
-      "rank": 779,
+      "rank": 780,
       "role": "hitter",
       "score": 6.49,
       "stat_line": {
@@ -127002,7 +127166,7 @@
         "RP"
       ],
       "projection_value": -4.2165,
-      "rank": 780,
+      "rank": 781,
       "role": "pitcher",
       "score": 6.48,
       "stat_line": {
@@ -127170,7 +127334,7 @@
         "RP"
       ],
       "projection_value": -4.7444,
-      "rank": 781,
+      "rank": 782,
       "role": "pitcher",
       "score": 6.47,
       "stat_line": {
@@ -127338,7 +127502,7 @@
         "RP"
       ],
       "projection_value": -4.8185,
-      "rank": 782,
+      "rank": 783,
       "role": "pitcher",
       "score": 6.46,
       "stat_line": {
@@ -127496,7 +127660,7 @@
         "OF"
       ],
       "projection_value": -4.4389,
-      "rank": 783,
+      "rank": 784,
       "role": "hitter",
       "score": 6.45,
       "stat_line": {
@@ -127664,7 +127828,7 @@
         "SP"
       ],
       "projection_value": -4.4326,
-      "rank": 784,
+      "rank": 785,
       "role": "pitcher",
       "score": 6.44,
       "stat_line": {
@@ -127832,7 +127996,7 @@
         "RP"
       ],
       "projection_value": -4.4488,
-      "rank": 785,
+      "rank": 786,
       "role": "pitcher",
       "score": 6.41,
       "stat_line": {
@@ -127990,7 +128154,7 @@
         "3B"
       ],
       "projection_value": -4.2203,
-      "rank": 786,
+      "rank": 787,
       "role": "hitter",
       "score": 6.41,
       "stat_line": {
@@ -128158,7 +128322,7 @@
         "RP"
       ],
       "projection_value": -5.1338,
-      "rank": 787,
+      "rank": 788,
       "role": "pitcher",
       "score": 6.29,
       "stat_line": {
@@ -128316,7 +128480,7 @@
         "RP"
       ],
       "projection_value": -4.4414,
-      "rank": 788,
+      "rank": 789,
       "role": "pitcher",
       "score": 6.26,
       "stat_line": {
@@ -128474,7 +128638,7 @@
         "1B"
       ],
       "projection_value": -5.3685,
-      "rank": 789,
+      "rank": 790,
       "role": "hitter",
       "score": 6.23,
       "stat_line": {
@@ -128524,176 +128688,6 @@
         "obp": 5.58,
         "points": 5.28,
         "sv_hld": 6.09
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 33,
-      "components": {
-        "age_adjustment": 0.715,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-07-12",
-          "list_type": "60-day injured list",
-          "note": "Milwaukee Brewers transferred RHP Brandon Woodruff from the 15-day injured list to the 60-day injured list. Right shoulder inflammation.",
-          "present": true,
-          "risk_discount": 0.12,
-          "risk_level": "high",
-          "score_before_availability_adjustment": 7.08,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-07-12",
-          "transaction_id": 927069
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.12,
-        "cross_role_calibration": {
-          "anchor": 0.92,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 5.2,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": -5.1935,
-        "horizon_years": [
-          {
-            "age": 33,
-            "age_factor": 1.0,
-            "projected_value": -3.7948,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 34,
-            "age_factor": 0.9091,
-            "projected_value": -6.2012,
-            "reliability_factor": 0.55,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 35,
-            "age_factor": 0.7599,
-            "projected_value": -6.5961,
-            "reliability_factor": 0.55,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 50.73,
-        "production_score": 4.78,
-        "projection_stability": {
-          "current_season_category_value": -6.898,
-          "ros_category_value": 0.8601,
-          "ros_stability_weight": 0.4,
-          "ros_true_talent_annualization_scale": 180.0,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": -3.7948,
-          "stability_adjustment": 3.1033,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 7.08,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 68.87,
-          "track_record_experience_band": "established",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
-          "track_record_floor_score": 54.82,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 7.08,
-        "season_category_value": -3.7948,
-        "track_record": {
-          "experience_band": "established",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 68.87,
-          "track_record_floor_score": 54.82,
-          "volume": {
-            "career": 790.333,
-            "current_season": 45.333,
-            "prior_mlb": 745.0,
-            "recent_3yr_prior": 131.667
-          }
-        }
-      },
-      "confidence": "low",
-      "drivers": [
-        "WHIP +1.18",
-        "W -0.75",
-        "K -0.63",
-        "ERA +0.47",
-        "playing time reliability 51"
-      ],
-      "dynasty_horizon_value": -5.1935,
-      "id": "vc_mlb_605540_pitcher",
-      "mlb_team": "MIL",
-      "mlbam_id": 605540,
-      "name": "Brandon Woodruff",
-      "player_type": "mlb",
-      "pool": "starter",
-      "positions": [
-        "SP"
-      ],
-      "projection_value": -3.7948,
-      "rank": 790,
-      "role": "pitcher",
-      "score": 6.23,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.0,
-          "ERA": 0.4706,
-          "HR": 0.0,
-          "K": -0.6317,
-          "R": 0.0,
-          "RBI": 0.0,
-          "SB": 0.0,
-          "SV": -0.3819,
-          "W": -0.7474,
-          "WHIP": 1.1771
-        },
-        "raw_values": {
-          "AVG": null,
-          "ERA": 2.9968,
-          "HR": null,
-          "K": 48.061,
-          "R": null,
-          "RBI": null,
-          "SB": null,
-          "SV": 0.0,
-          "W": 2.062,
-          "WHIP": 0.8455
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "ERA": 3.0,
-          "HLD": 0.0,
-          "IP": 46.333,
-          "K": 48.061,
-          "QS": 3.088,
-          "SV": 0.0,
-          "W": 2.062,
-          "WHIP": 0.85
-        }
-      },
-      "team": "MIL",
-      "value": 6.23,
-      "value_by_preset": {
-        "5x5": 6.23,
-        "6x6": 7.59,
-        "7x7": 7.0,
-        "7x7_ops": 8.28,
-        "obp": 6.05,
-        "points": 10.89,
-        "sv_hld": 5.72
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -133096,6 +133090,174 @@
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
     },
     {
+      "age": 25,
+      "components": {
+        "age_adjustment": 1.3,
+        "age_adjustment_status": "applied",
+        "age_source": "valucast_identity_birth_date",
+        "availability": {
+          "active_injury_risk": false,
+          "effective_date": "2026-10-30",
+          "list_type": "60-day injured list",
+          "note": "Los Angeles Angels activated RHP Jack Kochanowicz from the 60-day injured list.",
+          "present": true,
+          "risk_discount": 0.0,
+          "risk_level": "clear",
+          "source": "official_mlb_statsapi_transactions",
+          "status": "available",
+          "transaction_date": "2026-10-30",
+          "transaction_id": 947504
+        },
+        "availability_adjusted": false,
+        "availability_risk_discount": 0.0,
+        "cross_role_calibration": {
+          "anchor": 0.92,
+          "method": "pitcher_tier_production_anchor",
+          "pre_anchor_production_score": 3.06,
+          "version": "pitcher_tier_anchor_v0_1"
+        },
+        "dynasty_horizon_value": -5.7894,
+        "horizon_years": [
+          {
+            "age": 25,
+            "age_factor": 1.0,
+            "projected_value": -4.8541,
+            "reliability_factor": 1.0,
+            "season": 2026,
+            "weight": 1.0
+          },
+          {
+            "age": 26,
+            "age_factor": 0.9423,
+            "projected_value": -6.5177,
+            "reliability_factor": 0.5909,
+            "season": 2027,
+            "weight": 0.72
+          },
+          {
+            "age": 27,
+            "age_factor": 0.8846,
+            "projected_value": -6.6456,
+            "reliability_factor": 0.5909,
+            "season": 2028,
+            "weight": 0.48
+          }
+        ],
+        "playing_time_reliability": 59.09,
+        "production_score": 2.81,
+        "projection_stability": {
+          "current_season_category_value": -6.3116,
+          "ros_category_value": -2.6678,
+          "ros_stability_weight": 0.4,
+          "ros_true_talent_annualization_scale": 180.0,
+          "ros_value_kind": "annualized_true_talent",
+          "stability_adjusted_category_value": -4.8541,
+          "stability_adjustment": 1.4575,
+          "true_talent_floor_applied": false,
+          "true_talent_floor_value": null
+        },
+        "role_adjustments": {
+          "limited_mlb_track_record_discount": 0.0,
+          "reliever_score_cap": null,
+          "score_before_role_adjustment": 5.63,
+          "starter_volatility_discount": 0.0,
+          "track_record_certainty": 36.31,
+          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_floor_applied": false,
+          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
+          "track_record_floor_score": null,
+          "young_hitter_volatility_discount": 0.0,
+          "young_sp_volatility_discount": 0.0
+        },
+        "season_category_value": -4.8541,
+        "track_record": {
+          "experience_band": "current_year_only_or_limited",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 36.31,
+          "track_record_floor_score": 26.35,
+          "volume": {
+            "career": 240.333,
+            "current_season": 64.0,
+            "prior_mlb": 176.333,
+            "recent_3yr_prior": 176.333
+          }
+        }
+      },
+      "confidence": "low",
+      "drivers": [
+        "ERA -1.44",
+        "WHIP -1.18",
+        "W -0.75",
+        "K -0.64",
+        "playing time reliability 59"
+      ],
+      "dynasty_horizon_value": -5.7894,
+      "id": "vc_mlb_686799_pitcher",
+      "mlb_team": "LAA",
+      "mlbam_id": 686799,
+      "name": "Jack Kochanowicz",
+      "player_type": "mlb",
+      "pool": "starter",
+      "positions": [
+        "SP"
+      ],
+      "projection_value": -4.8541,
+      "rank": 818,
+      "role": "pitcher",
+      "score": 5.63,
+      "stat_line": {
+        "category_values": {
+          "AVG": 0.0,
+          "ERA": -1.4405,
+          "HR": 0.0,
+          "K": -0.6404,
+          "R": 0.0,
+          "RBI": 0.0,
+          "SB": 0.0,
+          "SV": -0.3819,
+          "W": -0.7518,
+          "WHIP": -1.1755
+        },
+        "raw_values": {
+          "AVG": null,
+          "ERA": 6.1656,
+          "HR": null,
+          "K": 47.645,
+          "R": null,
+          "RBI": null,
+          "SB": null,
+          "SV": 0.0,
+          "W": 2.046,
+          "WHIP": 1.5773
+        },
+        "source": "valucast_current_projection",
+        "stats": {
+          "ERA": 6.17,
+          "HLD": 0.0,
+          "IP": 65.0,
+          "K": 47.645,
+          "QS": 5.071,
+          "SV": 0.0,
+          "W": 2.046,
+          "WHIP": 1.58
+        }
+      },
+      "team": "LAA",
+      "value": 5.63,
+      "value_by_preset": {
+        "5x5": 5.63,
+        "6x6": 6.91,
+        "7x7": 5.77,
+        "7x7_ops": 4.88,
+        "obp": 5.43,
+        "points": 15.73,
+        "sv_hld": 5.1
+      },
+      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
+    },
+    {
       "age": 27,
       "components": {
         "age_adjustment": 1.25,
@@ -133200,7 +133362,7 @@
         "SS"
       ],
       "projection_value": -4.5612,
-      "rank": 818,
+      "rank": 819,
       "role": "hitter",
       "score": 5.61,
       "stat_line": {
@@ -133358,7 +133520,7 @@
         "C"
       ],
       "projection_value": -4.5834,
-      "rank": 819,
+      "rank": 820,
       "role": "hitter",
       "score": 5.6,
       "stat_line": {
@@ -133526,7 +133688,7 @@
         "RP"
       ],
       "projection_value": -5.2279,
-      "rank": 820,
+      "rank": 821,
       "role": "pitcher",
       "score": 5.57,
       "stat_line": {
@@ -133696,7 +133858,7 @@
         "SS"
       ],
       "projection_value": -4.4817,
-      "rank": 821,
+      "rank": 822,
       "role": "hitter",
       "score": 5.54,
       "stat_line": {
@@ -133864,7 +134026,7 @@
         "RP"
       ],
       "projection_value": -4.5576,
-      "rank": 822,
+      "rank": 823,
       "role": "pitcher",
       "score": 5.53,
       "stat_line": {
@@ -134022,7 +134184,7 @@
         "RP"
       ],
       "projection_value": -4.6396,
-      "rank": 823,
+      "rank": 824,
       "role": "pitcher",
       "score": 5.4,
       "stat_line": {
@@ -134190,7 +134352,7 @@
         "RP"
       ],
       "projection_value": -5.4322,
-      "rank": 824,
+      "rank": 825,
       "role": "pitcher",
       "score": 5.4,
       "stat_line": {
@@ -134348,7 +134510,7 @@
         "C"
       ],
       "projection_value": -5.1482,
-      "rank": 825,
+      "rank": 826,
       "role": "hitter",
       "score": 5.38,
       "stat_line": {
@@ -134517,7 +134679,7 @@
         "SS"
       ],
       "projection_value": -4.7525,
-      "rank": 826,
+      "rank": 827,
       "role": "hitter",
       "score": 5.35,
       "stat_line": {
@@ -134675,7 +134837,7 @@
         "RP"
       ],
       "projection_value": -4.7164,
-      "rank": 827,
+      "rank": 828,
       "role": "pitcher",
       "score": 5.3,
       "stat_line": {
@@ -134833,7 +134995,7 @@
         "OF"
       ],
       "projection_value": -4.6239,
-      "rank": 828,
+      "rank": 829,
       "role": "hitter",
       "score": 5.29,
       "stat_line": {
@@ -135001,7 +135163,7 @@
         "RP"
       ],
       "projection_value": -5.2884,
-      "rank": 829,
+      "rank": 830,
       "role": "pitcher",
       "score": 5.25,
       "stat_line": {
@@ -135159,7 +135321,7 @@
         "DH"
       ],
       "projection_value": -5.105,
-      "rank": 830,
+      "rank": 831,
       "role": "hitter",
       "score": 5.24,
       "stat_line": {
@@ -135327,7 +135489,7 @@
         "SP"
       ],
       "projection_value": -4.6687,
-      "rank": 831,
+      "rank": 832,
       "role": "pitcher",
       "score": 5.24,
       "stat_line": {
@@ -135497,7 +135659,7 @@
         "RP"
       ],
       "projection_value": -4.7995,
-      "rank": 832,
+      "rank": 833,
       "role": "pitcher",
       "score": 5.18,
       "stat_line": {
@@ -135655,7 +135817,7 @@
         "RP"
       ],
       "projection_value": -4.9964,
-      "rank": 833,
+      "rank": 834,
       "role": "pitcher",
       "score": 5.15,
       "stat_line": {
@@ -135813,7 +135975,7 @@
         "RP"
       ],
       "projection_value": -4.7824,
-      "rank": 834,
+      "rank": 835,
       "role": "pitcher",
       "score": 5.06,
       "stat_line": {
@@ -135971,7 +136133,7 @@
         "RP"
       ],
       "projection_value": -5.2568,
-      "rank": 835,
+      "rank": 836,
       "role": "pitcher",
       "score": 5.06,
       "stat_line": {
@@ -136129,7 +136291,7 @@
         "SP"
       ],
       "projection_value": -5.1251,
-      "rank": 836,
+      "rank": 837,
       "role": "pitcher",
       "score": 5.02,
       "stat_line": {
@@ -136299,7 +136461,7 @@
         "SP"
       ],
       "projection_value": -4.4488,
-      "rank": 837,
+      "rank": 838,
       "role": "pitcher",
       "score": 5.01,
       "stat_line": {
@@ -136467,7 +136629,7 @@
         "OF"
       ],
       "projection_value": -5.1252,
-      "rank": 838,
+      "rank": 839,
       "role": "hitter",
       "score": 5.0,
       "stat_line": {
@@ -136625,7 +136787,7 @@
         "RP"
       ],
       "projection_value": -5.4888,
-      "rank": 839,
+      "rank": 840,
       "role": "pitcher",
       "score": 4.97,
       "stat_line": {
@@ -136795,7 +136957,7 @@
         "SP"
       ],
       "projection_value": -4.4798,
-      "rank": 840,
+      "rank": 841,
       "role": "pitcher",
       "score": 4.95,
       "stat_line": {
@@ -136845,176 +137007,6 @@
         "obp": 4.77,
         "points": 10.67,
         "sv_hld": 4.5
-      },
-      "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
-      "value_source": "valucast_mlb_dynasty_horizon_v0_5"
-    },
-    {
-      "age": 25,
-      "components": {
-        "age_adjustment": 1.3,
-        "age_adjustment_status": "applied",
-        "age_source": "valucast_identity_birth_date",
-        "availability": {
-          "active_injury_risk": true,
-          "effective_date": "2026-06-10",
-          "list_type": "60-day injured list",
-          "note": "Los Angeles Angels transferred RHP Jack Kochanowicz from the 15-day injured list to the 60-day injured list. Right elbow inflammation.",
-          "present": true,
-          "risk_discount": 0.12,
-          "risk_level": "high",
-          "score_before_availability_adjustment": 5.63,
-          "source": "official_mlb_statsapi_transactions",
-          "status": "injured",
-          "transaction_date": "2026-06-10",
-          "transaction_id": 917337
-        },
-        "availability_adjusted": true,
-        "availability_risk_discount": 0.12,
-        "cross_role_calibration": {
-          "anchor": 0.92,
-          "method": "pitcher_tier_production_anchor",
-          "pre_anchor_production_score": 3.06,
-          "version": "pitcher_tier_anchor_v0_1"
-        },
-        "dynasty_horizon_value": -5.7894,
-        "horizon_years": [
-          {
-            "age": 25,
-            "age_factor": 1.0,
-            "projected_value": -4.8541,
-            "reliability_factor": 1.0,
-            "season": 2026,
-            "weight": 1.0
-          },
-          {
-            "age": 26,
-            "age_factor": 0.9423,
-            "projected_value": -6.5177,
-            "reliability_factor": 0.5909,
-            "season": 2027,
-            "weight": 0.72
-          },
-          {
-            "age": 27,
-            "age_factor": 0.8846,
-            "projected_value": -6.6456,
-            "reliability_factor": 0.5909,
-            "season": 2028,
-            "weight": 0.48
-          }
-        ],
-        "playing_time_reliability": 59.09,
-        "production_score": 2.81,
-        "projection_stability": {
-          "current_season_category_value": -6.3116,
-          "ros_category_value": -2.6678,
-          "ros_stability_weight": 0.4,
-          "ros_true_talent_annualization_scale": 180.0,
-          "ros_value_kind": "annualized_true_talent",
-          "stability_adjusted_category_value": -4.8541,
-          "stability_adjustment": 1.4575,
-          "true_talent_floor_applied": false,
-          "true_talent_floor_value": null
-        },
-        "role_adjustments": {
-          "limited_mlb_track_record_discount": 0.0,
-          "reliever_score_cap": null,
-          "score_before_role_adjustment": 5.63,
-          "starter_volatility_discount": 0.0,
-          "track_record_certainty": 36.31,
-          "track_record_experience_band": "current_year_only_or_limited",
-          "track_record_floor_applied": false,
-          "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
-          "track_record_floor_score": null,
-          "young_hitter_volatility_discount": 0.0,
-          "young_sp_volatility_discount": 0.0
-        },
-        "score_before_availability_adjustment": 5.63,
-        "season_category_value": -4.8541,
-        "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 36.31,
-          "track_record_floor_score": 26.35,
-          "volume": {
-            "career": 240.333,
-            "current_season": 64.0,
-            "prior_mlb": 176.333,
-            "recent_3yr_prior": 176.333
-          }
-        }
-      },
-      "confidence": "low",
-      "drivers": [
-        "ERA -1.44",
-        "WHIP -1.18",
-        "W -0.75",
-        "K -0.64",
-        "playing time reliability 59"
-      ],
-      "dynasty_horizon_value": -5.7894,
-      "id": "vc_mlb_686799_pitcher",
-      "mlb_team": "LAA",
-      "mlbam_id": 686799,
-      "name": "Jack Kochanowicz",
-      "player_type": "mlb",
-      "pool": "starter",
-      "positions": [
-        "SP"
-      ],
-      "projection_value": -4.8541,
-      "rank": 841,
-      "role": "pitcher",
-      "score": 4.95,
-      "stat_line": {
-        "category_values": {
-          "AVG": 0.0,
-          "ERA": -1.4405,
-          "HR": 0.0,
-          "K": -0.6404,
-          "R": 0.0,
-          "RBI": 0.0,
-          "SB": 0.0,
-          "SV": -0.3819,
-          "W": -0.7518,
-          "WHIP": -1.1755
-        },
-        "raw_values": {
-          "AVG": null,
-          "ERA": 6.1656,
-          "HR": null,
-          "K": 47.645,
-          "R": null,
-          "RBI": null,
-          "SB": null,
-          "SV": 0.0,
-          "W": 2.046,
-          "WHIP": 1.5773
-        },
-        "source": "valucast_current_projection",
-        "stats": {
-          "ERA": 6.17,
-          "HLD": 0.0,
-          "IP": 65.0,
-          "K": 47.645,
-          "QS": 5.071,
-          "SV": 0.0,
-          "W": 2.046,
-          "WHIP": 1.58
-        }
-      },
-      "team": "LAA",
-      "value": 4.95,
-      "value_by_preset": {
-        "5x5": 4.95,
-        "6x6": 6.08,
-        "7x7": 5.08,
-        "7x7_ops": 4.3,
-        "obp": 4.78,
-        "points": 13.84,
-        "sv_hld": 4.49
       },
       "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
       "value_source": "valucast_mlb_dynasty_horizon_v0_5"
@@ -153819,15 +153811,15 @@
     "age_coverage_count": 943,
     "age_coverage_rate": 1.0,
     "age_coverage_threshold": 0.95,
-    "availability_adjusted_count": 78,
+    "availability_adjusted_count": 74,
     "availability_present": true,
-    "availability_profile_count": 660,
+    "availability_profile_count": 662,
     "availability_ready": true,
-    "availability_risk_profile_count": 191,
+    "availability_risk_profile_count": 177,
     "blockers": [],
     "duplicate_identity_count": 0,
     "eligible_projection_count": 943,
-    "generated_date": "2026-10-18",
+    "generated_date": "2026-11-02",
     "horizon_year_count": 3,
     "missing_mlbam_count": 0,
     "ranks_contiguous": true,

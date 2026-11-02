@@ -11,7 +11,7 @@
       "pending": "under 60 days since call-up, or on the active roster and still accumulating before the 90-day final look."
     }
   },
-  "generated_at": "2026-10-18T12:18:26.652457+00:00",
+  "generated_at": "2026-11-02T20:16:58.023144+00:00",
   "misses": [
     {
       "actual_call_up_date": "2026-08-15",
@@ -190,6 +190,34 @@
     }
   ],
   "no_claim_rows": [
+    {
+      "actual_call_up_date": "2026-10-30",
+      "board_count": 0,
+      "call_up_date": "2026-11-02",
+      "field_label": "no public board inside 600",
+      "identity_key": "675455_hitter",
+      "level": "AAA",
+      "mlbam_id": "675455",
+      "name": "Milan Tolentino",
+      "near_note": null,
+      "pos": "SS",
+      "team": "CLE",
+      "valucast_rank": 235
+    },
+    {
+      "actual_call_up_date": "2026-10-30",
+      "board_count": 1,
+      "call_up_date": "2026-11-02",
+      "field_label": "1 board, ~#343",
+      "identity_key": "695778_pitcher",
+      "level": "AAA",
+      "mlbam_id": "695778",
+      "name": "Aidan Curry",
+      "near_note": "a second board and this scores as a hit",
+      "pos": "P",
+      "team": "TEX",
+      "valucast_rank": 244
+    },
     {
       "actual_call_up_date": "2026-09-28",
       "board_count": 2,
@@ -1685,7 +1713,7 @@
       "identity_key": "701649_hitter",
       "level": "AAA",
       "logged_at": "2026-07-25T12:52:30.646560+00:00",
-      "maturation_status": "PENDING",
+      "maturation_status": "DECAYED",
       "mlbam_id": "701649",
       "name": "James Triantos",
       "pos": "2B",
@@ -1702,7 +1730,7 @@
       "identity_key": "699024_hitter",
       "level": "AAA",
       "logged_at": "2026-09-05T12:18:08.047252+00:00",
-      "maturation_status": "PENDING",
+      "maturation_status": "CONFIRMED",
       "mlbam_id": "699024",
       "name": "Leo Bernal",
       "pos": "C",
@@ -2088,17 +2116,18 @@
       "2026-10-15",
       "2026-10-16",
       "2026-10-17",
-      "2026-10-18"
+      "2026-10-18",
+      "2026-11-02"
     ],
     "field_unranked_behind_count": 0,
     "field_unranked_count": 1,
     "maturation": {
-      "confirmed": 10,
-      "decayed": 2,
-      "pending": 4
+      "confirmed": 11,
+      "decayed": 3,
+      "pending": 2
     },
     "miss_count": 11,
-    "no_claim_call_up_count": 106,
+    "no_claim_call_up_count": 108,
     "pre_launch_excluded_count": 51,
     "pre_launch_excluded_names": [
       "A.J. Ewing",
