@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_combined_level_shadow",
-  "generated_at": "2026-10-18T12:42:10.677239+00:00",
+  "generated_at": "2026-11-02T20:47:39.833228+00:00",
   "shadow_version": "0.1.0",
   "shadows": [
     {
@@ -1764,7 +1764,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": -6,
+      "delta_rank": -7,
       "delta_score": 0.2,
       "factual_investment_context": 44.63,
       "level_weights": [
@@ -1799,7 +1799,7 @@
       "role": "hitter",
       "served_level": "AAA",
       "served_model_score": 19.11,
-      "served_rank": 589,
+      "served_rank": 590,
       "served_sample": 265.0,
       "served_score": 19.78,
       "shadow_model_score": 18.4,
@@ -2656,7 +2656,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": -154,
+      "delta_rank": -155,
       "delta_score": 2.58,
       "factual_investment_context": 67.27,
       "level_weights": [
@@ -2691,7 +2691,7 @@
       "role": "hitter",
       "served_level": "AAA",
       "served_model_score": 16.37,
-      "served_rank": 596,
+      "served_rank": 597,
       "served_sample": 504.0,
       "served_score": 19.66,
       "shadow_model_score": 18.24,
@@ -7657,7 +7657,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": 148,
+      "delta_rank": 147,
       "delta_score": -2.0,
       "factual_investment_context": 25.0,
       "level_weights": [
@@ -7692,7 +7692,7 @@
       "role": "hitter",
       "served_level": "AAA",
       "served_model_score": 20.07,
-      "served_rank": 593,
+      "served_rank": 594,
       "served_sample": 380.0,
       "served_score": 19.71,
       "shadow_model_score": 17.11,
@@ -9196,7 +9196,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": 190,
+      "delta_rank": 189,
       "delta_score": -2.48,
       "factual_investment_context": 25.0,
       "level_weights": [
@@ -9231,7 +9231,7 @@
       "role": "hitter",
       "served_level": "AAA",
       "served_model_score": 20.11,
-      "served_rank": 594,
+      "served_rank": 595,
       "served_sample": 342.0,
       "served_score": 19.69,
       "shadow_model_score": 16.48,
@@ -12002,7 +12002,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": -136,
+      "delta_rank": -137,
       "delta_score": 2.18,
       "factual_investment_context": 63.41,
       "level_weights": [
@@ -12037,7 +12037,7 @@
       "role": "hitter",
       "served_level": "AAA",
       "served_model_score": 17.31,
-      "served_rank": 587,
+      "served_rank": 588,
       "served_sample": 380.0,
       "served_score": 19.81,
       "shadow_model_score": 18.73,
@@ -12330,7 +12330,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": -99,
+      "delta_rank": -100,
       "delta_score": 1.62,
       "factual_investment_context": 46.96,
       "level_weights": [
@@ -12365,7 +12365,7 @@
       "role": "hitter",
       "served_level": "AAA",
       "served_model_score": 18.39,
-      "served_rank": 591,
+      "served_rank": 592,
       "served_sample": 419.0,
       "served_score": 19.77,
       "shadow_model_score": 19.32,
@@ -48031,8 +48031,8 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": 177,
-      "delta_score": -2.39,
+      "delta_rank": 190,
+      "delta_score": -2.57,
       "factual_investment_context": 25.0,
       "level_weights": [
         {
@@ -48068,20 +48068,19 @@
         "availability_risk_discount": 0.03,
         "bucket_calibration": {
           "adjustment": -0.41,
-          "bucket": "thin_current_sample_confidence",
-          "label": "Thin current sample",
+          "bucket": "moderate_thin_sample_confidence",
+          "label": "Moderate thin sample",
           "level": "AAA",
-          "reason": "Thin current samples are ranked by a lower-confidence-bound score so unproven profiles sort behind players with fuller evidence; the penalty scales with sample reliability without penalizing a tiny return sample more than inactivity.",
+          "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
           "rules": [
             {
               "adjustment": -0.41,
-              "bucket": "thin_current_sample_confidence",
-              "continuity_floor_adjustment": null,
-              "continuity_floor_applied": false,
-              "continuity_prior_season": null,
-              "label": "Thin current sample",
+              "bucket": "moderate_thin_sample_confidence",
+              "career_validated": false,
+              "label": "Moderate thin sample",
               "level": "AAA",
-              "reason": "Thin current samples are ranked by a lower-confidence-bound score so unproven profiles sort behind players with fuller evidence; the penalty scales with sample reliability without penalizing a tiny return sample more than inactivity.",
+              "pedigree_spare_credit": 0.0,
+              "reason": "A gaudy line whose own model reliability is below the floor is discounted toward the confidence the model already assigns it, so thin-sample performance doesn't outrank fuller evidence.",
               "role": "pitcher",
               "sample": 39.0,
               "sample_reliability": 43.82,
@@ -48098,9 +48097,9 @@
       "role": "pitcher",
       "served_level": "AAA",
       "served_model_score": 22.22,
-      "served_rank": 598,
+      "served_rank": 585,
       "served_sample": 29.0,
-      "served_score": 19.66,
+      "served_score": 19.84,
       "shadow_model_score": 18.71,
       "shadow_reliability": 43.82,
       "shadow_score": 17.27,
@@ -51773,7 +51772,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": 77,
+      "delta_rank": 76,
       "delta_score": -1.18,
       "factual_investment_context": 73.94,
       "level_weights": [
@@ -51833,7 +51832,7 @@
       "role": "pitcher",
       "served_level": "AAA",
       "served_model_score": 16.81,
-      "served_rank": 585,
+      "served_rank": 586,
       "served_sample": 33.3,
       "served_score": 19.84,
       "shadow_model_score": 15.01,
@@ -56060,7 +56059,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": 9,
+      "delta_rank": 8,
       "delta_score": -0.13,
       "factual_investment_context": 25.0,
       "level_weights": [
@@ -56095,7 +56094,7 @@
       "role": "pitcher",
       "served_level": "AAA",
       "served_model_score": 19.77,
-      "served_rank": 592,
+      "served_rank": 593,
       "served_sample": 68.0,
       "served_score": 19.75,
       "shadow_model_score": 19.18,
@@ -61406,7 +61405,7 @@
         "kind": "valucast_combined_level_shadow",
         "market_values_used": false
       },
-      "team": "ARI",
+      "team": "STL",
       "total_sample": 116.0,
       "universal_outcome_index": 10.0,
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
@@ -62450,7 +62449,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": -239,
+      "delta_rank": -240,
       "delta_score": 3.94,
       "factual_investment_context": 75.9,
       "level_weights": [
@@ -62485,7 +62484,7 @@
       "role": "pitcher",
       "served_level": "AA",
       "served_model_score": 16.51,
-      "served_rank": 597,
+      "served_rank": 598,
       "served_sample": 41.3,
       "served_score": 19.66,
       "shadow_model_score": 21.35,
@@ -82333,7 +82332,7 @@
       "usage": "combined_level_shadow_observe_only_not_live_score_or_value"
     },
     {
-      "delta_rank": 65,
+      "delta_rank": 64,
       "delta_score": -0.99,
       "factual_investment_context": 63.5,
       "level_weights": [
@@ -82368,7 +82367,7 @@
       "role": "pitcher",
       "served_level": "A+",
       "served_model_score": 17.76,
-      "served_rank": 595,
+      "served_rank": 596,
       "served_sample": 30.3,
       "served_score": 19.69,
       "shadow_model_score": 15.62,
