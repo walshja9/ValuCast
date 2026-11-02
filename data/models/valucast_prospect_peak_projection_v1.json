@@ -1,9 +1,9 @@
 {
   "artifact": "valucast_prospect_peak_projection_v1",
-  "generated_at": "2026-10-18T00:00:00+00:00",
+  "generated_at": "2026-11-02T00:00:00+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "prospect_rank_v1_generated_at": "2026-10-18T00:00:00+00:00",
+    "prospect_rank_v1_generated_at": "2026-11-02T00:00:00+00:00",
     "prospect_rank_v1_status": "candidate_ready",
     "prospect_rank_v1_version": "0.2.9"
   },
@@ -77698,6 +77698,139 @@
       "usage": "card_visual_context_not_live_rank_or_value"
     },
     {
+      "age": 25,
+      "card_v2": {
+        "card_copy": "Ceiling is depth arm; floor is depth arm. Medium risk, medium confidence.",
+        "ceiling_band": "depth_arm",
+        "confidence": "medium",
+        "current_score": 19.84,
+        "floor_band": "depth_arm_floor",
+        "peak_score": 27.95,
+        "risk_band": "medium",
+        "role_probabilities": {
+          "depth_or_relief": 0.1,
+          "starter_or_late_inning": 0.369,
+          "useful_mlb_arm": 0.531
+        },
+        "score_delta": 8.11,
+        "trajectory": "more_peak_than_current_value",
+        "visual_version": "2.0.0"
+      },
+      "ceiling_band": "depth_arm",
+      "confidence": "medium",
+      "eta_window": "near_term",
+      "floor_band": "depth_arm_floor",
+      "level": "AAA",
+      "mlbam_id": 689672,
+      "name": "Drew Thorpe",
+      "peak_role": "depth_arm",
+      "peak_score": 27.95,
+      "peak_v2": {
+        "ceiling_band": "depth_arm",
+        "delta_vs_v1_peak_score": 0.0,
+        "floor_band": "depth_arm_floor",
+        "mlb_equivalent": {
+          "confidence": "low",
+          "level_label": "AAA & AA & A+",
+          "low_sample": true,
+          "rates": {
+            "bb_per_9": {
+              "milb": 3.0,
+              "mlb": 3.2,
+              "mlb_avg": 3.2
+            },
+            "k_bb_pct": {
+              "milb": 14.7,
+              "mlb": 12.6,
+              "mlb_avg": 13.5
+            },
+            "k_per_9": {
+              "milb": 8.1,
+              "mlb": 7.9,
+              "mlb_avg": 8.6
+            }
+          },
+          "sample": 39,
+          "sample_unit": "IP",
+          "season": 2026
+        },
+        "model_version": "2.1.0",
+        "peak_role": "depth_arm",
+        "peak_score": 27.95,
+        "risk_band": "medium",
+        "role_probabilities": {
+          "bust_risk": 0.72,
+          "reaches_role_or_better": 0.28,
+          "reaches_star_ceiling": 0.12
+        },
+        "role_probability_basis": "cumulative_uncalibrated_outcome_distribution",
+        "role_probability_source": "model_dynasty_signal",
+        "shape": [
+          {
+            "grade": 35,
+            "label": "Miss",
+            "source": "K/9"
+          },
+          {
+            "grade": 60,
+            "label": "Command",
+            "source": "BB/9"
+          },
+          {
+            "grade": 45,
+            "label": "Dominance",
+            "source": "K-BB%"
+          },
+          {
+            "grade": 70,
+            "label": "Run Prevention",
+            "source": "ERA / WHIP"
+          }
+        ],
+        "shape_average": 52.5,
+        "shape_basis": "current",
+        "status": "shadow_observe_only"
+      },
+      "rank_v1_rank": 585,
+      "rank_v1_score": 19.84,
+      "rank_v1_score_source": "prospect_model_v0_6",
+      "risk_band": "medium",
+      "role": "pitcher",
+      "sample_context": {
+        "availability_risk_discount": 0.03,
+        "availability_status": "available",
+        "sample": 29.0,
+        "sample_reliability": 36.7,
+        "sample_unit": "IP",
+        "skill_band": "limited"
+      },
+      "shape": [
+        {
+          "grade": 35,
+          "label": "Miss",
+          "source": "K/9"
+        },
+        {
+          "grade": 60,
+          "label": "Command",
+          "source": "BB/9"
+        },
+        {
+          "grade": 45,
+          "label": "Dominance",
+          "source": "K-BB%"
+        },
+        {
+          "grade": 70,
+          "label": "Run Prevention",
+          "source": "ERA / WHIP"
+        }
+      ],
+      "shape_average": 52.5,
+      "summary": "Peak read: depth arm with medium risk. The current pitching shape is limited over 29 AAA IP; this is a role and skill-shape projection, not a full stat forecast.",
+      "usage": "card_visual_context_not_live_rank_or_value"
+    },
+    {
       "age": 24,
       "card_v2": {
         "card_copy": "Ceiling is depth arm; floor is depth arm. Medium risk, medium confidence.",
@@ -77791,7 +77924,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 585,
+      "rank_v1_rank": 586,
       "rank_v1_score": 19.84,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -77924,7 +78057,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 586,
+      "rank_v1_rank": 587,
       "rank_v1_score": 19.83,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -78057,7 +78190,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 587,
+      "rank_v1_rank": 588,
       "rank_v1_score": 19.81,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "high",
@@ -78190,7 +78323,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 588,
+      "rank_v1_rank": 589,
       "rank_v1_score": 19.79,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -78323,7 +78456,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 589,
+      "rank_v1_rank": 590,
       "rank_v1_score": 19.78,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -78456,7 +78589,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 590,
+      "rank_v1_rank": 591,
       "rank_v1_score": 19.77,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -78589,7 +78722,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 591,
+      "rank_v1_rank": 592,
       "rank_v1_score": 19.77,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -78722,7 +78855,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 592,
+      "rank_v1_rank": 593,
       "rank_v1_score": 19.75,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -78855,7 +78988,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 593,
+      "rank_v1_rank": 594,
       "rank_v1_score": 19.71,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -78988,7 +79121,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 594,
+      "rank_v1_rank": 595,
       "rank_v1_score": 19.69,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "low",
@@ -79121,7 +79254,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 595,
+      "rank_v1_rank": 596,
       "rank_v1_score": 19.69,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "high",
@@ -79254,7 +79387,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 596,
+      "rank_v1_rank": 597,
       "rank_v1_score": 19.66,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -79387,7 +79520,7 @@
         "shape_basis": "current",
         "status": "shadow_observe_only"
       },
-      "rank_v1_rank": 597,
+      "rank_v1_rank": 598,
       "rank_v1_score": 19.66,
       "rank_v1_score_source": "prospect_model_v0_6",
       "risk_band": "medium",
@@ -79424,139 +79557,6 @@
       ],
       "shape_average": 32.5,
       "summary": "Peak read: depth arm with medium risk. The current pitching shape is mixed over 41.3 AA IP; this is a role and skill-shape projection, not a full stat forecast.",
-      "usage": "card_visual_context_not_live_rank_or_value"
-    },
-    {
-      "age": 25,
-      "card_v2": {
-        "card_copy": "Ceiling is depth arm; floor is depth arm. Medium risk, medium confidence.",
-        "ceiling_band": "depth_arm",
-        "confidence": "medium",
-        "current_score": 19.66,
-        "floor_band": "depth_arm_floor",
-        "peak_score": 27.85,
-        "risk_band": "medium",
-        "role_probabilities": {
-          "depth_or_relief": 0.1,
-          "starter_or_late_inning": 0.366,
-          "useful_mlb_arm": 0.534
-        },
-        "score_delta": 8.19,
-        "trajectory": "more_peak_than_current_value",
-        "visual_version": "2.0.0"
-      },
-      "ceiling_band": "depth_arm",
-      "confidence": "medium",
-      "eta_window": "near_term",
-      "floor_band": "depth_arm_floor",
-      "level": "AAA",
-      "mlbam_id": 689672,
-      "name": "Drew Thorpe",
-      "peak_role": "depth_arm",
-      "peak_score": 27.85,
-      "peak_v2": {
-        "ceiling_band": "depth_arm",
-        "delta_vs_v1_peak_score": 0.0,
-        "floor_band": "depth_arm_floor",
-        "mlb_equivalent": {
-          "confidence": "low",
-          "level_label": "AAA & AA & A+",
-          "low_sample": true,
-          "rates": {
-            "bb_per_9": {
-              "milb": 3.0,
-              "mlb": 3.2,
-              "mlb_avg": 3.2
-            },
-            "k_bb_pct": {
-              "milb": 14.7,
-              "mlb": 12.6,
-              "mlb_avg": 13.5
-            },
-            "k_per_9": {
-              "milb": 8.1,
-              "mlb": 7.9,
-              "mlb_avg": 8.6
-            }
-          },
-          "sample": 39,
-          "sample_unit": "IP",
-          "season": 2026
-        },
-        "model_version": "2.1.0",
-        "peak_role": "depth_arm",
-        "peak_score": 27.85,
-        "risk_band": "medium",
-        "role_probabilities": {
-          "bust_risk": 0.72,
-          "reaches_role_or_better": 0.28,
-          "reaches_star_ceiling": 0.12
-        },
-        "role_probability_basis": "cumulative_uncalibrated_outcome_distribution",
-        "role_probability_source": "model_dynasty_signal",
-        "shape": [
-          {
-            "grade": 35,
-            "label": "Miss",
-            "source": "K/9"
-          },
-          {
-            "grade": 60,
-            "label": "Command",
-            "source": "BB/9"
-          },
-          {
-            "grade": 45,
-            "label": "Dominance",
-            "source": "K-BB%"
-          },
-          {
-            "grade": 70,
-            "label": "Run Prevention",
-            "source": "ERA / WHIP"
-          }
-        ],
-        "shape_average": 52.5,
-        "shape_basis": "current",
-        "status": "shadow_observe_only"
-      },
-      "rank_v1_rank": 598,
-      "rank_v1_score": 19.66,
-      "rank_v1_score_source": "prospect_model_v0_6",
-      "risk_band": "medium",
-      "role": "pitcher",
-      "sample_context": {
-        "availability_risk_discount": 0.03,
-        "availability_status": "thin_current_sample",
-        "sample": 29.0,
-        "sample_reliability": 36.7,
-        "sample_unit": "IP",
-        "skill_band": "limited"
-      },
-      "shape": [
-        {
-          "grade": 35,
-          "label": "Miss",
-          "source": "K/9"
-        },
-        {
-          "grade": 60,
-          "label": "Command",
-          "source": "BB/9"
-        },
-        {
-          "grade": 45,
-          "label": "Dominance",
-          "source": "K-BB%"
-        },
-        {
-          "grade": 70,
-          "label": "Run Prevention",
-          "source": "ERA / WHIP"
-        }
-      ],
-      "shape_average": 52.5,
-      "summary": "Peak read: depth arm with medium risk. The current pitching shape is limited over 29 AAA IP; this is a role and skill-shape projection, not a full stat forecast.",
       "usage": "card_visual_context_not_live_rank_or_value"
     },
     {
