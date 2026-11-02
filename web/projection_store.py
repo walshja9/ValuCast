@@ -15,6 +15,7 @@ class ProjectionStore:
         self._players: list[PlayerProjection] = []
         self._by_id: dict[str, PlayerProjection] = {}
         self._as_of: str | None = None
+        self._ros_status: str | None = None
         self._load(Path(path))
 
     def _load(self, path: Path) -> None:
@@ -27,6 +28,7 @@ class ProjectionStore:
             with meta_path.open("r", encoding="utf-8") as mf:
                 meta_data = json.load(mf)
             self._as_of = meta_data.get("as_of")
+            self._ros_status = meta_data.get("ros_status")
 
         seen_ids: set[str] = set()
 
@@ -96,3 +98,7 @@ class ProjectionStore:
     @property
     def as_of(self) -> str | None:
         return self._as_of
+
+    @property
+    def ros_status(self) -> str | None:
+        return self._ros_status

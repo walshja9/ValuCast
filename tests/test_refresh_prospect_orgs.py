@@ -50,3 +50,22 @@ def test_merge_preserves_prior_on_missing_and_overrides_on_fetch():
     merged = merge_preserving_prior(prior, fetched)
 
     assert merged == {"700251": "STL", "999": "TBR"}
+
+
+def test_fetch_collects_birth_dates(monkeypatch):
+    import scripts.refresh_prospect_orgs as orgs
+
+    monkeypatch.setattr(
+        orgs,
+        "_get_json",
+        lambda _path, _params: {
+            "people": [
+                {"id": 1, "birthDate": "2005-03-01", "currentTeam": {"id": 10}},
+                {"id": 2, "birthDate": "2006-04-02"},
+            ]
+        },
+    )
+    teams, birth_dates, failed = orgs._fetch_person_team_ids([1, 2])
+    assert teams == {1: 10}
+    assert birth_dates == {"1": "2005-03-01", "2": "2006-04-02"}
+    assert failed == 0

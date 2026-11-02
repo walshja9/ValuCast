@@ -15,7 +15,7 @@
         {% elif source == 'valucast' %}
         ValuCast H+P projection: hitters use Savant xBA/xSLG inputs; the pitching model is fully ValuCast-built, scored against your league's categories and weights.
         {% else %}
-        Redraft values use 2026 actual stats + Steamer rest-of-season projections, scored against your league's categories and weights.
+        {% if ros_retained %}Redraft values use final {{ served_season }} stats, scored against your league's categories and weights.{% else %}Redraft values use 2026 actual stats + Steamer rest-of-season projections, scored against your league's categories and weights.{% endif %}
         Dynasty values, prospect rankings, buys, scouting reads, and peak projections are all built in-house by ValuCast.
         {% endif %}
     </p>

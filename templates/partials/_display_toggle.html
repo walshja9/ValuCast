@@ -2,7 +2,7 @@
 <fieldset class="source-seg" aria-label="Column display">
     <label class="source-opt">
         <input type="radio" name="display" value="projections" {% if (display or 'projections') != 'values' %}checked{% endif %}>
-        <span>Projections</span>
+        <span>{% if ros_retained %}{{ served_season }} stats{% else %}Projections{% endif %}</span>
     </label>
     <label class="source-opt">
         <input type="radio" name="display" value="values" {% if display == 'values' %}checked{% endif %}>

@@ -13,6 +13,9 @@ universe builder consults FIRST, before the stat-line affiliate fallback:
 
   data/prospects/raw/prospect_current_org.json
 
+The same response carries birthDate, cached as `birth_dates` for the display age
+on the public snapshot. The MLB identity store doesn't cover prospects.
+
 Guards:
 - currentTeam outside the affiliated ladder (foreign/winter league) -> keep
   the prior cache entry; never map through a non-MLB parent.
@@ -98,9 +101,10 @@ def _input_ids() -> list[int]:
     return sorted(ids)
 
 
-def _fetch_person_team_ids(ids: list[int]) -> tuple[dict[int, int], int]:
-    """person_id -> currentTeam id. Returns (mapping, failed_batches)."""
+def _fetch_person_team_ids(ids: list[int]) -> tuple[dict[int, int], dict[str, str], int]:
+    """Returns (person_id -> currentTeam id, mlbam_id -> birth date, failed_batches)."""
     mapping: dict[int, int] = {}
+    birth_dates: dict[str, str] = {}
     failed = 0
     for start in range(0, len(ids), BATCH_SIZE):
         batch = ids[start : start + BATCH_SIZE]
@@ -117,16 +121,18 @@ def _fetch_person_team_ids(ids: list[int]) -> tuple[dict[int, int], int]:
             team_id = (person.get("currentTeam") or {}).get("id")
             if person.get("id") and team_id:
                 mapping[int(person["id"])] = int(team_id)
-    return mapping, failed
+            if person.get("id") and person.get("birthDate"):
+                birth_dates[str(person["id"])] = person["birthDate"]
+    return mapping, birth_dates, failed
 
 
-def _load_prior() -> dict:
+def _load_prior(key: str = "orgs") -> dict:
     try:
         payload = json.loads(OUT_PATH.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
-    orgs = payload.get("orgs")
-    return orgs if isinstance(orgs, dict) else {}
+    entries = payload.get(key)
+    return entries if isinstance(entries, dict) else {}
 
 
 def refresh(write: bool) -> dict:
@@ -135,7 +141,7 @@ def refresh(write: bool) -> dict:
     team_org_map = build_team_org_map(
         _get_json("teams", {"sportIds": AFFILIATED_SPORT_IDS})
     )
-    person_team_ids, failed_batches = _fetch_person_team_ids(ids)
+    person_team_ids, birth_dates, failed_batches = _fetch_person_team_ids(ids)
     fetched = resolve_orgs(person_team_ids, team_org_map)
     merged = merge_preserving_prior(prior, fetched)
 
@@ -160,6 +166,7 @@ def refresh(write: bool) -> dict:
         "source": "mlb_statsapi_people_currentTeam",
         "counts": counts,
         "orgs": merged,
+        "birth_dates": merge_preserving_prior(_load_prior("birth_dates"), birth_dates),
     }
     if write:
         OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

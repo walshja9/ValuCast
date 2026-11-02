@@ -1,3 +1,6 @@
+{% if ros_retained %}
+<div class="notice" role="status"><strong>{{ served_season }} season final.</strong> These values show {{ served_season }} results, not a {{ served_season + 1 }} forecast. {{ served_season + 1 }} projections aren't available yet.</div>
+{% endif %}
 <div class="results-meta">
     <span>{{ results | length }} players{% if results | length == 200 %} (showing top 200){% endif %}</span>
 </div>
