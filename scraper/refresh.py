@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import date
+from datetime import date, timedelta
 
 from .fangraphs import fetch_all, save_raw
 from .blend import blend_projections
-from .mlb_actuals import build_actuals
+from .mlb_actuals import build_actuals, regular_season_games_final
 from .combine import combine_outlook
 
 _BASE = os.path.join(os.path.dirname(__file__), "..")
@@ -44,12 +44,27 @@ def refresh(
     raw = fetch_all(delay=delay)
     for key, players in raw.items():
         print(f"  {key}: {len(players)} players")
-    save_raw(raw, raw_dir)
+    if all(not players for players in raw.values()) and regular_season_games_final(
+        (date.fromisoformat(as_of) - timedelta(days=7)).isoformat(), as_of
+    ) == 0:
+        try:
+            with open(ros_output_path, encoding="utf-8") as f:
+                ros_players = json.load(f)
+        except (OSError, ValueError) as exc:
+            raise RuntimeError(f"Cannot read prior ROS projections from {ros_output_path}") from exc
+        if not isinstance(ros_players, list) or not ros_players:
+            raise RuntimeError("Prior ROS projections must be a non-empty list")
+        ros_status = "retained"
+        print("::warning::FanGraphs feed is empty with no regular-season games in the last 7 days; "
+              "prior ros.json is retained.")
+    else:
+        save_raw(raw, raw_dir)
 
-    print("Blending ROS projections...")
-    ros_players = blend_projections(raw)
-    print(f"  {len(ros_players)} ROS players")
-    _write_json(ros_players, ros_output_path)
+        print("Blending ROS projections...")
+        ros_players = blend_projections(raw)
+        print(f"  {len(ros_players)} ROS players")
+        _write_json(ros_players, ros_output_path)
+        ros_status = "fetched"
 
     # Step 2: Fetch actuals from MLB Stats API
     print(f"Fetching {season} actuals from MLB Stats API...")
@@ -76,6 +91,7 @@ def refresh(
         "season": season,
         "actuals_source": "mlb_stats_api",
         "ros_source": "fangraphs_steamer_ros",
+        "ros_status": ros_status,
         "actuals_hitters": actual_hitters,
         "actuals_pitchers": actual_pitchers,
         "ros_hitters": ros_count_h,

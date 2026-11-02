@@ -188,6 +188,19 @@ def _fetch_json(url: str) -> dict:
     raise last
 
 
+def regular_season_games_final(start: str, end: str) -> int:
+    """Count Final regular-season games in an inclusive date range."""
+    url = (
+        f"{MLB_API_BASE}/schedule?sportId=1&gameType=R"
+        f"&startDate={start}&endDate={end}"
+    )
+    data = _fetch_json(url)
+    return sum(
+        1 for day in data["dates"] for game in day.get("games", [])
+        if game.get("status", {}).get("abstractGameState") == "Final"
+    )
+
+
 def fetch_game_logs(
     mlbam_id: str, group: str, season: int | None = None, fetcher=None
 ) -> list[dict]:
