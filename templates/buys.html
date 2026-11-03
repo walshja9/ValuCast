@@ -79,7 +79,7 @@
         <div class="buys-main">
             {# mode=prospects is load-bearing: without it a direct tap resolves against
                the redraft store and 404s (found live 7/2). #}
-            <a href="/player/{{ p.id }}?mode=prospects">{{ p.name }}</a>
+            <a href="/player/{{ p.id }}?mode=prospects">{{ p.name }}</a>{% include "partials/_prospect_tag.html" %}
             <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
             {% if p.why %}<span class="buys-tag buys-why">{{ p.why }}</span>{% endif %}
         </div>

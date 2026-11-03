@@ -117,6 +117,7 @@
     // the two id lists + the accent-tolerant search. A JS-off user can still open
     // and share a /trade?give=...&get=... URL because the page renders from params.
     var MAP_URL = {{ map_data_url | tojson }};
+    var prospectPreliminary = {{ prospect_preliminary | default(false) | tojson }};
     var MAX_PER_SIDE = 6;
     var sides = {
         give: {{ give_ids | tojson }},
@@ -176,7 +177,14 @@
             item.innerHTML = '<span class="trade-search-name"></span>' +
                 '<span class="trade-search-meta"></span>' +
                 '<span class="trade-search-val"></span>';
-            item.querySelector('.trade-search-name').textContent = p.name;
+            var name = item.querySelector('.trade-search-name');
+            name.textContent = p.name;
+            if (prospectPreliminary && p.player_type === 'prospect') {
+                var tag = document.createElement('span');
+                tag.className = 'preliminary-tag';
+                tag.textContent = 'Preliminary';
+                name.appendChild(tag);
+            }
             item.querySelector('.trade-search-meta').textContent = meta;
             item.querySelector('.trade-search-val').textContent =
                 searchValuePrefix + p.display_value.toFixed(1);

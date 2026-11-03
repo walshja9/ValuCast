@@ -1,3 +1,4 @@
+{% if request.endpoint == 'rankings' %}{% include "partials/_prospect_notice.html" %}{% endif %}
 {% set v11 = dd_schema_version == '1.1' %}
 {% set _ap = active_preset|default(None) %}
 {% set _league_custom_preset_active = _ap and _ap != '5x5' %}
@@ -15,7 +16,7 @@
     <span class="movers-label">Movers</span>
     {% for m in prospect_movers %}
     <button type="button" class="mover-chip {{ 'up' if m.change > 0 else 'down' }}" onclick="moverJump('{{ m.id }}')">
-        {{ '▲' if m.change > 0 else '▼' }} {{ m.name }} <span class="mover-delta">{{ '%+d' | format(m.change) }}</span>
+        {{ '▲' if m.change > 0 else '▼' }} {{ m.name }}{% include "partials/_prospect_tag.html" %} <span class="mover-delta">{{ '%+d' | format(m.change) }}</span>
     </button>
     {% endfor %}
 </div>
@@ -102,7 +103,7 @@
             <td class="col-name">
                 {% set watch_key = watch_identity_for_row(row) %}
                 <button type="button" class="detail-toggle" aria-expanded="false" aria-label="Show {{ row.name }} details" onclick="event.stopPropagation(); toggleDetail('{{ row.id }}', this.closest('tr'))">▸</button>
-                <strong>{{ row.name }}</strong>
+                <strong>{{ row.name }}</strong>{% if row.is_prospect %}{% include "partials/_prospect_tag.html" %}{% endif %}
                 {% if watch_key %}<button type="button" class="watch-toggle" data-watch-key="{{ watch_key }}" data-watch-name="{{ row.name }}" data-metric="watch_player" aria-pressed="false" aria-label="Follow {{ row.name }} in My Players" hidden>☆</button>{% endif %}
                 {% if mode == 'prospects' %}
                 <span class="pos-rank">#{{ row.dynasty_rank }} overall</span>

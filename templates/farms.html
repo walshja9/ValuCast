@@ -54,7 +54,7 @@
                         <td class="col-value">{{ system.pool_count }}</td>
                         <td>
                             {% for player in system.top_prospects %}
-                            <a class="bf-player-link" href="{{ player.url }}">{{ player.name }}</a>{% if not loop.last %}, {% endif %}
+                            <a class="bf-player-link" href="{{ player.url }}">{{ player.name }}</a>{% include "partials/_prospect_tag.html" %}{% if not loop.last %}, {% endif %}
                             {% endfor %}
                         </td>
                     </tr>

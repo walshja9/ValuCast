@@ -5118,3 +5118,37 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
     .my-player-numbers span { text-align: left; }
     .my-player-row > .watch-toggle { grid-column: 2; grid-row: 1; }
 }
+
+/* Publication labels wrap within the existing player-name space. */
+span.preliminary-tag {
+    display: inline-block;
+    max-width: 100%;
+    margin-inline-start: .3rem;
+    padding: .06rem .3rem;
+    border: 1px solid rgba(251, 191, 36, .35);
+    border-radius: 3px;
+    color: var(--c-amber);
+    font-size: .64rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    vertical-align: middle;
+}
+.tc-line:has(.preliminary-tag),
+.onramp-player:has(.preliminary-tag),
+.trade-search-name:has(.preliminary-tag),
+.backfields-page .bf-callup-more-name:has(.preliminary-tag) {
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+}
+.bg-card .preliminary-tag { position: absolute; margin: 0; font-size: 11px; }
+.bg-hero > .preliminary-tag { left: 20px; top: 177px; }
+.bg-support-card > .preliminary-tag { right: 12px; top: 13px; }
+.bg-cell > .preliminary-tag { left: 10px; top: 54px; padding: 0 4px; font-size: 10px; line-height: 1.2; }
+.bg-cell:has(> .preliminary-tag) .bg-name { top: 32px; font-size: 16px; line-height: 1.2; }
+.bg-cell:has(> .preliminary-tag) .bg-tag { top: 74px; font-size: 14px; }
+.mover-chip:has(.preliminary-tag) { flex-wrap: wrap; max-width: 100%; white-space: normal; }

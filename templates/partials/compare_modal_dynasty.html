@@ -4,6 +4,7 @@
         <button onclick="closeCompare()" class="close-btn">&times;</button>
     </div>
 
+    {% if r1 and r2 and (r1.is_prospect or r2.is_prospect) %}{% include "partials/_prospect_notice.html" %}{% endif %}
     {% if r1 and r2 %}
     {% set c1 = r1.confidence if r1.confidence is mapping else {'level': r1.confidence} %}
     {% set c2 = r2.confidence if r2.confidence is mapping else {'level': r2.confidence} %}
@@ -12,11 +13,11 @@
             <tr>
                 <th></th>
                 <th class="compare-player">
-                    <strong>{{ r1.name }}</strong><br>
+                    <strong>{{ r1.name }}</strong>{% if r1.is_prospect %}{% include "partials/_prospect_tag.html" %}{% endif %}<br>
                     <span class="detail-meta">{{ r1.positions | join(', ') if r1.positions else 'DH' }} | {{ r1.team or '' }}</span>
                 </th>
                 <th class="compare-player">
-                    <strong>{{ r2.name }}</strong><br>
+                    <strong>{{ r2.name }}</strong>{% if r2.is_prospect %}{% include "partials/_prospect_tag.html" %}{% endif %}<br>
                     <span class="detail-meta">{{ r2.positions | join(', ') if r2.positions else 'DH' }} | {{ r2.team or '' }}</span>
                 </th>
             </tr>

@@ -188,6 +188,7 @@ def _png_cache_generation():
     ):
         obj = globals().get(name)
         parts.append(str(getattr(obj, attr, "") or ""))
+    parts.append(_prospect_publication_status())
     return "|".join(parts)
 
 
@@ -1074,6 +1075,7 @@ def _discipline_name_map() -> dict:
                 "name": row.name,
                 "player_id": row.id,
                 "team": row.team,
+                "is_prospect": row.is_prospect,
             }
     _DISCIPLINE_NAME_CACHE = (key, names)
     return names
@@ -1109,6 +1111,7 @@ def _discipline_leaders_context(args) -> dict:
                 if info else None
             ),
             "team": (info or {}).get("team"),
+            "is_prospect": (info or {}).get("is_prospect", False),
         })
     metric_options = [
         {
@@ -1892,11 +1895,34 @@ def _apply_prospect_board_context(ctx, args):
 
 
 def _prospect_gate_notice():
-    if getattr(dd_store, "surface_readiness", {}).get("prospects") is not False:
+    if _prospect_publication_status() != "preliminary":
         return ""
     blockers = getattr(dd_store, "surface_blockers", {}).get("prospects") or []
     reason = "; ".join(str(b) for b in blockers) or "not yet promoted for public view"
     return f"Preliminary — publication gate not met: {reason}"
+
+
+def _prospect_publication_status():
+    gate = getattr(dd_store, "surface_readiness", {}).get("prospects")
+    if gate is False:
+        return "preliminary"
+    if gate is True:
+        return "qualified"
+    return "unknown"
+
+
+@app.context_processor
+def _prospect_publication_context():
+    return {
+        "prospect_preliminary": _prospect_publication_status() == "preliminary",
+        "prospect_surface": request.endpoint in {
+            "index", "board_time_machine", "front_office_report", "intelligence_hub",
+            "scouting_reports", "backfields", "backfields_team", "farms",
+            "backfields_team_share_card", "value_map", "trade", "movers", "gaps",
+            "discipline_leaders", "ledger", "receipts", "forward_scoreboard",
+            "cards_gallery", "buys",
+        },
+    }
 
 
 def _prospect_adapter_key(row):
@@ -2046,6 +2072,14 @@ def _prospect_graphic_svg(rows, *, limit, position=None, search=None, noun="Pros
                 f'<text x="842" y="{y + card_h / 2 + 8}" fill="#9197a6" font-family="JetBrains Mono,Consolas,monospace" font-size="{18 if limit == 20 else 21}" font-weight="600">{escape(rank_kind)}</text>',
             ])
 
+    if (_prospect_publication_status() == "preliminary"
+            and noun != "Redraft"
+            and (noun != "Dynasty" or any(getattr(row, "is_prospect", False) for row in rows))):
+        parts.append(
+            f'<text x="1016" y="{height - 20}" text-anchor="end" fill="#34e2c4" '
+            'font-family="system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="20" '
+            'font-weight="600">Preliminary</text>'
+        )
     parts.extend([
         f'<text x="64" y="{height - 44}" fill="#9197a6" font-family="system-ui,Segoe UI,Helvetica,Arial,sans-serif" font-size="16" font-weight="500">Generated from the Prospects tab filters. Rank numbers are local to this graphic.</text>',
         f'<text x="64" y="{height - 20}" fill="#34e2c4" font-family="JetBrains Mono,Consolas,monospace" font-size="14" font-weight="600">valucast.app</text>',
@@ -2400,7 +2434,11 @@ def _prospect_graphic_png(
             draw.text((x + cell_w - 14 - text_width(draw, rest_val, rest_val_font), y + 82), rest_val, fill=green, font=rest_val_font)
 
     footer = footer_note or "ValuCast Prospect Rank - stats + age/level + investment + availability"
-    _graphic_footer(draw, right_note=footer, card_height=height)
+    _graphic_footer(
+        draw, right_note=footer, card_height=height,
+        prospects=(noun != "Redraft" and
+                   (noun != "Dynasty" or any(getattr(row, "is_prospect", False) for row in rows))),
+    )
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -2636,16 +2674,22 @@ def _graphic_header(
         draw.text((48, 183), extra_line, fill=green, font=_graphic_font(15, bold=True))
 
 
-def _graphic_footer(draw, *, right_note=None, card_height=1350):
+def _graphic_footer(draw, *, right_note=None, card_height=1350, prospects=False):
     card = _GRAPHIC_PALETTE["card"]
     border = _GRAPHIC_PALETTE["border"]
     muted = _GRAPHIC_PALETTE["muted"]
 
     foot_y = card_height - 68
     draw.rounded_rectangle((48, foot_y, 1032, foot_y + 46), radius=8, fill=card, outline=border, width=1)
-    draw.text((60, foot_y + 10), "valucast.app", fill=muted, font=_graphic_font(22))
+    preliminary = prospects and _prospect_publication_status() == "preliminary"
+    brand = "valucast.app | Preliminary" if preliminary else "valucast.app"
+    brand_font = _graphic_font(22)
+    draw.text((60, foot_y + 10), brand, fill=muted, font=brand_font)
     if right_note:
         note_font = _graphic_font(16)
+        if preliminary:
+            available = 1018 - 60 - _graphic_text_width(draw, brand, brand_font) - 24
+            right_note = _graphic_fit_text(draw, right_note, note_font, available)
         draw.text(
             (1032 - 14 - _graphic_text_width(draw, right_note, note_font), foot_y + 14),
             right_note,
@@ -3891,7 +3935,7 @@ def _prospect_player_card_png(row):
         if peak_shape
         else "Stats from ValuCast-owned MiLB context. Skill shape is percentile-derived, not sourced scouting grades."
     )
-    _graphic_footer(draw, right_note=source, card_height=content_height)
+    _graphic_footer(draw, right_note=source, card_height=content_height, prospects=True)
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -4419,7 +4463,10 @@ def _player_value_card_png(row, context, mode):
             draw.text((x + 14, box_y0 + 5), _graphic_fit_text(draw, item["label"], _graphic_font(12, bold=True), 176), fill=muted, font=_graphic_font(12, bold=True))
             draw.text((x + 14, box_y0 + 22), f"{z:+.1f}", fill=z_color, font=_graphic_font(18, bold=True, mono=True))
 
-    _graphic_footer(draw, right_note=fields["footer_note"], card_height=height)
+    _graphic_footer(
+        draw, right_note=fields["footer_note"], card_height=height,
+        prospects=getattr(row, "is_prospect", False),
+    )
 
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
@@ -5015,6 +5062,7 @@ def _my_players_fallbacks(active_store) -> dict[str, dict]:
         mode = "prospects" if row.is_prospect else "dd_dynasty"
         fallbacks.setdefault(key, {
             "name": row.name,
+            "is_prospect": row.is_prospect,
             "alternate_url": "/?" + urlencode({"mode": mode, "search": row.name}),
         })
     for player in active_store.get_all():
@@ -5055,6 +5103,7 @@ def _my_players_context(args, watch_keys) -> dict:
                 "key": key,
                 "resolved": True,
                 "name": row.name,
+                "is_prospect": row.is_prospect,
                 "rank_label": f"#{rank}" if rank is not None else None,
                 "value_label": f"{value:.1f}" if value is not None else None,
                 "team": row.team or "FA",
@@ -5099,6 +5148,7 @@ def _my_players_context(args, watch_keys) -> dict:
             "key": key,
             "resolved": False,
             "name": fallback.get("name") if fallback else None,
+            "is_prospect": fallback.get("is_prospect", False) if fallback else False,
             "rank_label": None,
             "value_label": None,
             "team": None,
@@ -7518,7 +7568,7 @@ def _farm_rankings_share_card_png(context):
         fill=muted,
         font=_graphic_font(16),
     )
-    _graphic_footer(draw, right_note="Current board - all systems")
+    _graphic_footer(draw, right_note="Current board - all systems", prospects=True)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -7551,6 +7601,7 @@ def farms_share_card():
         image_alt="ValuCast farm-system rankings graphic",
         back_url="/farms",
         back_label="Back to farm-system rankings",
+        preliminary=_prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -7868,7 +7919,7 @@ def _team_board_share_card_png(board, *, limit):
         draw.text((table_x1 + 668, insight_y + 43), "No current buy signal", fill=muted, font=small_font)
 
     footer = f"{selected['org']} team board · top {limit} · ValuCast order"
-    _graphic_footer(draw, right_note=footer)
+    _graphic_footer(draw, right_note=footer, prospects=True)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -7999,7 +8050,7 @@ def _positional_share_card_png(rows, *, position, limit):
         draw.text((table_x2 - 20 - _graphic_text_width(draw, val, value_font), y + 8), val, fill=teal, font=value_font)
         y += row_h
 
-    _graphic_footer(draw, right_note=f"Top {len(rows)} {label} · ValuCast order")
+    _graphic_footer(draw, right_note=f"Top {len(rows)} {label} · ValuCast order", prospects=True)
     output = io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -8101,6 +8152,7 @@ def value_map_players_api():
         "players": players,
         "count": len(players),
         "generated_at": dd_store.generated_at,
+        "publication_status": _prospect_publication_status(),
     })
 
 
@@ -8578,7 +8630,10 @@ def _trade_share_card_png(
             draw.text((x + 26, ny + note_pad + i * note_line_h), line, fill=muted, font=f_note)
         ny += block_h + 12
 
-    _graphic_footer(draw, right_note="valucast.app/trade", card_height=height)
+    _graphic_footer(
+        draw, right_note="valucast.app/trade", card_height=height,
+        prospects=any(row.is_prospect for row in give_rows + get_rows),
+    )
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -8627,6 +8682,9 @@ def trade_share_card():
         image_alt="ValuCast Trade Analyzer verdict card",
         back_url=f"/trade?{query}",
         back_label="Back to the Trade Analyzer",
+        preliminary=(_prospect_publication_status() == "preliminary" and any(
+            piece["is_prospect"] for piece in context["give_pieces"] + context["get_pieces"]
+        )),
     )
     return html
 
@@ -8802,7 +8860,7 @@ def _value_map_share_card_png(players, *, pool="all", position=None):
     foot_r = "dynasty value vs age"
     if generated:
         foot_r = "dynasty value vs age - updated {}".format(generated)
-    _graphic_footer(draw, right_note=foot_r)
+    _graphic_footer(draw, right_note=foot_r, prospects=any(p.get("group") == "prospect" for p in pts))
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -8848,6 +8906,12 @@ def value_map_share_card():
         image_alt="ValuCast value map",
         back_url="/map",
         back_label="Back to the map",
+        preliminary=(_prospect_publication_status() == "preliminary" and any(
+            player.get("group") == "prospect"
+            and (pool == "all" or player.get("player_type") == pool)
+            and (not position or player.get("position") == position)
+            for player in _value_map_payload()
+        )),
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -9043,7 +9107,7 @@ def _movers_share_card_png(rising, cooling, *, generated_at=None):
     draw_section("COOLING", cooling, 552, 242, 480, red)
     # Same derived window as the subtitle — a literal "last 7 days" survived the
     # 7->10 subtitle fix and contradicted it on the same image (7/3 review).
-    _graphic_footer(draw, right_note=f"ValuCast prospect score - last {window} days")
+    _graphic_footer(draw, right_note=f"ValuCast prospect score - last {window} days", prospects=True)
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -9088,6 +9152,7 @@ def movers_share_card():
         image_alt="ValuCast Prospect Movers board",
         back_url="/movers",
         back_label="Back to Prospect Movers",
+        preliminary=_prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -9501,7 +9566,10 @@ def _discipline_leaders_share_card_png(level: str, metric: str) -> bytes | None:
         fill=palette["muted"],
         font=_graphic_font(15),
     )
-    _graphic_footer(draw, right_note="valucast.app/discipline-leaders")
+    _graphic_footer(
+        draw, right_note="valucast.app/discipline-leaders",
+        prospects=any((names.get(row["mlbam_id"]) or {}).get("is_prospect") for row in board["rows"]),
+    )
     output = _io.BytesIO()
     img.save(output, format="PNG", optimize=True)
     return output.getvalue()
@@ -9550,6 +9618,9 @@ def discipline_leaders_share_card():
         image_alt="ValuCast plate-discipline leaders",
         back_url=f"/discipline-leaders?{query}",
         back_label="Back to Discipline Leaders",
+        preliminary=(_prospect_publication_status() == "preliminary" and any(
+            row["is_prospect"] for row in _discipline_leaders_context(request.args)["rows"][:10]
+        )),
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -9586,7 +9657,9 @@ def aotc_scorecard_json():
     path = _LEDGER_SCORECARD_PATH
     if not path.exists():
         abort(404)
-    response = make_response(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["publication_status"] = _prospect_publication_status()
+    response = make_response(json.dumps(payload))
     response.headers["Content-Type"] = "application/json"
     # 10 min, matching the PNG cards: a 1h edge cache held yesterday's ledger
     # after the daily refresh.
@@ -9602,7 +9675,9 @@ def gaps_ledger_json():
     path = GAPS_CLAIM_LEDGER_PATH
     if not path.exists():
         abort(404)
-    response = make_response(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["publication_status"] = _prospect_publication_status()
+    response = make_response(json.dumps(payload))
     response.headers["Content-Type"] = "application/json"
     response.headers.setdefault("Cache-Control", "public, max-age=600")
     return response
@@ -9733,7 +9808,7 @@ def _receipts_share_card_png(receipts, misses=None, *, generated_at=None, no_cla
             font=_graphic_font(14),
         )
 
-    _graphic_footer(draw, right_note="ValuCast vs the public-board consensus on every call-up")
+    _graphic_footer(draw, right_note="ValuCast vs the public-board consensus on every call-up", prospects=True)
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -9772,6 +9847,7 @@ def receipts_share_card():
         image_alt="ValuCast Call-Up Receipts board",
         back_url="/receipts",
         back_label="Back to Call-Up Receipts",
+        preliminary=_prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -9913,6 +9989,7 @@ def _ledger_share_card_png(sc, forward_sc=None, receipts_context=None):
     _graphic_footer(
         draw,
         right_note="Definitions and denominators: valucast.app/ledger - lanes score separately",
+        prospects=True,
     )
 
     out = _io.BytesIO()
@@ -9949,6 +10026,7 @@ def ledger_share_card():
         image_alt="ValuCast Track Record scorecard",
         back_url="/ledger",
         back_label="Back to Track Record",
+        preliminary=_prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -10186,7 +10264,7 @@ def _forward_scoreboard_share_card_png(view):
         font=_graphic_font(14),
     )
 
-    _graphic_footer(draw, right_note="Forward ledger live at valucast.app/scoreboard")
+    _graphic_footer(draw, right_note="Forward ledger live at valucast.app/scoreboard", prospects=True)
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -10222,6 +10300,7 @@ def forward_scoreboard_share_card():
         image_alt="ValuCast Forward Ledger scoreboard",
         back_url="/scoreboard",
         back_label="Back to the Forward Ledger",
+        preliminary=_prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -10642,7 +10721,7 @@ def _buys_share_card_png(
                   fill=muted, font=f_tag)
 
     note = f"{source_label} - {formula_note}"
-    _graphic_footer(draw, right_note=note)
+    _graphic_footer(draw, right_note=note, prospects=True)
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -10735,6 +10814,7 @@ def buys_share_card():
                    else "ValuCast top prospect buys"),
         back_url="/buys",
         back_label="Back to Ahead of the Curve",
+        preliminary=not held and _prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -11076,8 +11156,7 @@ def export_csv():
         rows = ctx["dd_rows"]
         dynasty_dollars = ctx["dynasty_dollars"]
         active_preset = ctx.get("active_preset")
-        prospect_gate = getattr(dd_store, "surface_readiness", {}).get("prospects")
-        publication_status = {True: "qualified", False: "preliminary"}.get(prospect_gate, "unknown")
+        publication_status = _prospect_publication_status()
         publication_note = _prospect_gate_notice()
         output = io.StringIO()
         writer = csv.writer(output)
@@ -11247,6 +11326,7 @@ def prospects_share_card():
         image_alt=f"Ahead of the Curve - {title}",
         back_url="/?mode=prospects",
         back_label="Back to prospects",
+        preliminary=_prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -11304,6 +11384,7 @@ def prospect_player_card_preview(player_id):
         image_alt=f"{row.name} ValuCast player card",
         back_url="/?mode=prospects",
         back_label="Back to prospects",
+        preliminary=_prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -11444,6 +11525,7 @@ def dynasty_player_card_preview(player_id):
         image_alt=f"{row.name} ValuCast dynasty player card",
         back_url="/?mode=dd_dynasty",
         back_label="Back to dynasty",
+        preliminary=row.is_prospect and _prospect_publication_status() == "preliminary",
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
@@ -11538,6 +11620,9 @@ def dynasty_share_card():
         image_alt=preview_title,
         back_url="/?mode=dd_dynasty",
         back_label="Back to dynasty",
+        preliminary=(_prospect_publication_status() == "preliminary" and any(
+            row.is_prospect for row in _dynasty_share_rows(pool, position, search)[:limit]
+        )),
     )
     response = make_response(html)
     response.headers["Content-Type"] = "text/html; charset=utf-8"
