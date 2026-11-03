@@ -86,14 +86,20 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(result["by_role"][0]["mean_rank_shift"], 0)
 
     def test_invalid_comparison_rows_fail_instead_of_silently_disappearing(self):
-        for bad in [dict(row(1, 1, 1), mlbam_id=None),
-                    dict(row(1, 1, 1), rank=0),
+        for bad in [dict(row(1, 1, 1), rank=0),
                     dict(row(1, 1, 1), value=float("nan"))]:
             with self.subTest(bad=bad):
                 with self.assertRaises(ValueError):
                     boards.compare_rows([bad], [row(1, 1, 1)])
         with self.assertRaises(ValueError):
             boards.compare_rows([row(1, 1, 1), row(1, 2, 2)], [])
+
+    def test_rows_without_an_id_are_reported_not_dropped_silently(self):
+        no_id = dict(row(2, 2, 2), mlbam_id=None)
+        result = boards.compare_rows([row(1, 1, 1)], [row(1, 1, 1), no_id])
+        self.assertEqual(result["matched_count"], 1)
+        self.assertEqual(result["new_unidentified"], [no_id])
+        self.assertEqual(result["old_unidentified"], [])
 
     def test_empty_and_singleton_spearman_are_explicitly_undefined(self):
         for rows in [[], [row(1, 1, 1)]]:
