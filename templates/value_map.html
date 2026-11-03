@@ -77,6 +77,7 @@
 (function () {
     let players = [];
     const mapDataUrl = '{{ map_data_url }}';
+    const prospectPreliminary = {{ prospect_preliminary | default(false) | tojson }};
     const svg = document.getElementById('value-map');
     const tooltip = document.getElementById('map-tooltip');
     const shell = document.querySelector('.value-map-shell');
@@ -115,6 +116,12 @@
         const metaEl = document.createElement('span');
         const linkEl = document.createElement('a');
         nameEl.textContent = player.name;
+        if (prospectPreliminary && player.player_type === 'prospect') {
+            const tag = document.createElement('span');
+            tag.className = 'preliminary-tag';
+            tag.textContent = 'Preliminary';
+            nameEl.appendChild(tag);
+        }
         metaEl.textContent = player.position + ' · age ' + player.age + ' · value ' + Math.round(player.value);
         linkEl.href = boardUrl(player);
         linkEl.textContent = 'Find on board';
@@ -183,12 +190,13 @@
         rows.slice().sort((a, b) => b.value - a.value).slice(0, 12).forEach((player, index) => {
             const x = sx(player.age) + 7;
             let y = sy(player.value) - 5;
-            const width = Math.min(120, player.name.length * 6 + 8);
+            const label = player.name + (prospectPreliminary && player.player_type === 'prospect' ? ' - Preliminary' : '');
+            const width = Math.min(prospectPreliminary ? 220 : 120, label.length * 6 + 8);
             for (let tries = 0; tries < 8 && occupied.some(box =>
                 x < box.x + box.w && x + width > box.x && y - 10 < box.y && y + 3 > box.y - 12
             ); tries += 1) y += tries % 2 ? 13 : -13;
             occupied.push({ x, y, w: width });
-            svg.append(el('text', { x, y, class: 'map-label' }, player.name));
+            svg.append(el('text', { x, y, class: 'map-label' }, label));
         });
     }
 

@@ -1760,6 +1760,249 @@ def test_prospect_gate_banner_silent_when_ready_or_unknown(monkeypatch):
     assert not ctx_absent.get("prospect_gate_notice")
 
 
+@pytest.fixture
+def preliminary_surface(monkeypatch):
+    from types import SimpleNamespace
+    from web.public_snapshot_models import PublicSnapshotRow
+
+    rows = [
+        PublicSnapshotRow(
+            id="publication-mlb", name="Publication MLB", player_type="mlb",
+            positions=("OF",), team="TST", age=28, rank=1, value=81.5,
+            value_scale="0-100", value_source="valucast", confidence={},
+            updated_at="2026-11-03", status="active", mlbam_id="990001", role="hitter",
+        ),
+        PublicSnapshotRow(
+            id="publication-prospect", name="Publication Prospect",
+            player_type="prospect", positions=("SS",), team="TST", age=20,
+            rank=2, value=63.5, value_scale="0-100", value_source="valucast",
+            confidence={}, updated_at="2026-11-03", status="active",
+            mlbam_id="990002", role="hitter",
+            prospect_rank=1, level="AA", eta=2027,
+        ),
+    ]
+
+    def filter_rows(pool=None, position=None, search=None):
+        return [row for row in rows
+                if (not pool or row.player_type == pool)
+                and (not position or position in row.positions)
+                and (not search or search.lower() in row.name.lower())]
+
+    fake = SimpleNamespace(
+        is_available=True, generated_at="2026-11-03", schema_version="1.0",
+        surface_readiness={}, surface_blockers={},
+        get_all=lambda: rows, filter=filter_rows,
+        get_by_id=lambda player_id: next((r for r in rows if r.id == player_id), None),
+    )
+    monkeypatch.setattr(app_module, "dd_store", fake)
+    monkeypatch.setattr(app_module, "_dynasty_metadata", lambda *a, **kw: ({}, {}))
+    monkeypatch.setattr(app_module, "_dynasty_z_map", lambda: {})
+    monkeypatch.setattr(app_module, "_dynasty_stats_map", lambda: {})
+    monkeypatch.setattr(app_module, "_load_artifact", lambda *a, **kw: None)
+    monkeypatch.setattr(app_module, "_front_door_digest", lambda: {
+        "callup_count": 1, "callup_top": {"name": rows[1].name},
+    })
+    buy_row = {"mlbam_id": 990002, "role": "hitter", "rank": 1,
+               "player_id": rows[1].id, "name": rows[1].name,
+               "team": "TST", "positions": ["SS"], "score": 60}
+    buys = SimpleNamespace(
+        is_available=True, generated_at=fake.generated_at,
+        get_all=lambda: [buy_row], validation={},
+    )
+    monkeypatch.setattr(app_module, "_select_buy_source", lambda *a, **kw: (buys, "valucast_buys"))
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", False)
+    monkeypatch.setattr(app_module, "_VALUE_MAP_CACHE", (None, None))
+    monkeypatch.setitem(app.config, "TESTING", True)
+    return fake, rows
+
+
+def _set_publication_gate(fake, gate):
+    if gate == "missing_attribute":
+        del fake.surface_readiness
+    else:
+        fake.surface_readiness = {} if gate == "missing_key" else {"prospects": gate}
+
+
+@pytest.mark.parametrize("gate", [False, True, "missing_key", "missing_attribute"])
+@pytest.mark.parametrize("url", ["/?mode=dd_dynasty", "/", "/buys", "/prospects/share-card"])
+def test_preliminary_public_surfaces(preliminary_surface, gate, url):
+    from html import unescape
+
+    fake, rows = preliminary_surface
+    _set_publication_gate(fake, gate)
+    response = app.test_client().get(url)
+    assert response.status_code == 200
+    html = unescape(response.get_data(as_text=True))
+    notice = "Prospect values are preliminary. They haven't passed ValuCast's publication check."
+    assert (notice in html) is (gate is False)
+    assert ('class="preliminary-tag"' in html) is (gate is False)
+    if gate is False:
+        assert 'role="status"' in html
+    if url == "/":
+        assert "top-ranked: " + rows[1].name in html
+    elif url == "/buys":
+        assert rows[1].name in html
+
+
+def test_preliminary_dynasty_rows_preserve_order_and_values(preliminary_surface):
+    import re
+
+    fake, rows = preliminary_surface
+    rendered = []
+    for gate in (True, False):
+        fake.surface_readiness = {"prospects": gate}
+        response = app.test_client().get("/?mode=dd_dynasty")
+        assert response.status_code == 200
+        table_rows = re.findall(r'<tr class="player-row\b.*?</tr>', response.get_data(as_text=True), re.S)
+        assert len(table_rows) == len(rows)
+        rendered.append([
+            (re.search(r'data-player-id="([^"]+)"', row).group(1),
+             re.search(r'<td class="col-rank">(.*?)</td>', row, re.S).group(1).strip(),
+             re.search(r'<td class="col-value val-pos">(.*?)</td>', row, re.S).group(1))
+            for row in table_rows
+        ])
+        assert 'class="preliminary-tag"' not in table_rows[0]
+        assert ('class="preliminary-tag"' in table_rows[1]) is (gate is False)
+    assert rendered[0] == rendered[1] == [
+        (rows[0].id, "1", "81.5"), (rows[1].id, "2", "63.5"),
+    ]
+
+
+def test_preliminary_png_cache_tracks_readiness_without_a_new_snapshot(preliminary_surface):
+    fake, _ = preliminary_surface
+    keys = []
+    for gate in (False, True, "missing_attribute"):
+        _set_publication_gate(fake, gate)
+        with app.test_request_context("/prospects/share-card.png"):
+            keys.append(app_module._png_cache_key())
+    assert len(set(keys)) == 3
+    assert fake.generated_at == "2026-11-03"
+
+
+@pytest.mark.parametrize("url, has_prospect", [
+    ("/prospects/share-card.svg", True), ("/prospects/graphic", True),
+    ("/dynasty/share-card.svg", True), ("/dynasty/share-card.svg?pool=mlb", False),
+    ("/dynasty/share-card", True), ("/dynasty/share-card?pool=mlb", False),
+])
+def test_preliminary_share_cards_follow_visible_rows(preliminary_surface, url, has_prospect):
+    fake, _ = preliminary_surface
+    for gate in (False, True):
+        fake.surface_readiness = {"prospects": gate}
+        response = app.test_client().get(url)
+        assert response.status_code == 200
+        assert ("Preliminary" in response.get_data(as_text=True)) is (gate is False and has_prospect)
+
+
+@pytest.mark.parametrize("url, has_prospect", [
+    ("/prospects/player-card/publication-prospect", True),
+    ("/dynasty/player-card/publication-prospect", True),
+    ("/dynasty/player-card/publication-mlb", False),
+])
+def test_preliminary_player_card_previews_follow_player_type(preliminary_surface, monkeypatch, url, has_prospect):
+    fake, _ = preliminary_surface
+    monkeypatch.setattr(app_module, "_build_dynasty_player_detail_context",
+                        lambda player_id, args: {"row": fake.get_by_id(player_id)})
+    for gate in (False, True):
+        fake.surface_readiness = {"prospects": gate}
+        response = app.test_client().get(url)
+        assert response.status_code == 200
+        assert ('class="preliminary-tag"' in response.get_data(as_text=True)) is (gate is False and has_prospect)
+
+
+def test_preliminary_discipline_leaders_preserve_mixed_rows(preliminary_surface, monkeypatch):
+    import re
+    from types import SimpleNamespace
+
+    fake, players = preliminary_surface
+    leader_rows = [
+        {"mlbam_id": players[0].mlbam_id, "display": "15.8%", "pct": 81,
+         "pitches": 600, "estimated": False},
+        {"mlbam_id": players[1].mlbam_id, "display": "18.2%", "pct": 73,
+         "pitches": 500, "estimated": False},
+    ]
+    board = {"rows": leader_rows, "level": "AA", "label": "Chase%",
+             "total_qualifying": 2, "min_pitches": 300, "as_of": "2026-11-03"}
+    discipline = SimpleNamespace(
+        cohort_meta=lambda: {"lower_is_better": ["chase_pct"]},
+        leaders=lambda level, metric, limit: board,
+    )
+    monkeypatch.setattr(app_module, "pitch_discipline_store", discipline)
+    monkeypatch.setattr(app_module, "_DISCIPLINE_NAME_CACHE", (None, None))
+    rendered = []
+    for gate in (True, False):
+        fake.surface_readiness = {"prospects": gate}
+        response = app.test_client().get("/discipline-leaders")
+        assert response.status_code == 200
+        table_rows = re.findall(r'<tr class="player-row">.*?</tr>', response.get_data(as_text=True), re.S)
+        assert len(table_rows) == 2
+        assert 'class="preliminary-tag"' not in table_rows[0]
+        assert ('class="preliminary-tag"' in table_rows[1]) is (gate is False)
+        rendered.append([
+            re.sub(r'<[^>]+>', '', re.sub(r'<span class="preliminary-tag">.*?</span>', '', row)).split()
+            for row in table_rows
+        ])
+    assert rendered[0] == rendered[1]
+    assert rendered[0] == [
+        ["1", "Publication", "MLB", "TST", "15.8%", "81", "600"],
+        ["2", "Publication", "Prospect", "TST", "18.2%", "73", "500"],
+    ]
+    for visible_rows, expected in ((leader_rows, True), (leader_rows[:1], False),
+                                   ([leader_rows[0]] * 10 + [leader_rows[1]], False)):
+        board["rows"] = visible_rows
+        response = app.test_client().get("/discipline-leaders/share-card")
+        assert response.status_code == 200
+        assert ('class="preliminary-tag"' in response.get_data(as_text=True)) is expected
+
+
+@pytest.mark.parametrize("gate, expected", [
+    (False, "preliminary"), (True, "qualified"), (0, "unknown"),
+    (None, "unknown"), ("missing_key", "unknown"), ("missing_attribute", "unknown"),
+])
+def test_prospect_publication_status_is_exact(preliminary_surface, gate, expected):
+    fake, _ = preliminary_surface
+    _set_publication_gate(fake, gate)
+    assert app_module._prospect_publication_status() == expected
+
+
+@pytest.mark.parametrize("gate, expected", [
+    (False, "preliminary"), (True, "qualified"),
+    ("missing_key", "unknown"), ("missing_attribute", "unknown"),
+])
+def test_preliminary_value_map_json_preserves_values(preliminary_surface, gate, expected):
+    fake, rows = preliminary_surface
+    _set_publication_gate(fake, gate)
+    response = app.test_client().get("/api/value-map-players")
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["publication_status"] == expected
+    assert payload["count"] == 2
+    assert payload["generated_at"] == fake.generated_at
+    assert [(p["id"], p["name"], p["value"], p["prospect_rank"]) for p in payload["players"]] == [
+        (row.id, row.name, row.dynasty_value, row.prospect_rank) for row in rows
+    ]
+
+
+@pytest.mark.parametrize("path_attr, url", [
+    ("_LEDGER_SCORECARD_PATH", "/aotc-scorecard.json"),
+    ("GAPS_CLAIM_LEDGER_PATH", "/gaps-ledger.json"),
+])
+def test_preliminary_ledger_json_preserves_artifact(preliminary_surface, monkeypatch, tmp_path, path_attr, url):
+    import json
+
+    fake, _ = preliminary_surface
+    original = {"generated_at": "2026-11-03", "calls": [{"name": "Publication Prospect", "valucast_now": 7}]}
+    path = tmp_path / "publication.json"
+    path.write_text(json.dumps(original), encoding="utf-8")
+    monkeypatch.setattr(app_module, path_attr, path)
+    for gate, expected in ((False, "preliminary"), (True, "qualified"), ("missing_attribute", "unknown")):
+        fake.surface_readiness = {}
+        _set_publication_gate(fake, gate)
+        response = app.test_client().get(url)
+        assert response.status_code == 200
+        assert response.get_json() == dict(original, publication_status=expected)
+        assert json.loads(path.read_text(encoding="utf-8")) == original
+
+
 class TestBulletproofing(unittest.TestCase):
     """7/2 hardening batch: input abuse, cache-key abuse, staleness honesty."""
 
