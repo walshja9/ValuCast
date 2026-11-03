@@ -33,6 +33,9 @@ jobs:
           cp data/projections/metadata.json "$RUNNER_TEMP/old/metadata.json"
           echo "Committed boards preserved"
 
+      - name: Traded-season effect on committed data
+        run: python scripts/audit_track_record_trades.py
+
       - name: Set rehearsal target season
         run: |
           sed -i 's/^TARGET_SEASON = 2026/TARGET_SEASON = 2027/' scraper/season.py
