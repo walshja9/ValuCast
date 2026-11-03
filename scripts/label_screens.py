@@ -16,9 +16,9 @@ PAGES = ["/", "/?mode=dd_dynasty", "/?mode=prospects", "/?mode=categories", "/bu
          "/front-office", "/intelligence", "/cards", "/prospects/share-card", "/dynasty/share-card"]
 IMAGES = ["/prospects/share-card.png", "/prospects/share-card.svg", "/dynasty/share-card.png", "/farms/share-card.png",
           "/buys/share-card.png", "/movers/share-card.png", "/map/share-card.png", "/receipts/share-card.png",
-          "/ledger/share-card.png", "/share/prospects/SP.png"]
+          "/ledger/share-card.png", "/share/prospects/P.png"]
 MEASURE = """() => ({
-  width: document.documentElement.scrollWidth,
+  scroll: document.documentElement.scrollWidth,
   inner: window.innerWidth,
   notices: document.querySelectorAll('.prospect-publication-notice').length,
   tags: document.querySelectorAll('.preliminary-tag').length,
@@ -42,7 +42,7 @@ with sync_playwright() as play:
                 row = dict(path=path, width=width, status=response.status, **page.evaluate(MEASURE))
                 page.screenshot(path=str(out / f"{name(path, width) or 'home'}_{width}.png"))
                 page.evaluate(HIDE)
-                row["width_without_tags"] = page.evaluate("() => document.documentElement.scrollWidth")
+                row["scroll_without_tags"] = page.evaluate("() => document.documentElement.scrollWidth")
             except Exception as error:  # noqa: BLE001
                 row = dict(path=path, width=width, error=type(error).__name__)
             results.append(row)
