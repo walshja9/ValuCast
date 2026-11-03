@@ -108,6 +108,26 @@ def _fetch_transactions(start_date: str, end_date: str) -> list[dict]:
     return transactions if isinstance(transactions, list) else []
 
 
+def _fetch_schedule(season: int) -> list[dict]:
+    query = urlencode({"sportId": 1, "gameType": "R", "season": season})
+    request = Request(f"{MLB_API_BASE}/schedule?{query}", headers={"User-Agent": USER_AGENT})
+    with urlopen(request, timeout=45) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    return payload["dates"]
+
+
+def _fetch_game_logs(mlbam_id: str, season: int, game_type: str) -> list[dict]:
+    query = urlencode({
+        "stats": "gameLog", "group": "hitting,pitching", "season": season, "gameType": game_type,
+    })
+    request = Request(
+        f"{MLB_API_BASE}/people/{mlbam_id}/stats?{query}", headers={"User-Agent": USER_AGENT},
+    )
+    with urlopen(request, timeout=45) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    return [split for group in payload["stats"] for split in group["splits"]]
+
+
 def _load_cache(path: Path) -> dict:
     if not path.exists():
         return {"schema_version": "1.0", "queries": {}}
@@ -292,6 +312,133 @@ def availability_lookup(payload: dict | None) -> dict[str, dict]:
     return lookup
 
 
+def _apply_offseason_hold(
+    profiles: list[dict],
+    transactions: list[dict],
+    tracked_ids: set[str],
+    season: int,
+    as_of: str,
+    schedule_fetcher: Callable[[int], list[dict]] | None,
+    game_log_fetcher: Callable[[str, int, str], list[dict]] | None,
+) -> dict:
+    summary = {
+        "active": False, "season_end": None, "held_count": 0, "stuck_count": 0,
+        "cleared_by_appearance": 0, "played_date_count": 0, "release_state": "inactive",
+    }
+    errors = []
+    fetch_schedule = schedule_fetcher or _fetch_schedule
+
+    def schedule_dates(year: int) -> tuple[set[str], set[str]]:
+        scheduled, played = set(), set()
+        for day in fetch_schedule(year):
+            day_date = _parse_date(day.get("date"))
+            games = day.get("games") or []
+            if day_date is None or not games:
+                continue
+            day_text = day_date.isoformat()
+            scheduled.add(day_text)
+            if day_text <= as_of and any(
+                (game.get("status") or {}).get("detailedState")
+                in {"Final", "Game Over", "Completed Early"} for game in games
+            ):
+                played.add(day_text)
+        return scheduled, played
+
+    try:
+        scheduled, played = schedule_dates(season)
+        summary["season_end"] = max(played) if played else None
+        if scheduled and as_of <= max(scheduled):
+            return {"offseason_hold": summary}
+        if not played:
+            raise ValueError("No played regular-season games found")
+        season_end = max(played)
+    except Exception as exc:  # noqa: BLE001
+        return {"offseason_hold": summary, "offseason_hold_error": [f"schedule {season}: {exc}"]}
+    summary["active"] = True
+    summary["release_state"] = "pending"
+    if int(as_of[:4]) > season:
+        try:
+            _, next_played = schedule_dates(season + 1)
+            played_dates = sorted(day for day in next_played if season_end < day <= as_of)
+            summary["played_date_count"] = len(played_dates)
+            if len(played_dates) >= 14:
+                summary.update(active=False, release_state="released", release_date=played_dates[13])
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"schedule {season + 1}: {exc}")
+
+    at_season_end = availability_lookup({
+        "profiles": _latest_profiles(transactions, tracked_ids, season_end),
+    })
+    stints_at_season_end = availability_lookup({
+        "profiles": _latest_profiles(
+            [row for row in transactions if _event_kind(row) in {"injured", "available"}],
+            tracked_ids, season_end,
+        ),
+    })
+    placements = availability_lookup({
+        "profiles": _latest_profiles(
+            [row for row in transactions if _event_kind(row) == "injured"], tracked_ids, as_of,
+        ),
+    })
+    fetch_logs = game_log_fetcher or _fetch_game_logs
+    for profile in profiles:
+        mlbam_id = str(profile["mlbam_id"])
+        latest_date = profile.get("effective_date") or ""
+        stuck = profile["status"] in ACTIVE_STATUSES and "" < latest_date <= season_end
+        prior = at_season_end.get(mlbam_id) or {}
+        stint = stints_at_season_end.get(mlbam_id) or {}
+        placement = placements.get(mlbam_id) or {}
+        activated_hold = (
+            profile["status"] == "available" and latest_date > season_end
+            and prior.get("status") in ACTIVE_STATUSES
+            and stint.get("status") == "injured"
+            and "60-day" in str(stint.get("list_type") or "")
+            and "" < (placement.get("effective_date") or "") <= season_end
+        )
+        if not stuck and not activated_hold:
+            continue
+        summary["stuck_count"] += int(stuck)
+        if summary["release_state"] == "released":
+            profile.update(status="available", active_injury_risk=False,
+                           hold_cleared="regular_season_release", hold_cleared_date=summary["release_date"])
+            continue
+        appearance = None
+        try:
+            for year, types in ((season, "FDLW"), (season + 1, "SR")):
+                if year > int(as_of[:4]):
+                    continue
+                for game_type in types:
+                    dates = [
+                        day.isoformat() for split in fetch_logs(mlbam_id, year, game_type)
+                        if (day := _parse_date(split.get("date"))) is not None
+                        and season_end < day.isoformat() <= as_of
+                    ]
+                    if dates:
+                        appearance = min(dates)
+                        break
+                if appearance:
+                    break
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"game_log {mlbam_id}: {exc}")
+        if appearance:
+            profile.update(status="available", active_injury_risk=False,
+                           hold_cleared="game_appearance", hold_cleared_date=appearance)
+            summary["cleared_by_appearance"] += 1
+            continue
+        if activated_hold:
+            profile.update(prior)
+            profile["held_since"] = latest_date
+        profile["offseason_hold"] = True
+        summary["held_count"] += 1
+    profiles.sort(key=lambda row: (
+        row.get("status") not in ACTIVE_STATUSES, str(row.get("name") or ""), str(row.get("mlbam_id") or ""),
+    ))
+    result = {"offseason_hold": summary}
+    if errors:
+        result["offseason_hold_error"] = errors
+    return result
+
+
 def _validation(profiles: list[dict], tracked_ids: set[str], transactions: list[dict]) -> dict:
     ids = [str(row.get("mlbam_id")) for row in profiles if row.get("mlbam_id") not in (None, "")]
     duplicate_count = len(ids) - len(set(ids))
@@ -319,12 +466,17 @@ def build_mlb_availability(
     generated_at: str,
     transactions: list[dict],
     season: int | None = None,
+    schedule_fetcher: Callable[[int], list[dict]] | None = None,
+    game_log_fetcher: Callable[[str, int, str], list[dict]] | None = None,
 ) -> dict:
     season = season or _season_from_generated_at(generated_at)
     start_date = _season_start(season)
     end_date = _date_part(generated_at) or datetime.now(timezone.utc).date().isoformat()
     tracked_ids = _tracked_mlbam_ids(projections)
     profiles = _latest_profiles(transactions, tracked_ids, generated_at)
+    hold_validation = _apply_offseason_hold(
+        profiles, transactions, tracked_ids, season, end_date, schedule_fetcher, game_log_fetcher,
+    )
     return {
         "artifact": "valucast_mlb_availability",
         "contract_name": CONTRACT_NAME,
@@ -350,15 +502,15 @@ def build_mlb_availability(
         },
         "contract": {
             "identity_key": "MLBAM ID",
-            "inputs": ["official MLB Stats API transactions endpoint"],
+            "inputs": ["official MLB Stats API transactions, schedule and gameLog endpoints"],
             "active_statuses": sorted(ACTIVE_STATUSES),
             "status_rules": {
-                "injured": "Latest MLBAM-keyed transaction placed/transferred player on an injured list.",
-                "rehab": "Latest MLBAM-keyed transaction sent player on a rehab assignment.",
-                "available": "Latest MLBAM-keyed injured-list transaction activated/reinstated player.",
+                "injured": "Latest IL placement/transfer, or season-end status retained by offseason hold.",
+                "rehab": "Latest rehab assignment, or season-end rehab retained by offseason hold.",
+                "available": "Activation/reinstatement, corroborating appearance, or 14 played-date hold release.",
             },
         },
-        "validation": _validation(profiles, tracked_ids, transactions),
+        "validation": {**_validation(profiles, tracked_ids, transactions), **hold_validation},
         "profiles": profiles,
     }
 
@@ -410,6 +562,8 @@ _ARCHIVE_PROFILE_FIELDS = (
     "list_type",
     "effective_date",
     "description",
+    "offseason_hold",
+    "held_since",
 )
 _ARCHIVE_RISK_STATUSES = {"injured", "rehab"}
 
@@ -454,6 +608,8 @@ def run_mlb_availability(
     generated_at: str | None = None,
     season: int | None = None,
     fetcher: Callable[[str, str], list[dict]] | None = None,
+    schedule_fetcher: Callable[[int], list[dict]] | None = None,
+    game_log_fetcher: Callable[[str, int, str], list[dict]] | None = None,
     refresh: bool = True,
 ) -> dict:
     projections = json.loads(projection_path.read_text(encoding="utf-8"))
@@ -477,6 +633,8 @@ def run_mlb_availability(
         generated_at=generated_at,
         transactions=transactions,
         season=season,
+        schedule_fetcher=schedule_fetcher,
+        game_log_fetcher=game_log_fetcher,
     )
     _check_transaction_count_ratio_guard(payload, artifact_path)
     _write_json(payload, artifact_path)

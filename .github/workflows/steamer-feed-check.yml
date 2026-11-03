@@ -83,6 +83,7 @@ jobs:
         if: always()
         run: |
           cp data/models/valucast_quality_governor.json data/public/public_dynasty_snapshot.json "$RUNNER_TEMP/new/" || true
+          cp data/models/valucast_mlb_availability.json "$REHEARSAL_OUT/" || true
           python scripts/compare_2027_boards.py \
             --old-dynasty "$RUNNER_TEMP/old/valucast_mlb_dynasty_layer.json" \
             --new-dynasty data/models/valucast_mlb_dynasty_layer.json \
