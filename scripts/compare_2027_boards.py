@@ -171,7 +171,16 @@ def _change(old, new):
     return row
 
 
+def _split_identified(rows):
+    identified, unidentified = [], []
+    for row in rows:
+        (identified if row.get("mlbam_id") not in (None, "") and row.get("role") else unidentified).append(row)
+    return identified, sorted(unidentified, key=lambda row: row["rank"])
+
+
 def compare_rows(old_rows, new_rows):
+    old_rows, old_unidentified = _split_identified(old_rows)
+    new_rows, new_unidentified = _split_identified(new_rows)
     old, new = _index(old_rows), _index(new_rows)
     common = old.keys() & new.keys()
     matched = [_change(old[key], new[key]) for key in sorted(common)]
@@ -188,6 +197,7 @@ def compare_rows(old_rows, new_rows):
     movers = [row for row in matched if row["old_rank"] <= 300 or row["new_rank"] <= 300]
     return dict(
         old_count=len(old), new_count=len(new), matched_count=len(common),
+        old_unidentified=old_unidentified, new_unidentified=new_unidentified,
         old_only_count=len(old.keys() - new.keys()), new_only_count=len(new.keys() - old.keys()),
         spearman=_spearman([(r["old_rank"], r["new_rank"]) for r in matched]),
         overlap=overlap, matched=matched, movers=movers,
@@ -260,6 +270,10 @@ def _report(summaries, validation):
                       f"matched={summary['matched_count']}; old-only={summary['old_only_count']}; "
                       f"new-only={summary['new_only_count']}. "
                       f"Spearman on matched rows: {_cell(summary['spearman'])}.\n",
+                      f"Rows with no MLBAM id or role, excluded from every table below: "
+                      f"old={len(summary['old_unidentified'])}; new={len(summary['new_unidentified'])}.\n",
+                      _table(["Top unidentified on new board: rank", "Name", "Value"],
+                             ((r["rank"], r["name"], r["value"]) for r in summary["new_unidentified"][:30])),
                       _table(["Cutoff", "Old rows", "New rows", "Overlap", "Retained %"],
                              ((cutoff, data["old_count"], data["new_count"], data["count"], data["percent"])
                               for cutoff, data in summary["overlap"].items()))])
@@ -289,7 +303,7 @@ def compare_files(old_dynasty, new_dynasty, old_projections, new_projections, ou
     artifacts = [json.loads(Path(path).read_text(encoding="utf-8"))
                  for path in (old_dynasty, new_dynasty)]
     dynasty = compare_rows(artifacts[0]["players"], artifacts[1]["players"])
-    ages = [{key: row["age"] for key, row in _index(artifact["players"]).items()}
+    ages = [{key: row["age"] for key, row in _index(_split_identified(artifact["players"])[0]).items()}
             for artifact in artifacts]
     helpers = app_helpers()
     redraft = compare_rows(redraft_rows(old_projections, ages[0], helpers),
