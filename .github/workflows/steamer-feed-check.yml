@@ -1,40 +1,73 @@
-name: Steamer feed check
+name: 2027 board rehearsal
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "10 12 * * *"
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
-  check:
+  rehearsal:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: "src:."
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
 
-      - name: Check full-season Steamer feed
-        id: feed
-        run: python scripts/check_steamer_season.py
-
-      - name: Open the season flip review issue
-        if: steps.feed.outputs.verdict == 'live'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Install
         run: |
-          preseason=$(python -c "from scraper.season import is_preseason; print(is_preseason())")
-          if [ "$preseason" != "False" ]; then
-            exit 0
-          fi
-          title="Steamer 2027 looks live: review the season flip"
-          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
-          if [ -z "$issue" ]; then
-            gh issue create --title "$title" --body "The full-season Steamer feed includes at least 250 rows for 2025 draftees. Review the feed and TARGET_SEASON before flipping. Check: $RUN_URL"
-          fi
+          pip install -r requirements.txt -e . > /dev/null 2>&1
+          echo "Install complete"
+
+      - name: Preserve committed boards
+        run: |
+          mkdir -p "$RUNNER_TEMP/old" "$RUNNER_TEMP/new" "$RUNNER_TEMP/archive"
+          cp data/models/valucast_mlb_dynasty_layer.json "$RUNNER_TEMP/old/valucast_mlb_dynasty_layer.json"
+          cp data/projections/current.json "$RUNNER_TEMP/old/current.json"
+          cp data/projections/metadata.json "$RUNNER_TEMP/old/metadata.json"
+          echo "Committed boards preserved"
+
+      - name: Set rehearsal target season
+        run: |
+          sed -i 's/^TARGET_SEASON = 2026/TARGET_SEASON = 2027/' scraper/season.py
+          python -c "from scraper.season import TARGET_SEASON, CONTEXT_SEASON; assert TARGET_SEASON == 2027; assert CONTEXT_SEASON == 2026"
+          echo "Rehearsal season verified"
+
+      - name: Refresh projections
+        run: |
+          python -m scraper.refresh
+          echo "Projection refresh complete"
+
+      - name: Backfill projection identities
+        run: |
+          python scripts/backfill_projection_identities.py
+          echo "Identity backfill complete"
+
+      - name: Build rehearsal dynasty board
+        run: |
+          python scripts/build_mlb_dynasty_layer.py \
+            --projection-source current \
+            --artifact-path "$RUNNER_TEMP/new/valucast_mlb_dynasty_layer.json" \
+            --archive-dir "$RUNNER_TEMP/archive"
+          echo "Dynasty rehearsal build complete"
+
+      - name: Compare boards
+        run: |
+          python scripts/compare_2027_boards.py \
+            --old-dynasty "$RUNNER_TEMP/old/valucast_mlb_dynasty_layer.json" \
+            --new-dynasty "$RUNNER_TEMP/new/valucast_mlb_dynasty_layer.json" \
+            --old-projections "$RUNNER_TEMP/old/current.json" \
+            --new-projections data/projections/current.json \
+            --out "$RUNNER_TEMP/out"
+          echo "Board comparison complete"
+
+      - name: Upload rehearsal report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: 2027-board-rehearsal
+          path: ${{ runner.temp }}/out
+          retention-days: 7
+          if-no-files-found: error
