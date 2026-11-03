@@ -1,40 +1,40 @@
-name: Steamer feed check
+name: Label screenshots, throwaway branch
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "10 12 * * *"
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
-  check:
+  screens:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONPATH: "src:."
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
-
-      - name: Check full-season Steamer feed
-        id: feed
-        run: python scripts/check_steamer_season.py
-
-      - name: Open the season flip review issue
-        if: steps.feed.outputs.verdict == 'live'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          cache: pip
+      - name: Install
         run: |
-          preseason=$(python -c "from scraper.season import is_preseason; print(is_preseason())")
-          if [ "$preseason" != "False" ]; then
-            exit 0
-          fi
-          title="Steamer 2027 looks live: review the season flip"
-          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
-          if [ -z "$issue" ]; then
-            gh issue create --title "$title" --body "The full-season Steamer feed includes at least 250 rows for 2025 draftees. Review the feed and TARGET_SEASON before flipping. Check: $RUN_URL"
-          fi
+          python -m pip install -r requirements.txt -e . playwright > /dev/null
+          python -m playwright install --with-deps chromium > /dev/null
+      - name: Start app
+        run: |
+          nohup gunicorn app:app --bind 127.0.0.1:5000 --workers 1 --threads 4 --timeout 300 > "$RUNNER_TEMP/app.log" 2>&1 &
+          for i in $(seq 1 90); do curl -fs http://127.0.0.1:5000/health/ready > /dev/null && break; sleep 5; done
+          curl -s -o /dev/null -w "ready %{http_code}\n" http://127.0.0.1:5000/health/ready
+      - name: Screenshots
+        run: python scripts/label_screens.py "$RUNNER_TEMP/screens"
+      - name: Upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: label-screens
+          path: ${{ runner.temp }}/screens
+          retention-days: 3
