@@ -36,5 +36,5 @@ jobs:
           title="Steamer 2027 looks live: review the season flip"
           issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
           if [ -z "$issue" ]; then
-            gh issue create --title "$title" --body "The full-season Steamer feed includes at least 50 rows for 2026 draftees. Review the feed and TARGET_SEASON before flipping. Check: $RUN_URL"
+            gh issue create --title "$title" --body "The full-season Steamer feed includes at least 250 rows for 2025 draftees. Review the feed and TARGET_SEASON before flipping. Check: $RUN_URL"
           fi
