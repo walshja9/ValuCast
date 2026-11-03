@@ -37,7 +37,7 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
-LAYER_VERSION = "0.6.0"
+LAYER_VERSION = "0.6.1"
 VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_5"
 
 MIN_HITTER_PA = 100
@@ -648,7 +648,7 @@ def _limited_track_record_discount(
     score: float,
     profile: dict | None,
 ) -> float:
-    if not profile or score <= 55.0:
+    if profile is None or score <= 55.0:
         return 0.0
     certainty = _finite_float(profile.get("track_record_certainty")) or 0.0
     score_pressure = max(0.0, min(1.0, (score - 55.0) / 40.0))
@@ -958,7 +958,8 @@ def _scores_for_config(
     rows = []
     for result, horizon in horizon_rows:
         key = identity_key(result.player)
-        track_record_profile = track_record_by_key.get(key) if key else None
+        # A loaded lookup with no profile means zero history; no lookup means no penalty.
+        track_record_profile = track_record_by_key.get(key, {}) if track_record_by_key else None
         scale_floor, scale_ceiling = floor, ceiling
         if pool_scale is not None:
             scale_floor, scale_ceiling = pool_scale.get(
