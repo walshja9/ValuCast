@@ -211,7 +211,7 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
     {% set kind, label = status_meta.get(c.status, ('open', c.status)) %}
     <article class="ledger-row" data-ledger-kind="{{ kind }}">
         <div class="ledger-row-main">
-            <span class="ledger-row-name">{{ c.name }}</span>
+            <span class="ledger-row-name">{{ c.name }}{% include "partials/_prospect_tag.html" %}</span>
             <span class="ledger-chip ledger-chip-{{ kind }}">{{ label }}</span>
             {% if c.in_mlb %}<span class="ledger-chip ledger-chip-mlb" title="On an MLB active roster — the dynasty-rank bet stays open until he graduates the rookie limits">in the majors</span>{% endif %}
         </div>

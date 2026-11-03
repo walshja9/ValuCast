@@ -68,7 +68,7 @@
             <article class="movers-row">
                 <span class="buys-rank">#{{ p.current_rank }}</span>
                 <div class="buys-main">
-                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>
+                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>{% include "partials/_prospect_tag.html" %}
                     <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
                     <span class="buys-tag">{{ p.why }}</span>
                 </div>
@@ -90,7 +90,7 @@
             <article class="movers-row">
                 <span class="buys-rank">#{{ p.current_rank }}</span>
                 <div class="buys-main">
-                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>
+                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>{% include "partials/_prospect_tag.html" %}
                     <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
                     <span class="buys-tag">{{ p.why }}</span>
                 </div>

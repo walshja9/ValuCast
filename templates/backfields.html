@@ -60,7 +60,7 @@
             <article class="bf-riser-card">
                 <div class="bf-riser-top">
                     <div>
-                        <h3><a class="bf-player-link" href="{{ riser.url }}" data-bf-detail-url="{{ riser.detail_url }}" data-bf-player-name="{{ riser.name }}" aria-expanded="false">{{ riser.name }}</a></h3>
+                        <h3><a class="bf-player-link" href="{{ riser.url }}" data-bf-detail-url="{{ riser.detail_url }}" data-bf-player-name="{{ riser.name }}" aria-expanded="false">{{ riser.name }}</a>{% include "partials/_prospect_tag.html" %}</h3>
                         <p>{{ riser.meta }}</p>
                     </div>
                     <span class="bf-move bf-move-{{ riser.move.direction }}">
@@ -113,7 +113,7 @@
             {% for call in ahead_of_consensus %}
             <article class="bf-consensus-card">
                 <div class="bf-consensus-top">
-                    <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}" aria-expanded="false">{{ call.name }}</a></h3>
+                    <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}" aria-expanded="false">{{ call.name }}</a>{% include "partials/_prospect_tag.html" %}</h3>
                     <span class="bf-consensus-badge">+{{ call.divergence }}</span>
                 </div>
                 <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
@@ -134,7 +134,7 @@
                 {% for call in ahead_of_consensus_thin %}
                 <article class="bf-consensus-card">
                     <div class="bf-consensus-top">
-                        <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}" aria-expanded="false">{{ call.name }}</a></h3>
+                        <h3><a class="bf-player-link" href="{{ call.url }}" data-bf-detail-url="{{ call.detail_url }}" data-bf-player-name="{{ call.name }}" aria-expanded="false">{{ call.name }}</a>{% include "partials/_prospect_tag.html" %}</h3>
                         <span class="bf-consensus-badge">+{{ call.divergence }}</span>
                     </div>
                     <p class="bf-consensus-line">VC #{{ call.valucast_rank }} vs field ~#{{ call.consensus_rank }}</p>
@@ -196,7 +196,7 @@
                     <span class="bf-rank" role="cell">{{ row.rank }}</span>
                     <div class="bf-player" role="cell">
                         <div class="bf-player-name">
-                            <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}" aria-expanded="false">{{ row.name }}</a>
+                            <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}" aria-expanded="false">{{ row.name }}</a>{% include "partials/_prospect_tag.html" %}
                             <span class="bf-tier-badge" aria-label="Prospect tier {{ row.tier }}">T{{ row.tier }}</span>
                             {% if row.has_report %}<a class="bf-report-badge" href="{{ row.report_url }}">Report</a>{% endif %}
                         </div>
@@ -237,7 +237,7 @@
                     {% for player in callups %}
                     <article class="bf-callup-row">
                         <div>
-                            <h3><a class="bf-player-link" href="{{ player.url }}" data-bf-detail-url="{{ player.detail_url }}" data-bf-player-name="{{ player.name }}" aria-expanded="false">{{ player.name }}</a></h3>
+                            <h3><a class="bf-player-link" href="{{ player.url }}" data-bf-detail-url="{{ player.detail_url }}" data-bf-player-name="{{ player.name }}" aria-expanded="false">{{ player.name }}</a>{% include "partials/_prospect_tag.html" %}</h3>
                             <p>{{ player.flag }}</p>
                             <p class="bf-callup-why">{{ player.why }}</p>
                         </div>
@@ -263,7 +263,7 @@
                     {% for player in recently_called_up %}
                     <article class="bf-callup-row">
                         <div>
-                            <h3>{{ player.name }}</h3>
+                            <h3>{{ player.name }}{% include "partials/_prospect_tag.html" %}</h3>
                             <p>{{ player.flag }}</p>
                             <p class="bf-callup-why">{{ player.why }}</p>
                         </div>
@@ -276,7 +276,7 @@
                     <summary>See all {{ recently_called_up_total }} in the majors</summary>
                     <ul class="bf-callup-more-list">
                         {% for player in recently_called_up_more %}
-                        <li><span class="bf-callup-more-name">{{ player.name }}</span><span class="bf-callup-more-meta">{{ player.flag }} · {{ player.value }}</span></li>
+                        <li><span class="bf-callup-more-name">{{ player.name }}{% include "partials/_prospect_tag.html" %}</span><span class="bf-callup-more-meta">{{ player.flag }} · {{ player.value }}</span></li>
                         {% endfor %}
                     </ul>
                 </details>
@@ -304,7 +304,7 @@
                     <article class="bf-stat-row">
                         <span>{{ leader.stat }}</span>
                         <div>
-                            <h3><a class="bf-player-link" href="{{ leader.url }}" data-bf-detail-url="{{ leader.detail_url }}" data-bf-player-name="{{ leader.name }}" aria-expanded="false">{{ leader.name }}</a></h3>
+                            <h3><a class="bf-player-link" href="{{ leader.url }}" data-bf-detail-url="{{ leader.detail_url }}" data-bf-player-name="{{ leader.name }}" aria-expanded="false">{{ leader.name }}</a>{% include "partials/_prospect_tag.html" %}</h3>
                             <p>{{ leader.level }}{% if leader.team %} / {{ leader.team }}{% endif %}</p>
                         </div>
                         <strong>{{ leader.value }}</strong>
@@ -386,7 +386,7 @@
                         <h4>Top prospects</h4>
                         <ul class="bf-team-extra-list">
                             {% for prospect in team_boards.summary.top_prospects %}
-                            <li><a class="bf-player-link" href="{{ prospect.url }}">{{ prospect.name }}</a><small>Val {{ prospect.value }}</small></li>
+                            <li><a class="bf-player-link" href="{{ prospect.url }}">{{ prospect.name }}</a>{% include "partials/_prospect_tag.html" %}<small>Val {{ prospect.value }}</small></li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -395,7 +395,7 @@
                         {% if team_boards.summary.risers %}
                         <ul class="bf-team-extra-list">
                             {% for riser in team_boards.summary.risers %}
-                            <li><a class="bf-player-link" href="{{ riser.url }}">{{ riser.name }}</a><small>Up {{ riser.move.label }} spots over {{ riser.move.window_label }}</small></li>
+                            <li><a class="bf-player-link" href="{{ riser.url }}">{{ riser.name }}</a>{% include "partials/_prospect_tag.html" %}<small>Up {{ riser.move.label }} spots over {{ riser.move.window_label }}</small></li>
                             {% endfor %}
                         </ul>
                         {% else %}
@@ -409,7 +409,7 @@
                         <ul class="bf-team-extra-list">
                             {% for buy in team_boards.buys %}
                             <li>
-                                <a class="bf-player-link" href="{{ buy.url }}">{{ buy.name }}</a>
+                                <a class="bf-player-link" href="{{ buy.url }}">{{ buy.name }}</a>{% include "partials/_prospect_tag.html" %}
                                 <small>#{{ buy.rank }} buy · {{ buy.reason }} · {{ buy.availability }}</small>
                             </li>
                             {% endfor %}
@@ -439,7 +439,7 @@
                 <span class="bf-rank" role="cell">{{ row.org_rank }}</span>
                 <div class="bf-player" role="cell">
                     <div class="bf-player-name">
-                        <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}" aria-expanded="false">{{ row.name }}</a>
+                        <a class="bf-player-link" href="{{ row.url }}" data-bf-detail-url="{{ row.detail_url }}" data-bf-player-name="{{ row.name }}" aria-expanded="false">{{ row.name }}</a>{% include "partials/_prospect_tag.html" %}
                         {% if row.has_report %}<a class="bf-report-badge" href="{{ row.report_url }}">Report</a>{% endif %}
                     </div>
                     <p class="bf-player-meta">
@@ -464,7 +464,7 @@
                     <ul class="bf-team-extra-list">
                         {% for callup in team_boards.callups %}
                         <li>
-                            <a class="bf-player-link" href="{{ callup.url }}">{{ callup.name }}</a>
+                            <a class="bf-player-link" href="{{ callup.url }}">{{ callup.name }}</a>{% include "partials/_prospect_tag.html" %}
                             <span class="bf-team-extra-tag">{{ callup.status }}</span>
                             <small>{{ callup.level }}{% if callup.eta %} / {{ callup.eta }}{% endif %} · Val {{ callup.value }}</small>
                         </li>
@@ -480,7 +480,7 @@
                     <ul class="bf-team-extra-list">
                         {% for report in team_boards.reports %}
                         <li>
-                            <a class="bf-player-link" href="{{ report.report_url }}">{{ report.name }}</a>
+                            <a class="bf-player-link" href="{{ report.report_url }}">{{ report.name }}</a>{% include "partials/_prospect_tag.html" %}
                             <span class="bf-team-extra-tag">{{ report.tag }}</span>
                             <small>{{ report.line }}</small>
                         </li>
@@ -515,7 +515,7 @@
                     <span>{{ report.tag }}</span>
                     {% if report.date %}<time datetime="{{ report.date[:10] }}">{{ editorial_date(report.date) }}</time>{% endif %}
                 </div>
-                <h3><a class="bf-player-link" href="{{ report.url }}" data-bf-detail-url="{{ report.detail_url }}" data-bf-player-name="{{ report.name }}" aria-expanded="false">{{ report.name }}</a></h3>
+                <h3><a class="bf-player-link" href="{{ report.url }}" data-bf-detail-url="{{ report.detail_url }}" data-bf-player-name="{{ report.name }}" aria-expanded="false">{{ report.name }}</a>{% include "partials/_prospect_tag.html" %}</h3>
                 <p class="bf-report-meta">{{ report.meta }}</p>
                 <p class="bf-report-line">{{ report.line }}</p>
             </article>

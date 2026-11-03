@@ -14,10 +14,10 @@
         <a class="today-cell" href="/movers">
             <span class="tc-label">Moving &middot; {{ today_digest.mover_window }}d</span>
             {% for r in today_digest.risers %}
-            <span class="tc-line"><span class="tc-up">&#9650;</span> {{ r.name }} <em>{{ "%+.1f" | format(r.score_delta) }}</em></span>
+            <span class="tc-line"><span class="tc-up">&#9650;</span> {{ r.name }}{% include "partials/_prospect_tag.html" %} <em>{{ "%+.1f" | format(r.score_delta) }}</em></span>
             {% endfor %}
             {% if today_digest.faller %}
-            <span class="tc-line"><span class="tc-down">&#9660;</span> {{ today_digest.faller.name }} <em>{{ "%+.1f" | format(today_digest.faller.score_delta) }}</em></span>
+            <span class="tc-line"><span class="tc-down">&#9660;</span> {{ today_digest.faller.name }}{% include "partials/_prospect_tag.html" %} <em>{{ "%+.1f" | format(today_digest.faller.score_delta) }}</em></span>
             {% endif %}
         </a>
         {% endif %}
@@ -25,14 +25,14 @@
         <a class="today-cell" href="/backfields#got-the-call">
             <span class="tc-label">Got the call</span>
             <span class="tc-big">{{ today_digest.callup_count }}</span>
-            <span class="tc-line tc-muted">rookie-eligible in the majors{% if today_digest.callup_top %} &middot; top-ranked: {{ today_digest.callup_top.name }}{% endif %}</span>
+            <span class="tc-line tc-muted">rookie-eligible in the majors{% if today_digest.callup_top %} &middot; top-ranked: {{ today_digest.callup_top.name }}{% include "partials/_prospect_tag.html" %}{% endif %}</span>
         </a>
         {% endif %}
         {% if today_digest.top_buy and not aotc_hold %}
         <a class="today-cell" href="/buys">
             <span class="tc-label">Top buy</span>
             <span class="tc-big">{{ today_digest.top_buy.score | round | int }}<small>/100</small></span>
-            <span class="tc-line tc-muted">{{ today_digest.top_buy.name }}{% if today_digest.top_buy.team %} &middot; {{ today_digest.top_buy.team }}{% endif %}{% if today_digest.top_buy.level %} {{ today_digest.top_buy.level }}{% endif %}</span>
+            <span class="tc-line tc-muted">{{ today_digest.top_buy.name }}{% include "partials/_prospect_tag.html" %}{% if today_digest.top_buy.team %} &middot; {{ today_digest.top_buy.team }}{% endif %}{% if today_digest.top_buy.level %} {{ today_digest.top_buy.level }}{% endif %}</span>
         </a>
         {% endif %}
     </div>
@@ -48,7 +48,7 @@
         {{ today_digest.ledger.losses }} against us,
         {{ today_digest.ledger.retreats }} we backed off.
         {%- endif %}
-        {%- if today_digest.newest_call %} Newest call: {{ today_digest.newest_call.name }}, ahead of the field &middot; flagged {{ today_digest.newest_call.ahead_since }}.{% endif %}
+        {%- if today_digest.newest_call %} Newest call: {{ today_digest.newest_call.name }}{% include "partials/_prospect_tag.html" %}, ahead of the field &middot; flagged {{ today_digest.newest_call.ahead_since }}.{% endif %}
         {%- if today_digest.receipts_today %} Receipts logged today: {{ today_digest.receipts_today }} new call-up{{ 's' if today_digest.receipts_today != 1 else '' }} vs the field.{% endif %}
         {%- if today_digest.gaps_resolved_today %} Claims resolved today: {{ today_digest.gaps_resolved_today }} gap call{{ 's' if today_digest.gaps_resolved_today != 1 else '' }} settled on the ledger.{% endif %}
         Receipts open &rarr;

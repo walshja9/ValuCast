@@ -17,6 +17,7 @@ def build_share_preview_html(
     image_alt: str,
     back_url: str,
     back_label: str,
+    preliminary: bool = False,
 ) -> str:
     """Return the small branded preview/download shell for a share PNG."""
     safe_title = escape(title)
@@ -29,6 +30,14 @@ def build_share_preview_html(
     safe_alt = escape(image_alt)
     safe_back_url = escape(back_url)
     safe_back_label = escape(back_label)
+    heading = safe_title
+    notice = ""
+    stylesheet = ""
+    if preliminary:
+        heading += ' <span class="preliminary-tag">Preliminary</span>'
+        notice = ('<p class="notice" role="status">Prospect values are preliminary. '
+                  "They haven't passed ValuCast's publication check.</p>")
+        stylesheet = '<link rel="stylesheet" href="/static/style.css">'
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -48,7 +57,7 @@ def build_share_preview_html(
   <meta name="twitter:title" content="{safe_title} | ValuCast">
   <meta name="twitter:description" content="{safe_description}">
   <meta name="twitter:image" content="{safe_public_png_url}">
-  <style>
+  {stylesheet}<style>
     body {{ margin: 0; background: #0b0c0f; color: #e8e9ee; font-family: "Space Grotesk", system-ui, "Segoe UI", Helvetica, Arial, sans-serif; }}
     main {{ min-height: 100vh; display: grid; place-items: center; gap: 16px; padding: 24px; }}
     .meta, .actions, .card-wrap {{ width: min(1080px, 100%); }}
@@ -63,7 +72,7 @@ def build_share_preview_html(
 <body>
   <main>
     <div class="meta">
-      <h1>{safe_title}</h1>
+      <h1>{heading}</h1>{notice}
       <p>{safe_subtitle}</p>
     </div>
     <div class="card-wrap"><img src="{safe_png_url}" alt="{safe_alt}"></div>

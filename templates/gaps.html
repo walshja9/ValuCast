@@ -51,7 +51,7 @@
         <article class="movers-row">
             <span class="buys-rank">#{{ p.valucast_rank }}</span>
             <div class="buys-main">
-                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>{% include "partials/_prospect_tag.html" %}
                 {# Aggregate consensus ONLY — never per-source ranks. The median
                    across boards is our transformative figure; reprinting each
                    outside site's exact rank would redistribute their product
@@ -70,7 +70,7 @@
         <article class="movers-row">
             <span class="buys-rank">#{{ p.valucast_rank }}</span>
             <div class="buys-main">
-                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>
+                <a href="/player/vc_prospect_{{ p.mlbam_id }}_{{ p.role }}?mode=prospects">{{ p.name }}</a>{% include "partials/_prospect_tag.html" %}
                 <span class="buys-tag">{{ p.team }} &middot; field {% if p.board_min is not none and p.board_max is not none and p.board_min != p.board_max %}#{{ p.board_min }}&ndash;#{{ p.board_max }}, median {% endif %}~#{{ p.consensus_rank }} across {{ p.board_count }} boards</span>
             </div>
             <span class="mover-delta down">{{ p.divergence }}</span>
@@ -117,7 +117,7 @@
     <ul class="gaps-claim-resolved">
         {% for c in gaps_ledger_resolved %}
         <li>
-            <span class="gaps-claim-name">{{ c.name }}</span>
+            <span class="gaps-claim-name">{{ c.name }}{% include "partials/_prospect_tag.html" %}</span>
             <span class="buys-tag">{{ c.side }} &middot;
                 {% if c.outcome == 'resolved_by_callup' %}called up{% if c.lead_time_days is not none %} &mdash; {{ c.lead_time_days }} day{{ 's' if c.lead_time_days != 1 else '' }} early{% endif %}
                 {% elif c.outcome == 'resolved_by_consensus_move' %}field moved toward us

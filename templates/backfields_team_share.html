@@ -49,7 +49,7 @@
                 <span class="bf-rank">{{ row.org_rank }}</span>
                 <div class="bf-player">
                     <div class="bf-player-name">
-                        <a class="bf-player-link" href="{{ row.url }}">{{ row.name }}</a>
+                        <a class="bf-player-link" href="{{ row.url }}">{{ row.name }}</a>{% include "partials/_prospect_tag.html" %}
                     </div>
                     <p class="bf-player-meta">
                         <span>{{ row.position }}</span>

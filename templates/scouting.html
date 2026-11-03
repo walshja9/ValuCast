@@ -107,7 +107,7 @@
                        filters (7/3). report.get() is the only safe read here. #}
                     {% set _prank = report.get('prospect_rank') %}
                     {% if _prank is not none %}<span class="rank-chip">P#{{ _prank }}</span>{% else %}<span class="rank-chip">MLB</span>{% endif %}
-                    <h4><a href="{{ report.player_url }}">{{ report.name }}</a></h4>
+                    <h4><a href="{{ report.player_url }}">{{ report.name }}</a>{% if report.get('player_type') == 'prospect' or _prank is not none or (report.get('id') or '').startswith('vc_prospect_') %}{% include "partials/_prospect_tag.html" %}{% endif %}</h4>
                     <p>{{ report.team }} &middot; {{ report.positions | join("/") }}{% if report.level %} &middot; {{ report.level }}{% endif %}{% if report.age is not none %} &middot; Age {{ report.age }}{% endif %}</p>
                 </div>
                 <div class="scouting-value">

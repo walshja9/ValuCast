@@ -8,7 +8,7 @@
     <div class="onramp-names">
         {% for p in onramp_names %}
         <a class="onramp-name" href="/gaps">
-            <span class="onramp-player">{{ p.name }}</span>
+            <span class="onramp-player">{{ p.name }}{% include "partials/_prospect_tag.html" %}</span>
             <span class="onramp-ranks">#{{ p.valucast_now }} here <span class="onramp-sep">/</span> ~#{{ p.consensus_now }} field median</span>
         </a>
         {% endfor %}

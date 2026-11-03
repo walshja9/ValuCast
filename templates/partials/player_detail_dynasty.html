@@ -35,10 +35,11 @@
 
 {% set confidence = row.confidence or {} %}
 {% set confidence_range = confidence.get('range') or {} %}
+{% if row.is_prospect %}{% include "partials/_prospect_notice.html" %}{% endif %}
 <div class="player-detail dynasty-detail {{ 'prospect-detail' if row.is_prospect else 'mlb-detail' }}">
     <div class="detail-header dynasty-card-header">
         <div class="detail-identity">
-            <h3>{{ row.name }}</h3>
+            <h3>{{ row.name }}{% if row.is_prospect %}{% include "partials/_prospect_tag.html" %}{% endif %}</h3>
             <span class="detail-meta">
                 {{ row.positions | join(', ') or 'N/A' }}
                 {% if row.team %} | {{ row.team }}{% endif %}

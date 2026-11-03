@@ -104,7 +104,7 @@
                 {% for row in board.rows %}
                 <tr>
                     <td class="num" data-label="Rank">{{ row.rank if row.rank is not none else "—" }}</td>
-                    <td data-label="Player">{{ row.name or "—" }}</td>
+                    <td data-label="Player">{{ row.name or "—" }}{% include "partials/_prospect_tag.html" %}</td>
                     <td data-label="Pos">{{ row.positions | join("/") if row.positions else "—" }}</td>
                     <td data-label="Level">{{ row.level or "—" }}</td>
                     <td data-label="Team">{{ row.team or "—" }}</td>

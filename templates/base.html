@@ -60,6 +60,7 @@
         </nav>
     </header>
     <main>
+        {% if prospect_surface %}{% include "partials/_prospect_notice.html" %}{% endif %}
         {% block content %}{% endblock %}
     </main>
     <footer class="site-footer">
