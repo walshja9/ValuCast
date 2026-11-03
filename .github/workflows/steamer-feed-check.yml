@@ -16,7 +16,6 @@ jobs:
     env:
       PYTHONPATH: "src:."
       VALUCAST_BUYS_REVIEW_APPROVED: "1"
-      REHEARSAL_OUT: ${{ github.workspace }}/../rehearsal-out
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -24,7 +23,9 @@ jobs:
           persist-credentials: false
 
       - name: Pin date
-        run: echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+        run: |
+          echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+          echo "REHEARSAL_OUT=$RUNNER_TEMP/rehearsal-out" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
@@ -96,6 +97,6 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: pipeline-rehearsal-${{ inputs.target_season }}
-          path: ${{ github.workspace }}/../rehearsal-out
+          path: ${{ runner.temp }}/rehearsal-out
           retention-days: 3
           if-no-files-found: error

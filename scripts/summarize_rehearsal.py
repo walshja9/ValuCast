@@ -1,12 +1,14 @@
 """Summarize a rehearsal: step failures, governor and snapshot before and after. Our values only, no stat lines."""
 
+import csv
 import json
 import sys
 from pathlib import Path
 
 old, new, out = map(Path, sys.argv[1:4])
 SAMPLE = ("Shohei Ohtani", "Aaron Judge", "Juan Soto", "Bobby Witt Jr.", "Randy Arozarena", "Tarik Skubal", "Chris Sale",
-          "Mason Miller", "David Bednar", "Kenley Jansen", "Raisel Iglesias", "Jazz Chisholm Jr.", "Kade Anderson", "Paul Skenes")
+          "Mason Miller", "David Bednar", "Kenley Jansen", "Raisel Iglesias", "Pete Fairbanks", "Jazz Chisholm Jr.", "Kade Anderson", "Paul Skenes",
+          "Junior Caminero", "Luke Keaschall", "Kerry Carpenter", "Nick Lodolo", "Trevor Rogers", "Colt Keith", "Kody Clemens", "Connor Norby", "Jose Caballero")
 
 
 def load(path):
@@ -14,7 +16,7 @@ def load(path):
 
 
 def failing(governor):
-    return [(c.get("id"), c.get("surface"), c.get("message")) for c in governor.get("checks", []) if c.get("status") != "passed"]
+    return [(c.get("id"), c.get("surface"), c.get("message")) for c in governor.get("checks", []) if c.get("status") not in ("pass", "passed")]
 
 
 def shape(governor):
@@ -42,5 +44,13 @@ for label, base in (("Before", old), ("After", new)):
     lines.append("Top 30: " + "; ".join(f"{r.get('rank')} {r.get('name')} {r.get('value')} {r.get('player_type')}" for r in ordered[:30]) + "\n")
     lines.append("Sample: " + "; ".join(f"{r.get('rank')} {r.get('name')} {r.get('value')} {r.get('player_type')}"
                                         for r in ordered if r.get("name") in SAMPLE) + "\n")
+boards = [{r.get("id"): r for r in load(base / "public_dynasty_snapshot.json").get("players") or []} for base in (old, new)]
+with (out / "combined_board.csv").open("w", encoding="utf-8", newline="") as handle:
+    writer = csv.writer(handle)
+    writer.writerow(("id", "name", "type", "old_rank", "old_value", "new_rank", "new_value"))
+    for key in sorted(set(boards[0]) | set(boards[1]), key=str):
+        a, b = boards[0].get(key, {}), boards[1].get(key, {})
+        writer.writerow((key, a.get("name") or b.get("name"), a.get("player_type") or b.get("player_type"),
+                         a.get("rank"), a.get("value"), b.get("rank"), b.get("value")))
 (out / "summary.md").write_text("\n".join(lines), encoding="utf-8", errors="backslashreplace")
 print(len(failed), "failed steps")
