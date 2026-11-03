@@ -1,4 +1,4 @@
-"""Check whether full-season Steamer includes enough 2026 draftees."""
+"""Check whether full-season Steamer has rolled past the 2026 season."""
 from __future__ import annotations
 
 import json
@@ -13,7 +13,11 @@ if str(ROOT) not in sys.path:
 
 from scraper.fangraphs import fetch_projections  # noqa: E402
 
-DRAFT_URL = "https://statsapi.mlb.com/api/v1/draft/2026"
+# A draft class shows up in bulk only after its first full pro season: 30 of the
+# 2025 class in the May 2026 feed, 475 in the rebuild seen on 11/2/2026. The
+# newest class stays small (17 of 2026), so it cannot separate the two.
+DRAFT_URL = "https://statsapi.mlb.com/api/v1/draft/2025"
+LIVE_MIN_ROWS = 250
 
 
 def _draftee_count(rows: list[dict], draftee_ids: set) -> int:
@@ -27,7 +31,7 @@ def _draftee_count(rows: list[dict], draftee_ids: set) -> int:
 def verdict(rows: list[dict], draftee_ids: set) -> str:
     if not rows:
         return "unknown"
-    return "live" if _draftee_count(rows, draftee_ids) >= 50 else "not_live"
+    return "live" if _draftee_count(rows, draftee_ids) >= LIVE_MIN_ROWS else "not_live"
 
 
 def main() -> None:
@@ -44,7 +48,7 @@ def main() -> None:
     result = verdict(rows, draftee_ids)
     print(f"Steamer hitter rows: {len(hitters)}")
     print(f"Steamer pitcher rows: {len(pitchers)}")
-    print(f"2026 draftee rows: {_draftee_count(rows, draftee_ids)}")
+    print(f"2025 draftee rows: {_draftee_count(rows, draftee_ids)}")
     print(f"verdict={result}")
     if output_path := os.environ.get("GITHUB_OUTPUT"):
         with open(output_path, "a", encoding="utf-8") as output:

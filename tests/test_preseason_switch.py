@@ -261,18 +261,18 @@ def test_redraft_footer_uses_published_phase():
     assert b"Redraft values use Steamer 2027 full-season projections, scored against your league's categories and weights." in response.data
 
 
-@pytest.mark.parametrize("count,expected", [(50, "live"), (49, "not_live"), (0, "unknown")])
+@pytest.mark.parametrize("count,expected", [(250, "live"), (249, "not_live"), (0, "unknown")])
 def test_feed_verdict_thresholds(count, expected):
     from scripts.check_steamer_season import verdict
 
     rows = [{"xMLBAMID": i} for i in range(count)]
-    assert verdict(rows, set(range(50))) == expected
+    assert verdict(rows, set(range(250))) == expected
 
 
 def test_feed_verdict_counts_both_id_keys():
     from scripts.check_steamer_season import verdict
 
-    rows = [{"xMLBAMID": str(i)} for i in range(25)]
-    rows += [{"MLBAMID": str(i)} for i in range(25, 50)]
-    assert verdict(rows, set(range(50))) == "live"
-    assert verdict([{"xMLBAMID": 999}], set(range(50))) == "not_live"
+    rows = [{"xMLBAMID": str(i)} for i in range(125)]
+    rows += [{"MLBAMID": str(i)} for i in range(125, 250)]
+    assert verdict(rows, set(range(250))) == "live"
+    assert verdict([{"xMLBAMID": 999}], set(range(250))) == "not_live"
