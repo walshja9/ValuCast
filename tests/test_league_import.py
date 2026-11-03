@@ -135,6 +135,37 @@ class TestUpstreamShapeDrift(unittest.TestCase):
         self.assertIn("enter them manually", str(ctx.exception))
 
 
+class TestEspnSeasonFallback(unittest.TestCase):
+    URL = "https://fantasy.espn.com/baseball/league?leagueId=12345"
+    SETTINGS = {"settings": {"size": 12}}
+
+    @patch("web.league_import.datetime")
+    @patch("web.league_import._fetch_json")
+    def test_falls_back_to_last_season_before_rollover(self, mock_fetch, mock_now):
+        mock_now.now.return_value.year = 2027
+        mock_fetch.side_effect = [ImportError_("League lookup failed (HTTP 404)"), self.SETTINGS]
+        partial, _ = import_league(self.URL)
+        self.assertEqual(partial["teams"], 12)
+        self.assertIn("seasons/2027/", mock_fetch.call_args_list[0].args[0])
+        self.assertIn("seasons/2026/", mock_fetch.call_args_list[1].args[0])
+
+    @patch("web.league_import.datetime")
+    @patch("web.league_import._fetch_json")
+    def test_current_season_is_used_when_it_exists(self, mock_fetch, mock_now):
+        mock_now.now.return_value.year = 2027
+        mock_fetch.return_value = self.SETTINGS
+        import_league(self.URL)
+        self.assertEqual(mock_fetch.call_count, 1)
+        self.assertIn("seasons/2027/", mock_fetch.call_args.args[0])
+
+    @patch("web.league_import._fetch_json")
+    def test_both_seasons_failing_keeps_the_first_message(self, mock_fetch):
+        mock_fetch.side_effect = [ImportError_("This league is private"), ImportError_("HTTP 404")]
+        with self.assertRaises(ImportError_) as ctx:
+            import_league(self.URL)
+        self.assertIn("private", str(ctx.exception))
+
+
 class TestFetchHardening(unittest.TestCase):
     @patch("web.league_import.MAX_RESPONSE_BYTES", 32)
     @patch("web.league_import.requests.get")

@@ -115,6 +115,19 @@ def _fetch_json(url: str, params: dict | None = None) -> dict:
         return data
 
 
+def _fetch_espn(league_id: str) -> dict:
+    # ESPN creates a season's league record only at rollover, so an early-year
+    # import can still need last season's. Keep the first error if both fail.
+    year = datetime.now(timezone.utc).year
+    try:
+        return _fetch_json(_ESPN_API.format(season=year, league_id=league_id))
+    except ImportError_ as current_error:
+        try:
+            return _fetch_json(_ESPN_API.format(season=year - 1, league_id=league_id))
+        except ImportError_:
+            raise current_error from None
+
+
 def import_league(url: str) -> tuple[dict, str]:
     """Detect + fetch + parse. Returns (settings_partial, notice).
 
@@ -130,8 +143,7 @@ def import_league(url: str) -> tuple[dict, str]:
             data = _fetch_json(_FANTRAX_API, params={"leagueId": league_id})
             partial = parse_fantrax(data)
         else:
-            season = datetime.now(timezone.utc).year
-            data = _fetch_json(_ESPN_API.format(season=season, league_id=league_id))
+            data = _fetch_espn(league_id)
             partial = parse_espn(data)
     except ImportError_:
         raise
