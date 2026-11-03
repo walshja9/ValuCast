@@ -2,6 +2,9 @@ name: 2027 board rehearsal
 
 on:
   workflow_dispatch:
+    inputs:
+      counts_only:
+        default: 'false'
 
 permissions:
   contents: read
@@ -46,7 +49,11 @@ jobs:
           python scripts/backfill_projection_identities.py
           echo "Identity backfill complete"
 
+      - name: Reliever role counts
+        run: python scripts/audit_reliever_roles.py
+
       - name: Build rehearsal dynasty board
+        if: ${{ inputs.counts_only != 'true' }}
         run: |
           python scripts/build_mlb_dynasty_layer.py \
             --projection-source current \
@@ -55,6 +62,7 @@ jobs:
           echo "Dynasty rehearsal build complete"
 
       - name: Compare boards
+        if: ${{ inputs.counts_only != 'true' }}
         run: |
           python scripts/compare_2027_boards.py \
             --old-dynasty "$RUNNER_TEMP/old/valucast_mlb_dynasty_layer.json" \
@@ -65,6 +73,7 @@ jobs:
           echo "Board comparison complete"
 
       - name: Upload rehearsal report
+        if: ${{ inputs.counts_only != 'true' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: 2027-board-rehearsal
