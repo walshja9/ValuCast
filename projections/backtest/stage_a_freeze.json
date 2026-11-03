@@ -1,0 +1,138 @@
+{
+  "B": {
+    "0": 0,
+    "1": 5000,
+    "2": 5000,
+    "3": 2000,
+    "4": 0,
+    "5": 5000,
+    "6": 0,
+    "7": 0
+  },
+  "bootstrap_resamples": 5000,
+  "code_commit": "8aa762a732d003c68c790ce23151f38660b3cfac",
+  "configuration_grid": [
+    {
+      "features": "promoted",
+      "model_kind": "hurdle_ridge",
+      "name": "promoted-hurdle_ridge-3",
+      "ridge_lambda": 3.0
+    },
+    {
+      "features": "promoted",
+      "model_kind": "ridge",
+      "name": "promoted-ridge-3",
+      "ridge_lambda": 3.0
+    },
+    {
+      "features": "promoted",
+      "model_kind": "hurdle_ridge",
+      "name": "promoted-hurdle_ridge-10",
+      "ridge_lambda": 10.0
+    },
+    {
+      "features": "promoted",
+      "model_kind": "ridge",
+      "name": "promoted-ridge-10",
+      "ridge_lambda": 10.0
+    },
+    {
+      "features": "without_pedigree",
+      "model_kind": "hurdle_ridge",
+      "name": "without_pedigree-hurdle_ridge-3",
+      "ridge_lambda": 3.0
+    },
+    {
+      "features": "without_pedigree",
+      "model_kind": "ridge",
+      "name": "without_pedigree-ridge-3",
+      "ridge_lambda": 3.0
+    },
+    {
+      "features": "without_pedigree",
+      "model_kind": "hurdle_ridge",
+      "name": "without_pedigree-hurdle_ridge-10",
+      "ridge_lambda": 10.0
+    },
+    {
+      "features": "without_pedigree",
+      "model_kind": "ridge",
+      "name": "without_pedigree-ridge-10",
+      "ridge_lambda": 10.0
+    }
+  ],
+  "dedup_rules": {
+    "D1": "largest pa/ip; ties keep first in list order",
+    "D2": "D1 only when sample equals sum of others and a counting stat also matches",
+    "D3": "optional team-key probe: no-team row when present, otherwise D1",
+    "counting_fields": [
+      "hr",
+      "r",
+      "rbi",
+      "sb",
+      "so"
+    ],
+    "hitter_sample_tolerance": 0.01,
+    "pitcher_sample_tolerance": 0.34
+  },
+  "environment_flags": {
+    "VALUCAST_POOLED_SHADOW": true
+  },
+  "input_sha256": "780c477799549b5aa18e36acaf7f8c83f0a5b2f990f397e52ea5015ea38e1cca",
+  "k_extra": [
+    0,
+    8,
+    24
+  ],
+  "mature_through": 2019,
+  "minimum_null_reps": 2000,
+  "purge_rule": {
+    "clip": "c < season_year <= min(c + 4, T)",
+    "impact_horizon_years": 4,
+    "outcome_horizon_years": 4,
+    "training": "c + horizon <= T"
+  },
+  "sealed_cohort": 2022,
+  "seed": 20261103,
+  "sha256": {
+    "projections/backtest/prospect_stage_a.py": "f639b565ee908fa2104754180fba7d2431da7f417db661a95c787402f9fe52f1",
+    "projections/backtest/stage_a_plan.md": "9fe420b37234e7c885677b410afa8686e5c955f10c6092945aca6d6c48de0c7d",
+    "prospects/gate.py": "35a62aff6401f7a9ba3aaff2b8289cd2113502bff10261931fda5825d254497d",
+    "prospects/impact_oof.py": "f61f38c33b15b0a20b24ef03cf22f572820161b9c149bb767bf6ac0d24fd3fb6",
+    "prospects/input_contract.py": "7e5ea5d1ec7e64e1fd62cf2c2f484266f09ea31bfc708666fdfb106ec5c9705b",
+    "prospects/model.py": "9ac1bf2f1541cc221b7c3d23d1a28862c4c39009c449000197403ecbfd51a74e",
+    "prospects/raw_input_builder.py": "bd793fe0b02cee74dc4b00089e0e7ed99247ff375df2c936e85a3d2e26d580db",
+    "prospects/stage1_outcome_proof.py": "e657b516792955d3a331fc6292ce59f00a695c4a579bea0cbb21bd65afae19bf",
+    "scripts/run_prospect_stage_a.py": "fae17169930f3cf12b341fa7df26bde7e88c5978275725e58e12e5fc8a9d89d1",
+    "tests/test_prospect_stage_a.py": "cc6add03d05ca7d3dc7192796614bd06a47480216e2de1fdfa9e82877d1c67ab"
+  },
+  "thresholds": {
+    "dedup_any_graduated_flip": true,
+    "dedup_any_impact_gate_change": true,
+    "dedup_label_change_fraction": 0.05,
+    "dedup_minimum_overlap": 45,
+    "dedup_minimum_spearman": 0.99,
+    "dedup_top_n": 50,
+    "gate_min_improvement_pct": 2.0,
+    "gate_min_sample": 250,
+    "n2_false_active_fraction": 0.05,
+    "n2_median_improvement_pct": 1.0,
+    "permutation_ambiguous_p": 0.05,
+    "permutation_extreme_p": 0.01,
+    "pooled_gate_min_sample": 500,
+    "purge_margin_drop_fraction": 0.5,
+    "reference_bootstrap_excludes_zero": true,
+    "reference_margin_drop_fraction": 0.5,
+    "serve_outside_feature_count": 3,
+    "serve_outside_support_fraction": 0.1,
+    "serve_step_fraction": 0.1,
+    "serve_step_rank_move": 10,
+    "serve_step_score_change": 0.02,
+    "serve_top_n": 100
+  },
+  "versions": {
+    "numpy": "2.4.2",
+    "python": "3.14.3",
+    "scipy": "1.17.1"
+  }
+}
