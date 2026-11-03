@@ -28,7 +28,7 @@
         <p class="buys-fineprint">This board is being held back for now. A recent fix correctly stopped counting call-ups that happened before ValuCast even existed (the field already knew about those players — crediting ourselves for them isn't honest). That shrank the sample to a handful of games, too small and too flattering-looking to show. It's still running every day in the background, and comes back once there's a real post-launch sample to stand behind.</p>
         {% else %}
         {% if receipts_marquee %}
-        <p class="buys-heading-sub receipts-marquee">Ranked {{ receipts_marquee.name }}{% include "partials/_prospect_tag.html" %} for {{ receipts_marquee.flagged_days_early }} consecutive archived day{{ 's' if receipts_marquee.flagged_days_early != 1 else '' }} before his MLB call-up &mdash; #{{ receipts_marquee.valucast_rank }} here, #{{ receipts_marquee.consensus_rank }} field median at promotion.</p>
+        <p class="buys-heading-sub receipts-marquee">Ranked {{ receipts_marquee.name }} for {{ receipts_marquee.flagged_days_early }} consecutive archived day{{ 's' if receipts_marquee.flagged_days_early != 1 else '' }} before his MLB call-up &mdash; #{{ receipts_marquee.valucast_rank }} here, #{{ receipts_marquee.consensus_rank }} field median at promotion.</p>
         <p class="buys-fineprint receipts-counts">{{ receipt_count }} ahead &middot; {{ miss_count }} behind{% if receipts_generated_at %} &middot; {{ editorial_date(receipts_generated_at) }}{% endif %}</p>
         {% else %}
         <p class="buys-heading-sub">{{ receipt_count }} ahead &middot; {{ miss_count }} behind{% if receipts_generated_at %} &middot; {{ editorial_date(receipts_generated_at) }}{% endif %}</p>
