@@ -33,6 +33,9 @@ jobs:
           cp data/projections/metadata.json "$RUNNER_TEMP/old/metadata.json"
           echo "Committed boards preserved"
 
+      - name: Prospect season duplicates
+        run: python scripts/audit_prospect_season_duplicates.py
+
       - name: Traded-season effect on committed data
         run: python scripts/audit_track_record_trades.py
 
