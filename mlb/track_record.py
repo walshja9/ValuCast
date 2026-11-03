@@ -15,7 +15,6 @@ from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 from scraper.mlb_actuals import normalize_ip
-from scraper import season as season_config
 from scraper.season import context_season
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +26,7 @@ ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_track_record"
 MLB_API_BASE = "https://statsapi.mlb.com/api/v1"
 USER_AGENT = "ValuCast track-record builder"
 CONTRACT_NAME = "ValuCast MLB Track Record Contract"
-CONTRACT_VERSION = "0.1.1"
+CONTRACT_VERSION = "0.1.0"
 BULK_HISTORY_CHUNK_SIZE = 75
 
 HITTER_ROLE = "hitter"
@@ -292,7 +291,6 @@ def _history_payloads(
     mlbam_ids: Iterable[str],
     cache: dict,
     *,
-    season: int,
     fetcher: Callable[[str], dict] | None = None,
     bulk_fetcher: Callable[[Iterable[str]], dict[str, dict]] | None = None,
     refresh_missing: bool = True,
@@ -305,43 +303,24 @@ def _history_payloads(
     missing: list[str] = []
     fetched_count = 0
     fetched_at = fetched_at or datetime.now(timezone.utc).isoformat()
-    cutoff = datetime(season - 1, 11, 1, tzinfo=timezone.utc)
     pending_fetch: list[str] = []
 
     for mlbam_id in sorted({str(value) for value in mlbam_ids if value not in (None, "")}):
         cached = players.get(mlbam_id)
         if cached and isinstance(cached.get("raw"), dict):
             payloads[mlbam_id] = cached["raw"]
-            if not refresh_missing:
-                continue
-            try:
-                cached_at = datetime.fromisoformat(str(cached.get("fetched_at") or "").replace("Z", "+00:00"))
-                cached_at = cached_at.replace(tzinfo=cached_at.tzinfo or timezone.utc)
-                if cached_at >= cutoff:
-                    continue
-            except ValueError:
-                pass
+            continue
         if not refresh_missing:
             missing.append(mlbam_id)
             continue
         if fetch_limit is not None and len(pending_fetch) >= fetch_limit:
-            if mlbam_id not in payloads:
-                missing.append(mlbam_id)
+            missing.append(mlbam_id)
             continue
         pending_fetch.append(mlbam_id)
 
     if fetcher is not None:
         for mlbam_id in pending_fetch:
-            try:
-                raw = fetcher(mlbam_id)
-            except Exception:  # noqa: BLE001 - retain cached history on refresh failure
-                if mlbam_id in payloads:
-                    continue
-                raise
-            if not raw:
-                if mlbam_id not in payloads:
-                    missing.append(mlbam_id)
-                continue
+            raw = fetcher(mlbam_id)
             players[mlbam_id] = {
                 "fetched_at": fetched_at,
                 "raw": raw,
@@ -356,23 +335,15 @@ def _history_payloads(
 
     bulk_fetcher = bulk_fetcher or _fetch_histories_bulk
     for chunk in _chunks(pending_fetch, BULK_HISTORY_CHUNK_SIZE):
-        try:
-            raw_by_id = bulk_fetcher(chunk) or {}
-        except Exception:  # noqa: BLE001 - fall back to cached or individual history
-            raw_by_id = {}
+        raw_by_id = bulk_fetcher(chunk)
         for mlbam_id in chunk:
             raw = raw_by_id.get(mlbam_id)
-            if not raw:
-                if mlbam_id in payloads:
-                    continue
+            if raw is None:
                 try:
                     raw = _fetch_history(mlbam_id)
                 except Exception:  # noqa: BLE001
                     missing.append(mlbam_id)
                     continue
-            if not raw:
-                missing.append(mlbam_id)
-                continue
             players[mlbam_id] = {
                 "fetched_at": fetched_at,
                 "raw": raw,
@@ -496,25 +467,20 @@ def _finalize_pitcher_rates(totals: dict[str, float]) -> None:
 
 def _season_rows(raw: dict, role: str) -> list[tuple[int, dict[str, float]]]:
     group = "hitting" if role == HITTER_ROLE else "pitching"
-    by_season: dict[int, list[dict]] = {}
+    rows = []
     for split in _stats_bucket(raw, group, "yearByYear"):
         season = _season(split)
         if season is None:
             continue
-        by_season.setdefault(season, []).append(split)
-    rows = []
-    for season, splits in by_season.items():
-        combined = next((split for split in splits if "team" not in split), None)
-        for split in [combined] if combined is not None else splits:
-            stats = split.get("stat") or {}
-            totals = (
-                _hitter_totals_from_stats(stats)
-                if role == HITTER_ROLE
-                else _pitcher_totals_from_stats(stats)
-            )
-            if _track_volume(totals, role) <= 0:
-                continue
-            rows.append((season, totals))
+        stats = split.get("stat") or {}
+        totals = (
+            _hitter_totals_from_stats(stats)
+            if role == HITTER_ROLE
+            else _pitcher_totals_from_stats(stats)
+        )
+        if _track_volume(totals, role) <= 0:
+            continue
+        rows.append((season, totals))
     return rows
 
 
@@ -727,19 +693,17 @@ def build_mlb_track_record(
     cache_path: Path | None = None,
     fetch_limit: int | None = None,
 ) -> dict:
-    if season is None:
-        season = season_config.TARGET_SEASON if season_config.is_preseason() else _season_from_generated_at(generated_at)
+    season = season or _season_from_generated_at(generated_at)
     eligible_projections = [
         row for row in projections if _is_mlb_dynasty_eligible_projection(row)
     ]
     tracked = _tracked_keys(eligible_projections)
-    current_by_key = {} if season_config.is_preseason() else _current_stats_by_key(eligible_projections)
+    current_by_key = _current_stats_by_key(eligible_projections)
     cache = cache if cache is not None else {"schema_version": "1.0", "players": {}}
     pruned_count = _prune_cache(cache, tracked.keys())
     raw_by_id, missing_history, fetched_count = _history_payloads(
         tracked.keys(),
         cache,
-        season=season,
         fetcher=fetcher,
         bulk_fetcher=bulk_fetcher,
         refresh_missing=refresh_missing,

@@ -64,32 +64,6 @@ class TestBlendHitters(unittest.TestCase):
 
 
 class TestBlendPitchers(unittest.TestCase):
-    def test_zero_starts_without_saves_or_holds_is_reliever(self):
-        missing = {"playerids": "12", "IP": 50, "SV": 0, "HLD": 0}
-        zero = {**missing, "GS": 0}
-        for steamer, zips in (([zero], []), ([], [zero]), ([zero], [zero]),
-                              ([missing], [zero]), ([zero], [missing])):
-            with self.subTest(steamer=steamer, zips=zips):
-                pitcher = blend_pitchers(steamer, zips)[0]
-                self.assertEqual(pitcher["pool"], "reliever")
-                self.assertEqual(pitcher["positions"], ["RP"])
-
-    def test_absent_starts_keep_starter_default(self):
-        pitcher = {"playerids": "12", "IP": 50, "SV": 0, "HLD": 0}
-        for steamer, zips in (([pitcher], []), ([], [pitcher]), ([pitcher], [pitcher])):
-            with self.subTest(steamer=steamer, zips=zips):
-                row = blend_pitchers(steamer, zips)[0]
-                self.assertEqual(row["pool"], "starter")
-                self.assertEqual(row["positions"], ["SP"])
-
-    def test_fractional_starts_keep_starter_pool_and_position(self):
-        pitcher = {"playerids": "12", "IP": 50, "GS": 0.5, "SV": 0, "HLD": 0}
-        for steamer, zips in (([pitcher], []), ([], [pitcher]), ([pitcher], [pitcher])):
-            with self.subTest(steamer=steamer, zips=zips):
-                row = blend_pitchers(steamer, zips)[0]
-                self.assertEqual(row["pool"], "starter")
-                self.assertEqual(row["positions"], ["SP"])
-
     def test_starter_has_correct_pool(self):
         result = blend_pitchers(STEAMER_PITCHERS, ZIPS_PITCHERS)
         ace = next(p for p in result if p["name"] == "Ace Starter")

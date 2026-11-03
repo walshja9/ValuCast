@@ -100,18 +100,18 @@ def _single_hitter(p: dict, pid: str, source: str) -> dict:
     }
 
 
-def _detect_pitcher_pool(stats: dict, has_gs: bool = True) -> str:
+def _detect_pitcher_pool(stats: dict) -> str:
     gs = _safe_float(stats.get("GS", 0))
     sv = _safe_float(stats.get("SV", 0))
     hld = _safe_float(stats.get("HLD", 0))
     if gs > 0:
         return "starter"
-    if sv > 0 or hld > 0 or (has_gs and "GS" in stats and gs == 0):
+    if sv > 0 or hld > 0:
         return "reliever"
     return "starter"
 
 
-def _detect_pitcher_positions(stats: dict, has_gs: bool = True) -> list[str]:
+def _detect_pitcher_positions(stats: dict) -> list[str]:
     gs = _safe_float(stats.get("GS", 0))
     sv = _safe_float(stats.get("SV", 0))
     hld = _safe_float(stats.get("HLD", 0))
@@ -121,7 +121,7 @@ def _detect_pitcher_positions(stats: dict, has_gs: bool = True) -> list[str]:
     if sv > 0 or hld > 0:
         positions.append("RP")
     if not positions:
-        positions.append("RP" if has_gs and "GS" in stats and gs == 0 else "SP")
+        positions.append("SP")
     return positions
 
 
@@ -164,9 +164,8 @@ def _blend_pitcher(s: dict, z: dict, pid: str) -> dict:
     for stat in PITCHER_RATE:
         stats[stat] = _weighted_avg(_safe_float(s.get(stat)), s_ip, _safe_float(z.get(stat)), z_ip)
     stats = _finalize_pitcher_stats(stats)
-    has_gs = "GS" in s or "GS" in z
-    pool = _detect_pitcher_pool(stats, has_gs)
-    positions = _detect_pitcher_positions(stats, has_gs)
+    pool = _detect_pitcher_pool(stats)
+    positions = _detect_pitcher_positions(stats)
     return {
         "id": pid, "name": s.get("PlayerName", ""), "pool": pool,
         "positions": positions, "team": s.get("Team", ""),
@@ -183,9 +182,8 @@ def _single_pitcher(p: dict, pid: str, source: str) -> dict:
     for stat in PITCHER_RATE:
         stats[stat] = _safe_float(p.get(stat))
     stats = _finalize_pitcher_stats(stats)
-    has_gs = "GS" in p
-    pool = _detect_pitcher_pool(stats, has_gs)
-    positions = _detect_pitcher_positions(stats, has_gs)
+    pool = _detect_pitcher_pool(stats)
+    positions = _detect_pitcher_positions(stats)
     return {
         "id": pid, "name": p.get("PlayerName", ""), "pool": pool,
         "positions": positions, "team": p.get("Team", ""),
