@@ -7,6 +7,7 @@ from mlb.dynasty import (
     VALUE_SOURCE,
     _future_reliability_factor,
     _horizon_profile,
+    _limited_track_record_discount,
     _role_adjusted_score,
     build_mlb_dynasty_layer,
 )
@@ -745,6 +746,55 @@ def test_mlb_layer_discounts_high_score_with_limited_track_record():
     assert score < 92.0
     assert adjustments["limited_mlb_track_record_discount"] > 0
     assert adjustments["track_record_floor_applied"] is False
+
+
+def test_limited_track_record_discount_decreases_with_prior_volume():
+    for player, full_history in ((_hitter(), 600), (_pitcher(), 180)):
+        discounts = [_limited_track_record_discount(player, 95.0, {})]
+        discounts.extend(
+            _limited_track_record_discount(
+                player,
+                95.0,
+                {"track_record_certainty": 30.0, "volume": {"prior_mlb": volume}},
+            )
+            for volume in (0, 1, full_history / 2, full_history)
+        )
+
+        assert discounts[0] > 0
+        assert discounts == sorted(discounts, reverse=True)
+        assert discounts[-1] == 0
+
+
+def test_mlb_layer_discounts_missing_profile_only_with_nonempty_lookup():
+    players = [
+        _hitter(metadata={"age": 28}),
+        _hitter("h2", "3", "Bench Bat", pa=180, hr=4, sb=2, avg=.230),
+        _pitcher(metadata={"age": 28}),
+        _pitcher("p2", "4", "Weak Arm", strikeouts=80, era=6.00),
+    ]
+    baseline = build_mlb_dynasty_layer(players, "2026-06-13")
+    empty = build_mlb_dynasty_layer(players, "2026-06-13", track_record={"profiles": []})
+    loaded = build_mlb_dynasty_layer(
+        players,
+        "2026-06-13",
+        track_record=_track_record_payload({"mlbam_id": 999, "role": "hitter"}),
+    )
+
+    for payload in (baseline, empty):
+        for row in payload["players"]:
+            assert row["components"]["role_adjustments"]["limited_mlb_track_record_discount"] == 0
+    for mlbam_id in (1, 2):
+        row = next(row for row in loaded["players"] if row["mlbam_id"] == mlbam_id)
+        assert row["components"]["role_adjustments"]["limited_mlb_track_record_discount"] > 0
+        assert row["components"]["track_record"]["present"] is False
+
+
+def test_limited_track_record_discount_preserves_no_artifact_score_and_reliever_guards():
+    for player in (_hitter(), _pitcher()):
+        assert _limited_track_record_discount(player, 95.0, None) == 0
+        for score in (54.0, 55.0):
+            assert _limited_track_record_discount(player, score, {}) == 0
+    assert _limited_track_record_discount(_reliever(), 95.0, {}) == 0
 
 
 def test_mlb_layer_embeds_track_record_context_when_artifact_is_present():

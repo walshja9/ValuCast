@@ -4594,7 +4594,12 @@ def _merge_two_way_players(results: list[ValuationResult]) -> list[ValuationResu
         base = next((r for r in group if r.player.pool == PlayerPool.HITTER), group[0])
         others = [r for r in group if r is not base]
 
-        total_value = base.total_value + sum(r.total_value for r in others)
+        # Extra contributions omit the pool-floor offset already included in the base.
+        total_value = base.total_value + sum(
+            max(0.0, VolumeMultiplier()._multiplier(r) * sum(r.category_values.values()))
+            * (REDRAFT_PITCHER_ANCHOR if r.player.pool in _PITCHER_POOLS else 1.0)
+            for r in others
+        )
         raw_values = dict(base.raw_values)
         z_scores = dict(base.z_scores)
         category_values = dict(base.category_values)
@@ -4617,7 +4622,10 @@ def _merge_two_way_players(results: list[ValuationResult]) -> list[ValuationResu
                 if pos not in all_positions:
                     all_positions.append(pos)
 
-        merged_player = dc_replace(base.player, positions=tuple(all_positions))
+        merged_player = dc_replace(
+            base.player, positions=tuple(all_positions),
+            metadata={**base.player.metadata, "two_way_merged": True},
+        )
         merged_result = ValuationResult(
             player=merged_player,
             total_value=total_value,
@@ -4635,6 +4643,7 @@ def _apply_redraft_pitcher_anchor(results: list[ValuationResult]) -> list[Valuat
     return [
         dc_replace(result, total_value=result.total_value * REDRAFT_PITCHER_ANCHOR)
         if result.player.pool in _PITCHER_POOLS and result.total_value > 0
+        and not result.player.metadata.get("two_way_merged")
         else result
         for result in results
     ]

@@ -1316,7 +1316,8 @@ class TestComputeTiers(unittest.TestCase):
 
 
 class TestRedraftPitcherAnchor(unittest.TestCase):
-    def _result(self, player_id, name, pool, total_value, positions=(), metadata=None):
+    def _result(self, player_id, name, pool, total_value, positions=(), metadata=None,
+                stats=None, category_values=None):
         from league_values.models import PlayerProjection, ValuationResult
 
         return ValuationResult(
@@ -1325,13 +1326,13 @@ class TestRedraftPitcherAnchor(unittest.TestCase):
                 "name": name,
                 "pool": pool,
                 "positions": positions,
-                "stats": {},
+                "stats": stats or {},
                 "metadata": metadata or {},
             }),
             total_value=total_value,
             raw_values={"K": 1.0},
             z_scores={"K": 2.0},
-            category_values={"K": 3.0},
+            category_values=category_values if category_values is not None else {"K": 3.0},
         )
 
     def test_apply_redraft_pitcher_anchor_only_demotes_positive_pitchers(self):
@@ -1421,11 +1422,12 @@ class TestRedraftPitcherAnchor(unittest.TestCase):
 
     def test_redraft_value_players_merges_two_way_before_anchor(self):
         hitter = self._result(
-            "shohei_H", "Shohei", "hitter", 10.0, metadata={"base_id": "shohei"}
+            "shohei_H", "Shohei", "hitter", 7.19, metadata={"base_id": "shohei"}
         )
         pitcher = self._result(
-            "shohei_P", "Shohei", "pitcher", 5.0,
-            positions=("SP",), metadata={"base_id": "shohei"}
+            "shohei_P", "Shohei", "pitcher", -2.0,
+            positions=("SP",), metadata={"base_id": "shohei"},
+            stats={"IP": 180 * 0.578 ** (1 / 0.75)}, category_values={"K": 4.5},
         )
 
         with patch.object(app_module.engine, "value_players", return_value=[pitcher, hitter]):
@@ -1433,7 +1435,41 @@ class TestRedraftPitcherAnchor(unittest.TestCase):
 
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].player.pool, app_module.PlayerPool.HITTER)
-        self.assertAlmostEqual(results[0].total_value, 15.0)
+        self.assertAlmostEqual(results[0].total_value, 7.19 + 0.578 * 4.5 * 0.92)
+
+    def test_two_way_nonpositive_extra_does_not_lower_base(self):
+        hitter = self._result("h", "Two Way", "hitter", 7.19, metadata={"base_id": "two"})
+        for raw in (-4.5, 0.0):
+            with self.subTest(raw=raw):
+                pitcher = self._result(
+                    "p", "Two Way", "starter", 5.0, metadata={"base_id": "two"},
+                    stats={"IP": 180}, category_values={"K": raw},
+                )
+                merged = app_module._merge_two_way_players([hitter, pitcher])
+                self.assertEqual(merged[0].total_value, hitter.total_value)
+
+    def test_two_way_pitcher_base_is_not_reanchored(self):
+        base = self._result("p1", "Two Way", "starter", 7.19, metadata={"base_id": "two"})
+        other = self._result(
+            "p2", "Two Way", "reliever", -2.0, metadata={"base_id": "two"},
+            stats={"IP": 65}, category_values={"K": 4.5},
+        )
+        with patch.object(app_module.engine, "value_players", return_value=[base, other]):
+            results = app_module._redraft_value_players([], object())
+        self.assertAlmostEqual(results[0].total_value, 7.19 + 4.5 * 0.92)
+
+    def test_two_way_extra_hitter_is_not_pitcher_anchored(self):
+        base = self._result("h1", "Two Way", "hitter", 7.19, metadata={"base_id": "two"})
+        other = self._result(
+            "h2", "Two Way", "hitter", -2.0, metadata={"base_id": "two"},
+            stats={"PA": 550}, category_values={"HR": 4.5},
+        )
+        merged = app_module._merge_two_way_players([base, other])
+        self.assertAlmostEqual(merged[0].total_value, 7.19 + 4.5)
+
+    def test_two_way_single_row_is_unchanged(self):
+        pitcher = self._result("p", "Pitcher", "pitcher", 7.19)
+        self.assertIs(app_module._merge_two_way_players([pitcher])[0], pitcher)
 
 
 class TestPlayingTimeFilter(unittest.TestCase):
