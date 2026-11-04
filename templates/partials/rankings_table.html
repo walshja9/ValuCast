@@ -49,6 +49,8 @@
                 {% if result.player.metadata.get('has_ros') == false %}
                 <span class="no-ros-badge">No projection</span>
                 {% endif %}
+                {% set hold_note = offseason_hold_note(result.player) %}
+                {% if hold_note %}<span class="no-ros-badge" title="{{ hold_note }}">Injury hold</span>{% endif %}
                 <div class="mobile-stat-strip" aria-label="{{ result.player.name }} category stats">
                     {% set ns = namespace(shown=0) %}
                     {% for col in display_columns %}

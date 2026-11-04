@@ -313,6 +313,41 @@ def test_redraft_player_card_preview_renders_for_hitters_and_pitchers(client, ro
     assert f"/redraft/player-card/{player_id}.png".encode() in response.data
 
 
+@pytest.mark.parametrize(
+    "profile, on_board",
+    [
+        ({"status": "injured", "offseason_hold": True}, True),
+        ({"status": "rehab", "offseason_hold": True}, True),
+        ({"status": "injured"}, False),
+        ({"status": "rehab"}, False),
+        ({"status": "available"}, True),
+    ],
+)
+def test_offseason_hold_stays_on_the_redraft_board(monkeypatch, profile, on_board):
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {"1": profile})
+    player = SimpleNamespace(metadata={"mlbam_id": 1})
+
+    assert app_module._is_live_redraft_projection(player) is on_board
+
+
+def test_offseason_hold_shows_on_redraft_row_and_detail(client, monkeypatch):
+    player = app_module.store.get_by_id(_first_redraft_player_id("pitcher"))
+    note = "End-of-season injury status held."
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        str(player.metadata["mlbam_id"]): {
+            "status": "injured", "offseason_hold": True, "hold_note": note,
+        },
+    })
+    headers = {"HX-Request": "true"}
+
+    detail = client.get(f"/player/{player.id}", headers=headers).get_data(as_text=True)
+    table = client.get("/rankings", query_string={"search": player.name},
+                       headers=headers).get_data(as_text=True)
+
+    assert note in detail
+    assert "Injury hold" in table
+
+
 def test_redraft_player_detail_share_link_carries_query_string(client):
     player_id = _first_redraft_player_id("hitter")
     query = "mode=categories&cats=R,HR&pcats=K,ERA&source=steamer"

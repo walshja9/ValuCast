@@ -795,8 +795,16 @@ def _is_live_redraft_projection(player):
     if not mlbam_id:
         return True
     profile = _mlb_availability_by_id().get(mlbam_id) or {}
+    # A hold keeps a value discount on an activated player; it never removes them from the board.
+    if profile.get("offseason_hold") is True:
+        return True
     status = str(profile.get("status") or "").lower()
     return status not in _PROJECTION_ONLY_UNAVAILABLE_STATUSES
+
+
+def _offseason_hold_note(player):
+    profile = _mlb_availability_by_id().get(_mlbam_id(player) or "") or {}
+    return profile.get("hold_note") if profile.get("offseason_hold") is True else None
 
 
 def _valuation_players(always_keep=None, active_store=None):
@@ -5045,6 +5053,7 @@ def _watch_identity_for_row(row) -> str | None:
 
 
 app.jinja_env.globals.update(
+    offseason_hold_note=_offseason_hold_note,
     watch_identity_for_player=_watch_identity_for_player,
     watch_identity_for_row=_watch_identity_for_row,
 )
