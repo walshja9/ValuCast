@@ -7,6 +7,7 @@ import pytest
 from werkzeug.datastructures import MultiDict
 
 import app as app_module
+from mlb.availability import availability_lookup, build_mlb_availability
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
@@ -330,6 +331,64 @@ def test_offseason_hold_stays_on_the_redraft_board(monkeypatch, profile, on_boar
     assert app_module._is_live_redraft_projection(player) is on_board
 
 
+def _transaction(transaction_id, day, text):
+    return {
+        "id": transaction_id, "date": day, "effectiveDate": day,
+        "person": {"id": 1, "fullName": "Guy"}, "description": text,
+    }
+
+
+_PLACED = _transaction(1, "2026-08-01", "Club placed RHP Guy on the 60-day injured list. Elbow.")
+_ACTIVATED = _transaction(2, "2026-11-02", "Club activated RHP Guy from the 60-day injured list.")
+
+
+@pytest.mark.parametrize(
+    "transactions, held, on_board",
+    [
+        # MLB's paperwork activation is the only thing the exemption covers.
+        ([_PLACED, _ACTIVATED], True, True),
+        # A later record is a current injury, so the normal redraft check applies.
+        ([_PLACED, _ACTIVATED, _transaction(
+            3, "2027-02-15", "Club placed RHP Guy on the 60-day injured list. Shoulder.")], False, False),
+        ([_PLACED, _ACTIVATED, _transaction(
+            3, "2027-02-15", "Club sent RHP Guy on a rehab assignment to Iowa.")], False, False),
+        # No activation means no hold: an old status stays under the normal check.
+        ([_PLACED], False, False),
+        # Hitters are not held, and their activation is accepted.
+        ([_transaction(1, "2026-08-01", "Club placed 1B Guy on the 60-day injured list. Knee."),
+          _transaction(2, "2026-11-02", "Club activated 1B Guy from the 60-day injured list.")], False, True),
+    ],
+)
+def test_redraft_exemption_covers_only_the_administrative_hold(monkeypatch, transactions, held, on_board):
+    payload = build_mlb_availability(
+        [{"metadata": {"mlbam_id": "1"}}],
+        generated_at="2027-02-20",
+        season=2026,
+        transactions=transactions,
+        schedule_fetcher=lambda season: [
+            {"date": "2026-09-27", "games": [{"status": {"detailedState": "Final"}}]},
+        ] if season == 2026 else [],
+        game_log_fetcher=lambda *_: [],
+    )
+    availability = availability_lookup(payload)
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: availability)
+
+    assert (availability["1"].get("offseason_hold") is True) is held
+    assert app_module._is_live_redraft_projection(
+        SimpleNamespace(metadata={"mlbam_id": 1})) is on_board
+
+
+def test_held_player_keeps_another_exclusion(monkeypatch):
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"status": "injured", "offseason_hold": True},
+    })
+    monkeypatch.setattr(app_module, "_ineligible_mlbam_ids", lambda: frozenset({"1"}))
+    monkeypatch.setattr(app_module, "filter_by_playing_time", lambda players, **_: players)
+    player = SimpleNamespace(id="1", metadata={"mlbam_id": 1})
+
+    assert app_module._valuation_players(active_store=SimpleNamespace(get_all=lambda: [player])) == []
+
+
 def test_offseason_hold_shows_on_redraft_row_and_detail(client, monkeypatch):
     player = app_module.store.get_by_id(_first_redraft_player_id("pitcher"))
     note = "End-of-season injury status held."
@@ -345,6 +404,7 @@ def test_offseason_hold_shows_on_redraft_row_and_detail(client, monkeypatch):
                        headers=headers).get_data(as_text=True)
 
     assert note in detail
+    assert "no injury discount to this redraft value" in detail
     assert "Injury hold" in table
 
 
