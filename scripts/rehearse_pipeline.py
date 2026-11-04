@@ -77,6 +77,7 @@ VARIANTS = (
     ("baseline_replay", (OFF,), False, False),
 )
 CONTROL_PLAYER = "Bobby Witt Jr."
+HELD_PROSPECT = "dynasty:Robby Snelling"
 
 out =Path(os.environ["REHEARSAL_OUT"])
 temp = Path(os.environ["RUNNER_TEMP"])
@@ -209,15 +210,15 @@ def same(check, left, right, name):
 
 def screen_names(variant):
     if TARGET == "2027":
-        return ["Justin Steele", "Ryan Pepiot", CONTROL_PLAYER]
+        return ["Justin Steele", "Ryan Pepiot", CONTROL_PLAYER, HELD_PROSPECT]
     if variant == "baseline":
-        return [CONTROL_PLAYER]
+        return [CONTROL_PLAYER, HELD_PROSPECT]
     # At 2026 the held pitchers on the redraft board are whoever the data says.
     payload = json.loads((out / variant / "valucast_mlb_availability.json").read_text(encoding="utf-8"))
     held = {str(row["mlbam_id"]) for row in payload["profiles"] if row.get("offseason_hold")}
     with (out / variant / "redraft_board.csv").open(encoding="ascii") as handle:
         rows = sorted((row for row in csv.DictReader(handle) if row["mlbam_id"] in held), key=lambda row: int(row["rank"]))
-    return [row["name"] for row in rows[:2]] + [CONTROL_PLAYER]
+    return [row["name"] for row in rows[:2]] + [CONTROL_PLAYER, HELD_PROSPECT]
 
 
 shared_env = dict(os.environ)
@@ -227,7 +228,8 @@ if sys.argv[1:] == ["--preflight"]:
         apply(patch)
         git("checkout", "--", patch[0])
     rows = screens("preflight", [CONTROL_PLAYER], shared_env)
-    if not (rows and all(row.get("found") and row.get("card_overflow") is not None for row in rows)):
+    if not (rows and all(row.get("found") and row.get("card_overflow") is not None and row.get("rank_in_view")
+                         and not row.get("dynasty_error") for row in rows)):
         fail("screens_preflight", rows)
     (out / "preflight_checks.json").write_text(json.dumps(required, indent=1), encoding="utf-8")
     raise SystemExit(1 if required else 0)
@@ -302,15 +304,21 @@ except (OSError, KeyError, ValueError) as exc:
     fail("proposed_lookups", str(exc))
 for row in screen_rows.get("proposed", []):
     if row["name"] == CONTROL_PLAYER:
-        if row.get("badge") or row.get("note"):
+        if row.get("badge") or row.get("note") or row.get("dynasty_note"):
             fail("screens_control", row)
+    elif row.get("dynasty_only"):
+        if not (row.get("dynasty_note") and row.get("dynasty_note_in_view") and row.get("risk_adjustment_shown")
+                and not row.get("dynasty_overflow")):
+            fail("screens_held_prospect", row)
     elif not (
-        row.get("found") and row.get("badge") and row.get("note") and row.get("no_discount_line")
-        and row.get("dynasty_note") and not row.get("row_overflow") and not row.get("card_overflow")
+        row.get("found") and row.get("badge") and row.get("badge_in_view") and row.get("note")
+        and row.get("no_discount_line") and row.get("redraft_note_in_view")
+        and row.get("dynasty_note") and row.get("dynasty_note_in_view") and row.get("dynasty_discount")
+        and not row.get("row_overflow") and not row.get("card_overflow") and not row.get("dynasty_overflow")
     ):
         fail("screens_held", row)
 for row in screen_rows.get("baseline", []):
-    if row.get("badge") or row.get("note"):
+    if row.get("badge") or row.get("note") or row.get("dynasty_note"):
         fail("screens_baseline", row)
     match = next((other for other in screen_rows.get("proposed", [])
                   if other["name"] == row["name"] and other["width"] == row["width"]), None)
