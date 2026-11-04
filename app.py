@@ -803,7 +803,8 @@ def _is_live_redraft_projection(player):
 
 
 def _offseason_hold_note(player):
-    profile = _mlb_availability_by_id().get(_mlbam_id(player) or "") or {}
+    mlbam_id = str(getattr(player, "mlbam_id", None) or _mlbam_id(player) or "")
+    profile = _mlb_availability_by_id().get(mlbam_id) or {}
     return profile.get("hold_note") if profile.get("offseason_hold") is True else None
 
 
