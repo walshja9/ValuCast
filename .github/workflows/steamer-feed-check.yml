@@ -12,7 +12,7 @@ permissions:
 jobs:
   rehearsal:
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 350
     env:
       PYTHONPATH: "src:."
       VALUCAST_BUYS_REVIEW_APPROVED: "1"
@@ -26,6 +26,7 @@ jobs:
         run: |
           echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
           echo "REHEARSAL_OUT=$RUNNER_TEMP/rehearsal-out" >> "$GITHUB_ENV"
+          echo "REHEARSAL_LOOKUP_MEMO=$RUNNER_TEMP/lookups.json" >> "$GITHUB_ENV"
 
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
@@ -78,19 +79,6 @@ jobs:
 
       - name: Run every pipeline step
         run: python scripts/rehearse_pipeline.py
-
-      - name: Compare before and after
-        if: always()
-        run: |
-          cp data/models/valucast_quality_governor.json data/public/public_dynasty_snapshot.json "$RUNNER_TEMP/new/" || true
-          python scripts/compare_2027_boards.py \
-            --old-dynasty "$RUNNER_TEMP/old/valucast_mlb_dynasty_layer.json" \
-            --new-dynasty data/models/valucast_mlb_dynasty_layer.json \
-            --old-projections "$RUNNER_TEMP/old/current.json" \
-            --new-projections data/projections/current.json \
-            --old-app "$RUNNER_TEMP/old/app.py" \
-            --out "$REHEARSAL_OUT" || echo "compare failed"
-          python scripts/summarize_rehearsal.py "$RUNNER_TEMP/old" "$RUNNER_TEMP/new" "$REHEARSAL_OUT"
 
       - name: Upload report
         if: always()

@@ -42,6 +42,31 @@ class OffseasonHoldLookupError(RuntimeError):
     pass
 
 
+def _rehearsal_memo(fetch, slim):
+    """Rehearsal only: every variant in a job sees the same schedule and game logs."""
+    path = Path(os.environ["REHEARSAL_LOOKUP_MEMO"])
+    memo = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+    def inner(*args):
+        key = f"{getattr(fetch, '__name__', 'fetch')}:{args}"
+        if key not in memo:
+            memo[key] = slim(fetch(*args))
+            path.write_text(json.dumps(memo), encoding="utf-8")
+        return memo[key]
+    return inner
+
+
+def _slim_schedule(days):
+    return [{"date": day.get("date"), "games": [
+        {"status": {"detailedState": (game.get("status") or {}).get("detailedState")}}
+        for game in day.get("games") or []
+    ]} for day in days]
+
+
+def _slim_logs(splits):
+    return [{"date": split.get("date")} for split in splits]
+
+
 def _date_part(value: Any) -> str | None:
     if not value:
         return None
@@ -338,7 +363,10 @@ def _apply_offseason_hold(
     }
     errors = []
     consecutive_failures = 0
-    fetch_schedule = schedule_fetcher or _fetch_schedule
+    hold_scope = os.environ.get("REHEARSAL_HOLD_SCOPE", "pitchers")
+    if hold_scope == "off":
+        return {"offseason_hold": summary}
+    fetch_schedule = _rehearsal_memo(schedule_fetcher or _fetch_schedule, _slim_schedule)
 
     def check_budget() -> None:
         if time.monotonic() - started > HOLD_LOOKUP_BUDGET_SECONDS:
@@ -397,7 +425,7 @@ def _apply_offseason_hold(
             [row for row in transactions if _event_kind(row) == "injured"], tracked_ids, as_of,
         ),
     })
-    fetch_logs = game_log_fetcher or _fetch_game_logs
+    fetch_logs = _rehearsal_memo(game_log_fetcher or _fetch_game_logs, _slim_logs)
     for profile in profiles:
         mlbam_id = str(profile["mlbam_id"])
         latest_date = profile.get("effective_date") or ""
@@ -410,7 +438,10 @@ def _apply_offseason_hold(
             and prior.get("status") in ACTIVE_STATUSES
             and stint.get("status") == "injured"
             and "60-day" in str(stint.get("list_type") or "")
-            and re.search(r"\b(?:RHP|LHP)\b", str(stint.get("description") or ""))
+            and (hold_scope == "all" or (
+                hold_scope == "pitchers"
+                and re.search(r"\b(?:RHP|LHP)\b", str(stint.get("description") or ""))
+            ))
             and "" < (placement.get("effective_date") or "") <= season_end
         )
         if not stale and not activated_hold:

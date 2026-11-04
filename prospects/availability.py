@@ -388,7 +388,10 @@ def _official_availability_signal(
     list_type = str(profile.get("list_type") or "")
     description = str(profile.get("description") or "")
     discount = _il_severity_discount(list_type, description)
-    if profile.get("offseason_hold") is True and profile.get("held_since"):
+    if (
+        profile.get("offseason_hold") is True and profile.get("held_since")
+        and __import__("os").environ.get("REHEARSAL_PROSPECT_CAP", "on") != "off"
+    ):
         discount = min(discount, HELD_IL_MAX_DISCOUNT)
     note = str(profile.get("hold_note") or description).strip()
     if not note:
