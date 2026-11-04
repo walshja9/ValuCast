@@ -14,7 +14,7 @@
       "SLG",
       "OPS"
     ],
-    "horizon_days": 138,
+    "horizon_days": 139,
     "horizon_sufficient": true,
     "metric": "rate_stat_mae_ratio_vs_forward_actuals",
     "min_horizon_days": 30,
@@ -8789,12 +8789,12 @@
     "steamer_ros_git_commit": "2e59439f8fea42a33c15108cc92e6208d4383d01",
     "window": {
       "as_of": "2026-06-18",
-      "elapsed_days": 138,
-      "proration_factor": 1.3663,
+      "elapsed_days": 139,
+      "proration_factor": 1.3762,
       "proration_method": "calendar_days_elapsed_over_regular_season_days_remaining; projection rows are treated as rest-of-season counts",
       "remaining_days_at_freeze": 101,
       "season_end": "2026-09-27",
-      "through": "2026-11-03"
+      "through": "2026-11-04"
     }
   },
   "gate": {
@@ -8808,9 +8808,9 @@
     "reason": "does not beat steamer_ros: -9.84% < required 2.0%",
     "sample_size": 759,
     "status": "fallback",
-    "validated_through": "2026-11-03"
+    "validated_through": "2026-11-04"
   },
-  "generated_at": "2026-11-03T11:34:53.115919+00:00",
+  "generated_at": "2026-11-04T11:34:42.961617+00:00",
   "live_source_flip": {
     "automatic": false,
     "default": "current",
@@ -8835,7 +8835,7 @@
       "reason": "does not beat steamer_ros: -4.91% < required 2.0%",
       "sample_size": 392,
       "status": "fallback",
-      "validated_through": "2026-11-03"
+      "validated_through": "2026-11-04"
     },
     "pitchers": {
       "activated_at": null,
@@ -8848,7 +8848,7 @@
       "reason": "does not beat steamer_ros: -19.69% < required 2.0%",
       "sample_size": 367,
       "status": "fallback",
-      "validated_through": "2026-11-03"
+      "validated_through": "2026-11-04"
     }
   },
   "role_scores": {
@@ -8928,15 +8928,6 @@
       "value_delta": -99.15
     },
     {
-      "live_value": null,
-      "marcel_value": 98.74,
-      "mlbam_id": "680718",
-      "name": "Addison Barger",
-      "only_in": "shadow",
-      "role": "hitter",
-      "value_delta": 98.74
-    },
-    {
       "live_value": 92.98,
       "marcel_value": null,
       "mlbam_id": "691406",
@@ -8947,12 +8938,12 @@
     },
     {
       "live_value": null,
-      "marcel_value": 83.75,
-      "mlbam_id": "676059",
-      "name": "Jordan Westburg",
+      "marcel_value": 82.94,
+      "mlbam_id": "680718",
+      "name": "Addison Barger",
       "only_in": "shadow",
       "role": "hitter",
-      "value_delta": 83.75
+      "value_delta": 82.94
     },
     {
       "live_value": 77.94,
@@ -8991,6 +8982,15 @@
       "value_delta": -74.19
     },
     {
+      "live_value": null,
+      "marcel_value": 74.12,
+      "mlbam_id": "676059",
+      "name": "Jordan Westburg",
+      "only_in": "shadow",
+      "role": "hitter",
+      "value_delta": 74.12
+    },
+    {
       "live_value": 74.03,
       "marcel_value": null,
       "mlbam_id": "677951",
@@ -9007,15 +9007,6 @@
       "only_in": "live",
       "role": "hitter",
       "value_delta": -73.72
-    },
-    {
-      "live_value": null,
-      "marcel_value": 73.24,
-      "mlbam_id": "666158",
-      "name": "Gavin Lux",
-      "only_in": "shadow",
-      "role": "hitter",
-      "value_delta": 73.24
     },
     {
       "live_value": 72.96,
@@ -9045,15 +9036,6 @@
       "value_delta": -71.98
     },
     {
-      "live_value": null,
-      "marcel_value": 71.59,
-      "mlbam_id": "666134",
-      "name": "Nolan Jones",
-      "only_in": "shadow",
-      "role": "hitter",
-      "value_delta": 71.59
-    },
-    {
       "live_value": 70.56,
       "marcel_value": null,
       "mlbam_id": "691023",
@@ -9070,15 +9052,6 @@
       "only_in": "live",
       "role": "hitter",
       "value_delta": -70.05
-    },
-    {
-      "live_value": null,
-      "marcel_value": 69.33,
-      "mlbam_id": "663697",
-      "name": "Jonathan India",
-      "only_in": "shadow",
-      "role": "hitter",
-      "value_delta": 69.33
     },
     {
       "live_value": 67.38,
@@ -9100,21 +9073,21 @@
     },
     {
       "live_value": null,
-      "marcel_value": 65.99,
-      "mlbam_id": "681343",
-      "name": "Shane Smith",
+      "marcel_value": 67.0,
+      "mlbam_id": "666158",
+      "name": "Gavin Lux",
       "only_in": "shadow",
-      "role": "pitcher",
-      "value_delta": 65.99
+      "role": "hitter",
+      "value_delta": 67.0
     },
     {
       "live_value": null,
-      "marcel_value": 65.04,
-      "mlbam_id": "681460",
-      "name": "Brooks Baldwin",
+      "marcel_value": 66.84,
+      "mlbam_id": "666134",
+      "name": "Nolan Jones",
       "only_in": "shadow",
       "role": "hitter",
-      "value_delta": 65.04
+      "value_delta": 66.84
     },
     {
       "live_value": 63.91,
@@ -9127,12 +9100,12 @@
     },
     {
       "live_value": null,
-      "marcel_value": 63.86,
-      "mlbam_id": "686752",
-      "name": "Ryan Pepiot",
+      "marcel_value": 63.68,
+      "mlbam_id": "663697",
+      "name": "Jonathan India",
       "only_in": "shadow",
-      "role": "pitcher",
-      "value_delta": 63.86
+      "role": "hitter",
+      "value_delta": 63.68
     },
     {
       "live_value": 11.15,
@@ -9142,6 +9115,33 @@
       "only_in": null,
       "role": "hitter",
       "value_delta": 63.58
+    },
+    {
+      "live_value": null,
+      "marcel_value": 63.45,
+      "mlbam_id": "681343",
+      "name": "Shane Smith",
+      "only_in": "shadow",
+      "role": "pitcher",
+      "value_delta": 63.45
+    },
+    {
+      "live_value": 62.51,
+      "marcel_value": null,
+      "mlbam_id": "693645",
+      "name": "Cam Schlittler",
+      "only_in": "live",
+      "role": "pitcher",
+      "value_delta": -62.51
+    },
+    {
+      "live_value": 62.48,
+      "marcel_value": null,
+      "mlbam_id": "701807",
+      "name": "Carson Benge",
+      "only_in": "live",
+      "role": "hitter",
+      "value_delta": -62.48
     }
   ]
 }
