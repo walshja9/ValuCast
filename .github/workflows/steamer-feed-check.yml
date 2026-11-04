@@ -1,40 +1,159 @@
-name: Steamer feed check
+name: Pipeline rehearsal, throwaway branch
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "10 12 * * *"
+    inputs:
+      target_season:
+        required: true
+      reviewed_sha:
+        description: The exact commit under review. Its hosted CI must pass first.
+        required: true
+      mode:
+        description: pipeline or faults
+        required: true
+        default: pipeline
 
 permissions:
   contents: read
-  issues: write
+  checks: read
 
 jobs:
-  check:
+  hosted_ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Wait for hosted CI on the reviewed commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ inputs.reviewed_sha }}
+        run: |
+          for attempt in $(seq 1 110); do
+            runs=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/check-runs?check_name=pytest")
+            total=$(echo "$runs" | jq '.total_count')
+            pending=$(echo "$runs" | jq '[.check_runs[] | select(.status != "completed")] | length')
+            bad=$(echo "$runs" | jq '[.check_runs[] | select(.status == "completed" and .conclusion != "success")] | length')
+            echo "attempt $attempt: pytest runs $total, pending $pending, not successful $bad"
+            if [ "$bad" -gt 0 ]; then echo "::error::hosted CI did not pass on $SHA"; exit 1; fi
+            if [ "$total" -gt 0 ] && [ "$pending" -eq 0 ]; then echo "hosted CI passed on $SHA"; exit 0; fi
+            sleep 60
+          done
+          echo "::error::hosted CI never finished on $SHA"
+          exit 1
+
+  faults:
+    needs: hosted_ci
+    if: inputs.mode == 'faults'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONPATH: "src:."
+      REHEARSAL_REVIEWED_SHA: ${{ inputs.reviewed_sha }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
-
-      - name: Check full-season Steamer feed
-        id: feed
-        run: python scripts/check_steamer_season.py
-
-      - name: Open the season flip review issue
-        if: steps.feed.outputs.verdict == 'live'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          cache: pip
+      - name: Install
         run: |
-          preseason=$(python -c "from scraper.season import is_preseason; print(is_preseason())")
-          if [ "$preseason" != "False" ]; then
-            exit 0
-          fi
-          title="Steamer 2027 looks live: review the season flip"
-          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
-          if [ -z "$issue" ]; then
-            gh issue create --title "$title" --body "The full-season Steamer feed includes at least 250 rows for 2025 draftees. Review the feed and TARGET_SEASON before flipping. Check: $RUN_URL"
-          fi
+          python -m pip install --upgrade pip > /dev/null
+          python -m pip install -r requirements.txt -e . pyyaml > /dev/null
+      - name: Inject lookup faults into the real build step
+        run: REHEARSAL_OUT="$RUNNER_TEMP/rehearsal-out" python scripts/rehearse_faults.py
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pipeline-faults
+          path: ${{ runner.temp }}/rehearsal-out
+          retention-days: 3
+          if-no-files-found: error
+
+  rehearsal:
+    needs: hosted_ci
+    if: inputs.mode == 'pipeline'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      PYTHONPATH: "src:."
+      VALUCAST_BUYS_REVIEW_APPROVED: "1"
+      REHEARSAL_REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+      REHEARSAL_TARGET: ${{ inputs.target_season }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Pin date
+        run: |
+          echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+          echo "REHEARSAL_OUT=$RUNNER_TEMP/rehearsal-out" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Restore plate-discipline cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/pitch_discipline_pitch_cache.json
+            data/prospects/raw/.pitch_discipline_cache_ready
+          key: plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            plate-discipline-v1-${{ runner.os }}-
+
+      - name: Restore AAA-Statcast cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            aaa-statcast-v1-${{ runner.os }}-
+
+      - name: Restore scouting cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: data/models/valucast_scouting_llm_cache.json
+          key: scouting-llm-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            scouting-llm-v1-${{ runner.os }}-
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip > /dev/null
+          python -m pip install -r requirements.txt -e . pytest playwright > /dev/null
+          python -m playwright install --with-deps chromium > /dev/null
+
+      - name: Preflight before the long run
+        run: python scripts/rehearse_pipeline.py --preflight
+
+      - name: Preserve what master published
+        run: |
+          mkdir -p "$REHEARSAL_OUT" "$RUNNER_TEMP/old" "$RUNNER_TEMP/new"
+          cp data/models/valucast_mlb_dynasty_layer.json data/projections/current.json data/models/valucast_quality_governor.json data/public/public_dynasty_snapshot.json "$RUNNER_TEMP/old/"
+          git show origin/master:app.py > "$RUNNER_TEMP/old/app.py"
+
+      - name: Set rehearsal season
+        run: |
+          sed -i "s/^TARGET_SEASON = 2026/TARGET_SEASON = ${{ inputs.target_season }}/" scraper/season.py
+          python -c "from scraper.season import TARGET_SEASON, CONTEXT_SEASON; print('target', TARGET_SEASON, 'context', CONTEXT_SEASON); assert TARGET_SEASON == ${{ inputs.target_season }}; assert CONTEXT_SEASON == 2026"
+
+      - name: Run every pipeline step
+        run: python scripts/rehearse_pipeline.py
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pipeline-rehearsal-${{ inputs.target_season }}
+          path: ${{ runner.temp }}/rehearsal-out
+          retention-days: 3
+          if-no-files-found: error
