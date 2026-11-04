@@ -419,28 +419,26 @@ def test_offseason_hold_note_resolves_dynasty_and_redraft_ids(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "player_type,held,discount,note_count,discount_sentence",
+    "player_type,held,note_count,discount_sentence",
     [
-        pytest.param("mlb", True, 0.12, 1, True, id="held-mlb"),
-        pytest.param("mlb", True, 0.0, 1, False, id="held-mlb-no-discount"),
-        pytest.param("mlb", False, 0.12, 0, False, id="non-held-mlb"),
-        pytest.param("prospect", True, 0.12, 1, False, id="held-prospect-no-duplicate"),
+        pytest.param("mlb", True, 1, True, id="held-mlb"),
+        pytest.param("mlb", False, 0, False, id="non-held-mlb"),
+        pytest.param("prospect", True, 1, False, id="held-prospect-no-duplicate"),
     ],
 )
-def test_offseason_hold_on_dynasty_card(
-    client, monkeypatch, player_type, held, discount, note_count, discount_sentence,
-):
+def test_offseason_hold_on_dynasty_card(client, monkeypatch, player_type, held, note_count, discount_sentence):
     from web.dynasty_models import DynastyRankingRow
 
     note = "End-of-season injury status held."
+    # Published MLB rows carry no components, so the card cannot read a discount from the row.
     row = DynastyRankingRow(
         id="offseason-test", name="Held Pitcher", player_type=player_type,
         positions=("SP",), team="TST", age=27, dynasty_rank=1,
         dynasty_value=50.0, status="active", mlbam_id="1",
         metadata={"components": {
-            "availability_risk_discount": discount,
-            "availability": {"status": "injured", "note": note if player_type == "prospect" else None},
-        }},
+            "availability_risk_discount": 0.12,
+            "availability": {"status": "injured", "note": note},
+        }} if player_type == "prospect" else {},
     )
     monkeypatch.setattr(app_module, "dd_store", SimpleNamespace(is_available=True))
     monkeypatch.setattr(app_module, "_build_dynasty_player_detail_context", lambda *_: {"row": row})
@@ -453,9 +451,7 @@ def test_offseason_hold_on_dynasty_card(
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert html.count(note) == note_count
-    assert ("This dynasty value includes a " in html) is discount_sentence
-    if discount_sentence:
-        assert f"{note} This dynasty value includes a 12.0% injury discount." in html
+    assert (f"{note} This dynasty value includes an injury discount." in html) is discount_sentence
     assert "Role, playing time &amp; availability" not in html
 
 

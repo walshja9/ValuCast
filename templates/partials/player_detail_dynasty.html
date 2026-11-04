@@ -80,7 +80,7 @@
     <div class="detail-body">
         {% if not row.is_prospect %}
         {% set hold_note = offseason_hold_note(row) %}
-        {% if hold_note %}<p class="sample-context-note">{{ hold_note }}{% if row.availability_risk_discount %} This dynasty value includes a {{ "%.1f%%" | format(row.availability_risk_discount * 100) }} injury discount.{% endif %}</p>{% endif %}
+        {% if hold_note %}<p class="sample-context-note">{{ hold_note }} This dynasty value includes an injury discount.</p>{% endif %}
         {% endif %}
         <section class="detail-section card-reading-guide" aria-label="How to read this card">
             <p><strong>Skill</strong> is what the performance evidence supports. <strong>Opportunity</strong> is projected playing time, role, and availability. <strong>ValuCast Value</strong> turns both into the fantasy decision for this format. <strong>Confidence</strong> shows how stable that read is; if it is absent, ValuCast has not rated it.</p>
