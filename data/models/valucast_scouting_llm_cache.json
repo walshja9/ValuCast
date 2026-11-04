@@ -112,7 +112,7 @@
     },
     "529017_pitcher": {
       "hard_ok": true,
-      "hash": "9667a736ea69da9913fdc4497b4ed03e",
+      "hash": "3ce78e5f3d65f6da0eb65f4f6eafcec4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1213,7 +1213,7 @@
     },
     "624413_hitter": {
       "hard_ok": true,
-      "hash": "5fbec78b9b10c63f7e3a803ee76f66b6",
+      "hash": "07a48ee5267f8f860595c5a6ddc1f5cb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1574,7 +1574,7 @@
     },
     "646240_hitter": {
       "hard_ok": true,
-      "hash": "ae2ca780331579c532d4ca357bfbfabd",
+      "hash": "2da464160f39e3c8da7cd84879f95555",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1626,7 +1626,7 @@
     },
     "647336_pitcher": {
       "hard_ok": true,
-      "hash": "1e76faee9595156db47f4baef8a34e68",
+      "hash": "47e634419880aa1616307f2a921fe06b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -1645,9 +1645,7 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "reused_against_updated_grounding": true,
-      "team": "ARI",
-      "text": "The walk rate carries this profile. At 5.1%, Soroka sits comfortably ahead of most starters in limiting free passes, and that control keeps him functional even when the swing-and-miss isn't there, because the 22.2% whiff rate is below average and doesn't figure to bail him out on its own. What makes the contact picture livable is his 33.6% chase rate, which nudges hitters into weak decisions without requiring dominant stuff, and the 87.7 mph average exit velocity suggests he's managing damage reasonably well despite the modest 93.7 mph fastball. The 3.50 projected ERA looks like a favorable read on a guy whose xERA sits at 4.01, so the gap between those two numbers is the real tell: if the command holds, he's a serviceable mid-rotation arm with real innings value; if the walk rate creeps and hitters stop chasing, the xERA is closer to his true floor.",
+      "text": "The ERA-to-xERA gap is the whole argument here. Soroka's 3.42 ERA projection sits well below his 4.12 xERA, and the Statcast profile explains both why the gap exists and why it probably won't hold. His 34.1% chase rate and 6.1% walk rate tell the same story: hitters are either missing the zone or choosing not to swing, and he almost never gives in. The problem is a 23.0% whiff rate that sits below average, meaning hitters who do make contact are making it count, and the 87.6 mph average exit velocity is what's keeping the ERA closer to the projection than to the xERA. If that contact management softens, the 4.12 xERA is the truer outcome, and 117.1 innings of league-average starting pitching is what remains.",
       "valid": true
     },
     "650333_hitter": {
@@ -2674,7 +2672,7 @@
     },
     "665019_hitter": {
       "hard_ok": true,
-      "hash": "5c31c9bf20e6356bd878dfe4e6b15a6a",
+      "hash": "b122d7db8a9a0b5a420809935aa5e39b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -2693,6 +2691,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "MIN",
       "text": "The power contact is legitimate: 91.9 mph average exit velocity and a 46.1% hard-hit rate both grade out well above league average, and the .456 xSLG backs up a projection of 27 home runs over a near-full season. The problem is the walk rate. At 6.7% BB, there's almost no margin for error in a .298 OBP, and when pitchers figure out his 32.6% chase rate, the at-bats get ugly fast. If the discipline holds where it is, he profiles as a second-division regular who hits for real power at both corners; if it erodes, you're looking at a platoon piece with a loud exit-velo card and not much else.",
       "valid": true
     },
@@ -4194,7 +4194,7 @@
     },
     "671277_hitter": {
       "hard_ok": true,
-      "hash": "a61b031c014cf19dd5ffb6458a2d2c68",
+      "hash": "f65a76a113fff61165fd961e74aece2f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -4246,7 +4246,7 @@
     },
     "671655_hitter": {
       "hard_ok": true,
-      "hash": "c504189162e17faad620c9f569782ee8",
+      "hash": "4afc23eb18b45334249434be2f6f904a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -4394,7 +4394,7 @@
     },
     "672012_hitter": {
       "hard_ok": true,
-      "hash": "43d42d0d285cccb8faa82a8965e4eb11",
+      "hash": "b646c9577e9a1831478e791b1e1a480c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -4759,7 +4759,7 @@
     },
     "675085_hitter": {
       "hard_ok": true,
-      "hash": "197cca508825bc4ca46331d69770b36f",
+      "hash": "b8392e2f4a7e35890eeac4fe186b6b38",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -4811,7 +4811,7 @@
     },
     "675455_hitter": {
       "hard_ok": true,
-      "hash": "74b70f9c8c55db9a913723f75105e9fe",
+      "hash": "6a6b22754a9acdf2d9196599db4f1896",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5221,7 +5221,7 @@
     },
     "677337_pitcher": {
       "hard_ok": true,
-      "hash": "634238c451400433504405d5f08b8dee",
+      "hash": "74f17840f7bbfd2ad75fa795cf4a108d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5277,7 +5277,7 @@
     },
     "677578_hitter": {
       "hard_ok": true,
-      "hash": "aaa3cd21e547fb121c121580791725f4",
+      "hash": "14999a004c4fbbe23af6fe74c387e2d7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5624,7 +5624,7 @@
     },
     "678577_hitter": {
       "hard_ok": true,
-      "hash": "e61e6b9ef04b5109c962f24acf6be13b",
+      "hash": "f1399778ba72d37fa3d76b004949a425",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5770,7 +5770,7 @@
     },
     "679922_pitcher": {
       "hard_ok": true,
-      "hash": "93e25b2a353811b5b2d08d6af2f8de55",
+      "hash": "6c2f0bc02c72866a4df520dd70308d30",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -5796,7 +5796,7 @@
     },
     "680572_pitcher": {
       "hard_ok": true,
-      "hash": "420587fb10a56fee0f63ce4dbb1afe78",
+      "hash": "63526a4a67544cb619aaec25c71ea1cc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6134,7 +6134,7 @@
     },
     "681393_hitter": {
       "hard_ok": true,
-      "hash": "9cbca98f0019314cccd1c8e0e08e68b1",
+      "hash": "1e155159a87b9c174c7f6888940e7409",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6312,7 +6312,7 @@
     },
     "682607_pitcher": {
       "hard_ok": true,
-      "hash": "7e2fa51ba633b83c30432bf5ba695625",
+      "hash": "8148be23c6f7b010a4d1a71e97ccbd32",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6338,7 +6338,7 @@
     },
     "682617_hitter": {
       "hard_ok": true,
-      "hash": "75e215df96e4530890517627a4bd416e",
+      "hash": "c0cdc96db065ed39ba9473ebc4251e02",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6418,7 +6418,7 @@
     },
     "682634_hitter": {
       "hard_ok": true,
-      "hash": "53488fafdade77f306d08c19462e2a9c",
+      "hash": "fe6bc8bdb34d0ca75e8ce1e4a1d24774",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6602,7 +6602,7 @@
     },
     "682982_pitcher": {
       "hard_ok": true,
-      "hash": "42a3f9b41f38293b0046d2058a8e8b9c",
+      "hash": "a0864c4c04d1b9d4d70317da579fc8c1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6714,7 +6714,7 @@
     },
     "682995_pitcher": {
       "hard_ok": true,
-      "hash": "795a6895fd6aa6024ccc459befda6c57",
+      "hash": "e8287274021f42e4352bdd633e922bc8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6879,7 +6879,7 @@
     },
     "683090_hitter": {
       "hard_ok": true,
-      "hash": "29b0f834f7fe90352d51ba4659c1e399",
+      "hash": "64f30f162037fea3c2803c64b55f9af2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6905,7 +6905,7 @@
     },
     "683093_pitcher": {
       "hard_ok": true,
-      "hash": "340877f66725e00c2b360127b4575a33",
+      "hash": "f9948dd5336c16e1b9d80e3314d94f1a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6931,7 +6931,7 @@
     },
     "683100_pitcher": {
       "hard_ok": true,
-      "hash": "98527aba39c1a7c5512e74831fecae58",
+      "hash": "6b54bf9f1f5b1a0c152c78933cc3dd8a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -6983,7 +6983,7 @@
     },
     "683235_pitcher": {
       "hard_ok": true,
-      "hash": "9e9445a43065e3d6d3274e32c8d500b5",
+      "hash": "776655173c0efd81da166e2fef79a00f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7039,7 +7039,7 @@
     },
     "683352_pitcher": {
       "hard_ok": true,
-      "hash": "96d403224800e06532f610f08edb40c5",
+      "hash": "8552bfd77ac8cef55f2eda31235ffabc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7091,7 +7091,7 @@
     },
     "683363_pitcher": {
       "hard_ok": true,
-      "hash": "8c7729dc00f70eb97a9c88fd1eefb190",
+      "hash": "3c7d409920dc46854f5a9561dc8eab17",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7117,7 +7117,7 @@
     },
     "683454_hitter": {
       "hard_ok": true,
-      "hash": "b6de527a0aee46b5666d28fd0d8ef8ce",
+      "hash": "0206b21f4475b186eee9237e49837786",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7191,7 +7191,7 @@
     },
     "683679_hitter": {
       "hard_ok": true,
-      "hash": "cac633aa2e3d6f69d99020bffe457392",
+      "hash": "9810e08fbf2ac5f9abf0a9f67db68a0c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7344,7 +7344,7 @@
     },
     "684516_pitcher": {
       "hard_ok": true,
-      "hash": "9e6125e922028adad9cd604c71dafc2c",
+      "hash": "abe3cfb99b820324c426e9669ae4e58a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7370,7 +7370,7 @@
     },
     "685326_pitcher": {
       "hard_ok": true,
-      "hash": "a2dcdcae4d4cab709735f2eaa2f35067",
+      "hash": "eea4863fa313420a424656d8c1b73ba9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7674,7 +7674,7 @@
     },
     "686796_pitcher": {
       "hard_ok": true,
-      "hash": "5d9bb544a046e18676fb0a924de2611e",
+      "hash": "780187acd2ddc4e3bb45aa7e6d5db067",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7932,7 +7932,7 @@
     },
     "687238_pitcher": {
       "hard_ok": true,
-      "hash": "158ff70a05683e9eb49389f0cb7fd035",
+      "hash": "e0609414e1ea9968a6b65eabc1559f98",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -7951,6 +7951,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "BAL",
       "text": "The walk rate is the problem, and 123 innings of evidence makes it hard to dismiss. Across AAA & AA in 2026, Bright has issued 58 walks, and the MLB translation holds that number at 4.2 BB/9, a full point above what major-league starters typically allow. The strikeout rate translates to 8.4 per nine, close enough to league average that there's no swing-and-miss ceiling to offset the free passes. A 6.7 ERA and 1.6 WHIP across AAA & AA are the expected outcome from that combination, and the percentile profile, 16th in ERA with a 36th-percentile WHIP, shows no sign the shape is changing. If the control tightens, the floor is a depth arm; if it doesn't, there's no alternate path to a roster.",
       "valid": true
     },
@@ -7982,7 +7984,7 @@
     },
     "687273_pitcher": {
       "hard_ok": true,
-      "hash": "c7c84fb23b36f2b72cc0558ff5b979b0",
+      "hash": "f5e3a73229f8dce6a421877ea6b0a6a1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8287,7 +8289,7 @@
     },
     "687627_hitter": {
       "hard_ok": true,
-      "hash": "1a71a0107aa67e08dbbece4033461a93",
+      "hash": "19712a923754b5619028cdd326720a6c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8351,7 +8353,7 @@
     },
     "687749_hitter": {
       "hard_ok": true,
-      "hash": "f30c0d9a1703fb6c028304dba4427960",
+      "hash": "a42043a2a8fdbe4aec92b3dc0b559f6b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8377,7 +8379,7 @@
     },
     "687762_pitcher": {
       "hard_ok": true,
-      "hash": "44187c07be22e98691483c4352a62b0a",
+      "hash": "03b9999457675f3847920c6ead5877d5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8508,7 +8510,7 @@
     },
     "688422_pitcher": {
       "hard_ok": true,
-      "hash": "5d48689ad71333ccca9d2a741e7ad0a1",
+      "hash": "0c7a3ea11e0562091aeb013df9636dbf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8534,7 +8536,7 @@
     },
     "688457_hitter": {
       "hard_ok": true,
-      "hash": "7413563dc1bfd998f786a9b1dbd6cf24",
+      "hash": "f1292fcf07ef6ded345af44a76d699df",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8560,7 +8562,7 @@
     },
     "688460_hitter": {
       "hard_ok": true,
-      "hash": "677a9d33b2935b7d040682bfc1aa1176",
+      "hash": "06b1f4db8c73c960b82d175fa4f0c4c8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8586,7 +8588,7 @@
     },
     "688867_pitcher": {
       "hard_ok": true,
-      "hash": "53b9321682b668a1b3f248ac0c3957fc",
+      "hash": "725ed3457338032bc1190d6c840902aa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8668,7 +8670,7 @@
     },
     "689200_hitter": {
       "hard_ok": true,
-      "hash": "cf7db86d7fc006052cee943b23955fca",
+      "hash": "478bc549321dbb09d42d52447867000a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8718,7 +8720,7 @@
     },
     "689275_pitcher": {
       "hard_ok": true,
-      "hash": "72e4f237d62927a7278fe684f092e54c",
+      "hash": "509f8b961a305dac848ee96ceb15fd8b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8782,7 +8784,7 @@
     },
     "689441_pitcher": {
       "hard_ok": true,
-      "hash": "062d86731c5173acd2602f01ed920d21",
+      "hash": "fe8699e4b84b531e39dd17ceade4293a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8834,7 +8836,7 @@
     },
     "689818_pitcher": {
       "hard_ok": true,
-      "hash": "fbefbbd242e249024d9ddc4bed6e0f47",
+      "hash": "2489b57cafc640bd2b3a7986085d7f14",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8899,7 +8901,7 @@
     },
     "690667_pitcher": {
       "hard_ok": true,
-      "hash": "8f4ce1dfb1cd025a5392a77447b90edd",
+      "hash": "de3416b7e82944554b8e0d22a1b70c69",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8951,7 +8953,7 @@
     },
     "690961_hitter": {
       "hard_ok": true,
-      "hash": "a060da7ab8371b773557525047f8af2c",
+      "hash": "d3368fef1fef2fb745d75b56327ae434",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -8977,7 +8979,7 @@
     },
     "690971_hitter": {
       "hard_ok": true,
-      "hash": "089ef3830a54019dfc1b4208f9193f92",
+      "hash": "de725a7d977fe719559663f71edd838e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9003,7 +9005,7 @@
     },
     "690978_pitcher": {
       "hard_ok": true,
-      "hash": "5dd9662ebf07946ff469f91d6d3110c1",
+      "hash": "8f45d1663304d790b7c89564254fd431",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9029,7 +9031,7 @@
     },
     "690981_pitcher": {
       "hard_ok": true,
-      "hash": "d5ceae1ae08a340e2a7cd1c0ec46b764",
+      "hash": "4d1d5b48df8086f45b3ef384b82b7ccc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9183,7 +9185,7 @@
     },
     "691001_hitter": {
       "hard_ok": true,
-      "hash": "c294e2084fa6b94d350427d1bd20f6a7",
+      "hash": "2a454c539bbb2b110cd171341762a90d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9209,7 +9211,7 @@
     },
     "691002_hitter": {
       "hard_ok": true,
-      "hash": "f239de5cf313e49b9681179a53e504da",
+      "hash": "45fc011001fc4972b90d26d37ec944bf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9311,7 +9313,7 @@
     },
     "691021_hitter": {
       "hard_ok": true,
-      "hash": "c0544ac1b07bf1d00b8b6e1ff43d13dc",
+      "hash": "ea0ac424146f467b42d15d70eb519008",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9361,7 +9363,7 @@
     },
     "691024_hitter": {
       "hard_ok": true,
-      "hash": "94df4eeb764aeb331804589799d4b2bf",
+      "hash": "66a2a1254296a7f3fc5757a59656c4c9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9449,7 +9451,7 @@
     },
     "691181_hitter": {
       "hard_ok": true,
-      "hash": "f28c951db73579aac60dcd5d5ce11bf5",
+      "hash": "9371012c01f48d6d41c4205ae1dfc444",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9475,7 +9477,7 @@
     },
     "691251_pitcher": {
       "hard_ok": true,
-      "hash": "483b53510ba4465938a714a4bfdc55d8",
+      "hash": "c6f02b180af5d13bcee7a90b55b8889e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9518,7 +9520,7 @@
     },
     "691277_hitter": {
       "hard_ok": true,
-      "hash": "f8be091620bc5efe7366e11fff16ebe1",
+      "hash": "aede86657ed53d7b99a825c3f81deb63",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9544,7 +9546,7 @@
     },
     "691292_hitter": {
       "hard_ok": true,
-      "hash": "962888be5b5db146898c0640a8c5793f",
+      "hash": "3c39f13abe966cb3ff117b40e48eaf77",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9585,7 +9587,7 @@
     },
     "691369_hitter": {
       "hard_ok": true,
-      "hash": "b60591f489198870fd94bcf0a958ae06",
+      "hash": "359f9b6803b9c63a5e8653a4cb6eae8f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9611,7 +9613,7 @@
     },
     "691373_hitter": {
       "hard_ok": true,
-      "hash": "e04eaff0395d6b3cd8fb536c1c449efb",
+      "hash": "4a052bc669e9d646f48e63d2fcddee80",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9637,7 +9639,7 @@
     },
     "691384_pitcher": {
       "hard_ok": true,
-      "hash": "09a203a253ecae2cce80297af7c63472",
+      "hash": "c2471ab1197697ed90ec0359b8af3700",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9715,7 +9717,7 @@
     },
     "691441_pitcher": {
       "hard_ok": true,
-      "hash": "6b5dac53897608b95a3e78804d710792",
+      "hash": "44eee2c4caacf7ba9bfecfcc120c3b5e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9817,7 +9819,7 @@
     },
     "691620_hitter": {
       "hard_ok": true,
-      "hash": "daf4d46344196c1d38d0271445b2f963",
+      "hash": "1846ee3ff1c8b3dd4bfaaa0da9727796",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -9858,7 +9860,7 @@
     },
     "691641_pitcher": {
       "hard_ok": true,
-      "hash": "57849e040c390d5f8367dd3c1b52f8a5",
+      "hash": "c356836286fe5e7105c7e32fccbb5b63",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10011,7 +10013,7 @@
     },
     "691739_pitcher": {
       "hard_ok": true,
-      "hash": "d9331b5388ef8906135fe3d3e5c5f0e1",
+      "hash": "959c55b193795f5af3e24c076372f72b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10037,7 +10039,7 @@
     },
     "691765_pitcher": {
       "hard_ok": true,
-      "hash": "e99de1521a3c8b0814724ec778023362",
+      "hash": "d332fba0d5c0187cb622619371fdee5f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10063,7 +10065,7 @@
     },
     "691775_hitter": {
       "hard_ok": true,
-      "hash": "6582e48db5c7b1516abd77ff792c4b81",
+      "hash": "c7bd1e85e4d9576aa427fdbef73f114b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10089,7 +10091,7 @@
     },
     "691776_pitcher": {
       "hard_ok": true,
-      "hash": "fcba8558c53e8f32c9c5a28879d93019",
+      "hash": "a08eb484eabeaa9f8cd995ef6f180306",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10156,7 +10158,7 @@
     },
     "691786_pitcher": {
       "hard_ok": true,
-      "hash": "7ac5db391f040f0f2ca3141b58aa61af",
+      "hash": "25f72a9bc1baf1d0ced86296427e3cb3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10182,7 +10184,7 @@
     },
     "691789_hitter": {
       "hard_ok": true,
-      "hash": "99a8d92d6aa62af38f31d0599ed14e0e",
+      "hash": "1a577c0628029a29e9ff149e18013eb1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10208,7 +10210,7 @@
     },
     "691795_pitcher": {
       "hard_ok": true,
-      "hash": "03a23ec88925d125754844ade1399330",
+      "hash": "36a1496a62a3d736e24fc4c876c3f1b1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10286,7 +10288,7 @@
     },
     "691858_hitter": {
       "hard_ok": true,
-      "hash": "38b6cb012ad73045aeadd446eceb4dac",
+      "hash": "82c7e6266471df237aa2dd09672077be",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10312,7 +10314,7 @@
     },
     "691907_hitter": {
       "hard_ok": true,
-      "hash": "ced0dbd0be8b9016fb7298524bc1adb0",
+      "hash": "d18c25d4fe5b7cb72ada938ff38b675e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10320,11 +10322,9 @@
         "derived_word_number_problems": [],
         "handedness_problems": [],
         "hard_ok": true,
-        "league_average_scaffold_problems": [
-          "league-average scaffold variant 'below the MLB average'"
-        ],
+        "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
-        "ok": false,
+        "ok": true,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
@@ -10333,8 +10333,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The walk rate carries the argument here. Cheng has drawn 47 walks against 83 strikeouts across 349 AAA plate appearances in 2026, and that 14% walk rate translates to an 11.0% MLB equivalent, well above what the average big-leaguer runs. The problem is that the power doesn't follow: a .149 ISO at AAA shrinks to a .130 MLB equivalent, sitting below the MLB average ISO of .150, which means the patient approach is propping up a profile that doesn't have a carrying tool behind it. If the walks hold and he adds even modest pull-side pop, you get a passable utility piece; if the contact stays this thin and the power doesn't develop, what's left is a depth shortstop with a good eye and not much else.",
-      "valid": false
+      "text": "The walk rate is the loudest thing in this profile, and it doesn't quite save it. Cheng has drawn 47 walks in 349 AAA plate appearances, a 14% clip that translates to 11% at the MLB level, well clear of the 8.5% most big-leaguers post, but the power strips out almost entirely in translation: that .149 ISO at AAA becomes .130, which leaves a patient shortstop with ordinary thump rather than a disciplined one with sneaky pop. The strikeout picture is essentially a wash, 24% at AAA translating to 24.4% against big-league pitching, so the contact quality isn't hiding anything. If the walk rate holds in full and the speed (10 stolen bases at AAA) adds a dimension, he's a usable bench piece with legitimate on-base skills; if neither translates cleanly, what's left is a depth shortstop.",
+      "valid": true
     },
     "691913_hitter": {
       "hard_ok": true,
@@ -10367,7 +10367,7 @@
     },
     "691946_pitcher": {
       "hard_ok": true,
-      "hash": "b4cf813e1d0b439bb0d583749dc3da38",
+      "hash": "f93318de8734c65db69756d76276c157",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10419,7 +10419,7 @@
     },
     "692150_hitter": {
       "hard_ok": true,
-      "hash": "c0964e0151000e706c491cacf6b93da4",
+      "hash": "7b9a8f28b91bdf9d8633192babb2f73a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10518,7 +10518,7 @@
     },
     "692371_hitter": {
       "hard_ok": true,
-      "hash": "14b43022a08b000c22dc436cc7e4ee64",
+      "hash": "4a0cd851ea22e87d7425c51489767163",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10570,7 +10570,7 @@
     },
     "692416_hitter": {
       "hard_ok": true,
-      "hash": "9e9b3805e1dfb6c354043254015cdf02",
+      "hash": "ba0d105a0c7121fdd3b332d6d0725ab7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10922,7 +10922,7 @@
     },
     "694183_hitter": {
       "hard_ok": true,
-      "hash": "fbf745df0fdca4d77ae86db99fc85eb9",
+      "hash": "82156a8e8b87e9f5f3b5a35e6693bc33",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10972,7 +10972,7 @@
     },
     "694196_hitter": {
       "hard_ok": true,
-      "hash": "dc3c16cee3dbf108b3ce71654832752f",
+      "hash": "fb7b0709642ec00c8f996d068db8fa34",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -10998,7 +10998,7 @@
     },
     "694197_hitter": {
       "hard_ok": true,
-      "hash": "287db45bd3e1cc33291ea181ff86ebe3",
+      "hash": "5b86d4d3b23318277b427cde4b45517c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11069,7 +11069,7 @@
     },
     "694211_hitter": {
       "hard_ok": true,
-      "hash": "bc226f7a1425b3bec643c9eb6c17d106",
+      "hash": "24bd475927e05c6ef91c89b731ec4b83",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11121,7 +11121,7 @@
     },
     "694214_hitter": {
       "hard_ok": true,
-      "hash": "54d115d3dbaf108f8e981f84cd24e20d",
+      "hash": "26dd5be5507a7a9980b3c5965d01c713",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11147,7 +11147,7 @@
     },
     "694224_hitter": {
       "hard_ok": true,
-      "hash": "b3f4022a6d8746561632066633b50314",
+      "hash": "14b09b72bdda05948b4e0bf2e5fba944",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11173,7 +11173,7 @@
     },
     "694230_hitter": {
       "hard_ok": true,
-      "hash": "f58e16830da5aa03e5c4dd915359e988",
+      "hash": "cba82bf9a9df574c621a50bc60f6e12d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11249,7 +11249,7 @@
     },
     "694345_pitcher": {
       "hard_ok": true,
-      "hash": "5a41d5eb8341070e43f12092daca57d2",
+      "hash": "94926ea56e2cfd45c1ed643e956bba25",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11275,7 +11275,7 @@
     },
     "694346_pitcher": {
       "hard_ok": true,
-      "hash": "c3d07dd2fc00ee69095bbf59e849ab11",
+      "hash": "4f8b345969e8f42ada87c2ebb4c38715",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11301,7 +11301,7 @@
     },
     "694351_hitter": {
       "hard_ok": true,
-      "hash": "a3944b50340d93d5dc94aeb242de716d",
+      "hash": "9ae5ac5493ef95952726528c63f8b35b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11353,7 +11353,7 @@
     },
     "694358_pitcher": {
       "hard_ok": true,
-      "hash": "03524023a02006244ced5690887f84cf",
+      "hash": "2a6f7dacf0d63fcd9b7cc1e453ddd0b2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11379,7 +11379,7 @@
     },
     "694370_pitcher": {
       "hard_ok": true,
-      "hash": "474c903c64ecab0733b583859fa0b5ac",
+      "hash": "8218e81fb94f39bfab784a7c0e88d9d4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11405,7 +11405,7 @@
     },
     "694371_hitter": {
       "hard_ok": true,
-      "hash": "c4cd85807d94c0af74c1b5f4057518c9",
+      "hash": "12f94e37218f1b438b870282e41427f1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11478,7 +11478,7 @@
     },
     "694385_hitter": {
       "hard_ok": true,
-      "hash": "600d20ec3c2f0dd11eb0ba709ddf1762",
+      "hash": "12268e7762bb996376c7746a575d74a0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11530,7 +11530,7 @@
     },
     "694395_pitcher": {
       "hard_ok": true,
-      "hash": "4aea1eb47a6e85b6feb0bb14690afe8a",
+      "hash": "678118216505f20b41973b6e34e1624b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11556,7 +11556,7 @@
     },
     "694397_pitcher": {
       "hard_ok": true,
-      "hash": "154dada8d4454fca89448ca5e3c219a0",
+      "hash": "bcf4251acf2b885eb0ea309385511cfe",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11582,7 +11582,7 @@
     },
     "694410_hitter": {
       "hard_ok": true,
-      "hash": "fb1767cbbd7c22aa2292a26fb8c5403d",
+      "hash": "71e152c9e34a220e621337cc5481b7a6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11632,7 +11632,7 @@
     },
     "694494_pitcher": {
       "hard_ok": true,
-      "hash": "d28f527c7da58be9ac14ff72c41394f4",
+      "hash": "c9a7a6736aeb542e623e92404dce61cf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11682,7 +11682,7 @@
     },
     "694514_hitter": {
       "hard_ok": true,
-      "hash": "5ede8dca39c7c83f3080402094358aac",
+      "hash": "984d4c1d6d6a5e93464744c0a76c64ba",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11708,7 +11708,7 @@
     },
     "694545_pitcher": {
       "hard_ok": true,
-      "hash": "fe16a6da079cb6106b2465daa9d6df71",
+      "hash": "c943c9a133c9511f35db5bb3aedaf19a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11749,7 +11749,7 @@
     },
     "694580_hitter": {
       "hard_ok": true,
-      "hash": "e945b42354640106dd6e17ce6546d8e4",
+      "hash": "592a97e4c954252df1ba1959fe36aed9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11814,7 +11814,7 @@
     },
     "694673_hitter": {
       "hard_ok": true,
-      "hash": "d5df86ecee7ea78ea707ae1f1decffbe",
+      "hash": "daec82990c77544873321ae001c8a377",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11840,7 +11840,7 @@
     },
     "694680_pitcher": {
       "hard_ok": true,
-      "hash": "874e4661dcd8b61720066a3e32bf388a",
+      "hash": "a79f6a455d33c68d43e6084b15634bb0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11866,7 +11866,7 @@
     },
     "694696_pitcher": {
       "hard_ok": true,
-      "hash": "b5ce5c6a5d473be010b2e9d53f9fb820",
+      "hash": "c58d195cf199bda656f44ec626f31227",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11916,7 +11916,7 @@
     },
     "694749_hitter": {
       "hard_ok": true,
-      "hash": "b93a31722d09fb546919e90a00d096f1",
+      "hash": "6e89103996e466db351d1cb7a4d35543",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11942,7 +11942,7 @@
     },
     "694753_pitcher": {
       "hard_ok": true,
-      "hash": "72dd7d30ef0da7fa65d355ff0aab9a74",
+      "hash": "08c1c49ad2b278e554a5adee2f7423dc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -11968,7 +11968,7 @@
     },
     "694754_hitter": {
       "hard_ok": true,
-      "hash": "7b7b0f9f9e2e37826b3f771f3fe7dc2b",
+      "hash": "6fee52010ffde35fa6c814980a5fe1fa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12009,7 +12009,7 @@
     },
     "694805_pitcher": {
       "hard_ok": true,
-      "hash": "3a24de0cc036caa1a50fe1e1d022dc89",
+      "hash": "6d1928aecd824982c9ca51c084db8e13",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12035,7 +12035,7 @@
     },
     "694815_hitter": {
       "hard_ok": true,
-      "hash": "686dccb441b3d669d108695547e09bd5",
+      "hash": "fe0da4ace8521875f18b94e10f277bd8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12061,7 +12061,7 @@
     },
     "694818_pitcher": {
       "hard_ok": true,
-      "hash": "0558b730155884c4654c028b8282f1ae",
+      "hash": "c4318bff012ee871851e4497e0f3f879",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12134,7 +12134,7 @@
     },
     "694876_hitter": {
       "hard_ok": true,
-      "hash": "18b9f0a434fed7431c189ba337b935b2",
+      "hash": "13fcca510bd314d263ea899a2a58494f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12186,7 +12186,7 @@
     },
     "694966_hitter": {
       "hard_ok": true,
-      "hash": "427be129929df44bd639faebadd4d652",
+      "hash": "8e4b462ebace42c6ca6695801ebbab84",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12212,7 +12212,7 @@
     },
     "694968_pitcher": {
       "hard_ok": true,
-      "hash": "a58ea2e31ad0420e7f9aaaa5a224dd23",
+      "hash": "b2cd5a751f3756083c7fab662f525961",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12262,7 +12262,7 @@
     },
     "694991_hitter": {
       "hard_ok": true,
-      "hash": "3713d9873e008f3df4b11bdc893c71a6",
+      "hash": "4c548231c1825a9b78bd1b65f102a2da",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12288,7 +12288,7 @@
     },
     "695033_pitcher": {
       "hard_ok": true,
-      "hash": "73ea11bd1a088da65d03c8f0cef3b083",
+      "hash": "3a477cd11f8b15038e08f7ec5b135c4b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12314,7 +12314,7 @@
     },
     "695034_pitcher": {
       "hard_ok": true,
-      "hash": "fcf24a59fb2abd8265db828a780b054e",
+      "hash": "0b1cd2a9346dda71abbb33d7a1e785e9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12340,7 +12340,7 @@
     },
     "695065_pitcher": {
       "hard_ok": true,
-      "hash": "cbd5ab74938b8fa263663352615f400d",
+      "hash": "9597f2a2df8e51f9053023d20a347cf9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12416,7 +12416,7 @@
     },
     "695372_hitter": {
       "hard_ok": true,
-      "hash": "ac55b41571f99664c635d3c663176396",
+      "hash": "a3c6d5ef9423bd588e94fa43a43344b3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12442,7 +12442,7 @@
     },
     "695481_hitter": {
       "hard_ok": true,
-      "hash": "bad18d4f6f690fe5b1ce468c26a6b439",
+      "hash": "283c1926eadf40d831b00015c5f73893",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12509,7 +12509,7 @@
     },
     "695491_hitter": {
       "hard_ok": true,
-      "hash": "34e9074aa5669f62707aecaf431c6cdf",
+      "hash": "170560b2335e6326abe0e7886d33f810",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12535,7 +12535,7 @@
     },
     "695501_hitter": {
       "hard_ok": true,
-      "hash": "5ba4bf7c430569618d744c4d98a72fc7",
+      "hash": "888e1d7bd07f1de3334ef027da441702",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12611,7 +12611,7 @@
     },
     "695508_hitter": {
       "hard_ok": true,
-      "hash": "c2abcdd2e6e12b204afa86f4fffe1fd6",
+      "hash": "b901094557c656dda1278d18aaf939ab",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12637,7 +12637,7 @@
     },
     "695521_hitter": {
       "hard_ok": true,
-      "hash": "717e9500093d174d998aa8020ae5ce3d",
+      "hash": "a413aa116ec6991fbec96c07795b11f3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12663,7 +12663,7 @@
     },
     "695534_pitcher": {
       "hard_ok": true,
-      "hash": "e79bb5b8c2ad71672266a6e618cb48da",
+      "hash": "e87307f14ad274ace4d26c19cd4c27d3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12689,7 +12689,7 @@
     },
     "695558_pitcher": {
       "hard_ok": true,
-      "hash": "a22d3aabf1572da05659fb0b0b959436",
+      "hash": "e1b5b10975ea252eda06616713f6438b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12791,7 +12791,7 @@
     },
     "695620_pitcher": {
       "hard_ok": true,
-      "hash": "9911c7b29a3341f792155f2b6dd29bc2",
+      "hash": "e61a77faf04d20a30929a1190bc0b03f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12832,7 +12832,7 @@
     },
     "695653_hitter": {
       "hard_ok": true,
-      "hash": "bedd15b17a660d485b98ebc34bf4cf4c",
+      "hash": "e3691a12387bc260177e7f365c9dceb9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12882,7 +12882,7 @@
     },
     "695667_pitcher": {
       "hard_ok": true,
-      "hash": "2f48dd32d480fb57145447c769e8fc97",
+      "hash": "dcec86c1742cf198cafbeb32ab30cd76",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12908,7 +12908,7 @@
     },
     "695670_hitter": {
       "hard_ok": true,
-      "hash": "6be59b27e79b0587ca9ef0a62ca5414b",
+      "hash": "374ec8a0906afee5d5de0080318930fa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12934,7 +12934,7 @@
     },
     "695684_pitcher": {
       "hard_ok": true,
-      "hash": "ded9f3caf790811b5488035c274c0da7",
+      "hash": "64068258ab998153e7acacc38a21d116",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -12960,7 +12960,7 @@
     },
     "695692_hitter": {
       "hard_ok": true,
-      "hash": "1d2c82a8ae0253f3afcaa85a8e4cb3e4",
+      "hash": "2a1d97f2f2ce2efdf7e9b37bcb7fecdb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13029,7 +13029,7 @@
     },
     "695721_pitcher": {
       "hard_ok": true,
-      "hash": "b6f91cbc7c60ef865c6dbe2ee8015ec2",
+      "hash": "f04db8ddb8446df83f26bd488b1e5d8d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13055,7 +13055,7 @@
     },
     "695722_hitter": {
       "hard_ok": true,
-      "hash": "8132a65cb84a0b936511d6103a10e142",
+      "hash": "fffd1ee32ed5b76bf7b8efbeab45351a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13107,7 +13107,7 @@
     },
     "695734_hitter": {
       "hard_ok": true,
-      "hash": "ba590a73035bc4ab2b1134080dedee0b",
+      "hash": "2a6a185b744211a9a0ea844ab2602d12",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13126,14 +13126,12 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "reused_against_updated_grounding": true,
-      "team": "WSN",
-      "text": "The xSLG is .445 and the barrel rate is 9.6%, but the average exit velocity sits at 88.6 mph and the chase rate is 38.5%, and those two facts are pulling against each other hard. What's happening is that Lile squares the ball up at a legitimate clip without generating elite raw contact quality, which is a workable combination until pitchers figure out his zone management. The 6.1% walk rate is the real liability: if he keeps chasing at that frequency and pitchers stop giving him anything to barrel, the .298 OBP in the projection becomes a ceiling instead of a floor. Sprint speed at 29.4 ft/s is genuine, which is how 15 projected steals land credibly and how fielding value stays in the picture, but speed won't cover for a hitter who hands pitchers free outs at the rate the 38.5% chase suggests. Either a solid-average everyday outfielder if the zone discipline tightens enough to let the barrel rate do its work, or a second-division regular whose speed and occasional pop keep him useful without ever lifting the profile into something more.",
+      "text": "The chase rate is the problem. At 38.5%, Lile is expanding the zone aggressively, and his 6.1% walk rate reflects it, both sitting well below average. What saves the profile is that when he does connect, the contact quality outpaces the raw numbers: a 9.6% barrel rate and .443 xSLG suggest real pop, and 29.3 ft/s sprint speed adds a dimension most corner outfielders don't carry. The projection's .246/.296 line is the honest output of that tension, 22 home runs and 15 steals from a guy who has to chase less or accept that his margin for error on breaking balls is thin enough to keep the OBP suppressed for good.",
       "valid": true
     },
     "695735_hitter": {
       "hard_ok": true,
-      "hash": "eb4d4f84924fc9020146bd6dfa10bbc0",
+      "hash": "9c234516ee580ef67980b0b230233b0e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13159,7 +13157,7 @@
     },
     "695741_pitcher": {
       "hard_ok": true,
-      "hash": "375fbe9426ad892c84cd512c26821434",
+      "hash": "1dd05e9e86fa633d94a4d867a64203fe",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13185,7 +13183,7 @@
     },
     "695761_pitcher": {
       "hard_ok": true,
-      "hash": "c014a4e671c88bc60bf26d3ca5073805",
+      "hash": "94c388ace50de9b0cccd7efd1ba0bcf9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13236,7 +13234,7 @@
     },
     "695766_pitcher": {
       "hard_ok": true,
-      "hash": "62780760418f313f2ad210dc012e99d4",
+      "hash": "fea6d797416f8bf3e3bc206c6366a6ae",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13262,7 +13260,7 @@
     },
     "695776_pitcher": {
       "hard_ok": true,
-      "hash": "5838b669e3ac5ddacefca1e020874cad",
+      "hash": "33d3c36e255af7b152736406c2aae31f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13288,7 +13286,7 @@
     },
     "695778_pitcher": {
       "hard_ok": true,
-      "hash": "498e53c81405ad5529d0d47e1f1dfb87",
+      "hash": "d05156f4260c6d8293ff0966736e53ea",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13314,7 +13312,7 @@
     },
     "695780_hitter": {
       "hard_ok": true,
-      "hash": "45362b58f4419760d12d59b86d7360d3",
+      "hash": "0ab558d660c17e771b09f29233addc6b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13378,7 +13376,7 @@
     },
     "696070_pitcher": {
       "hard_ok": true,
-      "hash": "fff65df10682d815f70471e29cebe909",
+      "hash": "e4639875adcb4c2f2a6a07ac3a3f8744",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13430,7 +13428,7 @@
     },
     "696135_hitter": {
       "hard_ok": true,
-      "hash": "1453f68c243acc2f874e8234b43cd041",
+      "hash": "cf6a4ddb66f50cee2ef3fb531b18c092",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13456,7 +13454,7 @@
     },
     "696143_pitcher": {
       "hard_ok": true,
-      "hash": "6a48a4e19e7b04ddcee1bed7d34f7170",
+      "hash": "d98d3cfd90e06aee71499fa01134fb82",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13482,7 +13480,7 @@
     },
     "696145_hitter": {
       "hard_ok": true,
-      "hash": "a0b21b814bc4f49fa872c67df55eb549",
+      "hash": "34953cd1bb508dc7010e0fa4e4265620",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13508,7 +13506,7 @@
     },
     "696146_pitcher": {
       "hard_ok": true,
-      "hash": "ad7547dfb2abd49a19063c31fd718a16",
+      "hash": "fb1724ebeb130b4998a0b25a7a408375",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13629,7 +13627,7 @@
     },
     "696292_pitcher": {
       "hard_ok": true,
-      "hash": "6781c6a62df6603433c9a95bc6e1ecfe",
+      "hash": "aa158ecd4d07e4699eafa5d72f6e9e03",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13655,7 +13653,7 @@
     },
     "696486_hitter": {
       "hard_ok": true,
-      "hash": "136092b56a3cf118955f3a9538ab9a7c",
+      "hash": "8b659656375d15a628289884897aaa28",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13745,7 +13743,7 @@
     },
     "699008_pitcher": {
       "hard_ok": true,
-      "hash": "521bf4d3addeee6c2af5e9a873a5f50d",
+      "hash": "8d381772413adab9aee477f3aa22569b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13797,7 +13795,7 @@
     },
     "699024_hitter": {
       "hard_ok": true,
-      "hash": "31fe526602667864338471e178f50d25",
+      "hash": "4be81a8a66f6806b0b67766e7436fffc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13823,7 +13821,7 @@
     },
     "699043_hitter": {
       "hard_ok": true,
-      "hash": "d2fadfe6f35511b354984ee04faa0cb6",
+      "hash": "e7e66212faa1902c62075185a4c81aa2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13849,7 +13847,7 @@
     },
     "699044_pitcher": {
       "hard_ok": true,
-      "hash": "f75a974e2ddbf36384841f9ccf4198cf",
+      "hash": "1a7167ee0c1393077598712738fa0e2a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13875,7 +13873,7 @@
     },
     "699071_pitcher": {
       "hard_ok": true,
-      "hash": "dd9a70b611c77944eea8fc7d2af5015f",
+      "hash": "3ab4b28203512eef5f25296478e77359",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13901,7 +13899,7 @@
     },
     "699073_hitter": {
       "hard_ok": true,
-      "hash": "2aeef0ffadcdcf4fdbd8a02bfdc0ce4f",
+      "hash": "db21a71b38849c8afab764eea4a7edf7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13944,7 +13942,7 @@
     },
     "699115_hitter": {
       "hard_ok": true,
-      "hash": "3ba57792e235651b54c40801dabbe699",
+      "hash": "9b8da26b5b742c48ba3a672bd91a585a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -13970,7 +13968,7 @@
     },
     "699130_hitter": {
       "hard_ok": true,
-      "hash": "6ad615fcd755da380cd2dc6cf257f7e2",
+      "hash": "7d0b387d4ee4e3c53a93b61d5cf28479",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14020,7 +14018,7 @@
     },
     "699151_pitcher": {
       "hard_ok": true,
-      "hash": "cb4b87f25251507b592d0f4ee1364934",
+      "hash": "c8d296e288ae94b568e2af5c476229ad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14046,7 +14044,7 @@
     },
     "699232_hitter": {
       "hard_ok": true,
-      "hash": "a78a31b043596d410b8b1a167651bb36",
+      "hash": "904a62c7940cbeaecad521e520b3a1e1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14176,7 +14174,7 @@
     },
     "699712_hitter": {
       "hard_ok": true,
-      "hash": "2bd287f741bfd369ceb1c8db88d678bf",
+      "hash": "c666a6bc3167d125ff80da02f0da0f67",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14202,7 +14200,7 @@
     },
     "699944_pitcher": {
       "hard_ok": true,
-      "hash": "4d29eeb051eabfbf7dc0f33bd19d094c",
+      "hash": "d1d3dd82a342ee47b645c445a78debb4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14228,7 +14226,7 @@
     },
     "700072_pitcher": {
       "hard_ok": true,
-      "hash": "d9e44b6f386450c726ad65b29c3dd94b",
+      "hash": "f0e7ff4012e69e5d030b7f1a3917414e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14254,7 +14252,7 @@
     },
     "700164_hitter": {
       "hard_ok": true,
-      "hash": "b1f14f48bc1ff6177cd41a9b659edcc8",
+      "hash": "b4ef2ebf6a29c27faf1e18b4f617389f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14423,7 +14421,7 @@
     },
     "700280_pitcher": {
       "hard_ok": true,
-      "hash": "d32a59e812d781f9b1c73f19558685ec",
+      "hash": "465b92816625102679371f568b0e5843",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14575,7 +14573,7 @@
     },
     "700924_pitcher": {
       "hard_ok": true,
-      "hash": "f52a9d514db6aba1a5bb35e207bc1e70",
+      "hash": "1534af6685d6a20974acd411c2ecbc09",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14657,7 +14655,7 @@
     },
     "701178_pitcher": {
       "hard_ok": true,
-      "hash": "d52a8fe96fd09370bc81c976eb6002e1",
+      "hash": "bc66d2b2d9fe42cddbc916ea9d5160f5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14698,7 +14696,7 @@
     },
     "701328_pitcher": {
       "hard_ok": true,
-      "hash": "de20e7ccf749ef6e579f5d18cb7b2a1d",
+      "hash": "e3d4f1fcb364b384cec6c7cf08087f7b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14776,7 +14774,7 @@
     },
     "701339_hitter": {
       "hard_ok": true,
-      "hash": "f3b1ad11c4b783fc123d732387c1da7c",
+      "hash": "300120ed4bfe96d3134625c3dce918b9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14845,7 +14843,7 @@
     },
     "701364_pitcher": {
       "hard_ok": true,
-      "hash": "a24ff352ddd8f117369037460ee4b0da",
+      "hash": "f7b9cb3137d958d7ad6685223bc27c75",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14871,7 +14869,7 @@
     },
     "701388_pitcher": {
       "hard_ok": true,
-      "hash": "8e7505fbabde6244499e926041564eba",
+      "hash": "825ee3bd018c463b1044d173a1e75fac",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14916,7 +14914,7 @@
     },
     "701394_hitter": {
       "hard_ok": true,
-      "hash": "423974f539409b040263d8c26b1b4457",
+      "hash": "f7e49971b90e00980403e9da70cd2c8c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14968,7 +14966,7 @@
     },
     "701411_pitcher": {
       "hard_ok": true,
-      "hash": "ae36da890afde000ef6a0aad36c4e5cf",
+      "hash": "8750a1513a8ad1552431941348a99a9f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -14994,7 +14992,7 @@
     },
     "701480_pitcher": {
       "hard_ok": true,
-      "hash": "c700edb8a18d41daebc63bc31f15f3b9",
+      "hash": "2373f25ee15a89570e12c9f2cc7b5d85",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15044,7 +15042,7 @@
     },
     "701527_hitter": {
       "hard_ok": true,
-      "hash": "a44d79c4f437ecc5d721c376c3af0dcf",
+      "hash": "03c1157e873a7f6b8924761cf51c9052",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15118,7 +15116,7 @@
     },
     "701590_pitcher": {
       "hard_ok": true,
-      "hash": "eac0c311cf7ab8103855cc6fbab6e0c6",
+      "hash": "0e634e22bc00ea139edb71d4c5edc72c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15144,7 +15142,7 @@
     },
     "701616_hitter": {
       "hard_ok": true,
-      "hash": "50ff6153097503694e40108b65572846",
+      "hash": "3bbc9bc16a57cea6d52a9fd5afdb9d53",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15170,7 +15168,7 @@
     },
     "701649_hitter": {
       "hard_ok": true,
-      "hash": "ad5b69a041d36f0ce56f7562426ba36d",
+      "hash": "e7246ac2d771310b2c8d6e6cafb35102",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15299,7 +15297,7 @@
     },
     "701717_pitcher": {
       "hard_ok": true,
-      "hash": "f674422667c236c5ad0632697535899c",
+      "hash": "38da68b5b64d541a226e336c513493c5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15365,7 +15363,7 @@
     },
     "701771_hitter": {
       "hard_ok": true,
-      "hash": "22f34893d4d756f470fd2f0c0d4e6820",
+      "hash": "f5ed126f8f69f03e18f6e832ca56447e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15391,7 +15389,7 @@
     },
     "701778_hitter": {
       "hard_ok": true,
-      "hash": "15a1cb020d60e4fbf52d4c809ba9375a",
+      "hash": "b75858717fb3e872001bbffca38fbd4e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15432,7 +15430,7 @@
     },
     "701785_hitter": {
       "hard_ok": true,
-      "hash": "e9e4667ad9f46895ab0671a345c64c9c",
+      "hash": "5e7d768c98c1c09516f91b4ad0f73a70",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15458,7 +15456,7 @@
     },
     "701795_pitcher": {
       "hard_ok": true,
-      "hash": "81cf7cd2c6660281181df4fa8a015730",
+      "hash": "1e4150fcea5f1809bb663973f4173bbd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15508,7 +15506,7 @@
     },
     "701831_hitter": {
       "hard_ok": true,
-      "hash": "98a9381856feb92125f9651916b16fd3",
+      "hash": "37dbaefc6540bd7892f4cc5f05cc6771",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15560,7 +15558,7 @@
     },
     "701906_hitter": {
       "hard_ok": true,
-      "hash": "3ce6f5bcb83f72fe3566ac5593b80af5",
+      "hash": "d5e92137099185417f5f1d020b54e843",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15586,7 +15584,7 @@
     },
     "701908_pitcher": {
       "hard_ok": true,
-      "hash": "e60bacf2cac1b0cc9f51f412ac43890c",
+      "hash": "5993b5819997962d653b1c57eb4aecd7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15712,7 +15710,7 @@
     },
     "702253_hitter": {
       "hard_ok": true,
-      "hash": "98813bf090a488c43dfe4176ed64c9d2",
+      "hash": "e974a9c383b7abc8ee1854de5d829db6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15738,7 +15736,7 @@
     },
     "702255_pitcher": {
       "hard_ok": true,
-      "hash": "9933f529215e09d2ab016c222716e422",
+      "hash": "c50fd75c8df36f245f7e329363d95bfc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15764,7 +15762,7 @@
     },
     "702258_hitter": {
       "hard_ok": true,
-      "hash": "fc6006385b23361befa1df4e909cbe2f",
+      "hash": "f4e3f0e1ebee0ec2117513122caea1c9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15790,7 +15788,7 @@
     },
     "702261_hitter": {
       "hard_ok": true,
-      "hash": "c3caf19a16b451316a04eb411fc72848",
+      "hash": "9d856b43701cda0cc6aa0c24595602b7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15830,7 +15828,7 @@
     },
     "702264_hitter": {
       "hard_ok": true,
-      "hash": "2ca94a410f8d402c7fa5d8b273afea61",
+      "hash": "c1f1096f6ad6058bbc9e6b402f3dbcf6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15895,7 +15893,7 @@
     },
     "702271_pitcher": {
       "hard_ok": true,
-      "hash": "aa59495ca1870162b00c71dae9c4558c",
+      "hash": "f245fb65691ce1f14d717e71ecd45633",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15936,7 +15934,7 @@
     },
     "702274_pitcher": {
       "hard_ok": true,
-      "hash": "ffd69eeb9d7a718fe0ca81455f064d48",
+      "hash": "e8a755990bdce7ca4c6ae20a2c014971",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -15986,7 +15984,7 @@
     },
     "702281_pitcher": {
       "hard_ok": true,
-      "hash": "5984426c5cad69ff10317599c956720f",
+      "hash": "b6ffb3e30988393196f0d8da1d13a971",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16005,9 +16003,7 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "reused_against_updated_grounding": true,
-      "team": "MIA",
-      "text": "Twenty-nine innings at AAA, a 1.9 ERA, and now on the 60-day IL \u2014 that's the whole profile in one breath. The surface numbers are loud: 44 strikeouts against 15 walks in those 29 innings translates to a K-BB% that sits at the 98th percentile of the pitcher pool, and the MLB-equivalent read puts his K/9 at 9.9 while the league translates to 8.6. The problem is that six starts is a thin thread to hang a rotation future on, and the 60-day move means whatever health question ended his season hasn't been answered yet. If he comes back right, there's a real arm here; if he doesn't, the floor is bullpen depth and not much more.",
+      "text": "The 1.9 ERA and 0.9 WHIP across 29 innings at AAA are loud, but 29 innings is the whole argument and the whole problem. What translates out of that sample is a K/9 near 9.9 and a walk rate that sits above the MLB mean, so the swing-and-miss is real enough to survive the level adjustment while the command hasn't proven it can. At 22, with a K-BB% that sits at the 98th percentile of the pitcher pool, there's a version of this where the control tightens and he becomes something more than the depth arm the ceiling currently reads \u2014 but if the 15 walks in 29 innings at AAA are a preview rather than a blip, that's the floor too.",
       "valid": true
     },
     "702283_hitter": {
@@ -16065,7 +16061,7 @@
     },
     "702302_hitter": {
       "hard_ok": true,
-      "hash": "8a0e84b1b5935547ed973f4db4853843",
+      "hash": "2030f1ba15a8f690190d5f9262473673",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16115,7 +16111,7 @@
     },
     "702419_pitcher": {
       "hard_ok": true,
-      "hash": "e21f7a06b7d2ccc19c6cdee74f01f045",
+      "hash": "209344bbb4100500cd5ad8101f1aaebd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16141,7 +16137,7 @@
     },
     "702436_pitcher": {
       "hard_ok": true,
-      "hash": "55d0af3ce5f3dedc3223adc20a7c9414",
+      "hash": "07342d17f204936b74af7f6cc28af5ad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16182,7 +16178,7 @@
     },
     "702484_pitcher": {
       "hard_ok": true,
-      "hash": "aea7fbbda62915a1f0dd158c581fda96",
+      "hash": "0007d848dae76d2e30acb8d3ce73e4be",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16222,7 +16218,7 @@
     },
     "702491_hitter": {
       "hard_ok": true,
-      "hash": "5b11d8f8a7000d6a0a9025daf51bed57",
+      "hash": "b3fd6e3f8b47b1ba18e95f9eeb2571f9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16248,7 +16244,7 @@
     },
     "702505_pitcher": {
       "hard_ok": true,
-      "hash": "52d69c45adeccb7afbc7f1769f799cb7",
+      "hash": "b9d4bb30063612ffa66487c7661f80e0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16289,7 +16285,7 @@
     },
     "702518_hitter": {
       "hard_ok": true,
-      "hash": "62f7d75d73240a9eb885964d23778cfe",
+      "hash": "95de3e454e109342c8357e429031e679",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16329,7 +16325,7 @@
     },
     "702539_pitcher": {
       "hard_ok": true,
-      "hash": "7b15886b87ed63d761f58fecbe8c9125",
+      "hash": "239312fada1a0472075ae3c3690a7d14",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16355,7 +16351,7 @@
     },
     "702540_hitter": {
       "hard_ok": true,
-      "hash": "2cf9333bd7dfe56a3fd62b3db0a94bd3",
+      "hash": "be2521db10a3b6278e40079b63b9f9aa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16381,7 +16377,7 @@
     },
     "702544_hitter": {
       "hard_ok": true,
-      "hash": "ece4c0c42a5ba71669c2e824f9fd3212",
+      "hash": "fe4e0ceb9d3244cb6a2209e02b0d69ab",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16421,7 +16417,7 @@
     },
     "702556_hitter": {
       "hard_ok": true,
-      "hash": "9d9c0282c936cbc7114f516e3a183cfa",
+      "hash": "136090f83bd9fabc555256c3778248b7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16447,7 +16443,7 @@
     },
     "702566_pitcher": {
       "hard_ok": true,
-      "hash": "024871ad34e83fae4bc57ed3f1b267be",
+      "hash": "f5f73588e7434f4a39e47d866d7012e8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16473,7 +16469,7 @@
     },
     "702571_pitcher": {
       "hard_ok": true,
-      "hash": "10a652715dc2ecc43e18d7f58da0770b",
+      "hash": "a855a411a71815c152f6f8b6f22ffb42",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16528,7 +16524,7 @@
     },
     "702610_hitter": {
       "hard_ok": true,
-      "hash": "e66032c7db3654327dbebfbee8fd4336",
+      "hash": "53ec2c1fa97aaca9db9f5beadea8570e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16578,7 +16574,7 @@
     },
     "702619_hitter": {
       "hard_ok": true,
-      "hash": "42eb8894117c780138dfbc461526bf99",
+      "hash": "7c444411d4600727e1ecba188737e953",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16619,7 +16615,7 @@
     },
     "702650_pitcher": {
       "hard_ok": true,
-      "hash": "2252e795b87e25e9f7b408e1a189babe",
+      "hash": "acb3304943fb6084a6a7ff3228b20338",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16645,7 +16641,7 @@
     },
     "702652_hitter": {
       "hard_ok": true,
-      "hash": "e9492ccd6fb2945f4ee0e2d37eb1619b",
+      "hash": "86e3b4fc8edf271c3d95914b05d90073",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16671,7 +16667,7 @@
     },
     "702662_hitter": {
       "hard_ok": true,
-      "hash": "e075f48b09e6a975facae0ad6bc22ce2",
+      "hash": "3277f9fb2e7f8d7ccb23bbb92ee5f78e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16697,7 +16693,7 @@
     },
     "702674_pitcher": {
       "hard_ok": true,
-      "hash": "9f9b6fb2735402870f19f3a44f3806f0",
+      "hash": "d84336cfd4d5aa473f455aca49bd5a93",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16723,7 +16719,7 @@
     },
     "702679_hitter": {
       "hard_ok": true,
-      "hash": "ac5cab1cd9389eeb5fa55df5087aaba9",
+      "hash": "3e32bca293c12a9923b3f75b9a29d1c0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16749,7 +16745,7 @@
     },
     "702693_hitter": {
       "hard_ok": true,
-      "hash": "83774ecaf1a8e14d1843a4b82b43753f",
+      "hash": "051f0f06d48f18457c5f758afa2a3586",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16790,7 +16786,7 @@
     },
     "702726_hitter": {
       "hard_ok": true,
-      "hash": "b0b0c8d9329f28eff3b6a4957ca25010",
+      "hash": "a10fddaf3b62ddbfaa0f99e575520296",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16831,7 +16827,7 @@
     },
     "702882_pitcher": {
       "hard_ok": true,
-      "hash": "340517a621a163543963b59bc10267c5",
+      "hash": "c70dc550c31944f360108a8c2a047e2c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16857,7 +16853,7 @@
     },
     "702885_pitcher": {
       "hard_ok": true,
-      "hash": "79e99f1dcbab1ffeacab09deaf779e59",
+      "hash": "6607386d0c9d145aa33323c895e33e77",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16966,7 +16962,7 @@
     },
     "703155_hitter": {
       "hard_ok": true,
-      "hash": "b73eabe5fef44a18d6d91b1502e3290b",
+      "hash": "13d837fe4a74601554f2cd0c7930236b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -16985,12 +16981,12 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The power is loud enough to carry the whole conversation: 38 home runs across AAA & AA, an ISO of .309 that translates to .215 at the MLB level, and a slugging percentage that sits at the 97th percentile of the hitter pool. The walk rate is genuine, 79 free passes on a 15 BB%, and the MLB-equivalent 11.8% sits well clear of the 8.5% MLB average. The problem sitting right next to all of that is 166 strikeouts, a 31% clip across AAA & AA that translates to 31.1%, against an MLB average of 22.0%. If he can find even a modest truce with the strikeout rate, there's a second-division regular in this profile; if the bat-to-ball problem follows him to Seattle, you're looking at a platoon bat with one elite tool and a narrowing window to use it.",
+      "text": "The ISO is the whole argument, and the whole problem. Across AAA & AA in 2026, Montes is hitting .249/.369/.558 through 542 plate appearances, with 38 home runs and a .309 ISO that translates to .215 at the MLB level. The walk rate translates to 11.8%, meaningfully above the MLB mean, so the discipline isn't smoke, but the strikeout rate translates to 31.1% when most big leaguers sit around 22.0%, and that gap is what this profile hinges on. If he keeps contact rate even marginally closer to passable against MLB velocity, the left-handed power and walk rate make a platoon or low-side regular case; if the strikeout rate hardens at that translation, what's left is a bench bat with loud raw power and not much else.",
       "valid": true
     },
     "703156_hitter": {
       "hard_ok": true,
-      "hash": "67ef0bd33160873762b007d5ecef5177",
+      "hash": "ad7a94c66fd21db81a3062cead69f01b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17016,7 +17012,7 @@
     },
     "703177_hitter": {
       "hard_ok": true,
-      "hash": "8a0edc24f2aa2d9cdae976dfd280fb01",
+      "hash": "f71c42bcd7fe467a1b23b4018f99839d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17042,7 +17038,7 @@
     },
     "703185_hitter": {
       "hard_ok": true,
-      "hash": "2a9e911586b3ee60cf9b77caf56a440e",
+      "hash": "880a53f6f32de8324fdf3505a9025b2a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17094,7 +17090,7 @@
     },
     "703190_hitter": {
       "hard_ok": true,
-      "hash": "a39612cf12665e56e7da9c05d1f91e6b",
+      "hash": "9b7caa5901ccc652e8cb62669ad05e13",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17120,7 +17116,7 @@
     },
     "703197_hitter": {
       "hard_ok": true,
-      "hash": "14b0f8d7906bab05b20de514107711de",
+      "hash": "0d98e2800f966f49028dc50316580713",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17139,12 +17135,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "SEA",
       "text": "The contact rate is the loud part: a 16% strikeout rate across AAA & AA that translates to 19.3% at the MLB level, where the average sits at 22.0%. At 22, hitting .283 with 18 home runs and 17 stolen bases in 532 plate appearances across AAA & AA is a real season, not a sample fluke waiting to unravel. The ISO of .188 in the minors translates to .148 at the MLB level, essentially league-average pop, and the walk rate comes in a tick shy of average too, which means the profile hinges almost entirely on whether that bat-to-ball skill keeps him out of deep counts against better stuff. If it does, he's a second-division regular who earns his at-bats; if the strikeout rate creeps back toward average once pitchers catch up, what's left is a bench bat with wheels.",
       "valid": true
     },
     "703445_pitcher": {
       "hard_ok": true,
-      "hash": "a0824428250b9061a2714a5921e0ca6e",
+      "hash": "6d411058c7ebbf27c2b8af08394268cf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17170,7 +17168,7 @@
     },
     "703448_hitter": {
       "hard_ok": true,
-      "hash": "6ba2bf7635a1c21d46a300dfe8eccef3",
+      "hash": "189fda8321ad94cdd52c71dcfa1061ff",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17196,7 +17194,7 @@
     },
     "703469_pitcher": {
       "hard_ok": true,
-      "hash": "36127b4346dcc09efd0d7ed785c7b032",
+      "hash": "b4aff57a541cc032361c5a28517e4811",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17222,7 +17220,7 @@
     },
     "703477_hitter": {
       "hard_ok": true,
-      "hash": "d8b1ed72f59d658b7170656a3c6c6250",
+      "hash": "c59db7419c0a44339077e8950a2339f6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17248,7 +17246,7 @@
     },
     "703492_hitter": {
       "hard_ok": true,
-      "hash": "0371aef25fa04d0eee05f0d4626d3a23",
+      "hash": "6b696fac0ee68217c5b6aaaa41028c48",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17325,7 +17323,7 @@
     },
     "703596_pitcher": {
       "hard_ok": true,
-      "hash": "a72afde712ce72d42a263b809509d805",
+      "hash": "21aaea89d47d2d665dfe18987e3be0ef",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17442,7 +17440,7 @@
     },
     "703610_pitcher": {
       "hard_ok": true,
-      "hash": "6f431a166814c82bdc204e040b92c04f",
+      "hash": "a3874b2ba68b599c7b48403975e25e7e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17468,7 +17466,7 @@
     },
     "703615_pitcher": {
       "hard_ok": true,
-      "hash": "48cd7d844226e99c1d085bc0fc0d34e7",
+      "hash": "f5fcd47c21aa6edcab3013de455b6494",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17494,7 +17492,7 @@
     },
     "703639_hitter": {
       "hard_ok": true,
-      "hash": "4bc1946b415a59a1328dd240449d58e3",
+      "hash": "23e4158325a4f841bdf0ca844980c47f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17586,7 +17584,7 @@
     },
     "800060_hitter": {
       "hard_ok": true,
-      "hash": "551a6bf74db8a3a60ff233c3b3bf269c",
+      "hash": "0a7c1a748050985bc5983dc0d1ae76df",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17627,7 +17625,7 @@
     },
     "800169_hitter": {
       "hard_ok": true,
-      "hash": "e22b4a7aeb82ff4a44198b8295968b79",
+      "hash": "a923eb675fc9854a8f38c1b67bef65c4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17653,7 +17651,7 @@
     },
     "800176_hitter": {
       "hard_ok": true,
-      "hash": "6b7e8079ed4fb633ccf396ffd647508d",
+      "hash": "0db8e16f9e60392de09d260b86e168d3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17679,7 +17677,7 @@
     },
     "800198_hitter": {
       "hard_ok": true,
-      "hash": "e197dc2203833fa4201f52a72c887e88",
+      "hash": "da3535cdc664bfde0c8322ec3c01e9e8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17705,7 +17703,7 @@
     },
     "800208_hitter": {
       "hard_ok": true,
-      "hash": "491def8e1a5ea79794f25a933650553b",
+      "hash": "33730f6d98397e3e289b8f24223666e7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17782,7 +17780,7 @@
     },
     "800305_hitter": {
       "hard_ok": true,
-      "hash": "31047dad9b3421a2c1a7eacf3b83c540",
+      "hash": "c8b0fae7108a353e2f4d59d86ea3b256",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17808,7 +17806,7 @@
     },
     "800306_hitter": {
       "hard_ok": true,
-      "hash": "7a543711cb6c1a02189c8a5da893117e",
+      "hash": "093442346632c23c50a2daa7b34889ee",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17884,7 +17882,7 @@
     },
     "800338_pitcher": {
       "hard_ok": true,
-      "hash": "d213d8e122c2da6292b517b8b81ebb01",
+      "hash": "0f301eb44f4afc4513c6a84c1c143cb1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -17964,7 +17962,7 @@
     },
     "800406_hitter": {
       "hard_ok": true,
-      "hash": "5e8591f9c794b8c8e01ddd71f55d98fe",
+      "hash": "276ff333c52ef955e111a3fcf3da1327",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18005,7 +18003,7 @@
     },
     "800421_hitter": {
       "hard_ok": true,
-      "hash": "9af59430f10e775c60d3e2910197428b",
+      "hash": "f51a142860b010e0fdee13022d4d9b12",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18031,7 +18029,7 @@
     },
     "800449_hitter": {
       "hard_ok": true,
-      "hash": "49092e7c1f1e9041940f4ac6e126c5ca",
+      "hash": "af6aec0d4794f0987affe68e80544406",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18057,7 +18055,7 @@
     },
     "800452_pitcher": {
       "hard_ok": true,
-      "hash": "af4362f858a8ba96e705d5048a8872d3",
+      "hash": "8e48f3d052784dc774137544ce96bcb8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18083,7 +18081,7 @@
     },
     "800473_hitter": {
       "hard_ok": true,
-      "hash": "894741dcd53e93b83f609d203d8a6e66",
+      "hash": "e88a0b81ceb38c3b95aa36635549b452",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18152,7 +18150,7 @@
     },
     "800522_hitter": {
       "hard_ok": true,
-      "hash": "7823c120ee7d5d4da8afda6959802852",
+      "hash": "15d5ac36acc0fb1bf7528c5973896ef3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18171,12 +18169,12 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The ISO across AAA, AA & A is .244, which translates to .164 at the MLB level, and that gap frames Josu\u00e9 Brice\u00f1o's entire profile. The power grades at the 92nd percentile in his prospect pool, and the 14% walk rate across levels translates to a 10.0% MLB equivalent, meaningfully better than where the league sits. What eats at the profile is a 25% strikeout rate that translates to 24.9% against big-league pitching, which at a corner with no speed and a low-evidence scouting file leaves the floor and the ceiling uncomfortably close together.",
+      "text": "The .244 ISO across AAA & AA & A is the loudest thing in the profile, and it translates to .164 at the MLB level, which clears the league average bar but doesn't reframe the ceiling conversation. First base without a carrying offensive floor is a narrow margin. The walk rate translates to 10.0%, a tick above what the average MLB hitter draws, but 24.9% strikeouts in translation means the bat-to-ball side has to sharpen for the power to play consistently. If the contact improves, he's a low-end regular at the corner; if it doesn't, the power alone leaves him as org depth and nothing more.",
       "valid": true
     },
     "800537_pitcher": {
       "hard_ok": true,
-      "hash": "63dc8d0c7b9d95578437c9c2b2ac2de3",
+      "hash": "f25d7fb5715518e99b3956a1345235a8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18195,12 +18193,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAD",
       "text": "The command-and-control argument here is almost embarrassingly clean: 20 walks across 103.7 innings at AA & A+, with a K-BB% of 30% that translates to 18.2% at the MLB level, comfortably ahead of the 13.5% MLB average. His 1.0 WHIP and 1.7 BB/9 across those levels rank at the 98th and 99th percentiles against the pitcher pool, which tells you the efficiency isn't a fluke of sequencing. The ceiling question is whether the stuff carries enough to push him past a back-end starter, because the profile as constructed gives you a good, deep-rotation arm, not a front-line one. If the swing-and-miss holds as competition stiffens, this becomes a reliable rotation piece; if the strikeout rate fades and the 144 punchouts shrink toward average, the walk suppression keeps him valuable, just quieter.",
       "valid": true
     },
     "800540_hitter": {
       "hard_ok": true,
-      "hash": "abbd4117fef9a19477be0569e006f7ae",
+      "hash": "4958313c1be1e8aa931b868c8212d721",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18226,7 +18226,7 @@
     },
     "800543_hitter": {
       "hard_ok": true,
-      "hash": "4521c1088b16180cd602f5ba7b3c6cdb",
+      "hash": "1fe873003a0209bebf3f3d458c4d72a2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18252,7 +18252,7 @@
     },
     "800571_pitcher": {
       "hard_ok": true,
-      "hash": "34cc984ad0481a745bd32c5776312770",
+      "hash": "2b5e7f86226376952a0fe8bed0770769",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18278,7 +18278,7 @@
     },
     "800600_pitcher": {
       "hard_ok": true,
-      "hash": "5959c541bd4113bf684fe8311bc72454",
+      "hash": "a21a9a00516e56ea4528753249e7e026",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18344,7 +18344,7 @@
     },
     "800614_hitter": {
       "hard_ok": true,
-      "hash": "b8800f1e057149bbbca495e616f259b7",
+      "hash": "5b930124c091f31de117970b8361155f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18385,7 +18385,7 @@
     },
     "800624_pitcher": {
       "hard_ok": true,
-      "hash": "009eeca148e753917baeacb4fc38808f",
+      "hash": "9b15c9aaf3411e8837a672d6dfcaf64f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18411,7 +18411,7 @@
     },
     "800724_hitter": {
       "hard_ok": true,
-      "hash": "476444c73a6d1ebd930dc05619a0b25e",
+      "hash": "2a1874c5f47a210879fd7c9869bf2ca9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18454,7 +18454,7 @@
     },
     "801078_pitcher": {
       "hard_ok": true,
-      "hash": "5b9f9de63cb497d60fea2bd074f3432f",
+      "hash": "18489516ba34597318d1f7990be6f333",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18480,7 +18480,7 @@
     },
     "801129_pitcher": {
       "hard_ok": true,
-      "hash": "0976d41e55d2d6c26ac4c27477d6f015",
+      "hash": "828578e77fc7de26042ef77e4e7a3cdf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18532,7 +18532,7 @@
     },
     "801179_pitcher": {
       "hard_ok": true,
-      "hash": "2f1dbccc5e9b93f40ef5002fbe4a9628",
+      "hash": "0c9fd864750a0a3f09c58b9393a346d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18551,12 +18551,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "ARI",
       "text": "The K-BB% translates to 7.6 at the MLB level, while the average MLB pitcher sits at 13.5. That gap is the whole profile. Yu-Min Lin has thrown 129 innings at AAA with 97 strikeouts and 59 walks, and the strikeout rate translates to a 6.7 K/9 at the major league level, well short of what the average MLB arm produces, meaning the walk problem has nowhere to hide behind swing-and-miss. If the control sharpens, he becomes a back-end depth option; if it doesn't, there's no secondary lever to pull.",
       "valid": true
     },
     "801194_hitter": {
       "hard_ok": true,
-      "hash": "99f0c4012d62e57974f97c50ac35db00",
+      "hash": "21e875bbe0ede52b6b6912385ad28dc8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18657,7 +18659,7 @@
     },
     "801406_hitter": {
       "hard_ok": true,
-      "hash": "7588ad86d86cc16968ece44cc939b85c",
+      "hash": "a69b67209ed2c2f5797cb6ddf0b37b1b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18683,7 +18685,7 @@
     },
     "801464_hitter": {
       "hard_ok": true,
-      "hash": "0a427de09143ecb808017d4efd44edb0",
+      "hash": "da1b395b616f49e8ca15da5592d34955",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18709,7 +18711,7 @@
     },
     "801501_hitter": {
       "hard_ok": true,
-      "hash": "92bae79eff9b2dbc44cf948a9f8784b5",
+      "hash": "1120e965b18adf830be9e5184c8fc5f3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18766,7 +18768,7 @@
     },
     "801523_hitter": {
       "hard_ok": true,
-      "hash": "6bb2685ebf4af90dadc590200ec28fa1",
+      "hash": "2152e99e186d666da99c3a3ea2c8b15c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18817,7 +18819,7 @@
     },
     "801594_pitcher": {
       "hard_ok": true,
-      "hash": "59218e00575ce9ea9f75884faf883296",
+      "hash": "aba867243bf0deb3c2aa7a49c6169939",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18843,7 +18845,7 @@
     },
     "801639_pitcher": {
       "hard_ok": true,
-      "hash": "a97a5094762b7cc45375baa4b1822ea0",
+      "hash": "dd1729a2f1b0058c58804738a28a3ad5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18869,7 +18871,7 @@
     },
     "801725_pitcher": {
       "hard_ok": true,
-      "hash": "6775e94552066b3ad96c077c0aa80636",
+      "hash": "5cc5536966dfd1fd162b25c81e7fbd25",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18895,7 +18897,7 @@
     },
     "801737_pitcher": {
       "hard_ok": true,
-      "hash": "8cb267402514d4aa800e281987bd2776",
+      "hash": "c1d5213e5daf0eb56d37559c0a11d943",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18921,7 +18923,7 @@
     },
     "801739_pitcher": {
       "hard_ok": true,
-      "hash": "80414c768186a822d6bae172fadf395d",
+      "hash": "27213b0a1584e7cc13ae03083d27c0af",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -18962,7 +18964,7 @@
     },
     "801957_hitter": {
       "hard_ok": true,
-      "hash": "256446f1062d857ed0a410a1849a3491",
+      "hash": "e41a3dfbe0a63c401fea4ea1a38356df",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19014,7 +19016,7 @@
     },
     "802126_pitcher": {
       "hard_ok": true,
-      "hash": "9028a5135a97f78913d96016866c0c59",
+      "hash": "5ccd4efca205f96ac397e1266b2694ff",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19083,7 +19085,7 @@
     },
     "802357_pitcher": {
       "hard_ok": true,
-      "hash": "70e23abb477c4e7495eef1f2d3d397be",
+      "hash": "9181498c534adc846c286771e46a11df",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19134,7 +19136,7 @@
     },
     "802408_pitcher": {
       "hard_ok": true,
-      "hash": "bf605dd0d198d89482b8bfa62a2cf93e",
+      "hash": "1dd9623a3bd12a8f63cb959c582e597f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19186,7 +19188,7 @@
     },
     "802411_pitcher": {
       "hard_ok": true,
-      "hash": "843e8214218878c20c4b4db0da580413",
+      "hash": "cba31f043b2366cddbe7aee065953ad9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19212,7 +19214,7 @@
     },
     "802412_pitcher": {
       "hard_ok": true,
-      "hash": "7321fcb73c5b3cc91754311af88b2a6b",
+      "hash": "65e1b4e265c86523978fdd2733f491f4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19262,7 +19264,7 @@
     },
     "802416_pitcher": {
       "hard_ok": true,
-      "hash": "ad3fedbd2ee8147747854999b6a0cac9",
+      "hash": "7fb402500b37011bde26a8f643035143",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19288,7 +19290,7 @@
     },
     "802419_pitcher": {
       "hard_ok": true,
-      "hash": "eb1897e3726b4b554798d7276b32ff29",
+      "hash": "0767cd67f834f46ed9bf2520cc9c9334",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19333,7 +19335,7 @@
     },
     "802506_hitter": {
       "hard_ok": true,
-      "hash": "29d885d07d242c6533e44f83899339c7",
+      "hash": "d61551f6198e558b3bd8b480bcd114ba",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19424,7 +19426,7 @@
     },
     "803033_hitter": {
       "hard_ok": true,
-      "hash": "85be2c30da6805b0d4cae8028764845d",
+      "hash": "540c96b2c82798c75543a4319afa7da5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19450,7 +19452,7 @@
     },
     "803135_pitcher": {
       "hard_ok": true,
-      "hash": "6757d68612b576a0ccc7855d53a81b04",
+      "hash": "94a652373f4dfcb217f51c4a3b7060ac",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19505,7 +19507,7 @@
     },
     "803175_hitter": {
       "hard_ok": true,
-      "hash": "91a66ff415be7aef34d22c298d12984b",
+      "hash": "d536b08b12ee19cc60934f354f1b0466",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19555,7 +19557,7 @@
     },
     "803244_pitcher": {
       "hard_ok": true,
-      "hash": "ff1363bac864918ed2548015c121b2a8",
+      "hash": "70f6ff436251fc5a5bb53365cf64eafa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19595,7 +19597,7 @@
     },
     "803285_pitcher": {
       "hard_ok": true,
-      "hash": "74ca9d53837f059bcd1f6fffaf8270fb",
+      "hash": "b0a49b479144140228e92dca4928aed4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19621,7 +19623,7 @@
     },
     "803349_pitcher": {
       "hard_ok": true,
-      "hash": "920a3290da5e4453d4e3cca666d2f8a5",
+      "hash": "5fcde85c46de418d78446c25546e4b2e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19647,7 +19649,7 @@
     },
     "803385_hitter": {
       "hard_ok": true,
-      "hash": "b41f4ded4fa7ffd3ca43c0825339b751",
+      "hash": "5d17b650ac2dc6d3f4c25907de1e4c9d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19673,7 +19675,7 @@
     },
     "803516_pitcher": {
       "hard_ok": true,
-      "hash": "6fa36e95354ff1a8b0959dcbea72a04f",
+      "hash": "09eb9a7b32aa1f17bd907086681c8160",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19692,12 +19694,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "TOR",
       "text": "The strikeout rate translates cleanly, 11.9 K/9 across AA & A+ becoming an MLB-equivalent 8.9, but the walk rate doesn't make the same trip. His 5.3 BB/9 across those same 105.3 innings translates to 5.3 at the MLB level, more than two full walks per nine above what MLB starters typically allow, and that gap is where the profile lives or dies. The K-BB% of 17% across AA & A+ lands at an MLB-equivalent 11.7%, which is about what you'd expect when a lefty misses bats but can't locate consistently enough to let that stuff play up. If the command tightens, there's a back-end starter conversation; if it doesn't, this is a bullpen arm where the strikeout rate gets to operate in shorter bursts and the walk rate becomes less fatal.",
       "valid": true
     },
     "803679_hitter": {
       "hard_ok": true,
-      "hash": "15f1764165747cdedbbdc586e4c900d6",
+      "hash": "55dc5558e4c34eb2ad3218391fbba894",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19723,7 +19727,7 @@
     },
     "803723_hitter": {
       "hard_ok": true,
-      "hash": "652a18d475f8965a9b9ab647f95400c1",
+      "hash": "0e54ac1f1c1f5c6fd214f6cac9008aac",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19749,7 +19753,7 @@
     },
     "803745_hitter": {
       "hard_ok": true,
-      "hash": "0cc2ec41bef2e2d7c3a7f79796f70005",
+      "hash": "e665b77d43b0a302eff4d326a98da501",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19775,7 +19779,7 @@
     },
     "803833_pitcher": {
       "hard_ok": true,
-      "hash": "cbc803312281b201f4f9accb15493d01",
+      "hash": "6d7a9a3fd20f20952feb2c5cda970d94",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19816,7 +19820,7 @@
     },
     "803849_hitter": {
       "hard_ok": true,
-      "hash": "20abe64fe96d349011ae18a704e003b8",
+      "hash": "74f74ec070d5a625a90aa812f61b9e73",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19842,7 +19846,7 @@
     },
     "804109_hitter": {
       "hard_ok": true,
-      "hash": "32556d42f7544834d2035076d70b03d3",
+      "hash": "ca79d072593c27430165f72a0a8f7a5c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19868,7 +19872,7 @@
     },
     "804249_pitcher": {
       "hard_ok": true,
-      "hash": "59958b348dd38807fc58b5b389ffcc3e",
+      "hash": "f0c030473494f519bc17d4dd4d941736",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19920,7 +19924,7 @@
     },
     "804465_pitcher": {
       "hard_ok": true,
-      "hash": "2f4acabf17da95d9975c6201e9b842f2",
+      "hash": "2b6d281b557d16987bab07430ed9b291",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19946,7 +19950,7 @@
     },
     "804526_pitcher": {
       "hard_ok": true,
-      "hash": "a02c31fc52cc2c7f1f9f34d0ebfb71f4",
+      "hash": "0a60bdfb1d27148a4bda329e7a2a666c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19965,12 +19969,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "TOR",
       "text": "The K-BB% across AA & A+ & A is 26%, and that number is doing a lot of carrying. Perry has struck out 117 and walked 32 in 82.7 innings, and the translated strikeout rate lands at 9.2 K/9 against a league that averages 8.6, which is encouraging, but the walk rate translates to 3.8 BB/9 where MLB hitters average 3.2 free passes allowed, and that gap is exactly where the profile thins. The surface ERA of 2.50 and 1.0 WHIP look clean, but a depth arm ceiling means the walk tolerance that's acceptable at A+ disappears once opposing lineups punish anything close to the zone. If the command tightens, he's a useful backend piece; if it doesn't, the swing-and-miss carries him only so far.",
       "valid": true
     },
     "804530_pitcher": {
       "hard_ok": true,
-      "hash": "22b223a1812b661beb3d2b0475641fff",
+      "hash": "8a8e331e87e776473c143ed404e5375c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -19996,7 +20002,7 @@
     },
     "804541_pitcher": {
       "hard_ok": true,
-      "hash": "a6ce63fbe256d2c0afef90f14fe70f56",
+      "hash": "cacb76885a3e2582c8a623d72086180e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20041,7 +20047,7 @@
     },
     "804558_hitter": {
       "hard_ok": true,
-      "hash": "af1cf35ace5d2dac29c95bb12cfcf598",
+      "hash": "e3646cb96c241e57ebb2395c71c6f39a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20060,12 +20066,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAA",
       "text": "The 36 stolen bases across AA & AAA are the loudest thing in this profile, and they carry real weight over 588 plate appearances. The on-base foundation (.374 OBP, 84 walks) gives the speed a platform to work from, and a 14% walk rate that translates to 11.7% at the MLB level suggests the approach is genuine rather than circumstantial. The power doesn't follow: a .147 ISO across AA & AAA translates to .123 at the big-league level, well below a league-average stick, which leaves a speed-and-OBP profile with a thin margin for error. If the legs hold and the OBP translates, he's a fourth outfielder with genuine utility; if the speed ever fades, there isn't enough bat underneath to carry a roster spot.",
       "valid": true
     },
     "804560_hitter": {
       "hard_ok": true,
-      "hash": "f774aa4fb7f2cf58ef2bbacb4a2f596e",
+      "hash": "f27da6899e144b54360d841f1bf66458",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20117,7 +20125,7 @@
     },
     "804614_hitter": {
       "hard_ok": true,
-      "hash": "c344050011ee11a1e848fd07bb0db236",
+      "hash": "8208cb120455c2b9761244c9d6f8f9aa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20143,7 +20151,7 @@
     },
     "804619_pitcher": {
       "hard_ok": true,
-      "hash": "5aca117e72203f7338260c7c66909f03",
+      "hash": "d9f00e900d7142f5a6734208b180da1e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20169,7 +20177,7 @@
     },
     "804636_pitcher": {
       "hard_ok": true,
-      "hash": "17f45660c3fedae32457767ebc9d4922",
+      "hash": "399ba0fb72c0b26a663208eda57e9fd1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20212,7 +20220,7 @@
     },
     "804670_pitcher": {
       "hard_ok": true,
-      "hash": "e36b1bcf085e9a1f805b71958969c552",
+      "hash": "ce3f71633b3c028024f1933a064859c2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20238,7 +20246,7 @@
     },
     "804817_pitcher": {
       "hard_ok": true,
-      "hash": "e6446c97773612d2e4b1ade8b7e786be",
+      "hash": "1fd9c70f0c468b5e00b20752b83054dd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20264,7 +20272,7 @@
     },
     "804858_hitter": {
       "hard_ok": true,
-      "hash": "0a20849117d69b5f0c239349f0600ac0",
+      "hash": "896eeb762a087d74b0867542b83cdf96",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20290,7 +20298,7 @@
     },
     "804942_pitcher": {
       "hard_ok": true,
-      "hash": "1930dec2b65195cc82719925e99bd93b",
+      "hash": "8f48ba8590730e56a651b9ad8d6cbb51",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20316,7 +20324,7 @@
     },
     "804948_pitcher": {
       "hard_ok": true,
-      "hash": "99d8fd85fe501e8d306289f1c10e7c5b",
+      "hash": "055396751d25d2b6594db19ba1e5c01e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20342,7 +20350,7 @@
     },
     "804973_pitcher": {
       "hard_ok": true,
-      "hash": "b43b121ed930a900bb8d87c91247b7bc",
+      "hash": "396f2b38c011efa738cdab6e95a77746",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20368,7 +20376,7 @@
     },
     "804981_pitcher": {
       "hard_ok": true,
-      "hash": "cf5b486efcab02b017e37a2730355de7",
+      "hash": "c237822f1e8c31431d212826926decd8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20394,7 +20402,7 @@
     },
     "805031_pitcher": {
       "hard_ok": true,
-      "hash": "5ef8f945519bf82b329e8f43516c1d7d",
+      "hash": "7901d55db72fe60c8bde43784d77d6b7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20420,7 +20428,7 @@
     },
     "805074_pitcher": {
       "hard_ok": true,
-      "hash": "3c4732c364d1a383d5bbc60770ac1e00",
+      "hash": "044d8a2591a85d80075bcbaab04e80df",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20446,7 +20454,7 @@
     },
     "805082_hitter": {
       "hard_ok": true,
-      "hash": "4f3ce0b027c21f6930aeb8d8327708e6",
+      "hash": "c49ff0f88ef152283f1c8eb0d0829289",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20496,7 +20504,7 @@
     },
     "805127_hitter": {
       "hard_ok": true,
-      "hash": "65e04b9d81ebce9eb664120a676a0840",
+      "hash": "633bf57b087d34280583034924559a29",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20522,7 +20530,7 @@
     },
     "805207_hitter": {
       "hard_ok": true,
-      "hash": "4228309b165d0738aa7fc504c8a5822a",
+      "hash": "97766a33e383dac56617225da12575d5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20548,7 +20556,7 @@
     },
     "805214_pitcher": {
       "hard_ok": true,
-      "hash": "a766e122d474cf314a8c824caaa62054",
+      "hash": "dc3d77575980f3fb45ae2bc163374218",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20625,7 +20633,7 @@
     },
     "805346_hitter": {
       "hard_ok": true,
-      "hash": "f5961fa27274b17e1807d61de3449fd4",
+      "hash": "79dc33af9de92ca107beec0c52aec265",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20651,7 +20659,7 @@
     },
     "805347_hitter": {
       "hard_ok": true,
-      "hash": "531cae3d7021215a27df80c0b4e13c68",
+      "hash": "dd92498adee748432ac844d8fddf11d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20722,7 +20730,7 @@
     },
     "805422_pitcher": {
       "hard_ok": true,
-      "hash": "2be5354bdbff5ed7c4c3b3cef82f7a4a",
+      "hash": "46e85b27fe5e243d62d66d9dce811ff9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20826,7 +20834,7 @@
     },
     "805706_pitcher": {
       "hard_ok": true,
-      "hash": "f425ea671a301865d1aea10cd620bae3",
+      "hash": "f3e1cd4459f4cd3c0b923e01f338214c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20920,7 +20928,7 @@
     },
     "805795_hitter": {
       "hard_ok": true,
-      "hash": "d42a2ecf50f73de617fb14c812b9449e",
+      "hash": "fcd383504a0acfa1979222f22ca87d2f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20946,7 +20954,7 @@
     },
     "805796_hitter": {
       "hard_ok": true,
-      "hash": "693e453eb742b960e5f10d3e9f4c84af",
+      "hash": "c4185ea7d4bb95b1dcafdc1338c5fd79",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -20965,6 +20973,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAA",
       "text": "The ISO is the lead. Across AA & A+ & A in 381 plate appearances, Nimmala's .233 ISO and .494 slugging carry a profile that translates to a .164 MLB-equivalent ISO, which sits in a range where everyday power profiles live but platoon bats also land. Fifty-three walks push the BB% translation to 10.7%, and that kind of patience at 21 is what makes the .370 OBP feel sustainable rather than lucky. The catch is 88 strikeouts in those same 381 plate appearances, translating to 25.5% at the MLB level, and a shortstop ceiling of bench or platoon bat either becomes a useful second-division contributor if the strikeout rate plateaus, or a roster filler if it climbs.",
       "valid": true
     },
@@ -20993,7 +21003,7 @@
     },
     "805805_hitter": {
       "hard_ok": true,
-      "hash": "86eb27c00131dde2eb2d55df5667777f",
+      "hash": "7963459d2a9b9f4d648d93c8d6f91551",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21019,7 +21029,7 @@
     },
     "805807_pitcher": {
       "hard_ok": true,
-      "hash": "33edfc2fd1178ba23dbfa8d28016b0bd",
+      "hash": "142d12b11e985db29f5ab525ca9e3755",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21069,7 +21079,7 @@
     },
     "805809_pitcher": {
       "hard_ok": true,
-      "hash": "a2e20e15cbe2aef3f445ced9c6de6275",
+      "hash": "bb09959b384ab6d315f46b21dfe79848",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21095,7 +21105,7 @@
     },
     "805810_hitter": {
       "hard_ok": true,
-      "hash": "932ba4e0bcc8e74df26d82fdc49c2c4d",
+      "hash": "cfec92343734ed0ffca307be70fafc6c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21114,6 +21124,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "KC",
       "text": "The walk rate is the loudest thing in this profile, and it's also where the argument gets complicated. At A+ this season, Mitchell drew 113 walks across 511 plate appearances, a 22% clip that grades at the 99th percentile against his peer pool, and it's dragging a .414 OBP out of a .234 average. The power translates cautiously, his A+ ISO of .226 melts to .152 at the MLB-equivalent level, sitting right at the MLB average of .150, and 174 strikeouts in that same 511-PA sample produce a translation of 36.8% against a catching corps that generally can't sustain contact that thin. Catching is a position where you can carry a loud strikeout rate if the walk rate stays elite and the power holds shape, but if that discipline erodes under better pitching, the .234 average doesn't leave much underneath it. A bench receiver at best, organizational depth at worst, and the catcher's position premium is the only thing keeping this profile interesting at all.",
       "valid": true
     },
@@ -21143,7 +21155,7 @@
     },
     "805906_pitcher": {
       "hard_ok": true,
-      "hash": "de68ada4b24cd14af208380930c41005",
+      "hash": "161309515847cacf6c9f41fad50ff39b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21225,7 +21237,7 @@
     },
     "806046_pitcher": {
       "hard_ok": true,
-      "hash": "c986657e829a0285d21a5bc38ed8a972",
+      "hash": "70dbfb28e64d47794651dc3fdd3a64b9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21277,7 +21289,7 @@
     },
     "806064_pitcher": {
       "hard_ok": true,
-      "hash": "c4d60e6952170fa4df10c07bfc7ab523",
+      "hash": "bd7a13d1551d609d442ba011ae501721",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21324,7 +21336,7 @@
     },
     "806071_hitter": {
       "hard_ok": true,
-      "hash": "99fd3939b729f6dd6dab91310f1653a0",
+      "hash": "a66b748310ca75cf257bbedcf7aa038d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21350,7 +21362,7 @@
     },
     "806077_hitter": {
       "hard_ok": true,
-      "hash": "73fb5dedf11f70b1f1029bb28d052437",
+      "hash": "34d8577bb844a1907e4a361497de713e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21369,6 +21381,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAD",
       "text": "A .424 BABIP across AA & A is doing almost all the work here. The contact and on-base skills are genuine \u2014 a 99th-percentile average, 35 walks, and 36 stolen bases in 278 plate appearances describe a player who can get on base and run, but zero home runs and an MLB-equivalent ISO of .092 when the league average sits at .150 says the bat has almost no margin once the BABIP normalizes. If the hit tool plays down at all in the upper minors, this profile reduces to a bench speedster, and if it doesn't, he's a table-setter who needs to be near the top of a lineup to matter.",
       "valid": true
     },
@@ -21400,7 +21414,7 @@
     },
     "806191_hitter": {
       "hard_ok": true,
-      "hash": "5bfa7ec851e211f3f5a6d19714caa35b",
+      "hash": "c84be9eab3f1ea394a0926b76c39396f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21452,7 +21466,7 @@
     },
     "806210_hitter": {
       "hard_ok": true,
-      "hash": "2f0c94ff5befe8e9fe03eace339be573",
+      "hash": "bdbc6a59598a592813169d3d2e9331d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21478,7 +21492,7 @@
     },
     "806221_hitter": {
       "hard_ok": true,
-      "hash": "f69d9abc6276e3b5063244846b2d9b03",
+      "hash": "4c4771beda8827cc866411dff32d71a7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21497,12 +21511,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAD",
       "text": "The raw numbers at A-ball are genuinely loud: 37 home runs, a .644 slugging, an ISO of .346 that sits in the 99th percentile of his hitter pool. The problem arrives the moment you translate it, because that power thins to a .191 ISO against MLB-equivalent competition, and the 34 K% at A-ball, already a concern with 163 strikeouts in 486 plate appearances, becomes a punishing 38.5% against big-league pitching. The walk rate survives the trip, coming out at 10.5% where the MLB average is 8.5%, so the eye isn't nothing, but a first baseman who strikes out at that clip with no athleticism premium has a very narrow margin. If the power carries even partially and the contact improves he's a bench bat with pop; if the strikeout rate doesn't bend, there isn't a profile left at the position.",
       "valid": true
     },
     "806224_pitcher": {
       "hard_ok": true,
-      "hash": "164b09bf3f8409847bf54db63a2b7060",
+      "hash": "855da38cbbdf36d4053629440ff61ab0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21528,7 +21544,7 @@
     },
     "806230_hitter": {
       "hard_ok": true,
-      "hash": "f318ebf194b682adc06ea406ea170cdd",
+      "hash": "2bcc1b3e7742f7cbc5af47d0c52ed62d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21554,7 +21570,7 @@
     },
     "806233_hitter": {
       "hard_ok": true,
-      "hash": "6480a36432ec62f41d5f0d7306218428",
+      "hash": "43097daf4e2a0151c42ab3bc26147925",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21594,7 +21610,7 @@
     },
     "806252_hitter": {
       "hard_ok": true,
-      "hash": "52bc238211f46de727f4667b61e078a7",
+      "hash": "39749947cf94c04c3286952559885f1c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21620,7 +21636,7 @@
     },
     "806258_pitcher": {
       "hard_ok": true,
-      "hash": "a01830c36389c2bfed001831075de07d",
+      "hash": "d46c9a5f9fea6ed17cc30ea93c3d65f2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21661,7 +21677,7 @@
     },
     "806265_pitcher": {
       "hard_ok": true,
-      "hash": "070b2f73f39c0c52ad8f6477e224a284",
+      "hash": "ae6a7e870b1d01db8638b7be516258b4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21713,7 +21729,7 @@
     },
     "806413_pitcher": {
       "hard_ok": true,
-      "hash": "7f2d834e287ce2ee9c57f5c402a241a0",
+      "hash": "36691c3c09c6b93114e7f8d00d23ce77",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21739,7 +21755,7 @@
     },
     "806872_hitter": {
       "hard_ok": true,
-      "hash": "e51fa02dea6bacd94eb51e8f449a444f",
+      "hash": "c92ea9224db123583cf40d64985393c2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21765,7 +21781,7 @@
     },
     "806884_hitter": {
       "hard_ok": true,
-      "hash": "9a04dc2b380a0d1decb2a7adf5a0e0c8",
+      "hash": "5804ece3deb469798f97a366c4602c3c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21791,7 +21807,7 @@
     },
     "806953_hitter": {
       "hard_ok": true,
-      "hash": "907476f7ee691c3b1eda4a8e6dbb4084",
+      "hash": "8faa3a8d730ceb5b709f095894ba44b5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21810,12 +21826,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "MIN",
       "text": "The ISO is the loudest thing on this card. Twenty-two home runs at A+ in 520 plate appearances is a real power signal for a 20-year-old catcher, and the .197 ISO ranks 77th percentile among his peers. Everything else is quieter, and most of it is a problem: a .221 average sitting on a .243 BABIP, a 6th-percentile OBP, and an MLB-equivalent strikeout rate that translates to 26.8% where the MLB average is 22.0. The walk rate goes the other direction, translating to 6.3% in a context where the MLB average sits at 8.5%, and that tightens the squeeze on the plate discipline side. If the raw power ever gets to a swing that makes more contact, there's a real conversation about a second-division regular who plays a premium position; if the contact and walk trends are the baseline, the home runs become a mirage and the profile tops out as organizational depth.",
       "valid": true
     },
     "806956_hitter": {
       "hard_ok": true,
-      "hash": "44936f53ffb4be2901a2b5fa1c0dea60",
+      "hash": "672c6f77c54f9c9fb3ed289a5339f5eb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21841,7 +21859,7 @@
     },
     "806957_hitter": {
       "hard_ok": true,
-      "hash": "e1a4adee8b72c9edb099e0cec337b105",
+      "hash": "b0b64190a6d72453ee93d2335d114cda",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21867,7 +21885,7 @@
     },
     "806958_hitter": {
       "hard_ok": true,
-      "hash": "dc60a1dafa1a436f9692b8b9d0dbfb74",
+      "hash": "1331b2a8e943e7e45467616ae90f0360",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21886,12 +21904,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "SEA",
       "text": "The 25 stolen bases across AA & A+ are the loudest thing in this profile, and they carry genuine weight at shortstop. The bat holds up over 498 plate appearances, a .273/.363/.458 line with 16 home runs, but the MLB-equivalent translation does the honest work: that strikeout rate climbs to 27.2% against a league that hums around 22.0%, and the raw power shrinks to a .135 ISO where the MLB average sits at .150, so the gap-to-gap game that flatters the minor-league line has less room to breathe up the ladder. If the speed-and-contact combination tightens and he limits strikeouts in Triple-A, he becomes an everyday shortstop who causes problems on the bases; if the strikeouts hold at their translated rate, what's left is a bench piece who steals you a bag when called on.",
       "valid": true
     },
     "806964_hitter": {
       "hard_ok": true,
-      "hash": "f9341b90fd291ba5eb18e26fb117a73d",
+      "hash": "b7f1cb12141eae8b772850001778e5d4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21917,7 +21937,7 @@
     },
     "806965_hitter": {
       "hard_ok": true,
-      "hash": "25c3eb381008606d0f63b72f114a6371",
+      "hash": "beaadc580ad97766005ba1a685ac16e3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21969,7 +21989,7 @@
     },
     "806985_hitter": {
       "hard_ok": true,
-      "hash": "1a3fe33c64b4480904ddc82e67a6887f",
+      "hash": "000b95dd6bf86bcb6aba950969e0752d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -21995,7 +22015,7 @@
     },
     "806988_hitter": {
       "hard_ok": true,
-      "hash": "8fd7f67f602216c17426d0eb24a3a662",
+      "hash": "5912541be4421bfac1c744c04c621f3b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22061,7 +22081,7 @@
     },
     "807080_hitter": {
       "hard_ok": true,
-      "hash": "2bac302375f541cd7c2b3d31a38ed139",
+      "hash": "4517bea96b2aa53f47ca2e8d771dfd1d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22087,7 +22107,7 @@
     },
     "807083_hitter": {
       "hard_ok": true,
-      "hash": "b21830d287d717d3ff2fc2c2f1512b8d",
+      "hash": "f01786bb9fd8a6b11ce1c33b83ceae4c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22113,7 +22133,7 @@
     },
     "807257_hitter": {
       "hard_ok": true,
-      "hash": "94089e419cb226a10a1456e8f6ea79ed",
+      "hash": "692ca1daa54e526a4a06cc43108c12e1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22158,7 +22178,7 @@
     },
     "807276_hitter": {
       "hard_ok": true,
-      "hash": "e7a60788b3c06f7b68f5d0ceaa471a78",
+      "hash": "4c0c28583b648b75fb2b82aebce5796a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22209,7 +22229,7 @@
     },
     "807284_pitcher": {
       "hard_ok": true,
-      "hash": "9db23b911edd20cf89abf860fe882005",
+      "hash": "a2fd9f3f493c6c8ac553aca405864a99",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22228,6 +22248,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "ATL",
       "text": "The ERA and WHIP grades sit at the 85th and 86th percentile of his pitcher pool, which sounds like a starter's ceiling \u2014 but the translation complicates it. Across AA & A+, he's posted a 3.4 ERA with 125 strikeouts in 114.6 innings, and that strikeout rate converts to a 7.8 K/9 in MLB context, a tick short of what an average MLB pitcher produces, while his 53 walks translate to a 4.4 BB/9 when the MLB average is 3.2. The stuff plays up in results right now because he limits damage, but the walk rate is the hinge: if the command doesn't sharpen, the outcomes profile that looks like a starter becomes what it actually is, a multi-inning or setup reliever whose floor is depth. He's 20 and the sample across 114.6 innings is substantial, so there's time, but everything downstream depends on whether the control gap closes before the command ceiling does.",
       "valid": true
     },
@@ -22257,7 +22279,7 @@
     },
     "807314_pitcher": {
       "hard_ok": true,
-      "hash": "97fb1f82d304e7150f42953774413f54",
+      "hash": "9c3e02cdf1efd700fc73f52dc4c7b655",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22362,7 +22384,7 @@
     },
     "807720_hitter": {
       "hard_ok": true,
-      "hash": "b65cac11323a43019aa700da8189e94b",
+      "hash": "ab0c0aae502c61ffdc7d667439ca110a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22388,7 +22410,7 @@
     },
     "807726_hitter": {
       "hard_ok": true,
-      "hash": "ad33cea366fa9103b0d12b9a46686ec6",
+      "hash": "a9548d87e53325dae523296a22c6cb6d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22414,7 +22436,7 @@
     },
     "807727_hitter": {
       "hard_ok": true,
-      "hash": "93b976d5361852c03c09b593e15088db",
+      "hash": "760784b7a40b209c69640b3fa67b8aa1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22440,7 +22462,7 @@
     },
     "807739_pitcher": {
       "hard_ok": true,
-      "hash": "67490d9221379b865b0ced7b1a6882bb",
+      "hash": "ddcede6d1459d45c74d721d2a40d985a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22466,7 +22488,7 @@
     },
     "807742_hitter": {
       "hard_ok": true,
-      "hash": "e3970aaaa01cde469fa758edfb0e2813",
+      "hash": "62906db00361d7631d9e765d7fc8b63c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22492,7 +22514,7 @@
     },
     "807743_pitcher": {
       "hard_ok": true,
-      "hash": "6079f1cccb91fa74efb6c192520cb0c9",
+      "hash": "84e1002db532acbe0b30c3cf0899e724",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22577,7 +22599,7 @@
     },
     "807993_pitcher": {
       "hard_ok": true,
-      "hash": "a3a06e17af30b3e04c9e80dfcf9030a8",
+      "hash": "ac248b7e65c387b9d171c6a3d82add20",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22668,7 +22690,7 @@
     },
     "808064_pitcher": {
       "hard_ok": true,
-      "hash": "6bcd46267c06d76f467a236944e0ed90",
+      "hash": "6fd4fa69761440bf30f7c5a0d42ecb71",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22694,7 +22716,7 @@
     },
     "808087_pitcher": {
       "hard_ok": true,
-      "hash": "04efec9583b51e5fa5ab381c09b6f13a",
+      "hash": "8689a3329138582e18a383bb54612a86",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22761,7 +22783,7 @@
     },
     "808161_pitcher": {
       "hard_ok": true,
-      "hash": "650ca9e9c06110e399ba783edf694a7b",
+      "hash": "2d9fe4dcd0dc48f44c880474f5375b65",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22804,7 +22826,7 @@
     },
     "808234_hitter": {
       "hard_ok": true,
-      "hash": "55bff3eebc535d8011941e36b162d6f3",
+      "hash": "749cb9a31b1639edb95282df65c1fe09",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22823,6 +22845,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAD",
       "text": "The .443 OBP across AA & A+ is the loudest thing in this profile, and it's built on 88 walks in 506 plate appearances. That 17% walk rate translates to 12.6% at the MLB level, well clear of the 8.5% MLB average. The 44 stolen bases across AA & A+ travel well regardless of what the bat does, and that matters because the .308/.499 line rests on a .383 BABIP, and the MLB-equivalent ISO of .135 sits under the .150 MLB average. If the contact quality regresses and the zone-feel doesn't survive the jump, this is a bench piece who can run; if the walk rate is genuinely who he is, a productive top-of-the-order regular is in the range.",
       "valid": true
     },
@@ -22852,7 +22876,7 @@
     },
     "808250_pitcher": {
       "hard_ok": true,
-      "hash": "151aa264292c68a08c2ad3499e823fbb",
+      "hash": "363d3474cf49ea991da90f7402551db9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22878,7 +22902,7 @@
     },
     "808265_hitter": {
       "hard_ok": true,
-      "hash": "fab69dd9e43554e14ef8e6eac9da1ff1",
+      "hash": "01a621b617c0c4f5cd4790acfbf0386f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -22960,7 +22984,7 @@
     },
     "808307_hitter": {
       "hard_ok": true,
-      "hash": "9b06ffb8125fd9226b97b814f1fd1b0b",
+      "hash": "b142d3050d195bd51a915c18647afa2a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23000,7 +23024,7 @@
     },
     "808329_pitcher": {
       "hard_ok": true,
-      "hash": "ea1f7afd516e7fd38cf9e86a1b6f1475",
+      "hash": "f50cff1854aae90ccdeddcbfcd5d6476",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23041,7 +23065,7 @@
     },
     "808365_hitter": {
       "hard_ok": true,
-      "hash": "bf7f1973dca73947fb0b39dc1c6806c3",
+      "hash": "c4749dc4b8d3f1cf339ae0dec8a67c7b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23082,7 +23106,7 @@
     },
     "808510_pitcher": {
       "hard_ok": true,
-      "hash": "42b04e454c271a38cd3f1d408a224996",
+      "hash": "6c5872b7be144e64864be94c5dfd3f3e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23108,7 +23132,7 @@
     },
     "808535_hitter": {
       "hard_ok": true,
-      "hash": "1a4f3c9003fc2b5d833fbd7903118266",
+      "hash": "ef00896a36e17e565dcd4ad222d05a32",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23174,7 +23198,7 @@
     },
     "808959_hitter": {
       "hard_ok": true,
-      "hash": "afc8c1e5fa05e05f43f0d27b3c1bc026",
+      "hash": "c0abcf70ad23e6a174927c967a3389dc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23276,7 +23300,7 @@
     },
     "809092_hitter": {
       "hard_ok": true,
-      "hash": "11437e5e13a307e869b6662cd7bb3bb1",
+      "hash": "563a4f5091488df6c4b958cd91548219",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23327,7 +23351,7 @@
     },
     "809100_pitcher": {
       "hard_ok": true,
-      "hash": "a12f45e5d905a5906cba4bfc4f19afca",
+      "hash": "3d451baa74941893a6b9b569901a5bd2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23353,7 +23377,7 @@
     },
     "809229_pitcher": {
       "hard_ok": true,
-      "hash": "3cfebae7ae2bab31e98ba14e6739f020",
+      "hash": "76ff286fa90cb2e10963cb606de5856e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23379,7 +23403,7 @@
     },
     "809254_pitcher": {
       "hard_ok": true,
-      "hash": "b0909e283932341155527cf8390b8825",
+      "hash": "752d6bc74981fd8273f858466abf0e79",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23405,7 +23429,7 @@
     },
     "809343_pitcher": {
       "hard_ok": true,
-      "hash": "3d0445ad4752bc33f25c38feea85eda4",
+      "hash": "5981e621df288df1f593cc3642aba208",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23445,7 +23469,7 @@
     },
     "809707_hitter": {
       "hard_ok": true,
-      "hash": "1f5e9d87e1d316dd1ddbddfa0f6c0051",
+      "hash": "b88c48de0d47811b5a7cc465ce4d4e05",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23471,7 +23495,7 @@
     },
     "809733_pitcher": {
       "hard_ok": true,
-      "hash": "bbdf20b3086e9c64f6692f283ecd3129",
+      "hash": "fe38977056d72e982ec3ec45dc6b1594",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23497,7 +23521,7 @@
     },
     "809840_pitcher": {
       "hard_ok": true,
-      "hash": "83bed85dbf8956af2347af63e101923c",
+      "hash": "7d8bd03d3d9f9542b44dd5bdce0afd83",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23609,7 +23633,7 @@
     },
     "811290_pitcher": {
       "hard_ok": true,
-      "hash": "96864dfb2e58f8fb6f140014ab792ee6",
+      "hash": "ae1992673b5b7bbc68a04ef26787fce6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23687,7 +23711,7 @@
     },
     "811307_pitcher": {
       "hard_ok": true,
-      "hash": "386940c637ef0b9e0a4f1b1a5f684fcc",
+      "hash": "eff3c0492477136c5e48a9099f20f46e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23713,7 +23737,7 @@
     },
     "811309_pitcher": {
       "hard_ok": true,
-      "hash": "fda3c524b6e2bdc4c5fc4aa777e80db3",
+      "hash": "7ce6e93cb485e2f772c747942154b259",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23739,7 +23763,7 @@
     },
     "811315_pitcher": {
       "hard_ok": true,
-      "hash": "bf54986f31a40f8ae6145e2360856acd",
+      "hash": "a541e686d924f8270c34692fddc32a36",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23779,7 +23803,7 @@
     },
     "811666_pitcher": {
       "hard_ok": true,
-      "hash": "efe55e82516edc1b5873f6c03614730a",
+      "hash": "58266bb01afce1afb90d0420d8cb0104",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23805,7 +23829,7 @@
     },
     "811765_hitter": {
       "hard_ok": true,
-      "hash": "4a762cd43a166f0cb3c318822b1f21f3",
+      "hash": "6ec66c54f8979864c50ab5346ad284d8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23831,7 +23855,7 @@
     },
     "811965_hitter": {
       "hard_ok": true,
-      "hash": "9d4790182c67c59d7d5d449f7507ee20",
+      "hash": "5fd916a537f746e235c9df7a207d8a26",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23871,7 +23895,7 @@
     },
     "812431_pitcher": {
       "hard_ok": true,
-      "hash": "f1e075ca20b4b2db41ee1826e1964be9",
+      "hash": "902179912b134be26d05dd84540a2cf1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23897,7 +23921,7 @@
     },
     "813335_pitcher": {
       "hard_ok": true,
-      "hash": "b4e92f88aacc62dc3e414b950814ec28",
+      "hash": "83060545af9e3005fe3a24f24a905a52",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -23949,7 +23973,7 @@
     },
     "813533_pitcher": {
       "hard_ok": true,
-      "hash": "ea72afa2e1b577fc02e7c04b14e3c6c1",
+      "hash": "9ff446c4e11c00d384b1754d0112c5b0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24012,7 +24036,7 @@
     },
     "813820_pitcher": {
       "hard_ok": true,
-      "hash": "28814be2dc76ce518bbeb181614311ea",
+      "hash": "1e12cfec999528fbd9eff9bff1f83246",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24063,7 +24087,7 @@
     },
     "813838_pitcher": {
       "hard_ok": true,
-      "hash": "aeb2db8d84aa624f215d3ecd0fc6ac24",
+      "hash": "daa70d06c02e1ed176645b9d611af0fb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24140,7 +24164,7 @@
     },
     "813895_pitcher": {
       "hard_ok": true,
-      "hash": "2fdb7284558503df567937db4229e54e",
+      "hash": "720f21a161d15b1bde158aa53edc435f",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24166,7 +24190,7 @@
     },
     "813916_hitter": {
       "hard_ok": true,
-      "hash": "ac7c43c046416c069c301634b09abc02",
+      "hash": "01df6340b7fdacace23d6ccf6ac58ee5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24185,12 +24209,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAD",
       "text": "The .421 OBP at A-ball is the loudest thing in this profile, and it's also the thing that needs the most scrutiny. Kellon Lindsey has drawn 50 walks in 290 plate appearances, and that discipline translates to an 11.4% walk rate at the MLB level, a rate most big-league regulars don't sniff. The problem is a .379 BABIP propping up the .288 average, and when the MLB equivalent peels the ISO back to .139, the power that looks like 11 home runs at A-ball turns ordinary fast. If the contact skills and zone judgment hold as he climbs, he's a fringe regular who gets on base; if the BABIP normalizes and the power doesn't travel, what's left is a bench piece who walks.",
       "valid": true
     },
     "813930_hitter": {
       "hard_ok": true,
-      "hash": "f26eb161f0bf8db1af1a98ecaa19eaf9",
+      "hash": "1a22fcce8bd855a4426610b1bcc12298",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24231,7 +24257,7 @@
     },
     "813989_pitcher": {
       "hard_ok": true,
-      "hash": "917af5fbb9b84d58f6a626fb1073d5ad",
+      "hash": "d203eebe541e2b2579db129f4a8230a3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24272,7 +24298,7 @@
     },
     "814154_hitter": {
       "hard_ok": true,
-      "hash": "27e4aaed3aa2f70a58f6311755d3b37f",
+      "hash": "c16cdea2d95dab56691f5b49ebd793c2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24313,7 +24339,7 @@
     },
     "814299_hitter": {
       "hard_ok": true,
-      "hash": "aaacd3821d953a971415845d349d0ca7",
+      "hash": "55bab3fb5c733e5d593844eb18a4ccc7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24339,7 +24365,7 @@
     },
     "814307_hitter": {
       "hard_ok": true,
-      "hash": "27c83bbcc1846187e9f9d76b6f63a121",
+      "hash": "e7a14b2529880f98535e1b051165d8ff",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24365,7 +24391,7 @@
     },
     "814351_pitcher": {
       "hard_ok": true,
-      "hash": "827b7d2e8300b01cb7ea05586582b01a",
+      "hash": "3a3d76f8a7a464216fb106b50eb04582",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24406,7 +24432,7 @@
     },
     "814392_pitcher": {
       "hard_ok": true,
-      "hash": "c0e456a5b317780a9978b41898695816",
+      "hash": "1adb8d1d94cffa34e0f635ad16497608",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24432,7 +24458,7 @@
     },
     "814409_hitter": {
       "hard_ok": true,
-      "hash": "c2792860efb5ceed087c18b5ef799844",
+      "hash": "298f3050ab5c757598418ac680b7ec3b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24458,7 +24484,7 @@
     },
     "814414_hitter": {
       "hard_ok": true,
-      "hash": "53c6787f851901f70bec846d81686e1f",
+      "hash": "1a0ba11895198dd946b0e6b5fd1f93dd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24527,7 +24553,7 @@
     },
     "814444_hitter": {
       "hard_ok": true,
-      "hash": "54ebd9d918df4c6233ab6600a6be8f9c",
+      "hash": "a9ce079f608effc9dcbf9452c71340f4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24567,7 +24593,7 @@
     },
     "814455_hitter": {
       "hard_ok": true,
-      "hash": "e252244f90b9e60a3390e3c29761ab33",
+      "hash": "e97fd7ca86da2d1c8e7c5325b8a410f6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24593,7 +24619,7 @@
     },
     "814458_hitter": {
       "hard_ok": true,
-      "hash": "20658ec0a8ab69b8f690883dbb94bca5",
+      "hash": "176f811f2b71b072f99eff1f788e1186",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24634,7 +24660,7 @@
     },
     "814490_pitcher": {
       "hard_ok": true,
-      "hash": "0ca399ac884fab0a13e7636fa67ca0ec",
+      "hash": "d413da9c656bc2c5388541169db14b4d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24660,7 +24686,7 @@
     },
     "814527_pitcher": {
       "hard_ok": true,
-      "hash": "ca1cc5fad229a384370ac0b18185a1c5",
+      "hash": "6035b9fb260954a6ded376fe6aa83bb6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24701,7 +24727,7 @@
     },
     "815071_pitcher": {
       "hard_ok": true,
-      "hash": "e51caa888d764d3d861fc4d11c0e0006",
+      "hash": "cd823edd5812fb0a081701387f729adc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24741,7 +24767,7 @@
     },
     "815119_pitcher": {
       "hard_ok": true,
-      "hash": "ad421510d3e3d82ecdf569aad578dbf2",
+      "hash": "26774df2fea28a9b46e25a6d73e42885",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24767,7 +24793,7 @@
     },
     "815147_hitter": {
       "hard_ok": true,
-      "hash": "98aa024b991cff82328d0ad252bb3aed",
+      "hash": "f17ce845145cc76c2b0ee6fcf612e012",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24786,12 +24812,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "NYY",
       "text": "The walk rate is the loudest thing in this profile, and it's also what makes the ceiling conversation complicated. At A+, Rodriguez has drawn 58 walks against 72 strikeouts across 364 plate appearances, and the 16% walk rate translates to 11.4% at the MLB level, well clear of the 8.5% MLB average. The problem is what surrounds it: an .167 ISO at A+ that translates to .127 in MLB context, a figure that sits below where a corner outfielder needs to be, and a profile that reads more \"patient hitter who doesn't hit the ball hard enough\" than anything scarier. The 20 stolen bases add a wrinkle, but if the power doesn't develop past its current shape, what's left is a lefty corner bat with a good eye and not enough thump to hold a roster spot, which lands him somewhere between a bench piece and organizational depth.",
       "valid": true
     },
     "815148_pitcher": {
       "hard_ok": true,
-      "hash": "434ea0fcd0a5e85d416e9905d386dea0",
+      "hash": "38b540173f1aa246e5cf2c9dbc5c1cfd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24845,7 +24873,7 @@
     },
     "815195_hitter": {
       "hard_ok": true,
-      "hash": "76532e95775db3d077a68641275ac619",
+      "hash": "2fd4aa48bbec439370df5d3bf0b570c9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24871,7 +24899,7 @@
     },
     "815212_pitcher": {
       "hard_ok": true,
-      "hash": "54270b2ce9ce77b126793056ca5a307d",
+      "hash": "f842d66397c4fa4c5902015fd103d7e4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24918,7 +24946,7 @@
     },
     "815298_pitcher": {
       "hard_ok": true,
-      "hash": "ecff0afdc978f0fc77baacb87ee297c6",
+      "hash": "40ca57eeafc60870cad8f5565b1f9285",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24944,7 +24972,7 @@
     },
     "815304_hitter": {
       "hard_ok": true,
-      "hash": "b9e842bc9b8f017ec505b41f1dd11195",
+      "hash": "01e078cb428cbb818afdbfb7032eb6ec",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24970,7 +24998,7 @@
     },
     "815348_pitcher": {
       "hard_ok": true,
-      "hash": "cad3ca5cc278f113f3619d64b683100f",
+      "hash": "77792b61991f1531287b330957ac7fae",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -24996,7 +25024,7 @@
     },
     "815352_hitter": {
       "hard_ok": true,
-      "hash": "7e1eff7a7205e8b1033b786511e6cbc4",
+      "hash": "6a6739803ba6d7fd806ed2023c6fea64",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25015,12 +25043,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "CHW",
       "text": "The ISO is .300 across AA & A+, and that's the number that drives the argument for Caleb Bonemer in both directions. Pull up the MLB-equivalent translation and the raw power holds, an .199 ISO where the league average sits at .150, but the strikeout rate translates to 29.8% and 161 strikeouts across 595 plate appearances in the minors is a real number attached to a real hitter who is 21 years old. The walk rate is genuine, 84 walks producing an .380 OBP at the card level, so the profile isn't empty discipline masking a broken swing, but whether the contact improves enough to survive big-league velocity is the only thing that separates a low-end everyday third baseman from a bench bat whose power plays only in the right matchup.",
       "valid": true
     },
     "815380_hitter": {
       "hard_ok": true,
-      "hash": "291f593a066b9bd2e05c91eefade11f6",
+      "hash": "97edc2298ae4ef5c4fb642fc2c00882d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25046,7 +25076,7 @@
     },
     "815394_hitter": {
       "hard_ok": true,
-      "hash": "458a93b13cddbcc3087a2a2d73a9d97b",
+      "hash": "d51343c0b8a0582f956a9c3e274921f7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25065,24 +25095,24 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "TBR",
       "text": "The surface numbers are loud: .419 OBP and 44 stolen bases across AA & A+ at 21, with 74 walks in 533 plate appearances. The tension is that the BABIP sits at .382, which means some of that .315 average is going to regress, and the translated strikeout rate of 25.1% is already the part that needs to hold its ground, given that MLB hitters strike out around 22.0% of the time. The power translates to a .162 ISO at the MLB level, roughly league-average, so the profile isn't carried by the bat; it lives or dies on whether the plate discipline and speed stay intact once big-league arms attack the strikeout zone more aggressively. Either a low-end everyday right fielder if the walk rate and legs survive the translation, or a bench bat if the contact slips further than the BABIP correction alone accounts for.",
       "valid": true
     },
     "815464_hitter": {
-      "hard_ok": false,
-      "hash": "360a038d669a3b71e879b1f93a65aa90",
+      "hard_ok": true,
+      "hash": "21680b42c34df74a3e27349bf548b077",
       "model": "claude-sonnet-4-6",
       "problems": {
-        "banned": [
-          "against a league average"
-        ],
+        "banned": [],
         "count_role_problems": [],
         "derived_word_number_problems": [],
         "handedness_problems": [],
-        "hard_ok": false,
+        "hard_ok": true,
         "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
-        "ok": false,
+        "ok": true,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
@@ -25091,8 +25121,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The power profile is loud and the walk rate is the problem. Across AA & A+ & A this season, 26 home runs and a .223 ISO sit at the 86th percentile among minor-league hitters, but only 19 walks in 482 plate appearances translates to a 4.8% MLB-equivalent BB rate against a league average of 8.5%, and that gap is what keeps the .295 OBP from being anything more than a profile flaw in plain sight. If the bat speed that produces the power never gets paired with real plate discipline, this is an org-depth right fielder whose contact plays at the margins and whose on-base value never arrives.",
-      "valid": false
+      "text": "Twenty-six home runs across AA & A+ & A at 21 is loud, and the .488 slugging backs it up against real arms, but everything else in the profile is working against him. The walk rate translates to 4.8% in MLB-equivalent terms, well short of the 8.5% MLB average, and the OBP sits at .295 because he simply won't take a free pass, 19 walks in 482 plate appearances. The raw power is genuine enough to survive a strikeout rate that translates to roughly league-average contact trouble, but a hitter who can't get on base any other way needs that power to carry more weight than it does here. If the discipline never develops, he's a right-field bat that plays fine in the minors and runs out of rope at the highest level.",
+      "valid": true
     },
     "815501_pitcher": {
       "hard_ok": true,
@@ -25112,7 +25142,7 @@
     },
     "815520_hitter": {
       "hard_ok": true,
-      "hash": "68bdacfd2efb890052617cdcb5cc450b",
+      "hash": "7e7907761e729594acec62ea9de4d923",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25131,12 +25161,12 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The power and speed combination is loud enough to make you stop scrolling: 28 home runs and 25 stolen bases across AA & A+ at age 20, with a .552 slugging and an ISO that translates to .179 at the MLB level. That translated ISO clears the MLB average, which is the honest framing, because the strikeout picture is harder to dismiss. His 29 K% across AA & A+ translates to 31.6% against big-league pitching, well above where the average hitter lands, and at that rate the whole offensive profile gets thinner fast. The walk rate translates to 8.7%, essentially league-neutral, so there's no patience buffer propping him up, just the power keeping him afloat. If the strikeouts don't come down, this is a high-variance bench bat; if even a modest chunk of that contact improves, you're looking at a second-division regular who hits the ball over the fence and runs.",
+      "text": "The power across AA & A+ is loud for a 20-year-old: .275 ISO with 28 home runs and 25 stolen bags in 467 plate appearances. The MLB-equivalent translation puts his ISO at .179 and his strikeout rate at 31.6%, against a league that averages 22.0% \u2014 that gap is the whole tension in the profile. Everything hinges on whether the raw power stays loud enough to carry that strikeout load as pitchers sharpen. If it does, he's a second-division regular with real pop; if the strikeout rate doesn't bend, what's left is a bench piece who runs well.",
       "valid": true
     },
     "815549_pitcher": {
       "hard_ok": true,
-      "hash": "20866b4a6eff9cb7d7ab976ba4ebe129",
+      "hash": "fa90a679e8764b0d805b55fec9bd56cb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25162,7 +25192,7 @@
     },
     "815552_pitcher": {
       "hard_ok": true,
-      "hash": "fb03fc5723e5a07fc14b24b7ada5e66b",
+      "hash": "dc33761184e6c5b87e96541824d46a98",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25188,7 +25218,7 @@
     },
     "815589_hitter": {
       "hard_ok": true,
-      "hash": "baeac129a9ceb13778387e8d6b02af3d",
+      "hash": "c797d541188d6e0f524bad9d37aee765",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25207,12 +25237,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "SFG",
       "text": "The .290/.361/.527 line across AAA & AA is loud, and the 29 home runs and 20 stolen bases in 549 plate appearances give it a shape worth taking seriously. Translated to MLB context, the ISO lands at .174 and the strikeout rate ticks up to 23.6%, both ordinary numbers, which is the honest problem with Davidson's profile: the production pops at the level but the translation is thin. The walk rate compresses from 10% in the minors to 8.6% at the MLB equivalent, essentially league-neutral, so there's no hidden patience prop keeping the OBP afloat if the average fades. If the power translates he's a second-division regular, but the ceiling here is organizational depth, and that's probably where this one lands.",
       "valid": true
     },
     "815598_pitcher": {
       "hard_ok": true,
-      "hash": "8b675844db943e01379813f1bcd7a0dd",
+      "hash": "25566cc3efa19b16573c433b33969732",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25238,7 +25270,7 @@
     },
     "815608_hitter": {
       "hard_ok": true,
-      "hash": "d05a98051dade98b7bbd2dee5ac24e34",
+      "hash": "f298a2887ea2d0a6238841695ea095e3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25264,7 +25296,7 @@
     },
     "815617_hitter": {
       "hard_ok": true,
-      "hash": "03e6a3087e6d0bb2bd7d3ebb2a7ce356",
+      "hash": "6f7c3a8d62818f10b7f9cf08b5dffade",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25290,7 +25322,7 @@
     },
     "815626_pitcher": {
       "hard_ok": true,
-      "hash": "6a76209273f7548aaed212b072599690",
+      "hash": "564f11ab8adcc2a19156329ee045eb5d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25316,7 +25348,7 @@
     },
     "815785_pitcher": {
       "hard_ok": true,
-      "hash": "6ebfd096da6c2445f56d7fff27f5b7e6",
+      "hash": "e0b06f7d2f50d5ee3ebc6c013d66a8ee",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25342,7 +25374,7 @@
     },
     "815787_hitter": {
       "hard_ok": true,
-      "hash": "e85e98c65a0248baf09bfac61f1e45b2",
+      "hash": "ae591506d49b7d4ccbc90f7fdf439dc3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25368,7 +25400,7 @@
     },
     "815789_pitcher": {
       "hard_ok": true,
-      "hash": "adea64c907205e0857d5b8839f9bc7b4",
+      "hash": "ddc4e186692a8904b61b5f48f5ec1af7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25387,12 +25419,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "KC",
       "text": "The walk rate is the whole argument here. At A+ this year, David Shields has issued 28 walks in 116.7 innings, a BB/9 of 2.2 that sits at the 96th percentile of his pool, and the command picture is consistent enough that his WHIP landed at 1.1 with a K-BB% of 24%. Translated to an MLB context, the walk rate softens to 2.8 per nine against a mean of 3.2, and the K-BB% holds above average at 14.3%, which means the control edge doesn't disappear when you apply the level discount. The profile hinges on whether the strikeout rate travels \u2014 his 10.7 K/9 at A+ translates to 8.1 at the MLB level, a tick under the 8.6 mean, and if that's the ceiling on his swing-and-miss then he becomes a reliever who survives on command rather than a starter who wins with two weapons. Either a multi-inning arm or a setup piece if the stuff fills out; a depth arm if it doesn't.",
       "valid": true
     },
     "815792_hitter": {
       "hard_ok": true,
-      "hash": "5f7bdc1ab75b38cacec3e4c9e08e4a31",
+      "hash": "0603221cdd05fcfe260dfcb5006c3b57",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25411,6 +25445,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "LAD",
       "text": "The .403 OBP across A+ & A is the loud part of this profile, and at 20 years old against full-season ball it earns attention. Chase Harlan's 51 walks against 82 strikeouts in 396 plate appearances shows genuine plate discipline, a 13% walk rate paired with a 21% strikeout rate that isn't accidental at this sample size, and the .211 ISO suggests the power is developing alongside the approach rather than trading off against it. The translation is where the ceiling conversation gets complicated: that K% moves to 25.4% in MLB context, and the ISO deflates to .137, both figures telling you the raw production has to discount significantly when you pull it out of A-ball. If the hit tool and zone management hold as he climbs, he becomes a useful everyday third baseman; if the strikeout rate inflates further and the ISO doesn't recover, what's left is a bench bat who gets on base.",
       "valid": true
     },
@@ -25454,7 +25490,7 @@
     },
     "815816_hitter": {
       "hard_ok": true,
-      "hash": "69b4be8f17bcbb3516e89e9c77fe6bca",
+      "hash": "1aafc95548a22bb1c33432faf2c37281",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25473,6 +25509,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "MIL",
       "text": "The walk rate is the whole profile. Across A+ & A in 538 plate appearances, Brady Ebel drew 105 walks against 114 strikeouts, a 19% BB% that translates to 13.4% in MLB context \u2014 nearly five points clear of what the average big-leaguer posts. The power is where the read gets honest: a .154 ISO in the minors flattens to .108 in translation, well short of the MLB mean, and a shortstop who can't threaten over the fence needs the discipline to age into something a lineup actually fears. If the plate discipline holds and the raw power develops even modestly, he becomes a useful on-base piece who can stay at short; if the power gap doesn't close, you've got a bench bat who takes pitches.",
       "valid": true
     },
@@ -25494,7 +25532,7 @@
     },
     "815824_hitter": {
       "hard_ok": true,
-      "hash": "50275859fc311792082062f407b1bd62",
+      "hash": "177b8e09fc3da083efaeae21cff13e4b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25520,7 +25558,7 @@
     },
     "815825_pitcher": {
       "hard_ok": true,
-      "hash": "ad7aca100d62b0aee713fe8b075f5345",
+      "hash": "454d56374c272cf2478f57787b15f0e9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25561,7 +25599,7 @@
     },
     "815832_hitter": {
       "hard_ok": true,
-      "hash": "bd1b8195f7eb28f6574a291208f099a4",
+      "hash": "0094b3e58d8e0097f0621037e3d6e6fe",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25587,7 +25625,7 @@
     },
     "815841_pitcher": {
       "hard_ok": true,
-      "hash": "f52cfa67bd54df79752e0c1eb20cad43",
+      "hash": "98b0840fd428654fbeedfb8658a0c3d1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25651,7 +25689,7 @@
     },
     "815873_hitter": {
       "hard_ok": true,
-      "hash": "5f890e6824b51278ee675580a988ebee",
+      "hash": "858f5245db3e8d4babf3ca5126dcfde3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25677,7 +25715,7 @@
     },
     "815888_hitter": {
       "hard_ok": true,
-      "hash": "22d3fea1a1e3544e0a644ec8433d528e",
+      "hash": "ba9ea1de1c6f1884e37546038fd6fcb1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25691,14 +25729,14 @@
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [
-          "'is real' validation stamp"
+          "more than 1 em-dash"
         ],
         "triple_slash_problems": [],
         "uncalibrated_projection_claims": [],
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The .378 OBP at AA is the cleanest thing in this profile, and it's what keeps the conversation going. De Vries has posted a 21% strikeout rate against an 11% walk rate across 428 plate appearances at AA, and the on-base skills translate to roughly a 23.7% K rate and 9.5% walk rate once you move the line to MLB context. His .168 ISO at AA shrinks to a translated .135, and that gap is the hinge \u2014 if the raw power doesn't grow into something closer to the MLB mean, this profile settles into a bench or depth outcome rather than anything more. The 34 stolen bases add a dimension, and at 20 years old the runway is real, but the ceiling as currently constructed is bench or platoon bat, with the floor to match.",
+      "text": "The batting average is loud \u2014 .290 at AA \u2014 but the translation is what keeps this profile honest. Leo De Vries's ISO at AA is .168, and that number shrinks to .135 in MLB context, below a league where the typical hitter sits at .150. The 34 stolen bases in 428 plate appearances give the profile a real secondary gear, and the 49 walks alongside 91 strikeouts show a 20-year-old who isn't just swinging from his heels. What this comes down to is whether the speed stays meaningful and whether he hits enough to avoid a platoon designation, because if the bat translates closer to the floor than the ceiling, there isn't enough power upside to carry an everyday shortstop profile. Either a second-division regular if the contact and legs both hold up in the majors, or a bench piece who makes his living on the bases.",
       "valid": false
     },
     "815889_hitter": {
@@ -25717,7 +25755,7 @@
     },
     "815896_hitter": {
       "hard_ok": true,
-      "hash": "8f3f317b991f49c7db0932bbb90a1c2c",
+      "hash": "726959b07b756b799570c3f55529dfbb",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25736,12 +25774,12 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The .251 ISO across A+ & A is loud for a 20-year-old shortstop, and the .546 slugging in that same pool earns a 96th-percentile mark against his peers. But the translation is where the profile gets complicated: that 26% strikeout rate becomes something closer to 30% against major-league pitching, well past where most MLB hitters land, and the ISO compresses toward the .16 MLB-equivalent. What he is right now is a teenager who can absolutely punish mistakes at the lower levels; what he becomes depends entirely on whether the contact profile tightens as the competition does. If it doesn't, the power stays interesting but the bat becomes too leaky to carry an everyday role, and you're looking at a bench profile rather than a shortstop who hits in the middle of a lineup.",
+      "text": "The .251 ISO across A+ & A is loud for a 20-year-old shortstop, 26 home runs in 547 plate appearances with a .546 slugging line that grades at the 96th percentile against his hitter pool. The contact is real enough, .295/.382 with 63 walks, but the translation is where the profile gets complicated: that strikeout rate becomes 30% at the MLB level, well clear of the 22% MLB average, and power that grades elite at A-ball doesn't always survive the jump to pitchers who can actually locate a breaking ball. If the bat-to-ball skills hold through the upper minors, there's a second-division regular in here. If the strikeout rate inflates further, you're looking at a bench bat with pop, which isn't nothing given the raw power, but it's a long way from what the current slash line implies.",
       "valid": true
     },
     "815897_hitter": {
       "hard_ok": true,
-      "hash": "63e6c77f02c953dc76f5a9bb18966427",
+      "hash": "5737d9174f26b5d0590e6edce583e9b5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25760,6 +25798,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "CLE",
       "text": "The discipline is the story here: 29 walks against 27 strikeouts in 190 plate appearances at A-ball, a 15% walk rate that translates to 10.2% at the MLB level against an MLB average of 8.5%. That contact-and-patience profile is loud for a 20-year-old center fielder, and the 21 stolen bases add a dimension that makes the .397 OBP feel like a genuine on-base skill rather than a BABIP mirage. What doesn't quite match is the power translation \u2014 his .171 ISO at A looks appealing but falls to .127 at the MLB level, well short of where the average big-league hitter lands, and if that gap holds, the ceiling compresses fast. This is either a table-setter who carves out a legitimate everyday role on the back of elite plate discipline and speed, or, if the bat slows against better velocity, a useful bench piece whose glove and baserunning keep him employed.",
       "valid": true
     },
@@ -25780,7 +25820,7 @@
     },
     "815906_hitter": {
       "hard_ok": true,
-      "hash": "f71618357278ca5a3090b9a1217ccedd",
+      "hash": "e176777ff3daf577edf78a161be028dc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25806,7 +25846,7 @@
     },
     "815908_hitter": {
       "hard_ok": true,
-      "hash": "00e8821d0bf27f6cdaa98f061ddfff72",
+      "hash": "6a99ca2d630333d84bdfdb65c66ecca7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25847,7 +25887,7 @@
     },
     "815929_hitter": {
       "hard_ok": true,
-      "hash": "242b3c4bd292bf36e431d9eca85fb269",
+      "hash": "e33b56cf5d6ce340e6c5618803519d13",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25873,7 +25913,7 @@
     },
     "815931_hitter": {
       "hard_ok": true,
-      "hash": "fda45404d9f453f6cfe4a4a912ffd2f5",
+      "hash": "da1c695475eea175b838935e0eaf0861",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25899,7 +25939,7 @@
     },
     "815983_hitter": {
       "hard_ok": true,
-      "hash": "690ca9cbca79e901ef530a4f58957d5c",
+      "hash": "bb37d1faf4016381d399a1a7427a64a0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25925,7 +25965,7 @@
     },
     "816102_pitcher": {
       "hard_ok": true,
-      "hash": "bfdaf92af2fa31f880945433b1056e18",
+      "hash": "9d91708dc0f4852b8405a2a2dcc33baf",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25951,7 +25991,7 @@
     },
     "816111_hitter": {
       "hard_ok": true,
-      "hash": "bab8f2155806bcf27cdc564b4a290ebc",
+      "hash": "42ccaf50a3325d3f1f3d3b04dcd43ae0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -25970,12 +26010,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "ATL",
       "text": "The .408 OBP across AA & A+ & A is the loudest thing in this file, and the 65 walks in 419 plate appearances explain it. Southisene is a 20-year-old shortstop who takes pitches and runs, with 45 stolen bases adding a dimension the bat alone can't fully support. The translation is the honest complication: the walk rate becomes 11.1% at the MLB level, which clears the 8.5% MLB average, but the ISO drops to .129 against an MLB average of .150, meaning the power hasn't carried and the profile shifts from complementary weapon to one-trick question mark. If the speed and patience translate and the pop develops even partially, he's a usable regular; if the power stays buried, what's left is a bench piece with a good eye.",
       "valid": true
     },
     "816113_hitter": {
       "hard_ok": true,
-      "hash": "75244cedfc72e44e0ae2fd5b6895071e",
+      "hash": "e8aad5a7c626a244b891185d5d52c5c1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26046,7 +26088,7 @@
     },
     "820825_pitcher": {
       "hard_ok": true,
-      "hash": "cb1ceb171a9c94c411370526bd279ec2",
+      "hash": "1d1f0ed8f67aada85f9f5d9edc34527b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26112,7 +26154,7 @@
     },
     "820986_hitter": {
       "hard_ok": true,
-      "hash": "ed37f39502361dab42ea1e25e42e2c9a",
+      "hash": "2d9e30b37f3435d7fd9f9d11206f30c7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26138,7 +26180,7 @@
     },
     "821041_hitter": {
       "hard_ok": true,
-      "hash": "63d1978319fbe73cdf83fa00ee727ca5",
+      "hash": "9665b3dbd0bec509574f2892dde5fc23",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26164,7 +26206,7 @@
     },
     "821100_hitter": {
       "hard_ok": true,
-      "hash": "5a3b5de52a7f80a1c19262a439ca4bd8",
+      "hash": "cf3583efad00bfe3efd7fb724ea7cf47",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26190,7 +26232,7 @@
     },
     "821116_pitcher": {
       "hard_ok": true,
-      "hash": "9f8ec0b82d20c48a8eb20804c9e95c02",
+      "hash": "89bb5cd6864cf46e13e38e54a09e7ef7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26216,7 +26258,7 @@
     },
     "821136_hitter": {
       "hard_ok": true,
-      "hash": "3818c2dc066e2087622b1a30f4c83523",
+      "hash": "e78055fdde9363768fe5cbee0efd8ac2",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26242,7 +26284,7 @@
     },
     "821139_hitter": {
       "hard_ok": true,
-      "hash": "3e3fd1c1531996d2131edacc05463700",
+      "hash": "aa9383c94a5e6339b2ed7d3f2a0c87dd",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26261,12 +26303,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "CLE",
       "text": "Thirty-six stolen bases across A+ & A is the loudest thing on this card, and it's loud enough to carry a profile that doesn't have much else to shout about. The .291/.371/.474 line looks appealing until the MLB-equivalent translation brings it back to earth: a K% that ticks up to 26.2% where the MLB average sits at 22.0%, and an ISO that drops to .125, below the MLB mean. The speed reads as genuine at 20 years old, and the contact feel is there, 95 hits in 376 plate appearances with a .291 average is a legitimate data point, but if the strikeout rate doesn't improve as pitching gets sharper, the power won't play up and the profile collapses to a bench-speed specialist at best. ValuCast sees an org-depth ceiling here, and nothing in the translation pushes back on that.",
       "valid": true
     },
     "821150_hitter": {
       "hard_ok": true,
-      "hash": "846ab7068c0c34ff1b6a2c372202b5bb",
+      "hash": "e01f37540f38dfcfd9ef938fa542de7d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26306,7 +26350,7 @@
     },
     "821181_hitter": {
       "hard_ok": true,
-      "hash": "fbe66a4edfc85f01d9c2aec7291ad673",
+      "hash": "e582f5414df74deb2028b5630ec828ce",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26325,12 +26369,12 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "The contact-and-patience combination is loud for a 19-year-old: a 14% strikeout rate across A+ & A that translates to 19.3% at the MLB level, well below where most hitters land, paired with 43 walks that push his OBP to .410. The power is the soft spot, with a .183 ISO at the lower levels translating to .126 in MLB context against a 22.0% league average for strikeouts where he clears comfortably but an MLB-average ISO of .150 he doesn't yet reach. If the power develops, he becomes an everyday right fielder built on one of the cleaner approach profiles at his age; if it doesn't, the hit tool and walk rate leave a bench or platoon bat.",
+      "text": "The contact and patience are loud for a 19-year-old: a 14% strikeout rate across A+ & A that translates to 19.3% at the MLB level, paired with 43 walks and a .410 OBP. That's a real plate approach, and a .324 BABIP suggests he's earning most of it. The power is the question \u2014 a .183 ISO at the level translates to .126 at the MLB equivalent, well short of the .150 MLB average, and if the bat speed doesn't develop over the next two to three years, the profile narrows to a bench or platoon bat at best. If it does, the contact-and-walk foundation gives him a floor worth building on.",
       "valid": true
     },
     "821187_hitter": {
       "hard_ok": true,
-      "hash": "a430c933216a40470ebf3aa3de8987fa",
+      "hash": "1640c585c181c1890bdecd1a6d5fce43",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26356,7 +26400,7 @@
     },
     "821270_hitter": {
       "hard_ok": true,
-      "hash": "0fca0b141c1cf2b2650cf9def519e7ac",
+      "hash": "fe261eb9dd3744a0db2be6a0c0f919e4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26382,7 +26426,7 @@
     },
     "821273_hitter": {
       "hard_ok": true,
-      "hash": "b73abe37b0012b91b95a832304303162",
+      "hash": "51e33319c66a80a42fafface3297e9e6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26432,7 +26476,7 @@
     },
     "821783_pitcher": {
       "hard_ok": true,
-      "hash": "568151bbf7adf9886da23d5b8ed93402",
+      "hash": "950360309c174203be21d681f14aa133",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26458,7 +26502,7 @@
     },
     "822578_hitter": {
       "hard_ok": true,
-      "hash": "85a0393999dde6adbcf62acbf02e3996",
+      "hash": "c10c59a1de548034b9638acdefbd02ad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26508,7 +26552,7 @@
     },
     "823369_pitcher": {
       "hard_ok": true,
-      "hash": "60a3f3b4cf4542890dc42688e78d11dc",
+      "hash": "5f77f7a4089941d61dee4745b75835fa",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26527,12 +26571,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "STL",
       "text": "The K-BB% is the argument: 22% across AA & A+, which translates to roughly league-average strikeout and walk rates at the MLB level, meaning the minors version is considerably sharper than what survives the conversion. At 20 years old, 101 innings of that across two levels with a 3.8 ERA and a 1.3 WHIP is a real body of work, not a showcase sample. The whole profile hinges on whether the strikeout rate holds as he climbs, because if the 11.5 K/9 compresses further at the next level, the walk rate at 2.9 BB/9 isn't wide enough to carry him as a starter. Right now the ceiling reads depth arm and the floor is a bullpen role, which is an honest range for a 20-year-old who is already holding his own at Double-A.",
       "valid": true
     },
     "823650_pitcher": {
       "hard_ok": true,
-      "hash": "c7655f193bcd0897af5806b85e3e1798",
+      "hash": "1e45f5229f5ff90fb86bc158ebe70754",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26558,7 +26604,7 @@
     },
     "823658_hitter": {
       "hard_ok": true,
-      "hash": "c508920ceacb97723e5c5cb8feffcbbb",
+      "hash": "a336089d496c6cbfb7251dac4e131290",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26598,7 +26644,7 @@
     },
     "823764_pitcher": {
       "hard_ok": true,
-      "hash": "6c32d579a2f4b4cf43a5263311941d8b",
+      "hash": "37fd26423ffe2bac0b6ffcda1af4791e",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26624,7 +26670,7 @@
     },
     "823779_hitter": {
       "hard_ok": true,
-      "hash": "798967bee6942dc863757d1e239f2ee1",
+      "hash": "0c4b1c2f70813f93f6ac3b3cacb207ad",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26643,12 +26689,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "TOR",
       "text": "The .422 OBP across A+ & A is the headline, and 70 walks against only 57 strikeouts in 427 plate appearances is the shape behind it. At catcher, a bat that translates to an 18.9% strikeout rate and 11.6% walk rate at the majors, both better than league average, is worth paying attention to, even if the .121 translated ISO sits well short of what you'd want from the position. Everything hinges on whether the power develops enough to matter behind the dish, because if the ISO stays where it is, this profile becomes a patient backup rather than a regular.",
       "valid": true
     },
     "823787_hitter": {
       "hard_ok": true,
-      "hash": "d40a33573b1c9245ac562d9bce6c1b00",
+      "hash": "74a88e8409c43d54059506d3747e9b14",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26674,7 +26722,7 @@
     },
     "823807_hitter": {
       "hard_ok": true,
-      "hash": "c8304aa7238f52b7637555cad2c14a4d",
+      "hash": "f0686c122d4553e23e57f8b8d120a2f6",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26700,7 +26748,7 @@
     },
     "824026_pitcher": {
       "hard_ok": true,
-      "hash": "70df9112be1a4c672eeec0e39d00d2cd",
+      "hash": "6e78611ac46664872e36cc40b8c31965",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26726,7 +26774,7 @@
     },
     "824028_hitter": {
       "hard_ok": true,
-      "hash": "881b59e4c54e62ac126e17538c47ca3b",
+      "hash": "aab5c3df425a68e5f8db9796736b3b45",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26752,7 +26800,7 @@
     },
     "824604_pitcher": {
       "hard_ok": true,
-      "hash": "026a0488691aa0dba8846f693ccc2ff2",
+      "hash": "dd2f433be87aac8a1ed1aa0510e86eb3",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26778,7 +26826,7 @@
     },
     "824620_pitcher": {
       "hard_ok": true,
-      "hash": "738fcd875bd1db24ef4c3e96c0348540",
+      "hash": "906ac100690a7568b22c455fae441a6d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26828,7 +26876,7 @@
     },
     "824624_pitcher": {
       "hard_ok": true,
-      "hash": "475f54b7afd973aae88a915339988bb6",
+      "hash": "35c11d41359cb6be55e161248dcfd4b9",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26871,7 +26919,7 @@
     },
     "825576_pitcher": {
       "hard_ok": true,
-      "hash": "43b1fff8fbc1349237218bc7bbf6504b",
+      "hash": "7f75b8589f364c7ec61154181862d735",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26913,7 +26961,7 @@
     },
     "825761_hitter": {
       "hard_ok": true,
-      "hash": "384faddd823e0f45ae9573caadba4da5",
+      "hash": "147bb29daa0f05c2d70feda52442870a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26939,7 +26987,7 @@
     },
     "826315_pitcher": {
       "hard_ok": true,
-      "hash": "b46358ece74cfbdc56e8baf3ab81b668",
+      "hash": "712c2336a1e0bf2fd98b72089e52e242",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -26980,7 +27028,7 @@
     },
     "826536_pitcher": {
       "hard_ok": true,
-      "hash": "d63716b411da4d63816308c816cde952",
+      "hash": "dc091d7182441e05bab4ec937f81e637",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27006,7 +27054,7 @@
     },
     "826723_hitter": {
       "hard_ok": true,
-      "hash": "3e7132c6ad5c4f83beb5acbe2448c312",
+      "hash": "cbae82c1a202972ae2e8ad74d574e3ff",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27025,12 +27073,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "WSN",
       "text": "The stolen base total is the loudest thing in this profile. Fifty-two steals across A+ & A in 523 plate appearances is a real weapon, and it's the one tool that translates without needing anything else to improve. The trouble is that the rest of the profile at 20 years old leans on that speed to carry water it shouldn't have to: a .233/.321/.396 line with a 23% strikeout rate that translates to roughly 27.2% against big-league arms, and a walk rate that lands right at replacement level once the level adjustment runs through. The ISO is modest at A-ball but not nothing, and the youth gives the bat a window to grow, though if the contact rates don't tighten, the MLB-equivalent power probably stays below average too. The ceiling here is a speed-first regular who outgrows the swing questions; the floor is a bench piece whose legs are his only consistent leverage.",
       "valid": true
     },
     "826928_hitter": {
       "hard_ok": true,
-      "hash": "e47d8923ca78d702940c584bb4beadf0",
+      "hash": "bdc89a20bdacd6d068d4361b88a7919b",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27049,12 +27099,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "ATL",
       "text": "The .326 OBP across AA & A+ is the number that tells you everything you need to know about where this profile sits. Owen Carey is hitting .248 with a 21% strikeout rate, and the translated walk rate comes in under the MLB mark at 7.6%, not above it. The raw line has some shape, with 10 home runs and 32 walks in 377 plate appearances across AA & A+ showing a 20-year-old who isn't overmatched, but the ISO translates to .13 at the big-league level, and nothing in the contact or power translation suggests the production upgrades meaningfully when the competition does. If the strikeout rate tightens and the walk rate climbs, you get a passable bench bat; if neither moves, you're looking at organizational depth.",
       "valid": true
     },
     "827110_pitcher": {
       "hard_ok": true,
-      "hash": "fa70c922d17cd6c85513909f2a6d5ef5",
+      "hash": "3858239995de29d509bc81fa0ff5dea5",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27080,7 +27132,7 @@
     },
     "827265_pitcher": {
       "hard_ok": true,
-      "hash": "1ba8773e787c5a4c7950591637507195",
+      "hash": "c67fa7ec8c132b389816eb9ad6b79354",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27106,7 +27158,7 @@
     },
     "827267_pitcher": {
       "hard_ok": true,
-      "hash": "9416e5197e8f7d270c46c2305fa9d54c",
+      "hash": "6a88293d1756439cb2b6396f0cf4177c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27151,7 +27203,7 @@
     },
     "827292_pitcher": {
       "hard_ok": true,
-      "hash": "d5c33649af5dcccf6dc36970856425fb",
+      "hash": "bef180653bbe036e3973b650e3517870",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27177,7 +27229,7 @@
     },
     "827408_pitcher": {
       "hard_ok": true,
-      "hash": "b55f38fb4ce888755e1a269f6d71c09d",
+      "hash": "4a50c0fd8f72186bdbf4650ae1bb18a8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27228,7 +27280,7 @@
     },
     "827463_pitcher": {
       "hard_ok": true,
-      "hash": "1f467eb974bd28068bfb72b98e769869",
+      "hash": "9b5697a6ed5a8dce27e284d1bf461fc1",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27278,7 +27330,7 @@
     },
     "827626_pitcher": {
       "hard_ok": true,
-      "hash": "43b900633b44d1a6c6b4a639d44f1603",
+      "hash": "0614861c4e03be1a8018d388dda0d87c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27304,7 +27356,7 @@
     },
     "827640_pitcher": {
       "hard_ok": true,
-      "hash": "25a4f55a937adda189eeb6ef4225877a",
+      "hash": "68f8714075b89a3be6c8b5f616b36014",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27355,7 +27407,7 @@
     },
     "827719_hitter": {
       "hard_ok": true,
-      "hash": "01a4efed15f5d2c6786e0ee9c3f175ed",
+      "hash": "5aa0bad7479d84399e8fb4b67aa6e6d0",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27381,7 +27433,7 @@
     },
     "827734_pitcher": {
       "hard_ok": true,
-      "hash": "dc319aeb4d7c0ab2f09e0f2e674bf059",
+      "hash": "7c3388b42ce93bfbddc8958866ea8656",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27446,7 +27498,7 @@
     },
     "828098_hitter": {
       "hard_ok": true,
-      "hash": "d81dc5c5af03ff746efdeac53748e97c",
+      "hash": "24eb5d2e1b40d7c305fea761e962b42a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27472,7 +27524,7 @@
     },
     "828137_pitcher": {
       "hard_ok": true,
-      "hash": "65bcc7ee5354a24ab3d73dd9bc4fc3fa",
+      "hash": "490b81eaa8ada0bed46004de199b62dc",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27498,7 +27550,7 @@
     },
     "828148_hitter": {
       "hard_ok": true,
-      "hash": "7979455bdc53289abc5ec4f70a3ed93f",
+      "hash": "7d1f094a4c6f24d7c7d55bdf8082040a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27517,6 +27569,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "ATL",
       "text": "The walk rate is the loud number, and it's also the problem. Across A+ & A, Essenburg drew 83 walks in 415 plate appearances, a 20% BB% that translates to 13.5% at the MLB level, while the league average sits at 8.5%. The trouble is the strikeout rate travels with it: 120 strikeouts, 29% at the minor-league level, translates to 32.9% in MLB context where the average is 22.0%, and the ISO that looks electric in the low minors (.239 across A+ & A) flattens to .148 in translation, right at the MLB mean. If the eye stays elite and the bat speed survives the jump, he's a patient corner outfielder who grinds out walks and drops the occasional home run; if the contact doesn't sharpen, the whole profile is a bench piece whose strikeout rate eats the OBP before he gets there.",
       "valid": true
     },
@@ -27536,7 +27590,7 @@
     },
     "828237_hitter": {
       "hard_ok": true,
-      "hash": "abab027edbf0c59222bcd48364df750f",
+      "hash": "fdca44d19c52f8e253eb6702d3b4698d",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27555,12 +27609,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "TBR",
       "text": "The bat-to-ball is the whole argument here: a .298 average at A with a 17% strikeout rate, and 51 walks against 89 strikeouts in 518 plate appearances. Against every other hitter in his pool, his average grades 92nd percentile and his strikeout rate 87th, which is a real combination at 20. The power is another matter entirely \u2014 11 home runs and a .152 ISO at A shrinks to a translated .108 ISO, and the MLB translation puts his walk rate at 7.9% where the average sits at 8.5%, so the discipline that looks sharp at A doesn't fully carry over. If the raw power doesn't develop between now and his ETA two to three years out, Flemming is either a low-end regular who hits enough contact to stay in a lineup, or a bench bat whose 16 stolen bases and contact skills keep him around.",
       "valid": true
     },
     "828244_pitcher": {
       "hard_ok": true,
-      "hash": "97bd007ec0c4fb33499268a560bb80e5",
+      "hash": "931843d1fb7e0e1bd495682b271429f8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27586,7 +27642,7 @@
     },
     "828262_hitter": {
       "hard_ok": true,
-      "hash": "1afc5409f33e87212de09bae5e5b6158",
+      "hash": "cc5cee128bbd147c2fe75b48623785d7",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27612,7 +27668,7 @@
     },
     "828318_hitter": {
       "hard_ok": true,
-      "hash": "1379f110ef15eedbaac64e1073914027",
+      "hash": "036dcf2e4b64d9110687513347854064",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27655,7 +27711,7 @@
     },
     "828475_pitcher": {
       "hard_ok": true,
-      "hash": "7e5dd6b0f2b0af74d051490161e2d4a3",
+      "hash": "ca3c29a1b272195c782099fad8d79a89",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27695,7 +27751,7 @@
     },
     "828599_hitter": {
       "hard_ok": true,
-      "hash": "7b1d7a1c9909c0e043b0a6bd35374755",
+      "hash": "5bec4c2dea85cd8160aaae15894c3c26",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27721,7 +27777,7 @@
     },
     "828667_hitter": {
       "hard_ok": true,
-      "hash": "e4131bf55649760c79bd98a5d49978a5",
+      "hash": "e238d206008c24eb0a2211634b39f6ed",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27761,7 +27817,7 @@
     },
     "828685_hitter": {
       "hard_ok": true,
-      "hash": "d33ef2b5d824877af2ff1ab988b92e1a",
+      "hash": "be7735ea5dd7edc42bf856cae7fe1595",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27780,6 +27836,8 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "TBR",
       "text": "The .389 OBP at A-ball is loud for a 19-year-old, and 40 walks in 312 plate appearances tells you the approach is genuine. The problem is the translation: that contact rate and the modest raw power leave his MLB-equivalent ISO at .119, and the MLB average sits at .150, which is a first baseman who can't carry the position. Gray's ceiling lives entirely in whether the power develops enough to close that gap, because the profile as constructed, good eye, fringe thump, first base only, runs out of floor well short of an everyday job.",
       "valid": true
     },
@@ -27832,34 +27890,34 @@
       "valid": true
     },
     "829034_hitter": {
-      "hard_ok": true,
-      "hash": "9e68aa73f9366f715ede3e064a1d6c56",
+      "hard_ok": false,
+      "hash": "2e3a2e42f5f8a3282a62aa752a89cdf4",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
         "count_role_problems": [],
         "derived_word_number_problems": [],
         "handedness_problems": [],
-        "hard_ok": true,
-        "league_average_scaffold_problems": [
-          "league-average scaffold variant 'below the translated league average'"
-        ],
+        "hard_ok": false,
+        "league_average_scaffold_problems": [],
         "level_attribution_problems": [],
         "ok": false,
         "pa_consistency_problems": [],
         "role_vocab_problems": [],
         "style_problems": [],
         "triple_slash_problems": [],
-        "uncalibrated_projection_claims": [],
+        "uncalibrated_projection_claims": [
+          "projects"
+        ],
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
-      "text": "A 1.01 OPS at A-ball at 19 looks loud until you see the .439 BABIP carrying most of the freight. The contact rate is genuinely good, 20 K% with 21 walks in 153 plate appearances, but the MLB-equivalent translation puts his ISO at .139, which actually lands below the translated league average, so the power thins out considerably once you run it through the level adjustment. If the hit tool sustains a useful average after the BABIP bleeds down, he could be a low-end regular; if it doesn't, what's left is a bench bat.",
+      "text": "The .444 OBP at A-ball is loud, but a .439 BABIP is the reason it exists. At 19, Josuar Gonzalez is hitting .357/.444/.566 across 153 plate appearances at A, with 21 walks against 30 strikeouts and 13 stolen bases, a combination of patience and athleticism that's genuinely interesting. The MLB-equivalent translation puts his ISO at .139 and his K% at 23.9%, both modest once the level adjustments hit, and neither number suggests a hitter who projects to do damage against big-league pitching. This profile either develops into a table-setter with enough bat-to-ball refinement to survive a normalizing BABIP, or the hit tool erodes as competition rises and what's left is a bench piece who runs and walks enough to stay on a roster.",
       "valid": false
     },
     "829037_hitter": {
       "hard_ok": true,
-      "hash": "ee212d3171516c52c4dea0a23b1f44d8",
+      "hash": "6c4c113656c081c8a55566779e6761ed",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27929,7 +27987,7 @@
     },
     "829398_hitter": {
       "hard_ok": true,
-      "hash": "3cb233f05bf4ec9fddf1b860cd9aafba",
+      "hash": "2d61da78b66a33f050d5e897f38231e8",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -27955,7 +28013,7 @@
     },
     "829741_hitter": {
       "hard_ok": true,
-      "hash": "5a0f01a2f135050e6fb0da2a0e6b7360",
+      "hash": "4409b35c0b0f5ded090887bfe6c6130a",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28012,7 +28070,7 @@
     },
     "830336_pitcher": {
       "hard_ok": true,
-      "hash": "f69ded8527af77f2f1b9e591f1e00af4",
+      "hash": "a97bcdbe5a0fb79d3afca07ca481453c",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28038,7 +28096,7 @@
     },
     "830402_pitcher": {
       "hard_ok": true,
-      "hash": "00e5ea7425149dbf5d4bd6b4798ac0bc",
+      "hash": "63b080c4c2a1f4a0be43dd285601a363",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28057,12 +28115,14 @@
         "unsupported_numbers": []
       },
       "prompt": "31bce485da6cd11f",
+      "reused_against_updated_grounding": true,
+      "team": "KC",
       "text": "The walk rate is the whole argument here. Across A+ & A in 2026, Kendry Chourio has issued just 17 walks in 90.7 innings, a 1.7 BB/9 that sits at the 99th percentile of his pitcher pool, and the 0.9 WHIP lands in the same neighborhood. The strikeout rate is a different story: 9.0 K/9 at the A+ & A level translates to roughly 7.1 per nine in MLB-equivalent terms, short of where big-league starters typically live, which is the honest ceiling problem sitting underneath an otherwise pristine line. If the command holds as competition stiffens and the swing-and-miss develops, you have a back-end starter; if the strikeout rate stays where the translation puts it, the 2.50 ERA shine fades and you're looking at a depth arm.",
       "valid": true
     },
     "832562_pitcher": {
       "hard_ok": true,
-      "hash": "9e98d5e90fc46edfcccb9187061cba8e",
+      "hash": "6e42d9d24c26e3e9ab6b93e4253164ba",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
@@ -28113,7 +28173,7 @@
     },
     "834978_pitcher": {
       "hard_ok": true,
-      "hash": "d3eced14336aa64b5b76985734c33c48",
+      "hash": "9d168bc316cfce15594771fa1e3a0226",
       "model": "claude-sonnet-4-6",
       "problems": {
         "banned": [],
