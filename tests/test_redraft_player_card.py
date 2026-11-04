@@ -408,6 +408,57 @@ def test_offseason_hold_shows_on_redraft_row_and_detail(client, monkeypatch):
     assert "Injury hold" in table
 
 
+def test_offseason_hold_note_resolves_dynasty_and_redraft_ids(monkeypatch):
+    note = "End-of-season injury status held."
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"offseason_hold": True, "hold_note": note},
+    })
+
+    assert app_module._offseason_hold_note(SimpleNamespace(mlbam_id=1)) == note
+    assert app_module._offseason_hold_note(SimpleNamespace(metadata={"mlbam_id": 1})) == note
+
+
+@pytest.mark.parametrize(
+    "player_type,held,discount,note_count,discount_sentence",
+    [
+        pytest.param("mlb", True, 0.12, 1, True, id="held-mlb"),
+        pytest.param("mlb", True, 0.0, 1, False, id="held-mlb-no-discount"),
+        pytest.param("mlb", False, 0.12, 0, False, id="non-held-mlb"),
+        pytest.param("prospect", True, 0.12, 1, False, id="held-prospect-no-duplicate"),
+    ],
+)
+def test_offseason_hold_on_dynasty_card(
+    client, monkeypatch, player_type, held, discount, note_count, discount_sentence,
+):
+    from web.dynasty_models import DynastyRankingRow
+
+    note = "End-of-season injury status held."
+    row = DynastyRankingRow(
+        id="offseason-test", name="Held Pitcher", player_type=player_type,
+        positions=("SP",), team="TST", age=27, dynasty_rank=1,
+        dynasty_value=50.0, status="active", mlbam_id="1",
+        metadata={"components": {
+            "availability_risk_discount": discount,
+            "availability": {"status": "injured", "note": note if player_type == "prospect" else None},
+        }},
+    )
+    monkeypatch.setattr(app_module, "dd_store", SimpleNamespace(is_available=True))
+    monkeypatch.setattr(app_module, "_build_dynasty_player_detail_context", lambda *_: {"row": row})
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"status": "injured", "offseason_hold": held, "hold_note": note},
+    })
+
+    response = client.get(f"/player/{row.id}?mode=dd_dynasty", headers={"HX-Request": "true"})
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert html.count(note) == note_count
+    assert ("This dynasty value includes a " in html) is discount_sentence
+    if discount_sentence:
+        assert f"{note} This dynasty value includes a 12.0% injury discount." in html
+    assert "Role, playing time &amp; availability" not in html
+
+
 def test_redraft_player_detail_share_link_carries_query_string(client):
     player_id = _first_redraft_player_id("hitter")
     query = "mode=categories&cats=R,HR&pcats=K,ERA&source=steamer"
