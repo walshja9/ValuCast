@@ -16,7 +16,7 @@ BASE = "http://127.0.0.1:5000"
 WAIT = 300000
 NOTE = "End-of-season injury status held"
 NO_DISCOUNT = "no injury discount to this redraft value"
-DISCOUNT = re.compile(r"This dynasty value includes a ([\d.]+)% injury discount")
+DISCOUNT = "This dynasty value includes an injury discount"
 MASK = r"""() => {
   const keep = '.col-rank, .col-value, .col-dollars, .col-dollar, .detail-value, .no-ros-badge';
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -118,8 +118,7 @@ with sync_playwright() as play:
                 page.screenshot(path=str(out / f"{label}_{slug}_dynasty_row_{width}.png"))
                 card = open_card(page, row)
                 text = card.inner_text()
-                discount = DISCOUNT.search(text)
-                row_result.update(dynasty_note=NOTE in text, dynasty_discount=discount.group(1) if discount else None,
+                row_result.update(dynasty_note=NOTE in text, dynasty_discount=DISCOUNT in text,
                                   risk_adjustment_shown="Risk Adjustment" in text,
                                   dynasty_overflow=page.evaluate(OVERFLOW))
                 page.evaluate(MASK)
