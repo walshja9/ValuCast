@@ -94,9 +94,10 @@ def test_sixty_day_administrative_activation_preserves_season_end_profile():
     assert summary["held_count"] == 1
     assert summary["stale_count"] == 0
     assert summary["lookup_failure_count"] == 0
+    assert summary["lookups_by_season"] == {"2026": {"attempted": 1, "failed": 0}}
     assert set(summary) == {
         "active", "season_end", "held_count", "stale_count", "cleared_by_appearance",
-        "lookup_failure_count", "played_date_count", "release_state",
+        "lookup_failure_count", "played_date_count", "release_state", "lookups_by_season",
     }
     assert profile["hold_note"] == (
         "End-of-season injury status held. MLB's offseason roster activation on 2026-11-02 "
@@ -312,6 +313,7 @@ def test_hold_is_off_on_or_before_last_scheduled_date(as_of):
     assert _profile(payload)["status"] == "available"
     assert not _profile(payload).get("offseason_hold")
     assert payload["validation"]["offseason_hold"]["active"] is False
+    assert payload["validation"]["offseason_hold"]["lookups_by_season"] == {}
     assert not payload["validation"].get("offseason_hold_error")
 
 
@@ -491,6 +493,88 @@ def _many_players(count, game_log_fetcher, as_of="2026-11-03", schedule_fetcher=
     )
 
 
+@pytest.mark.parametrize("counts,expected", [
+    ({2026: (1, 1)}, None),
+    ({2026: (2, 2)}, None),
+    ({2026: (3, 3)}, "season 2026, 3 of 3"),
+    ({2026: (3, 2)}, None),
+    ({2026: (4, 3)}, None),
+    ({2026: (5, 4)}, None),
+    ({2026: (6, 5)}, "season 2026, 5 of 6"),
+    ({2026: (49, 4)}, None),
+    ({2026: (50, 5)}, "season 2026, 5 of 50"),
+    ({2026: (51, 5)}, None),
+    ({2026: (155, 15)}, None),
+    ({2026: (155, 16)}, "season 2026, 16 of 155"),
+    ({2026: (155, 0)}, None),
+    ({2026: (0, 0)}, None),
+    ({}, None),
+    ({2026: (155, 0), 2027: (138, 138)}, "season 2027, 138 of 138"),
+    ({2026: (155, 0), 2027: (138, 15)}, "season 2027, 15 of 138"),
+    ({2026: (155, 0), 2027: (138, 13)}, None),
+    ({2026: (3, 0), 2027: (3, 3)}, "season 2027, 3 of 3"),
+    ({2026: (155, 4), 2027: (138, 4)}, None),
+    ({2026: (20, 2), 2027: (20, 3)}, "all seasons, 5 of 40"),
+    ({2026: (30, 3), 2027: (30, 2)}, None),
+    ({2026: (2, 0), 2027: (2, 2)}, None),
+    ({2027: (50, 5), 2026: (50, 5)}, "season 2026, 5 of 50"),
+])
+def test_offseason_hold_failure_message(counts, expected):
+    lookups = {
+        str(year): {"attempted": attempted, "failed": failed}
+        for year, (attempted, failed) in counts.items()
+    }
+    message = availability._offseason_hold_failure_message(lookups)
+    assert message == (f"Offseason hold game-log failures: {expected}" if expected else None)
+
+
+def test_alternating_game_log_failures_raise_after_all_players():
+    calls = []
+
+    def logs(*args):
+        calls.append(args)
+        return _failed() if len(calls) % 2 else []
+
+    with pytest.raises(availability.OffseasonHoldLookupError, match="season 2026, 10 of 20"):
+        _many_players(20, logs)
+    assert len(calls) == 20
+
+
+def test_next_season_game_log_outage_raises_despite_current_season_successes():
+    calls = []
+
+    def logs(player, year, game_types):
+        calls.append((player, year, game_types))
+        return _failed() if year == 2027 else []
+
+    with pytest.raises(availability.OffseasonHoldLookupError, match="season 2027, 20 of 20"):
+        _many_players(20, logs, as_of="2027-03-01", schedule_fetcher=lambda year: (
+            SCHEDULE if year == 2026 else [_day("2027-03-01")]
+        ))
+    assert len(calls) == 40
+
+
+def test_spaced_failures_below_share_stop_publish_and_counts_reset_between_builds():
+    def logs(player, *args):
+        return _failed() if int(player) in range(101, 191, 10) else []
+
+    payload = _many_players(100, logs)
+    summary = payload["validation"]["offseason_hold"]
+    assert len(payload["validation"]["offseason_hold_error"]) == 9
+    assert summary["lookup_failure_count"] == 9
+    assert summary["held_count"] == 100
+    assert summary["lookups_by_season"] == {"2026": {"attempted": 100, "failed": 9}}
+
+    clean = _many_players(100, lambda *args: [])
+    assert not clean["validation"].get("offseason_hold_error")
+    assert clean["validation"]["offseason_hold"]["lookup_failure_count"] == 0
+    assert clean["validation"]["offseason_hold"]["held_count"] == 100
+    assert clean["validation"]["offseason_hold"]["lookups_by_season"] == {
+        "2026": {"attempted": 100, "failed": 0},
+    }
+    assert summary["lookups_by_season"] == {"2026": {"attempted": 100, "failed": 9}}
+
+
 def test_exactly_five_consecutive_game_log_failures_raise():
     assert availability.HOLD_MAX_CONSECUTIVE_FAILURES == 5
     calls = []
@@ -506,23 +590,25 @@ def test_exactly_five_consecutive_game_log_failures_raise():
 
 def test_four_failures_then_zero_games_then_four_failures_do_not_raise():
     def logs(player, *args):
-        return [] if player == "105" else _failed()
+        return _failed() if int(player) < 110 and player != "105" else []
 
-    payload = _many_players(9, logs)
+    payload = _many_players(100, logs)
     assert len(payload["validation"]["offseason_hold_error"]) == 8
     assert payload["validation"]["offseason_hold"]["lookup_failure_count"] == 8
-    assert payload["validation"]["offseason_hold"]["held_count"] == 9
+    assert payload["validation"]["offseason_hold"]["held_count"] == 100
     assert all(row["offseason_hold"] for row in payload["profiles"])
 
 
 def test_success_with_games_resets_consecutive_failure_count():
     def logs(player, *args):
-        return [{"date": "2026-10-01"}] if player == "105" else _failed()
+        if player == "105":
+            return [{"date": "2026-10-01"}]
+        return _failed() if int(player) < 110 else []
 
-    payload = _many_players(9, logs)
+    payload = _many_players(100, logs)
     assert payload["validation"]["offseason_hold"]["lookup_failure_count"] == 8
     assert payload["validation"]["offseason_hold"]["cleared_by_appearance"] == 1
-    assert payload["validation"]["offseason_hold"]["held_count"] == 8
+    assert payload["validation"]["offseason_hold"]["held_count"] == 99
 
 
 def test_second_year_failure_counts_once_and_next_player_success_resets():
@@ -530,15 +616,18 @@ def test_second_year_failure_counts_once_and_next_player_success_resets():
 
     def logs(player, year, game_types):
         calls.append((player, year, game_types))
-        if player == "106" or (player == "105" and year == 2026):
+        if int(player) > 110 or player == "106" or (player == "105" and year == 2026):
             return []
         return _failed()
 
-    payload = _many_players(10, logs, as_of="2027-03-01")
+    payload = _many_players(100, logs, as_of="2027-03-01")
     summary = payload["validation"]["offseason_hold"]
     assert summary["lookup_failure_count"] == 9
-    assert summary["held_count"] == 10
-    assert len(calls) == 12
+    assert summary["held_count"] == 100
+    assert len(calls) == 192
+    assert summary["lookups_by_season"] == {
+        "2026": {"attempted": 100, "failed": 8}, "2027": {"attempted": 92, "failed": 1},
+    }
     assert ("105", 2026, "R,F,D,L,W") in calls
     assert ("105", 2027, "S,R") in calls
     assert len([error for error in payload["validation"]["offseason_hold_error"] if "105:" in error]) == 1
@@ -551,17 +640,23 @@ def test_calls_skipped_after_failure_do_not_count():
         calls.append(args)
         return _failed()
 
-    payload = _many_players(4, logs, as_of="2027-03-01")
-    assert len(calls) == 4
+    payload = _many_players(2, logs, as_of="2027-03-01")
+    assert len(calls) == 2
     assert all(call[1] == 2026 for call in calls)
-    assert payload["validation"]["offseason_hold"]["lookup_failure_count"] == 4
+    assert payload["validation"]["offseason_hold"]["lookup_failure_count"] == 2
+    assert payload["validation"]["offseason_hold"]["lookups_by_season"] == {
+        "2026": {"attempted": 2, "failed": 2},
+    }
 
 
 def test_consecutive_failure_count_is_reset_between_builds():
+    def logs(player, *args):
+        return _failed() if int(player) < 105 or int(player) > 196 else []
+
     for _ in range(2):
-        payload = _many_players(4, _failed)
-        assert payload["validation"]["offseason_hold"]["lookup_failure_count"] == 4
-        assert payload["validation"]["offseason_hold"]["held_count"] == 4
+        payload = _many_players(100, logs)
+        assert payload["validation"]["offseason_hold"]["lookup_failure_count"] == 8
+        assert payload["validation"]["offseason_hold"]["held_count"] == 100
 
 
 def test_schedule_calls_do_not_count_as_game_log_successes():
@@ -614,10 +709,16 @@ def test_alternating_failures_and_successes_stop_at_budget(monkeypatch):
     assert len(calls) == 5
 
 
-@pytest.mark.parametrize("failure", ["schedule", "threshold", "budget"])
+@pytest.mark.parametrize("failure", ["schedule", "threshold", "budget", "aggregate"])
 def test_lookup_abort_leaves_artifact_and_archive_bytes_untouched(tmp_path, monkeypatch, failure):
+    players = range(101, 121) if failure == "aggregate" else [101]
     projection = tmp_path / "projection.json"
-    projection.write_text(json.dumps(PROJECTIONS), encoding="utf-8")
+    projection.write_text(json.dumps([
+        {"metadata": {"mlbam_id": str(player)}} for player in players
+    ]), encoding="utf-8")
+    transactions = [
+        dict(row, person={"id": player}) for player in players for row in [_placed(), _activated()]
+    ]
     artifact = tmp_path / "availability.json"
     artifact.write_bytes(b"existing artifact bytes\n")
     archive = tmp_path / "archive"
@@ -629,14 +730,21 @@ def test_lookup_abort_leaves_artifact_and_archive_bytes_untouched(tmp_path, monk
     if failure == "budget":
         times = iter([0, 0, 301])
         monkeypatch.setattr(availability.time, "monotonic", lambda: next(times))
-    with pytest.raises(availability.OffseasonHoldLookupError):
+
+    def logs(player, *args):
+        return _failed() if failure == "threshold" or (failure == "aggregate" and int(player) % 2) else []
+
+    with pytest.raises(
+        availability.OffseasonHoldLookupError,
+        match="season 2026, 10 of 20" if failure == "aggregate" else None,
+    ):
         run_mlb_availability(
             projection_path=projection, metadata_path=tmp_path / "missing.json",
             artifact_path=artifact, cache_path=tmp_path / "cache.json", archive_dir=archive,
             generated_at="2026-11-03", season=2026,
-            fetcher=lambda start, end: [_placed(), _activated()],
+            fetcher=lambda start, end: transactions,
             schedule_fetcher=_failed if failure == "schedule" else lambda year: SCHEDULE,
-            game_log_fetcher=_failed if failure == "threshold" else lambda *args: [],
+            game_log_fetcher=logs,
         )
     assert artifact.read_bytes() == b"existing artifact bytes\n"
     assert {path.name: path.read_bytes() for path in archive.iterdir()} == before
