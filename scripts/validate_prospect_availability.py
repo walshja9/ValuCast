@@ -106,7 +106,11 @@ def validate_prospect_availability(path: Path = ARTIFACT_PATH) -> tuple[dict | N
         if risk_basis in ALLOWED_RISK_BASIS and isinstance(discount, (int, float)):
             risk_level = row.get("risk_level")
             status = row.get("status")
-            if row.get("active_mlb_roster") is True and status == "injured":
+            if (
+                row.get("active_mlb_roster") is True
+                and status == "injured"
+                and not (row.get("offseason_hold") is True and risk_basis == "official_mlb_il")
+            ):
                 problems.append(
                     f"profiles[{index}] cannot be injured while active on an MLB roster"
                 )

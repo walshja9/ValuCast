@@ -223,6 +223,9 @@ STAGES = {
     "validate": VALIDATE_STEPS,
 }
 
+# Stop this step before the workflow's 120-minute job limit.
+STEP_TIMEOUT_SECONDS = {"scripts/build_mlb_availability.py": 600}
+
 
 def _duplicate_steps(steps: list[tuple[str, ...]]) -> list[tuple[str, ...]]:
     counts = Counter(steps)
@@ -242,7 +245,7 @@ def run_stage(stage: str) -> None:
     for step in STAGES[stage]:
         cmd = (sys.executable, *step)
         print("+", " ".join(cmd), flush=True)
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, timeout=STEP_TIMEOUT_SECONDS.get(step[0]))
 
 
 def main(argv: list[str] | None = None) -> int:

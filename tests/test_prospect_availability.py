@@ -3,6 +3,7 @@ import json
 
 import pytest
 
+from mlb.dynasty import _availability_component
 from prospects.availability import (
     MAX_IL_RISK_DISCOUNT,
     MAX_RISK_DISCOUNT,
@@ -334,6 +335,125 @@ def test_active_mlb_roster_clears_stale_injury_status():
     assert "official_mlb_il_override" not in pitcher["signals"]
 
 
+@pytest.mark.parametrize("offseason_hold,held_since", [
+    (True, "2026-11-02"), (False, "2026-11-02"), (None, None), (True, None),
+])
+def test_active_mlb_roster_preserves_only_held_official_il(offseason_hold, held_since):
+    contract = _input_contract()
+    contract["current"]["pitchers"][2]["innings_pitched"] = 60.0
+    official_profile = _official_il_profile()
+    if offseason_hold is not None:
+        official_profile["offseason_hold"] = offseason_hold
+        official_profile["held_since"] = held_since
+    held = bool(offseason_hold and held_since)
+
+    payload = build_prospect_availability(
+        contract,
+        il_lookup={"30": official_profile},
+        active_roster_ids={"30"},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["active_mlb_roster"] is True
+    assert pitcher["risk_discount"] == (0.12 if held else 0.0)
+    assert pitcher["risk_basis"] == ("official_mlb_il" if held else "none")
+    assert pitcher["status"] == ("injured" if held else "available")
+    assert pitcher["signals"] == (["official_mlb_il_override"] if held else [])
+    assert pitcher.get("offseason_hold", False) is held
+    assert pitcher["evidence_provenance"]["status_source"] == (
+        "official_mlb_transactions" if held else "active_mlb_roster"
+    )
+
+
+@pytest.mark.parametrize("metadata,discount", [
+    ({"offseason_hold": True, "held_since": "2026-11-02"}, 0.12),
+    ({"stale_status": True}, 0.30),
+    ({}, 0.30),
+    ({"offseason_hold": True}, 0.30),
+])
+def test_only_held_il_caps_severe_injury_discount(metadata, discount):
+    profile = _official_il_profile(description="RHP Thin AAA Starter: 60-day IL. Tommy John surgery.")
+    payload = build_prospect_availability(
+        _input_contract(), il_lookup={"30": profile | metadata},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["risk_discount"] == discount
+    assert pitcher["status"] == "injured"
+
+
+def test_active_mlb_roster_zeros_stale_official_status():
+    contract = _input_contract()
+    contract["current"]["pitchers"][2]["innings_pitched"] = 60.0
+    payload = build_prospect_availability(
+        contract, il_lookup={"30": _official_il_profile() | {"stale_status": True}},
+        active_roster_ids={"30"},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["risk_discount"] == 0.0
+    assert pitcher["status"] == "available"
+    assert "offseason_hold" not in pitcher
+
+
+@pytest.mark.parametrize("status,discount", [("injured", 0.12), ("rehab", 0.08)])
+def test_held_official_status_uses_hold_note(status, discount):
+    note = "End-of-season injury status held. Public return explanation."
+    profile = _official_il_profile(status=status) | {
+        "offseason_hold": True, "held_since": "2026-11-02", "hold_note": note,
+    }
+    payload = build_prospect_availability(_input_contract(), il_lookup={"30": profile})
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["risk_discount"] == discount
+    assert pitcher["availability_note"] == note
+
+
+@pytest.mark.parametrize("hold_note", [None, "End-of-season injury status held."])
+def test_dynasty_availability_component_prefers_hold_note(hold_note):
+    profile = _official_il_profile() | {"hold_note": hold_note}
+
+    component = _availability_component(profile, 0.12, 50.0)
+
+    assert component["note"] == (hold_note or profile["description"])
+
+
+def test_active_mlb_roster_preserves_held_official_rehab():
+    contract = _input_contract()
+    contract["current"]["pitchers"][2]["innings_pitched"] = 60.0
+    payload = build_prospect_availability(
+        contract,
+        il_lookup={
+            "30": _official_il_profile(
+                status="rehab",
+                description="Sent RHP Thin AAA Starter on a rehab assignment.",
+            ) | {"list_type": None, "offseason_hold": True, "held_since": "2026-11-02"}
+        },
+        active_roster_ids={"30"},
+    )
+    pitcher = next(row for row in payload["profiles"] if row["mlbam_id"] == 30)
+
+    assert pitcher["active_mlb_roster"] is True
+    assert pitcher["risk_discount"] == 0.08
+    assert pitcher["risk_basis"] == "official_mlb_rehab"
+    assert pitcher["status"] == "rehab"
+    assert pitcher["signals"] == ["official_mlb_rehab_override"]
+    assert pitcher["offseason_hold"] is True
+    assert pitcher["evidence_provenance"]["status_source"] == "official_mlb_transactions"
+
+
+def test_active_mlb_roster_with_held_official_il_still_validates(tmp_path):
+    payload = build_prospect_availability(
+        _input_contract(),
+        il_lookup={"30": _official_il_profile() | {"offseason_hold": True, "held_since": "2026-11-02"}},
+        active_roster_ids={"30"},
+    )
+    artifact_path = tmp_path / "availability.json"
+    artifact_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    assert validate_prospect_availability(artifact_path)[1] == []
+
+
 def test_active_mlb_roster_with_thin_sample_still_validates(tmp_path):
     payload = build_prospect_availability(
         _input_contract(),
@@ -375,6 +495,7 @@ def test_active_mlb_roster_supersedes_manual_injury_override(tmp_path, manual_st
 def test_active_mlb_roster_preserves_manual_available_risk_override(tmp_path):
     payload = build_prospect_availability(
         _input_contract(), active_roster_ids={"30"},
+        il_lookup={"30": _official_il_profile() | {"offseason_hold": True, "held_since": "2026-11-02"}},
         overrides={"overrides": [{
             "mlbam_id": 30, "role": "pitcher", "status": "available",
             "risk_discount": 0.09, "note": "Available with verified workload risk.",
@@ -389,6 +510,7 @@ def test_active_mlb_roster_preserves_manual_available_risk_override(tmp_path):
     assert pitcher["risk_discount"] == 0.09
     assert pitcher["evidence_provenance"]["status_source"] == "manual_override"
     assert "manual_status_override" in pitcher["signals"]
+    assert "offseason_hold" not in pitcher
     assert validate_prospect_availability(artifact_path)[1] == []
 
 
@@ -548,7 +670,7 @@ def test_run_prospect_availability_writes_artifact(tmp_path):
     assert result["profile_count"] == 3
     assert result["risk_profile_count"] == 2
     assert payload["artifact"] == "valucast_prospect_availability"
-    assert payload["artifact_version"] == "0.5.2"
+    assert payload["artifact_version"] == "0.5.3"
     assert payload["summary"]["profile_count"] == 3
     assert validate_prospect_availability(artifact_path)[1] == []
 
@@ -616,7 +738,8 @@ def test_availability_validator_rejects_unknown_risk_basis(tmp_path):
     assert "profiles[0].risk_basis is invalid" in problems
 
 
-def test_availability_validator_rejects_active_roster_injury_conflict(tmp_path):
+@pytest.mark.parametrize("offseason_hold", [False, True])
+def test_availability_validator_rejects_active_roster_injury_conflict(tmp_path, offseason_hold):
     payload = build_prospect_availability(
         _input_contract(),
         active_roster_ids={"30"},
@@ -626,6 +749,7 @@ def test_availability_validator_rejects_active_roster_injury_conflict(tmp_path):
         {
             "status": "injured",
             "risk_basis": "upstream_factual_status",
+            "offseason_hold": offseason_hold,
             "risk_discount": 0.12,
             "risk_level": "high",
         }

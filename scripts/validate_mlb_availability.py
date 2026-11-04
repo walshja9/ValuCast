@@ -85,6 +85,8 @@ def main() -> int:
         f"profiles={validation.get('profile_count', 0)} "
         f"risk_profiles={validation.get('risk_profile_count', 0)}"
     )
+    for error in validation.get("offseason_hold_error") or []:
+        print(f"WARNING: {error}")
     return 0
 
 

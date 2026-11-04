@@ -26,11 +26,13 @@ MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_prospect_availability.json"
 
 ARTIFACT_NAME = "valucast_prospect_availability"
-ARTIFACT_VERSION = "0.5.2"
+ARTIFACT_VERSION = "0.5.3"
 
 MAX_RISK_DISCOUNT = 0.12
 SEVERE_IL_DISCOUNT = 0.30
 SHORT_IL_DISCOUNT = 0.12
+# Provisional owner policy from 2026-11-04, not a validated measure of injury risk.
+HELD_IL_MAX_DISCOUNT = 0.12
 MAX_IL_RISK_DISCOUNT = 0.40
 SEVERE_IL_KEYWORDS = (
     "surgery",
@@ -379,14 +381,16 @@ def _official_availability_signal(
             _status_discount(role, status),
             ["official_mlb_rehab_override"],
             status,
-            str(profile.get("description") or "Official MLB rehab assignment."),
+            str(profile.get("hold_note") or profile.get("description") or "Official MLB rehab assignment."),
         )
     if status != "injured" or profile.get("active_injury_risk") is not True:
         return 0.0, [], None, None
     list_type = str(profile.get("list_type") or "")
     description = str(profile.get("description") or "")
     discount = _il_severity_discount(list_type, description)
-    note = description.strip()
+    if profile.get("offseason_hold") is True and profile.get("held_since"):
+        discount = min(discount, HELD_IL_MAX_DISCOUNT)
+    note = str(profile.get("hold_note") or description).strip()
     if not note:
         team = profile.get("team") or "MLB"
         name = profile.get("name") or f"MLBAM {mlbam_id}"
@@ -508,6 +512,9 @@ def _profile(
         role,
         il_lookup,
     )
+    official_profile = (il_lookup or {}).get(str(mlbam_id)) or (il_lookup or {}).get(
+        mlbam_id
+    )
     override_discount, override_signals, override_status, override_note = _override_signal(
         role,
         override,
@@ -518,7 +525,13 @@ def _profile(
     if active_mlb_roster and override_status in {"injured", "il"}:
         override_discount, override_signals, override_status, override_note = 0.0, [], None, None
     override_present = override_discount > 0.0 or bool(override_status)
-    if override_present or active_mlb_roster:
+    offseason_hold = (
+        (official_profile or {}).get("offseason_hold") is True
+        and (official_profile or {}).get("held_since")
+        and il_status in {"injured", "rehab"}
+        and not override_present
+    )
+    if override_present or (active_mlb_roster and not offseason_hold):
         il_discount, il_signals, il_status, il_note = 0.0, [], None, None
     if override_present or active_mlb_roster or il_status:
         upstream_discount, upstream_signals, upstream_status, upstream_note = (
@@ -562,14 +575,11 @@ def _profile(
     )
     if risk_basis in {"official_mlb_il", "official_mlb_rehab"}:
         signals = il_signals
-    official_profile = (il_lookup or {}).get(str(mlbam_id)) or (il_lookup or {}).get(
-        mlbam_id
-    )
     status_source = (
         "manual_override"
         if override_present
         else "active_mlb_roster"
-        if active_mlb_roster
+        if active_mlb_roster and not offseason_hold
         else "official_mlb_transactions"
         if official_profile
         else "upstream_factual_status"
@@ -635,6 +645,7 @@ def _profile(
         },
         "present": True,
         "active_mlb_roster": active_mlb_roster,
+        **({"offseason_hold": True} if offseason_hold else {}),
     }
 
 
