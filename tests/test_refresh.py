@@ -107,7 +107,9 @@ class TestRefresh(unittest.TestCase):
             self.assertEqual(data[0]["name"], "Test Player")
 
     def test_refresh_writes_metadata_json(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        # In-season source; tests/test_preseason_switch.py covers the preseason one.
+        with tempfile.TemporaryDirectory() as tmpdir, \
+             patch("scraper.season.is_preseason", return_value=False):
             _, _, _, _, metadata_path, _ = _run_refresh(tmpdir)
             self.assertTrue(os.path.exists(metadata_path))
             with open(metadata_path) as f:
@@ -205,8 +207,10 @@ class TestEmptyRosRefresh(unittest.TestCase):
             self.assertEqual(f.read(), prior_bytes)
 
     def test_empty_feeds_without_final_games_retain_prior_ros(self):
+        # In-season retention; tests/test_preseason_switch.py covers the preseason guard.
         prior_bytes = self._write_prior_ros()
-        with patch("scraper.refresh.regular_season_games_final", return_value=0) as games, \
+        with patch("scraper.season.is_preseason", return_value=False), \
+             patch("scraper.refresh.regular_season_games_final", return_value=0) as games, \
              patch("scraper.refresh.date", wraps=date) as mock_date, \
              patch("scraper.refresh.blend_projections", return_value=[_FAKE_ROS_HITTER]) as blend, \
              patch("scraper.refresh.save_raw") as save, \
