@@ -29,7 +29,6 @@ def main() -> None:
         f"held={hold['held_count']} "
         f"stale={hold['stale_count']} "
         f"cleared={hold['cleared_by_appearance']} "
-        f"lookup_failures={hold['lookup_failure_count']} "
         f"ready={result['ready_for_mlb_dynasty_layer']} -> {result['artifact_path']}"
     )
 

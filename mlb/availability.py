@@ -31,10 +31,6 @@ CONTRACT_NAME = "ValuCast MLB Availability Contract"
 CONTRACT_VERSION = "0.2.0"
 DEFAULT_SEASON_START_MONTH = 3
 DEFAULT_SEASON_START_DAY = 1
-HOLD_MAX_CONSECUTIVE_FAILURES = 5
-HOLD_MAX_FAILURE_SHARE = 0.10
-HOLD_MIN_FAILURES_FOR_SHARE_STOP = 5
-HOLD_MIN_CALLS_FOR_SEASON_STOP = 3
 HOLD_LOOKUP_BUDGET_SECONDS = 300
 HOLD_LOOKUP_TIMEOUT_SECONDS = 15
 
@@ -324,20 +320,6 @@ def availability_lookup(payload: dict | None) -> dict[str, dict]:
     return lookup
 
 
-def _offseason_hold_failure_message(lookups_by_season: dict[str, dict[str, int]]) -> str | None:
-    for season, counts in sorted(lookups_by_season.items()):
-        attempted, failed = counts["attempted"], counts["failed"]
-        if (
-            failed >= HOLD_MIN_FAILURES_FOR_SHARE_STOP and failed / attempted >= HOLD_MAX_FAILURE_SHARE
-        ) or (attempted >= HOLD_MIN_CALLS_FOR_SEASON_STOP and failed == attempted):
-            return f"Offseason hold game-log failures: season {season}, {failed} of {attempted}"
-    attempted = sum(counts["attempted"] for counts in lookups_by_season.values())
-    failed = sum(counts["failed"] for counts in lookups_by_season.values())
-    if failed >= HOLD_MIN_FAILURES_FOR_SHARE_STOP and failed / attempted >= HOLD_MAX_FAILURE_SHARE:
-        return f"Offseason hold game-log failures: all seasons, {failed} of {attempted}"
-    return None
-
-
 def _apply_offseason_hold(
     profiles: list[dict],
     transactions: list[dict],
@@ -350,12 +332,8 @@ def _apply_offseason_hold(
     started = time.monotonic()
     summary = {
         "active": False, "season_end": None, "held_count": 0, "stale_count": 0,
-        "cleared_by_appearance": 0, "lookup_failure_count": 0,
-        "played_date_count": 0, "release_state": "inactive",
-        "lookups_by_season": {},
+        "cleared_by_appearance": 0, "played_date_count": 0, "release_state": "inactive",
     }
-    errors = []
-    consecutive_failures = 0
     fetch_schedule = schedule_fetcher or _fetch_schedule
 
     def check_budget() -> None:
@@ -443,21 +421,10 @@ def _apply_offseason_hold(
             if year > season and int(as_of[:4]) <= season:
                 continue
             check_budget()
-            counts = summary["lookups_by_season"].setdefault(str(year), {"attempted": 0, "failed": 0})
-            counts["attempted"] += 1
             try:
                 games = fetch_logs(mlbam_id, year, types)
             except Exception as exc:  # noqa: BLE001
-                counts["failed"] += 1
-                errors.append(f"game_log {mlbam_id}: {exc}")
-                summary["lookup_failure_count"] += 1
-                consecutive_failures += 1
-                if consecutive_failures >= HOLD_MAX_CONSECUTIVE_FAILURES:
-                    raise OffseasonHoldLookupError(
-                        f"{consecutive_failures} consecutive offseason hold game-log failures"
-                    ) from exc
-                break
-            consecutive_failures = 0
+                raise OffseasonHoldLookupError(f"game_log {mlbam_id} season {year}: {exc}") from exc
             dates = [
                 day.isoformat() for split in games
                 if (day := _parse_date(split.get("date"))) is not None
@@ -485,16 +452,10 @@ def _apply_offseason_hold(
         else:
             profile["stale_status"] = True
             summary["stale_count"] += 1
-    failure_message = _offseason_hold_failure_message(summary["lookups_by_season"])
-    if failure_message:
-        raise OffseasonHoldLookupError(failure_message)
     profiles.sort(key=lambda row: (
         row.get("status") not in ACTIVE_STATUSES, str(row.get("name") or ""), str(row.get("mlbam_id") or ""),
     ))
-    result = {"offseason_hold": summary}
-    if errors:
-        result["offseason_hold_error"] = errors
-    return result
+    return {"offseason_hold": summary}
 
 
 def _validation(profiles: list[dict], tracked_ids: set[str], transactions: list[dict]) -> dict:
