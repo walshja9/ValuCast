@@ -105,6 +105,8 @@
                 <button type="button" class="detail-toggle" aria-expanded="false" aria-label="Show {{ row.name }} details" onclick="event.stopPropagation(); toggleDetail('{{ row.id }}', this.closest('tr'))">▸</button>
                 <strong>{{ row.name }}</strong>{% if row.is_prospect %}{% include "partials/_prospect_tag.html" %}{% endif %}
                 {% if watch_key %}<button type="button" class="watch-toggle" data-watch-key="{{ watch_key }}" data-watch-name="{{ row.name }}" data-metric="watch_player" aria-pressed="false" aria-label="Follow {{ row.name }} in My Players" hidden>☆</button>{% endif %}
+                {% set hold_note = offseason_hold_note(row) %}
+                {% if hold_note %}<span class="no-ros-badge" title="{{ hold_note }}">Injury hold</span>{% endif %}
                 {% if mode == 'prospects' %}
                 <span class="pos-rank">#{{ row.dynasty_rank }} overall</span>
                 {% elif row.is_prospect and row.prospect_rank %}

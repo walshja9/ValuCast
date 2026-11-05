@@ -408,6 +408,32 @@ def test_offseason_hold_shows_on_redraft_row_and_detail(client, monkeypatch):
     assert "Injury hold" in table
 
 
+@pytest.mark.parametrize("player_type", ["mlb", "prospect"])
+@pytest.mark.parametrize("held", [True, False])
+def test_offseason_hold_shows_on_dynasty_row(monkeypatch, player_type, held):
+    from web.dynasty_models import DynastyRankingRow
+
+    note = "End-of-season injury status held."
+    row = DynastyRankingRow(
+        id="offseason-test", name="Held Pitcher", player_type=player_type,
+        positions=("SP",), team="TST", age=27, dynasty_rank=1,
+        dynasty_value=50.0, status="active", mlbam_id="1", metadata={},
+    )
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"status": "injured", "offseason_hold": held, "hold_note": note},
+    })
+
+    with app_module.app.test_request_context("/rankings?mode=dd_dynasty"):
+        table = app_module.render_template(
+            "partials/rankings_table_dynasty.html", mode="dd_dynasty",
+            dd_rows=[row], tiers={}, dynasty_dollars={}, dyn_z_map={},
+            dd_schema_version="1.0", custom_cats_active=False,
+        )
+
+    assert ("Injury hold" in table) is held
+    assert (f'title="{note}"' in table) is held
+
+
 def test_offseason_hold_note_resolves_dynasty_and_redraft_ids(monkeypatch):
     note = "End-of-season injury status held."
     monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
