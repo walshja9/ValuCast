@@ -425,5 +425,5 @@ jobs:
           if [ -n "$issue" ]; then
             gh issue comment "$issue" --body "Failed again: $RUN_URL"
           else
-            gh issue create --title "$title" --body "Today's last scheduled refresh failed: $RUN_URL"
+            gh issue create --title "$title" --body "Today's last scheduled refresh failed: $RUN_URL" --assignee "$GITHUB_REPOSITORY_OWNER"
           fi
