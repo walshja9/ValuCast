@@ -9,7 +9,7 @@ on:
         description: The exact commit under review. Its hosted CI must pass first.
         required: true
       mode:
-        description: pipeline or faults
+        description: pipeline, faults or alert-test
         required: true
         default: pipeline
 
@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   hosted_ci:
+    if: inputs.mode != 'alert-test'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -39,6 +40,19 @@ jobs:
           done
           echo "::error::hosted CI never finished on $SHA"
           exit 1
+
+  alert_test:
+    if: inputs.mode == 'alert-test'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create one test issue the way the daily job would
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh issue create --title "Test: missed-refresh alert, safe to close" --body "Testing that this notification reaches the owner. Nothing failed." --assignee "$GITHUB_REPOSITORY_OWNER"
 
   faults:
     needs: hosted_ci

@@ -112,9 +112,13 @@ with sync_playwright() as play:
                     row_result.update(found=row_result.get("found", False), error=f"{type(error).__name__}: {error}"[:300])
             try:
                 row = open_row(page, "dd_dynasty", name)
+                dynasty_badge = row.locator(".no-ros-badge", has_text="Injury hold")
                 page.evaluate(MASK)
                 row.evaluate(PAGE_TO)
                 page.wait_for_timeout(500)
+                row_result["dynasty_badge"] = dynasty_badge.count() > 0
+                if dynasty_badge.count():
+                    row_result["dynasty_badge_in_view"] = dynasty_badge.first.evaluate(IN_VIEW)
                 page.screenshot(path=str(out / f"{label}_{slug}_dynasty_row_{width}.png"))
                 card = open_card(page, row)
                 text = card.inner_text()
