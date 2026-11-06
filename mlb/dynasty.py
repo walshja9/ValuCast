@@ -408,7 +408,7 @@ def _availability_component(profile: dict | None, discount: float, score_before:
         "transaction_id": profile.get("transaction_id"),
         "transaction_date": profile.get("transaction_date"),
         "effective_date": profile.get("effective_date"),
-        "note": profile.get("description"),
+        "note": profile.get("hold_note") or profile.get("description"),
         "source": profile.get("source"),
     }
     if discount > 0:

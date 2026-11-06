@@ -19,12 +19,16 @@ def main() -> None:
     args = parser.parse_args()
 
     result = run_mlb_availability(refresh=not args.no_refresh)
+    hold = result["offseason_hold"]
     print(
         "ValuCast MLB availability: "
         f"profiles={result['profile_count']} "
         f"risk_profiles={result['risk_profile_count']} "
         f"transactions={result['transaction_count']} "
         f"fetched={result['fetched']} "
+        f"held={hold['held_count']} "
+        f"stale={hold['stale_count']} "
+        f"cleared={hold['cleared_by_appearance']} "
         f"ready={result['ready_for_mlb_dynasty_layer']} -> {result['artifact_path']}"
     )
 

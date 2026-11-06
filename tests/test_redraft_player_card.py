@@ -7,6 +7,7 @@ import pytest
 from werkzeug.datastructures import MultiDict
 
 import app as app_module
+from mlb.availability import availability_lookup, build_mlb_availability
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
@@ -311,6 +312,173 @@ def test_redraft_player_card_preview_renders_for_hitters_and_pitchers(client, ro
     assert "text/html" in response.content_type
     assert b"Redraft Value Card" in response.data
     assert f"/redraft/player-card/{player_id}.png".encode() in response.data
+
+
+@pytest.mark.parametrize(
+    "profile, on_board",
+    [
+        ({"status": "injured", "offseason_hold": True}, True),
+        ({"status": "rehab", "offseason_hold": True}, True),
+        ({"status": "injured"}, False),
+        ({"status": "rehab"}, False),
+        ({"status": "available"}, True),
+    ],
+)
+def test_offseason_hold_stays_on_the_redraft_board(monkeypatch, profile, on_board):
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {"1": profile})
+    player = SimpleNamespace(metadata={"mlbam_id": 1})
+
+    assert app_module._is_live_redraft_projection(player) is on_board
+
+
+def _transaction(transaction_id, day, text):
+    return {
+        "id": transaction_id, "date": day, "effectiveDate": day,
+        "person": {"id": 1, "fullName": "Guy"}, "description": text,
+    }
+
+
+_PLACED = _transaction(1, "2026-08-01", "Club placed RHP Guy on the 60-day injured list. Elbow.")
+_ACTIVATED = _transaction(2, "2026-11-02", "Club activated RHP Guy from the 60-day injured list.")
+
+
+@pytest.mark.parametrize(
+    "transactions, held, on_board",
+    [
+        # MLB's paperwork activation is the only thing the exemption covers.
+        ([_PLACED, _ACTIVATED], True, True),
+        # A later record is a current injury, so the normal redraft check applies.
+        ([_PLACED, _ACTIVATED, _transaction(
+            3, "2027-02-15", "Club placed RHP Guy on the 60-day injured list. Shoulder.")], False, False),
+        ([_PLACED, _ACTIVATED, _transaction(
+            3, "2027-02-15", "Club sent RHP Guy on a rehab assignment to Iowa.")], False, False),
+        # No activation means no hold: an old status stays under the normal check.
+        ([_PLACED], False, False),
+        # Hitters are not held, and their activation is accepted.
+        ([_transaction(1, "2026-08-01", "Club placed 1B Guy on the 60-day injured list. Knee."),
+          _transaction(2, "2026-11-02", "Club activated 1B Guy from the 60-day injured list.")], False, True),
+    ],
+)
+def test_redraft_exemption_covers_only_the_administrative_hold(monkeypatch, transactions, held, on_board):
+    payload = build_mlb_availability(
+        [{"metadata": {"mlbam_id": "1"}}],
+        generated_at="2027-02-20",
+        season=2026,
+        transactions=transactions,
+        schedule_fetcher=lambda season: [
+            {"date": "2026-09-27", "games": [{"status": {"detailedState": "Final"}}]},
+        ] if season == 2026 else [],
+        game_log_fetcher=lambda *_: [],
+    )
+    availability = availability_lookup(payload)
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: availability)
+
+    assert (availability["1"].get("offseason_hold") is True) is held
+    assert app_module._is_live_redraft_projection(
+        SimpleNamespace(metadata={"mlbam_id": 1})) is on_board
+
+
+def test_held_player_keeps_another_exclusion(monkeypatch):
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"status": "injured", "offseason_hold": True},
+    })
+    monkeypatch.setattr(app_module, "_ineligible_mlbam_ids", lambda: frozenset({"1"}))
+    monkeypatch.setattr(app_module, "filter_by_playing_time", lambda players, **_: players)
+    player = SimpleNamespace(id="1", metadata={"mlbam_id": 1})
+
+    assert app_module._valuation_players(active_store=SimpleNamespace(get_all=lambda: [player])) == []
+
+
+def test_offseason_hold_shows_on_redraft_row_and_detail(client, monkeypatch):
+    player = app_module.store.get_by_id(_first_redraft_player_id("pitcher"))
+    note = "End-of-season injury status held."
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        str(player.metadata["mlbam_id"]): {
+            "status": "injured", "offseason_hold": True, "hold_note": note,
+        },
+    })
+    headers = {"HX-Request": "true"}
+
+    detail = client.get(f"/player/{player.id}", headers=headers).get_data(as_text=True)
+    table = client.get("/rankings", query_string={"search": player.name},
+                       headers=headers).get_data(as_text=True)
+
+    assert note in detail
+    assert "no injury discount to this redraft value" in detail
+    assert "Injury hold" in table
+
+
+@pytest.mark.parametrize("player_type", ["mlb", "prospect"])
+@pytest.mark.parametrize("held", [True, False])
+def test_offseason_hold_shows_on_dynasty_row(monkeypatch, player_type, held):
+    from web.dynasty_models import DynastyRankingRow
+
+    note = "End-of-season injury status held."
+    row = DynastyRankingRow(
+        id="offseason-test", name="Held Pitcher", player_type=player_type,
+        positions=("SP",), team="TST", age=27, dynasty_rank=1,
+        dynasty_value=50.0, status="active", mlbam_id="1", metadata={},
+    )
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"status": "injured", "offseason_hold": held, "hold_note": note},
+    })
+
+    with app_module.app.test_request_context("/rankings?mode=dd_dynasty"):
+        table = app_module.render_template(
+            "partials/rankings_table_dynasty.html", mode="dd_dynasty",
+            dd_rows=[row], tiers={}, dynasty_dollars={}, dyn_z_map={},
+            dd_schema_version="1.0", custom_cats_active=False,
+        )
+
+    assert ("Injury hold" in table) is held
+    assert (f'title="{note}"' in table) is held
+
+
+def test_offseason_hold_note_resolves_dynasty_and_redraft_ids(monkeypatch):
+    note = "End-of-season injury status held."
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"offseason_hold": True, "hold_note": note},
+    })
+
+    assert app_module._offseason_hold_note(SimpleNamespace(mlbam_id=1)) == note
+    assert app_module._offseason_hold_note(SimpleNamespace(metadata={"mlbam_id": 1})) == note
+
+
+@pytest.mark.parametrize(
+    "player_type,held,note_count,discount_sentence",
+    [
+        pytest.param("mlb", True, 1, True, id="held-mlb"),
+        pytest.param("mlb", False, 0, False, id="non-held-mlb"),
+        pytest.param("prospect", True, 1, False, id="held-prospect-no-duplicate"),
+    ],
+)
+def test_offseason_hold_on_dynasty_card(client, monkeypatch, player_type, held, note_count, discount_sentence):
+    from web.dynasty_models import DynastyRankingRow
+
+    note = "End-of-season injury status held."
+    # Published MLB rows carry no components, so the card cannot read a discount from the row.
+    row = DynastyRankingRow(
+        id="offseason-test", name="Held Pitcher", player_type=player_type,
+        positions=("SP",), team="TST", age=27, dynasty_rank=1,
+        dynasty_value=50.0, status="active", mlbam_id="1",
+        metadata={"components": {
+            "availability_risk_discount": 0.12,
+            "availability": {"status": "injured", "note": note},
+        }} if player_type == "prospect" else {},
+    )
+    monkeypatch.setattr(app_module, "dd_store", SimpleNamespace(is_available=True))
+    monkeypatch.setattr(app_module, "_build_dynasty_player_detail_context", lambda *_: {"row": row})
+    monkeypatch.setattr(app_module, "_mlb_availability_by_id", lambda: {
+        "1": {"status": "injured", "offseason_hold": held, "hold_note": note},
+    })
+
+    response = client.get(f"/player/{row.id}?mode=dd_dynasty", headers={"HX-Request": "true"})
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert html.count(note) == note_count
+    assert (f"{note} This dynasty value includes an injury discount." in html) is discount_sentence
+    assert "Role, playing time &amp; availability" not in html
 
 
 def test_redraft_player_detail_share_link_carries_query_string(client):

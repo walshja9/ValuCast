@@ -15,6 +15,18 @@ from mlb.availability import (
 from scripts.validate_mlb_availability import validate_mlb_availability
 
 
+@pytest.fixture(autouse=True)
+def _synthetic_schedule(monkeypatch):
+    monkeypatch.setattr("mlb.availability._fetch_schedule", lambda season: [{
+        "date": f"{season}-09-27",
+        "games": [{"status": {"detailedState": "Scheduled"}}],
+    }])
+
+    def refuse(*args, **kwargs):
+        pytest.fail("Availability tests must never access the network")
+    monkeypatch.setattr("mlb.availability.urlopen", refuse)
+
+
 def _projection(mlbam_id=101, name="Player One"):
     return {
         "id": f"mlbam_{mlbam_id}",
