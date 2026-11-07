@@ -10,7 +10,7 @@
   },
   "contract_name": "ValuCast MLB Roster Status Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-11-06",
+  "generated_at": "2026-11-07",
   "profiles": [
     {
       "active_mlb_roster": true,
@@ -3606,6 +3606,19 @@
       "name": "Jos\u00e9 Ram\u00edrez",
       "position": "3B",
       "position_name": "Third Base",
+      "source": "official_mlb_statsapi_active_roster",
+      "status_code": "A",
+      "status_description": "Active",
+      "team_abbreviation": "CLE",
+      "team_id": 114,
+      "team_name": "Cleveland Guardians"
+    },
+    {
+      "active_mlb_roster": true,
+      "mlbam_id": 677588,
+      "name": "Jos\u00e9 Tena",
+      "position": "DH",
+      "position_name": "Designated Hitter",
       "source": "official_mlb_statsapi_active_roster",
       "status_code": "A",
       "status_description": "Active",
@@ -14288,7 +14301,7 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "active_roster_profile_count": 1097,
+    "active_roster_profile_count": 1098,
     "blockers": [],
     "duplicate_identity_count": 0,
     "ready_for_public_snapshot": true,

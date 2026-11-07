@@ -1,9 +1,79 @@
 {
   "artifact": "valucast_prospect_movers",
-  "board": [],
-  "cooling": [],
+  "board": [
+    {
+      "age": 22,
+      "current_rank": 122,
+      "current_score": 31.6,
+      "eta": null,
+      "history_tail": [
+        {
+          "date": "2026-11-04",
+          "rank": 88,
+          "score": 33.83
+        },
+        {
+          "date": "2026-11-07",
+          "rank": 122,
+          "score": 31.6
+        }
+      ],
+      "id": "vc_mover_702281_pitcher",
+      "level": "AAA",
+      "mlbam_id": 702281,
+      "movement_label": "DOWN -2.2 over 3d",
+      "name": "Robby Snelling",
+      "player_id": "vc_prospect_702281_pitcher",
+      "pos": "P",
+      "positions": [
+        "P"
+      ],
+      "rank_delta": -34,
+      "role": "pitcher",
+      "score_delta": -2.23,
+      "team": "MIA",
+      "why": "AAA 29 IP, 1.86 ERA, .90 WHIP",
+      "window_days": 3
+    }
+  ],
+  "cooling": [
+    {
+      "age": 22,
+      "current_rank": 122,
+      "current_score": 31.6,
+      "eta": null,
+      "history_tail": [
+        {
+          "date": "2026-11-04",
+          "rank": 88,
+          "score": 33.83
+        },
+        {
+          "date": "2026-11-07",
+          "rank": 122,
+          "score": 31.6
+        }
+      ],
+      "id": "vc_mover_702281_pitcher",
+      "level": "AAA",
+      "mlbam_id": 702281,
+      "movement_label": "DOWN -2.2 over 3d",
+      "name": "Robby Snelling",
+      "player_id": "vc_prospect_702281_pitcher",
+      "pos": "P",
+      "positions": [
+        "P"
+      ],
+      "rank_delta": -34,
+      "role": "pitcher",
+      "score_delta": -2.23,
+      "team": "MIA",
+      "why": "AAA 29 IP, 1.86 ERA, .90 WHIP",
+      "window_days": 3
+    }
+  ],
   "epoch": "2026-07-30-bucket-calibration-0-3-2",
-  "generated_at": "2026-11-06T00:00:00+00:00",
+  "generated_at": "2026-11-07T00:00:00+00:00",
   "input_artifacts": {
     "prospect_rank_v1_count": 3207,
     "prospect_rank_v1_status": "candidate_ready",
@@ -133,9 +203,10 @@
       "2026-11-03",
       "2026-11-04",
       "2026-11-05",
-      "2026-11-06"
+      "2026-11-06",
+      "2026-11-07"
     ],
-    "rank_history_artifact_count": 125
+    "rank_history_artifact_count": 126
   },
   "rising": [],
   "signal_name": "ValuCast Prospect Movers",
@@ -154,18 +225,18 @@
   },
   "status": "candidate_ready",
   "summary": {
-    "cooling_count": 0,
+    "cooling_count": 1,
     "current_rank_cap": 250,
     "current_ranked_count": 3207,
     "excluded_step_guard_count": 6074,
-    "mover_count": 0,
+    "mover_count": 1,
     "rising_count": 0,
     "score_delta_threshold": 2.0
   },
   "validation": {
-    "below_threshold_count": 3201,
+    "below_threshold_count": 3199,
     "blockers": [],
-    "cooling_count": 0,
+    "cooling_count": 1,
     "excluded_step_guard_count": 6074,
     "history_limited_count": 0,
     "ready_for_public_surface": true,
@@ -173,19 +244,159 @@
   },
   "windows": {
     "14d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 22,
+          "current_rank": 122,
+          "current_score": 31.6,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-11-04",
+              "rank": 88,
+              "score": 33.83
+            },
+            {
+              "date": "2026-11-07",
+              "rank": 122,
+              "score": 31.6
+            }
+          ],
+          "id": "vc_mover_702281_pitcher",
+          "level": "AAA",
+          "mlbam_id": 702281,
+          "movement_label": "DOWN -2.2 over 3d",
+          "name": "Robby Snelling",
+          "player_id": "vc_prospect_702281_pitcher",
+          "pos": "P",
+          "positions": [
+            "P"
+          ],
+          "rank_delta": -34,
+          "role": "pitcher",
+          "score_delta": -2.23,
+          "team": "MIA",
+          "why": "AAA 29 IP, 1.86 ERA, .90 WHIP",
+          "window_days": 3
+        }
+      ],
       "rising": []
     },
     "21d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 22,
+          "current_rank": 122,
+          "current_score": 31.6,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-11-04",
+              "rank": 88,
+              "score": 33.83
+            },
+            {
+              "date": "2026-11-07",
+              "rank": 122,
+              "score": 31.6
+            }
+          ],
+          "id": "vc_mover_702281_pitcher",
+          "level": "AAA",
+          "mlbam_id": 702281,
+          "movement_label": "DOWN -2.2 over 3d",
+          "name": "Robby Snelling",
+          "player_id": "vc_prospect_702281_pitcher",
+          "pos": "P",
+          "positions": [
+            "P"
+          ],
+          "rank_delta": -34,
+          "role": "pitcher",
+          "score_delta": -2.23,
+          "team": "MIA",
+          "why": "AAA 29 IP, 1.86 ERA, .90 WHIP",
+          "window_days": 3
+        }
+      ],
       "rising": []
     },
     "30d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 22,
+          "current_rank": 122,
+          "current_score": 31.6,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-11-04",
+              "rank": 88,
+              "score": 33.83
+            },
+            {
+              "date": "2026-11-07",
+              "rank": 122,
+              "score": 31.6
+            }
+          ],
+          "id": "vc_mover_702281_pitcher",
+          "level": "AAA",
+          "mlbam_id": 702281,
+          "movement_label": "DOWN -2.2 over 3d",
+          "name": "Robby Snelling",
+          "player_id": "vc_prospect_702281_pitcher",
+          "pos": "P",
+          "positions": [
+            "P"
+          ],
+          "rank_delta": -34,
+          "role": "pitcher",
+          "score_delta": -2.23,
+          "team": "MIA",
+          "why": "AAA 29 IP, 1.86 ERA, .90 WHIP",
+          "window_days": 3
+        }
+      ],
       "rising": []
     },
     "7d": {
-      "cooling": [],
+      "cooling": [
+        {
+          "age": 22,
+          "current_rank": 122,
+          "current_score": 31.6,
+          "eta": null,
+          "history_tail": [
+            {
+              "date": "2026-11-04",
+              "rank": 88,
+              "score": 33.83
+            },
+            {
+              "date": "2026-11-07",
+              "rank": 122,
+              "score": 31.6
+            }
+          ],
+          "id": "vc_mover_702281_pitcher",
+          "level": "AAA",
+          "mlbam_id": 702281,
+          "movement_label": "DOWN -2.2 over 3d",
+          "name": "Robby Snelling",
+          "player_id": "vc_prospect_702281_pitcher",
+          "pos": "P",
+          "positions": [
+            "P"
+          ],
+          "rank_delta": -34,
+          "role": "pitcher",
+          "score_delta": -2.23,
+          "team": "MIA",
+          "why": "AAA 29 IP, 1.86 ERA, .90 WHIP",
+          "window_days": 3
+        }
+      ],
       "rising": []
     }
   }
