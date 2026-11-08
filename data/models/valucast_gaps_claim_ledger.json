@@ -3002,6 +3002,7 @@
       "team": "PIT"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 241,
       "claim_date": "2026-09-09",
       "claim_divergence": 26,
@@ -3009,7 +3010,8 @@
       "identity_key": "800571_pitcher",
       "mlbam_id": "800571",
       "name": "Santiago Suarez",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-08",
       "role": "pitcher",
       "side": "higher",
       "team": "TBR"
@@ -7026,6 +7028,7 @@
       "team": "MIN"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 104,
       "claim_date": "2026-09-09",
       "claim_divergence": -25,
@@ -7033,7 +7036,8 @@
       "identity_key": "695501_hitter",
       "mlbam_id": "695501",
       "name": "Blake Burke",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-08",
       "role": "hitter",
       "side": "lower",
       "team": "MIL"
@@ -7502,7 +7506,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-07T12:14:06.632942+00:00",
+  "generated_at": "2026-11-08T12:22:25.876304+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7522,16 +7526,16 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 26,
-      "open": 28,
+      "expired_unresolved": 27,
+      "open": 27,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 45,
       "retracted_by_model_move": 127,
       "total": 234
     },
     "lower": {
-      "expired_unresolved": 58,
-      "open": 20,
+      "expired_unresolved": 59,
+      "open": 19,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
