@@ -3032,6 +3032,7 @@
       "team": "MIL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 227,
       "claim_date": "2026-09-10",
       "claim_divergence": 189,
@@ -3039,7 +3040,8 @@
       "identity_key": "800305_hitter",
       "mlbam_id": "800305",
       "name": "Jes\u00fas  B\u00e1ez",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-09",
       "role": "hitter",
       "side": "higher",
       "team": "STL"
@@ -3436,10 +3438,12 @@
       "claim_date": "2026-11-02",
       "claim_divergence": 119,
       "claim_valucast_rank": 106,
+      "consensus_move_spots": -13,
       "identity_key": "815148_pitcher",
       "mlbam_id": "815148",
       "name": "Nestor German",
-      "outcome": "open",
+      "outcome": "resolved_by_consensus_move",
+      "resolved_date": "2026-11-09",
       "role": "pitcher",
       "side": "higher",
       "team": "BAL"
@@ -3456,6 +3460,19 @@
       "role": "hitter",
       "side": "higher",
       "team": "MIA"
+    },
+    {
+      "claim_consensus_rank": 250,
+      "claim_date": "2026-11-09",
+      "claim_divergence": 106,
+      "claim_valucast_rank": 144,
+      "identity_key": "800724_hitter",
+      "mlbam_id": "800724",
+      "name": "Eric Bitonti",
+      "outcome": "open",
+      "role": "hitter",
+      "side": "higher",
+      "team": "MIL"
     },
     {
       "age_days": 60,
@@ -7058,6 +7075,7 @@
       "team": "MIA"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 145,
       "claim_date": "2026-09-10",
       "claim_divergence": -25,
@@ -7065,12 +7083,14 @@
       "identity_key": "806077_hitter",
       "mlbam_id": "806077",
       "name": "Kendall George",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-09",
       "role": "hitter",
       "side": "lower",
       "team": "LAD"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 81,
       "claim_date": "2026-09-10",
       "claim_divergence": -28,
@@ -7078,7 +7098,8 @@
       "identity_key": "821100_hitter",
       "mlbam_id": "821100",
       "name": "Justin Gonzales",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-09",
       "role": "hitter",
       "side": "lower",
       "team": "BOS"
@@ -7506,7 +7527,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-08T12:22:25.876304+00:00",
+  "generated_at": "2026-11-09T12:26:23.526764+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7526,16 +7547,16 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 27,
-      "open": 27,
+      "expired_unresolved": 28,
+      "open": 26,
       "resolved_by_callup": 8,
-      "resolved_by_consensus_move": 45,
+      "resolved_by_consensus_move": 46,
       "retracted_by_model_move": 127,
-      "total": 234
+      "total": 235
     },
     "lower": {
-      "expired_unresolved": 59,
-      "open": 19,
+      "expired_unresolved": 61,
+      "open": 17,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
