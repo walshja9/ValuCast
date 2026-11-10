@@ -3047,6 +3047,7 @@
       "team": "STL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 205,
       "claim_date": "2026-09-11",
       "claim_divergence": 87,
@@ -3054,12 +3055,14 @@
       "identity_key": "694224_hitter",
       "mlbam_id": "694224",
       "name": "Gabriel Gonzalez",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-10",
       "role": "hitter",
       "side": "higher",
       "team": "MIN"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 58,
       "claim_date": "2026-09-11",
       "claim_divergence": 25,
@@ -3067,7 +3070,8 @@
       "identity_key": "702652_hitter",
       "mlbam_id": "702652",
       "name": "Andrew Fischer",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-10",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
@@ -3466,13 +3470,28 @@
       "claim_date": "2026-11-09",
       "claim_divergence": 106,
       "claim_valucast_rank": 144,
+      "consensus_move_spots": -34,
       "identity_key": "800724_hitter",
       "mlbam_id": "800724",
       "name": "Eric Bitonti",
-      "outcome": "open",
+      "outcome": "resolved_by_consensus_move",
+      "resolved_date": "2026-11-10",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
+    },
+    {
+      "claim_consensus_rank": 225,
+      "claim_date": "2026-11-10",
+      "claim_divergence": 119,
+      "claim_valucast_rank": 106,
+      "identity_key": "815148_pitcher",
+      "mlbam_id": "815148",
+      "name": "Nestor German",
+      "outcome": "open",
+      "role": "pitcher",
+      "side": "higher",
+      "team": "BAL"
     },
     {
       "age_days": 60,
@@ -7519,6 +7538,19 @@
       "role": "hitter",
       "side": "lower",
       "team": "BOS"
+    },
+    {
+      "claim_consensus_rank": 226,
+      "claim_date": "2026-11-10",
+      "claim_divergence": -54,
+      "claim_valucast_rank": 280,
+      "identity_key": "802411_pitcher",
+      "mlbam_id": "802411",
+      "name": "JT Quinn",
+      "outcome": "open",
+      "role": "pitcher",
+      "side": "lower",
+      "team": "BAL"
     }
   ],
   "dials": {
@@ -7527,7 +7559,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-09T12:26:23.526764+00:00",
+  "generated_at": "2026-11-10T12:27:44.207863+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7547,20 +7579,20 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 28,
-      "open": 26,
+      "expired_unresolved": 30,
+      "open": 24,
       "resolved_by_callup": 8,
-      "resolved_by_consensus_move": 46,
+      "resolved_by_consensus_move": 47,
       "retracted_by_model_move": 127,
-      "total": 235
+      "total": 236
     },
     "lower": {
       "expired_unresolved": 61,
-      "open": 17,
+      "open": 18,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
-      "total": 272
+      "total": 273
     }
   },
   "taxonomy": {
