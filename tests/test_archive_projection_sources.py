@@ -99,6 +99,14 @@ def test_thin_rows_drops_and_counts_unjoinable_and_zero_volume():
     assert set(result["rows"][0]["stats"]) <= {"PA", "AB", "H", "HR", "R", "RBI", "SB", "BB", "SO", "AVG", "OBP", "SLG", "OPS"}
 
 
+@pytest.mark.parametrize("stat", ("K", "ER", "H_ALLOWED"))
+def test_thin_rows_keeps_pitcher_component_counts(stat):
+    row = _hp_row(1, pool="starter", volume=100.0)
+    row["stats"][stat] = 12.34567
+    stats = _thin_rows([row])["rows"][0]["stats"]
+    assert stats[stat] == round(row["stats"][stat], 3)
+
+
 def test_build_payload_refuses_truncated_required_source():
     with pytest.raises(RuntimeError, match="truncated vintage"):
         build_archive_payload(
