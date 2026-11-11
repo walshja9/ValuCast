@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from math import sqrt
+from math import isfinite, sqrt
 from typing import Iterable, Mapping
 
 from .models import (
@@ -80,15 +80,7 @@ class ValuationEngine:
         for category in league.categories:
             eligible_players = [player for player in players if category.applies_to(player.pool)]
 
-            # Pre-compute ratio baseline once per category (avoids O(n²))
-            ratio_baseline = None
-            if category.is_ratio and category.baseline is None:
-                ratio_baseline = self._ratio_baseline(category, eligible_players)
-
-            impacts = {
-                player.id: self._category_impact(player, category, eligible_players, ratio_baseline)
-                for player in eligible_players
-            }
+            impacts = self._category_impacts(category, eligible_players)
 
             # Use fixed league baselines if provided, otherwise derive from pool.
             # league_baselines are in "raw stat space" — for non-ratio stats with
@@ -99,7 +91,7 @@ class ValuationEngine:
                 if not category.is_ratio:
                     mean = category.direction.sign * mean
             else:
-                mean, stddev = _mean_stddev(list(impacts.values()))
+                mean, stddev = _mean_stddev([v for v in impacts.values() if v is not None])
 
             for player in players:
                 raw_values[player.id][category.id] = (
@@ -107,7 +99,7 @@ class ValuationEngine:
                     if category.applies_to(player.pool)
                     else None
                 )
-                if not category.applies_to(player.pool) or stddev == 0:
+                if not category.applies_to(player.pool) or impacts.get(player.id) is None or stddev == 0:
                     z = 0.0
                 else:
                     z = (impacts[player.id] - mean) / stddev
@@ -137,16 +129,9 @@ class ValuationEngine:
         for category in league.categories:
             eligible = [p for p in players if category.applies_to(p.pool)]
 
-            ratio_baseline = None
-            if category.is_ratio and category.baseline is None:
-                ratio_baseline = self._ratio_baseline(category, eligible)
+            impacts = self._category_impacts(category, eligible)
 
-            impacts = {
-                p.id: self._category_impact(p, category, eligible, ratio_baseline)
-                for p in eligible
-            }
-
-            sorted_impacts = sorted(impacts.values(), reverse=True)
+            sorted_impacts = sorted((v for v in impacts.values() if v is not None), reverse=True)
             if len(sorted_impacts) >= 2:
                 gaps = [sorted_impacts[i] - sorted_impacts[i + 1] for i in range(len(sorted_impacts) - 1)]
                 sgp_denom = sum(gaps) / len(gaps) if gaps else 1.0
@@ -161,7 +146,7 @@ class ValuationEngine:
                     if category.applies_to(player.pool)
                     else None
                 )
-                if not category.applies_to(player.pool) or sgp_denom is None:
+                if not category.applies_to(player.pool) or impacts.get(player.id) is None or sgp_denom is None:
                     sgp_values[player.id][category.id] = 0.0
                 else:
                     sgp_values[player.id][category.id] = impacts[player.id] * category.weight / sgp_denom
@@ -178,16 +163,40 @@ class ValuationEngine:
         ]
         return results
 
+    def _category_impacts(
+        self, category: CategorySpec, pool: list[PlayerProjection],
+    ) -> dict[str, float | None]:
+        baseline = category.baseline
+        if category.is_ratio and baseline is None:
+            baseline = self._ratio_baseline(category, pool)
+        if _zero_min_count_ratio(category) and baseline is None:
+            # No observed denominator in this pool: no automatic reference.
+            return {player.id: None for player in pool}
+        return {player.id: self._category_impact(player, category, pool, baseline) for player in pool}
+
     def _category_impact(
         self,
         player: PlayerProjection,
         category: CategorySpec,
         pool: list[PlayerProjection],
         precomputed_baseline: float | None = None,
-    ) -> float:
+    ) -> float | None:
         if not category.is_ratio:
             raw = self._raw_category_value(player, category)
             return category.direction.sign * (raw if raw is not None else category.missing_value)
+
+        if _zero_min_count_ratio(category):
+            counts = _ratio_counts(player.stats, category.numerator_stats, category.denominator_stats)
+            if counts is None:
+                return None
+            baseline = category.baseline if category.baseline is not None else precomputed_baseline
+            if baseline is None:
+                baseline = self._ratio_baseline(category, pool)
+            if baseline is None:
+                return None
+            numerator, denominator = counts
+            impact = category.direction.sign * (numerator - baseline * denominator / category.ratio_multiplier)
+            return impact if isfinite(impact) else None
 
         denominator = _sum_stats(player.stats, category.denominator_stats)
         if denominator <= category.min_denominator:
@@ -203,9 +212,18 @@ class ValuationEngine:
 
         return category.direction.sign * (raw - baseline) * denominator / category.ratio_multiplier
 
-    def _ratio_baseline(self, category: CategorySpec, pool: list[PlayerProjection]) -> float:
+    def _ratio_baseline(self, category: CategorySpec, pool: list[PlayerProjection]) -> float | None:
         if category.baseline is not None:
             return category.baseline
+
+        if _zero_min_count_ratio(category):
+            counts = [_ratio_counts(p.stats, category.numerator_stats, category.denominator_stats) for p in pool]
+            numerator = sum(pair[0] for pair in counts if pair is not None)
+            denominator = sum(pair[1] for pair in counts if pair is not None)
+            if denominator == 0:
+                return None
+            baseline = numerator * category.ratio_multiplier / denominator
+            return baseline if isfinite(baseline) else None
 
         if category.numerator_stats:
             numerator = sum(_sum_stats(player.stats, category.numerator_stats) for player in pool)
@@ -235,6 +253,9 @@ class ValuationEngine:
         if not category.is_ratio:
             return player.stats.get(category.stat or "", category.missing_value)
 
+        if _zero_min_count_ratio(category):
+            return _count_ratio_value(player.stats, category.numerator_stats, category.denominator_stats, category.ratio_multiplier)
+
         denominator = _sum_stats(player.stats, category.denominator_stats)
         if denominator <= category.min_denominator:
             return None
@@ -247,6 +268,35 @@ class ValuationEngine:
             return player.stats.get(category.stat, category.missing_value)
 
         return None
+
+
+def _zero_min_count_ratio(category: CategorySpec) -> bool:
+    return bool(category.numerator_stats and category.denominator_stats and category.min_denominator == 0)
+
+
+def _ratio_counts(
+    stats: Mapping[str, float], numerator_keys: tuple[str, ...], denominator_keys: tuple[str, ...],
+) -> tuple[float, float] | None:
+    """Require observed finite counts; an absent count is not an observed zero."""
+    values = [stats.get(key) for key in numerator_keys + denominator_keys]
+    if any(not isinstance(value, (int, float)) or not isfinite(value) or value < 0 for value in values):
+        return None
+    numerator = sum(stats[key] for key in numerator_keys)
+    denominator = sum(stats[key] for key in denominator_keys)
+    return (numerator, denominator) if isfinite(numerator) and isfinite(denominator) else None
+
+
+def _count_ratio_value(stats, numerator_keys, denominator_keys, multiplier=1.0) -> float | None:
+    counts = _ratio_counts(stats, numerator_keys, denominator_keys)
+    if counts is None or counts[1] == 0:
+        return None
+    value = counts[0] * multiplier / counts[1]
+    return value if isfinite(value) else None
+
+
+def strikeout_walk_ratio(stats: Mapping[str, float]) -> float | None:
+    """Display K/BB from true counts; undefined ratios remain absent from views."""
+    return _count_ratio_value(stats, ("K",), ("BB",))
 
 
 def value_players(

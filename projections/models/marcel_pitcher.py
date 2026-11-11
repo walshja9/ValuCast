@@ -102,7 +102,7 @@ def project_sp_usage(prior_seasons: Sequence[dict], weights: Sequence[float]) ->
                           lambda s: float(s["IP"]) / s["GS"] if s.get("GS") else 0.0)
     qs_per_start = _wmean(prior_seasons, weights,
                           lambda s: float(s.get("QS", 0)) / s["GS"] if s.get("GS") else 0.0)
-    return {"GS": gs, "BF": gs * bf_per_start, "IP": gs * ip_per_start, "QS": gs * qs_per_start}
+    return {"GS": gs, "G": gs, "BF": gs * bf_per_start, "IP": gs * ip_per_start, "QS": gs * qs_per_start}
 
 
 def project_rp_usage(prior_seasons: Sequence[dict], weights: Sequence[float]) -> dict[str, float]:

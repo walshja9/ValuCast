@@ -63,10 +63,10 @@
                             {% set raw = result.raw_values.get(col.id) %}
                             {% set val = result.category_values.get(col.id, 0) %}
                         {% endif %}
-                        {% if raw is not none and ns.shown < 4 %}
+                        {% if category_applies(result, col.categories) and ns.shown < 4 %}
                             <span class="mobile-stat {{ 'val-pos' if display == 'values' and val > 0 else ('val-neg' if display == 'values' and val < 0 else '') }}">
                                 <span class="mobile-stat-label">{{ col.id }}</span>
-                                <span class="mobile-stat-value">{% if display == 'values' %}{{ "%.1f" | format(val) }}{% else %}{{ raw | format_stat(col.id) }}{% endif %}</span>
+                                <span class="mobile-stat-value">{% if display == 'values' %}{{ "%.1f" | format(val) }}{% elif raw is none %}&mdash;{% else %}{{ raw | format_stat(col.id) }}{% endif %}</span>
                             </span>
                             {% set ns.shown = ns.shown + 1 %}
                         {% endif %}
@@ -91,8 +91,9 @@
                 {% set raw = result.raw_values.get(col.id) %}
                 {% set val = result.category_values.get(col.id, 0) %}
             {% endif %}
-            <td class="col-cat {{ 'na' if raw is none else '' }}{{ 'val-pos' if display == 'values' and raw is not none and val > 0 else '' }}{{ 'val-neg' if display == 'values' and raw is not none and val < 0 else '' }}">
-                {% if raw is none %}&mdash;{% elif display == 'values' %}{{ "%.1f" | format(val) }}{% else %}{{ raw | format_stat(col.id) }}{% endif %}
+            {% set applicable = category_applies(result, col.categories) %}
+            <td class="col-cat {{ 'na' if not applicable or (display != 'values' and raw is none) else '' }}{{ 'val-pos' if display == 'values' and applicable and val > 0 else '' }}{{ 'val-neg' if display == 'values' and applicable and val < 0 else '' }}">
+                {% if not applicable %}&mdash;{% elif display == 'values' %}{{ "%.1f" | format(val) }}{% elif raw is none %}&mdash;{% else %}{{ raw | format_stat(col.id) }}{% endif %}
             </td>
             {% endfor %}
         </tr>

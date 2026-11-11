@@ -427,6 +427,19 @@ class TestVolumeMultiplierPools(unittest.TestCase):
         # and f(v) = 0 + mult*(v - 0) = mult*v, isolating the multiplier.
         return self._make_result(pool, positions, stats, total_value=0.0, pid="floor")
 
+    def test_known_pitcher_pool_overrides_fantasy_eligibility(self):
+        vm = VolumeMultiplier()
+        for pool, positions, expected in (
+            ("starter", ("RP",), (90 / 180) ** 0.75),
+            ("reliever", ("SP",), 1.0),
+            ("pitcher", ("RP",), 1.0),
+            ("pitcher", ("SP",), (90 / 180) ** 0.75),
+        ):
+            with self.subTest(pool=pool, positions=positions):
+                result = self._make_result(pool, positions, {"IP": 90.0})
+                self.assertAlmostEqual(vm._multiplier(result), expected)
+                self.assertEqual(result.player.positions, positions)
+
     def test_starter_pool_uses_sp_baseline(self):
         vm = VolumeMultiplier()
         result = self._make_result("starter", ("SP",), {"IP": 90.0})
