@@ -1,5 +1,7 @@
 # League-Aware Second Opinion V2 Implementation Plan
 
+> 2026-11-11: Teams now support 4–30. The 20-team maximum in the historical snippets below is superseded by `web/league_settings.py`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add an opt-in, manual league-context mode to The Second Opinion that adjusts every trade for league depth, applies scoring presets only where the served data supports them, and keeps legacy trade links unchanged.

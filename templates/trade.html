@@ -44,7 +44,7 @@
         {% if get_param %}<input type="hidden" name="get" value="{{ get_param }}">{% endif %}
         <label class="trade-setting">
             <span>Teams</span>
-            <input class="position-select" type="number" name="teams" min="4" max="20"
+            <input class="position-select" type="number" name="teams" min="{{ league_bounds.teams[0] }}" max="{{ league_bounds.teams[1] }}"
                    value="{{ league_context.teams }}">
         </label>
         <label class="trade-setting">

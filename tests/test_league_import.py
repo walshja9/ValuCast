@@ -9,6 +9,7 @@ import requests
 from web.league_import import (
     detect_platform, parse_fantrax, parse_espn, ImportError_, import_league, _fetch_json,
 )
+from web.league_settings import parse_league_settings
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -62,6 +63,24 @@ class TestParsers(unittest.TestCase):
 
 
 class TestImportLeague(unittest.TestCase):
+    @patch("web.league_import._fetch_json")
+    def test_30_team_import_survives_settings_merge(self, mock_fetch):
+        cases = (
+            ("https://www.fantrax.com/fantasy/league/abc/home",
+             {"teamInfo": {str(i): {} for i in range(30)}}),
+            ("https://fantasy.espn.com/baseball/league?leagueId=12345",
+             {"settings": {"size": 30}}),
+        )
+        for url, payload in cases:
+            with self.subTest(url=url):
+                mock_fetch.return_value = payload
+                partial, _ = import_league(url)
+                current = parse_league_settings({})
+                merged = dict(teams=current.teams, budget=current.budget,
+                              roster=current.roster, pslots=current.pslots)
+                merged.update(partial)
+                self.assertEqual(parse_league_settings(merged).teams, 30)
+
     def test_unsupported_url_raises(self):
         with self.assertRaises(ImportError_):
             import_league("https://example.com/nope")

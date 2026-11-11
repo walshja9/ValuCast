@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 import app as app_module
 from app import _compute_dynasty_dollars, app as flask_app
 from web.dynasty_models import DynastyRankingRow
-from web.league_settings import LeagueSettings
+from web.league_settings import LeagueSettings, parse_league_settings
 from web.public_snapshot_models import PublicSnapshotRow
 from werkzeug.datastructures import MultiDict
 
@@ -83,6 +83,15 @@ class TestDynastyDollars(unittest.TestCase):
         dollars = _compute_dynasty_dollars(self.rows, s)
         rostered = [dollars[f"p{i}"] for i in range(1, 7)]
         self.assertAlmostEqual(sum(rostered), 200.0, delta=0.5)
+
+    def test_parsed_30_team_settings_reach_dollars(self):
+        rows = [_row(i, 1000 - i) for i in range(1, 302)]
+        settings = parse_league_settings({"teams": "30", "roster": "10"})
+        dollars = _compute_dynasty_dollars(rows, settings)
+        self.assertEqual(settings.total_budget, 6000)
+        self.assertEqual(dollars["p300"], 1.0)
+        self.assertEqual(dollars["p301"], 0.0)
+        self.assertAlmostEqual(sum(dollars.values()), 6000.0, delta=15.0)
 
     def test_below_cutoff_is_zero(self):
         s = LeagueSettings(teams=2, budget=100, roster=3, pslots=0)
@@ -549,6 +558,12 @@ class TestLeagueImportRoute(unittest.TestCase):
         self.assertIn('hx-swap-oob="true"', body)  # notice lands in stable slot
         self.assertIn("league-setup-refresh", body)  # triggers board re-render
 
+    def test_import_30_teams_renders_shared_bound(self):
+        with patch("app.import_league", return_value=({"teams": 30}, "Imported.")):
+            response = self.client.get("/league-import?teams=12")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'name="teams" value="30" min="4" max="30"', response.data)
+
     def test_import_failure_keeps_knobs_and_notices(self):
         from web.league_import import ImportError_
         with patch("app.import_league", side_effect=ImportError_("This league is private — enter settings manually.")):
@@ -577,7 +592,7 @@ class TestLeagueImportRoute(unittest.TestCase):
         with patch("app.import_league", return_value=({"teams": 99, "roster": 200}, "Imported.")):
             r = self.client.get("/league-import?league_url=https://www.fantrax.com/fantasy/league/abc/home")
         body = r.data.decode("utf-8")
-        self.assertIn('name="teams" value="20"', body)   # clamped to max
+        self.assertIn('name="teams" value="30"', body)   # clamped to max
         self.assertIn('name="roster" value="50"', body)  # clamped to max
 
     def test_rankings_oob_panel_does_not_wipe_notice_slot(self):

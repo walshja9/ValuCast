@@ -34,7 +34,7 @@ No new architecture, fully stateless server.
 
 | Param | Range | Default |
 |---|---|---|
-| `teams` | 4–20 | 12 |
+| `teams` | 4–30 | 12 |
 | `budget` | $100–$1000 | $200 |
 | `roster` | 10–50 | 26 |
 | `pslots` | 0–20 | 5 |
