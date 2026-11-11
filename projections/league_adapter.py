@@ -143,6 +143,10 @@ def _available_categories(rows: list[dict]) -> set[str]:
 def _category_scoring_value(
     row: dict, role: str, category: str, raw_center: float
 ) -> float:
+    """Prospect PA/IP-weighted rate proxy, including K/BB.
+
+    This is distinct from the live MLB K - baseline * BB count impact.
+    """
     value = row["categories"][category]
     if category not in RATIO_CATEGORIES[role]:
         return value

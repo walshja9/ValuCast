@@ -117,7 +117,7 @@ class VolumeMultiplier:
 
     Full-time players (PA >= hitter_pa or IP >= sp/rp_ip) get 1.0.
     Partial-season players get a discount. Floor is 0.20.
-    RP detection: 'RP' in positions and 'SP' not in positions.
+    Known pitcher pools determine role; generic pitchers fall back to positions.
     """
 
     FLOOR = 0.20
@@ -140,7 +140,8 @@ class VolumeMultiplier:
             ip = player.stats.get("IP", 0.0)
             is_rp = (
                 player.pool is PlayerPool.RELIEVER
-                or ("RP" in player.positions and "SP" not in player.positions)
+                or (player.pool is PlayerPool.PITCHER
+                    and "RP" in player.positions and "SP" not in player.positions)
             )
             baseline = self.rp_ip if is_rp else self.sp_ip
             return self._compute(ip, baseline)

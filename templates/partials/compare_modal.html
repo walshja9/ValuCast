@@ -32,15 +32,15 @@
             {% for cat in active_categories %}
             {% set v1 = r1.category_values.get(cat.id, 0) %}
             {% set v2 = r2.category_values.get(cat.id, 0) %}
-            {% set r1_raw = r1.raw_values.get(cat.id) %}
-            {% set r2_raw = r2.raw_values.get(cat.id) %}
+            {% set r1_applies = category_applies(r1, [cat]) %}
+            {% set r2_applies = category_applies(r2, [cat]) %}
             <tr>
                 <td>{{ cat.label }}</td>
-                <td class="{{ 'na' if r1_raw is none else '' }}{{ 'val-pos' if r1_raw is not none and v1 > v2 else '' }}{{ 'val-neg' if r1_raw is not none and v1 < v2 else '' }}">
-                    {% if r1_raw is none %}&mdash;{% else %}{{ "%.2f" | format(v1) }}{% endif %}
+                <td class="{{ 'na' if not r1_applies else '' }}{{ 'val-pos' if r1_applies and v1 > v2 else '' }}{{ 'val-neg' if r1_applies and v1 < v2 else '' }}">
+                    {% if not r1_applies %}&mdash;{% else %}{{ "%.2f" | format(v1) }}{% endif %}
                 </td>
-                <td class="{{ 'na' if r2_raw is none else '' }}{{ 'val-pos' if r2_raw is not none and v2 > v1 else '' }}{{ 'val-neg' if r2_raw is not none and v2 < v1 else '' }}">
-                    {% if r2_raw is none %}&mdash;{% else %}{{ "%.2f" | format(v2) }}{% endif %}
+                <td class="{{ 'na' if not r2_applies else '' }}{{ 'val-pos' if r2_applies and v2 > v1 else '' }}{{ 'val-neg' if r2_applies and v2 < v1 else '' }}">
+                    {% if not r2_applies %}&mdash;{% else %}{{ "%.2f" | format(v2) }}{% endif %}
                 </td>
             </tr>
             {% endfor %}

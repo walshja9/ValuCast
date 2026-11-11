@@ -61,7 +61,8 @@ PITCHING_CATEGORIES: tuple[CategorySpec, ...] = (
         numerator_stats=("BB", "H_ALLOWED"), denominator_stats=("IP",),
         direction=Direction.LOWER_IS_BETTER, min_denominator=10.0,
     ),
-    CategorySpec(id="K_BB", label="K/BB", pool=PlayerPool.PITCHER, stat="K_BB"),
+    CategorySpec(id="K_BB", label="K/BB", pool=PlayerPool.PITCHER,
+                 numerator_stats=("K",), denominator_stats=("BB",)),
     CategorySpec(id="IP", label="Innings Pitched", pool=PlayerPool.PITCHER, stat="IP"),
     CategorySpec(
         id="K_9", label="K/9", pool=PlayerPool.PITCHER,

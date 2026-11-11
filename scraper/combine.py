@@ -3,9 +3,9 @@ from __future__ import annotations
 
 
 HITTER_COUNTING = ("PA", "AB", "H", "HR", "R", "RBI", "SB", "CS", "BB", "SO",
-                   "HBP", "SF", "1B", "2B", "3B", "G")
+                   "HBP", "SF", "1B", "2B", "3B", "G", "GDP", "SH", "IBB")
 PITCHER_COUNTING = ("IP", "ER", "BB", "H_ALLOWED", "K", "W", "L", "SV", "HLD",
-                    "GS", "G", "QS")
+                    "GS", "G", "QS", "HR", "R", "HBP", "BS", "TBF", "IBB")
 
 
 def _pool_family(pool: str) -> str:
