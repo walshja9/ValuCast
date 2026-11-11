@@ -3077,6 +3077,7 @@
       "team": "MIL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 80,
       "claim_date": "2026-09-12",
       "claim_divergence": 27,
@@ -3084,7 +3085,8 @@
       "identity_key": "702518_hitter",
       "mlbam_id": "702518",
       "name": "Jett Williams",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-11",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
@@ -7169,6 +7171,7 @@
       "team": "PHI"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 112,
       "claim_date": "2026-09-12",
       "claim_divergence": -188,
@@ -7176,7 +7179,8 @@
       "identity_key": "815617_hitter",
       "mlbam_id": "815617",
       "name": "Kayson Cunningham",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-11",
       "role": "hitter",
       "side": "lower",
       "team": "ARI"
@@ -7559,7 +7563,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-10T12:27:44.207863+00:00",
+  "generated_at": "2026-11-11T12:17:25.638835+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7579,16 +7583,16 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 30,
-      "open": 24,
+      "expired_unresolved": 31,
+      "open": 23,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 47,
       "retracted_by_model_move": 127,
       "total": 236
     },
     "lower": {
-      "expired_unresolved": 61,
-      "open": 18,
+      "expired_unresolved": 62,
+      "open": 17,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
