@@ -1,2 +1,7 @@
 plans/031-pitcher-strike-pct-gate.md text eol=lf
 plans/034-post-2026-prospect-challenger-epoch.md text eol=lf
+
+# Preserve the exact bytes declared by projection payload provenance.
+data/projections/current.json -text
+data/projections/ros.json -text
+data/actuals/current.json -text

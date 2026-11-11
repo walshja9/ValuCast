@@ -32,7 +32,10 @@ def fetch_projections(system: str, stats: str) -> list[dict]:
     url = f"{PROJECTION_URL}?type={system}&stats={stats}&pos=all&team=0&players=0&lg=all"
     req = Request(url, headers={"User-Agent": USER_AGENT})
     with _open_with_retry(req) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+        data = json.loads(resp.read().decode("utf-8"))
+    if not isinstance(data, list):
+        raise ValueError("FanGraphs projections payload must be a list")
+    return data
 
 
 def fetch_all(delay: float = 1.0, system: str = "steamerr") -> dict[str, list[dict]]:

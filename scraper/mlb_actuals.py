@@ -5,6 +5,7 @@ import json
 import os
 import time
 from datetime import date, datetime
+from urllib.parse import parse_qs, urlsplit
 from urllib.request import Request, urlopen
 
 from .season import context_season
@@ -197,10 +198,23 @@ def regular_season_games_final(start: str, end: str) -> int:
         f"&startDate={start}&endDate={end}"
     )
     data = _fetch_json(url)
-    return sum(
-        1 for day in data["dates"] for game in day.get("games", [])
-        if game.get("status", {}).get("abstractGameState") == "Final"
-    )
+    if not isinstance(data, dict) or not isinstance(data.get("dates"), list):
+        raise ValueError("MLB schedule payload must be a dict with a dates list")
+    final = 0
+    for day in data["dates"]:
+        if not isinstance(day, dict):
+            raise ValueError("MLB schedule day must be a dict")
+        games = day.get("games", [])
+        if not isinstance(games, list):
+            raise ValueError("MLB schedule games must be a list")
+        for game in games:
+            if not isinstance(game, dict) or not isinstance(game.get("status"), dict):
+                raise ValueError("MLB schedule game must be a dict with a status dict")
+            state = game["status"].get("abstractGameState")
+            if not isinstance(state, str) or not state.strip():
+                raise ValueError("MLB schedule abstractGameState must be a non-empty string")
+            final += state == "Final"
+    return final
 
 
 def fetch_game_logs(
@@ -214,7 +228,17 @@ def fetch_game_logs(
         f"stats=gameLog&group={group}&season={season}&gameType=R"
     )
     data = fetcher(url)
-    return (data.get("stats") or [{}])[0].get("splits", [])
+    source = f"MLB {group} game logs for {mlbam_id}"
+    if not isinstance(data, dict) or not isinstance(data.get("stats"), list):
+        raise ValueError(f"{source} payload must be a dict with a stats list")
+    if not data["stats"]:
+        return []
+    if not isinstance(data["stats"][0], dict):
+        raise ValueError(f"{source} stats[0] must be a dict")
+    splits = data["stats"][0].get("splits")
+    if not isinstance(splits, list):
+        raise ValueError(f"{source} splits must be a list")
+    return splits
 
 
 def _date_lte(value: str, as_of: str) -> bool:
@@ -274,9 +298,29 @@ def fetch_actuals(season: int | None = None) -> dict[str, list[dict]]:
     """
     season = season or _default_season()
     base = f"{MLB_API_BASE}/stats?stats=season&season={season}&sportId=1&limit=5000&playerPool=ALL"
-    hitters = _fetch_json(f"{base}&group=hitting")["stats"][0]["splits"]
-    pitchers = _fetch_json(f"{base}&group=pitching")["stats"][0]["splits"]
-    return {"hitters": hitters, "pitchers": pitchers}
+    result = {}
+    for key, group in (("hitters", "hitting"), ("pitchers", "pitching")):
+        url = f"{base}&group={group}"
+        data = _fetch_json(url)
+        source = f"MLB {group} actuals"
+        if not isinstance(data, dict) or not isinstance(data.get("stats"), list) or not data["stats"]:
+            raise ValueError(f"{source} payload must be a dict with a non-empty stats list")
+        block = data["stats"][0]
+        if not isinstance(block, dict):
+            raise ValueError(f"{source} stats[0] must be a dict")
+        splits = block.get("splits")
+        if not isinstance(splits, list):
+            raise ValueError(f"{source} splits must be a list")
+        totals = [value["totalSplits"] for value in (block, data) if "totalSplits" in value]
+        if totals:
+            if any(isinstance(total, bool) or total != len(splits) for total in totals):
+                raise ValueError(f"{source} totalSplits must equal the splits count")
+        else:
+            limit = int(parse_qs(urlsplit(url).query)["limit"][0])
+            if len(splits) == limit:
+                raise ValueError(f"{source} splits reached request limit {limit} without totalSplits")
+        result[key] = splits
+    return result
 
 
 def fetch_qs(pitchers: list[dict], season: int | None = None) -> dict[str, int]:

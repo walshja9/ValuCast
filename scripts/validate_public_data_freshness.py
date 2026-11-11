@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
-from datetime import date
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -129,6 +130,54 @@ def _within_allowed_age(actual: str, expected_date: str, max_age_days: int) -> b
     return 0 <= (expected_d - actual_d).days <= max_age_days
 
 
+def _validate_projection_payload_provenance(metadata: dict) -> list[str]:
+    if "payload_provenance" not in metadata:
+        # Keep unbound committed metadata passing CI; a follow-up PR removes this after the first daily refresh commits bound metadata.
+        return []
+    provenance = metadata["payload_provenance"]
+    if (
+        type(provenance) is not dict
+        or set(provenance) != {"generated_at", "current_sha256", "input_sha256"}
+        or type(provenance["input_sha256"]) is not dict
+        or set(provenance["input_sha256"]) != {"ros", "actuals"}
+    ):
+        return ["projection payload provenance schema is invalid"]
+
+    generated_at = provenance["generated_at"]
+    try:
+        if (
+            not isinstance(generated_at, str)
+            or datetime.fromisoformat(generated_at).utcoffset() != timedelta(0)
+        ):
+            return ["projection payload provenance generated_at must be UTC-aware"]
+    except ValueError:
+        return ["projection payload provenance generated_at must be UTC-aware"]
+
+    digests = {"current": provenance["current_sha256"], **provenance["input_sha256"]}
+    if not all(
+        type(digest) is str
+        and len(digest) == 64
+        and all(character in "0123456789abcdef" for character in digest)
+        for digest in digests.values()
+    ):
+        return ["projection payload provenance SHA-256 declarations are invalid"]
+
+    problems = []
+    for field, path in (
+        ("current", REDRAFT_CURRENT),
+        ("ros", REDRAFT_ROS),
+        ("actuals", ACTUALS),
+    ):
+        try:
+            observed = hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            problems.append(f"projection payload provenance {field} bytes are unreadable")
+            continue
+        if observed != digests[field]:
+            problems.append(f"projection payload provenance {field} SHA-256 mismatch")
+    return problems
+
+
 def validate_public_data(expected_date: str, max_age_days: int = 0) -> list[str]:
     problems: list[str] = []
 
@@ -206,6 +255,8 @@ def validate_public_data(expected_date: str, max_age_days: int = 0) -> list[str]
                     f"{_display_path(path)} {key} has {n} rows (< {floor}) -- "
                     "dated-fresh but semantically empty"
                 )
+        if path is REDRAFT_METADATA:
+            problems.extend(_validate_projection_payload_provenance(payload))
         # The actuals metadata re-stamps as_of=today daily, so a stale-season
         # scrape can pass the date gate while silently serving last year's stats.
         # Assert the recorded season matches the context season (env override lets
