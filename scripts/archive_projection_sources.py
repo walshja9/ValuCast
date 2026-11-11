@@ -34,7 +34,7 @@ CADENCE_DAYS = 7
 ARCHIVE_MIN_ROWS = 400
 
 HITTER_KEEP = ("PA", "AB", "H", "HR", "R", "RBI", "SB", "BB", "SO", "AVG", "OBP", "SLG", "OPS")
-PITCHER_KEEP = ("IP", "GS", "SO", "W", "L", "SV", "HLD", "QS", "ERA", "WHIP", "BB")
+PITCHER_KEEP = ("IP", "GS", "SO", "K", "W", "L", "SV", "HLD", "QS", "ER", "H_ALLOWED", "ERA", "WHIP", "BB")
 
 
 def _thin_rows(rows: list[dict]) -> dict:
