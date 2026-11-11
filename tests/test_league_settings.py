@@ -24,10 +24,15 @@ class TestParseLeagueSettings(unittest.TestCase):
 
     def test_clamps_out_of_range(self):
         s = parse_league_settings(FakeArgs(teams="99", budget="5", roster="2", pslots="999"))
-        self.assertEqual(s.teams, 20)    # max 20
+        self.assertEqual(s.teams, 30)    # max 30
         self.assertEqual(s.budget, 100)  # min 100
         self.assertEqual(s.roster, 10)   # min 10
         self.assertEqual(s.pslots, 20)   # max 20
+
+    def test_team_bounds(self):
+        for raw, expected in (("30", 30), ("31", 30), ("3", 4)):
+            with self.subTest(teams=raw):
+                self.assertEqual(parse_league_settings(FakeArgs(teams=raw)).teams, expected)
 
     def test_garbage_falls_back_to_defaults(self):
         s = parse_league_settings(FakeArgs(teams="abc", budget="", roster="12.5x", pslots=None))

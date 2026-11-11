@@ -15,7 +15,7 @@ DEFAULT_PSLOTS = 5
 
 # (min, max) clamps per spec.
 _BOUNDS = {
-    "teams": (4, 20),
+    "teams": (4, 30),
     "budget": (100, 1000),
     "roster": (10, 50),
     "pslots": (0, 20),
