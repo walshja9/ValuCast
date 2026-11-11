@@ -24,7 +24,7 @@ from flask import Flask, abort, render_template, request, make_response, jsonify
 
 from dataclasses import replace as dc_replace
 
-from league_values.engine import ValuationEngine
+from league_values.engine import ValuationEngine, strikeout_walk_ratio
 from league_values.post_processors import VolumeMultiplier
 from league_values.playing_time import filter_by_playing_time
 from league_values.models import PlayerPool, ValuationResult
@@ -236,6 +236,7 @@ _PNG_CACHE_PARAMS = frozenset({
 _POINT_STAT_IDS = frozenset(
     {c.id for c in (*HITTING_CATEGORIES, *PITCHING_CATEGORIES)}
     | {rule.stat for rules in POINTS_PRESETS.values() for rule in rules}
+    | {"BB_P"}
 )
 # w_<cat id> = category weight (_build_context weights[key[2:]]; split-RP looks
 #   the weight up by BASE id, so w_SP_K/w_RP_K variants never exist — only base
@@ -4214,6 +4215,21 @@ def _dynasty_projection_stat_read(row):
     return build_mlb_scouting_read(SimpleNamespace(role=role), None, stats)
 
 
+@app.template_global("category_applies")
+def _category_applies(result, categories):
+    """Keep sample-floor hiding; count ratios can contribute without a raw ratio."""
+    pools = result.player.metadata.get("merged_pools") or (result.player.pool,)
+    return any(
+        category.applies_to(pool)
+        and (result.raw_values.get(category.id) is not None
+             or (category.numerator_stats and category.denominator_stats and category.min_denominator == 0))
+        for category in categories for pool in pools
+    )
+
+
+app.add_template_global(strikeout_walk_ratio)
+
+
 def _dynasty_category_card_items(context):
     dyn_result = context.get("dyn_result")
     dyn_categories = context.get("dyn_categories") or []
@@ -4225,7 +4241,7 @@ def _dynasty_category_card_items(context):
     items = []
     for category in dyn_categories:
         raw = raw_values.get(category.id)
-        if raw is None:
+        if not _category_applies(dyn_result, (category,)):
             continue
         z = z_scores.get(category.id, 0)
         value = category_values.get(category.id, 0)
@@ -4633,7 +4649,8 @@ def _merge_two_way_players(results: list[ValuationResult]) -> list[ValuationResu
 
         merged_player = dc_replace(
             base.player, positions=tuple(all_positions),
-            metadata={**base.player.metadata, "two_way_merged": True},
+            metadata={**base.player.metadata, "two_way_merged": True,
+                      "merged_pools": tuple(dict.fromkeys(r.player.pool.value for r in group))},
         )
         merged_result = ValuationResult(
             player=merged_player,
@@ -4973,16 +4990,17 @@ def _build_context(args):
                         "id": base_id, "label": label,
                         "sp_id": f"SP_{base_id}", "rp_id": f"RP_{base_id}",
                         "split": True,
+                        "categories": tuple(c for c in active_categories if c.id in (f"SP_{base_id}", f"RP_{base_id}")),
                     })
             elif cat.id.startswith("RP_"):
                 pass  # Handled by SP_ entry
             else:
                 display_columns.append({
-                    "id": cat.id, "label": cat.label, "split": False,
+                    "id": cat.id, "label": cat.label, "split": False, "categories": (cat,),
                 })
     else:
         display_columns = [
-            {"id": cat.id, "label": cat.label, "split": False}
+            {"id": cat.id, "label": cat.label, "split": False, "categories": (cat,)}
             for cat in active_categories
         ]
 
@@ -5372,6 +5390,7 @@ def rankings():
         pool=ctx["pool"], position=ctx["position"], search=ctx["search"],
         rules_str=ctx["rules_str"], split_rp=ctx["split_rp"],
         weights=ctx["weights"] if ctx["weights"] else None,
+        pt_params=ctx["pt_params"] if ctx["pt_params"] else None,
     )
     extra = []
     if ctx.get("source") and ctx["source"] != "steamer":
@@ -11255,10 +11274,12 @@ def export_csv():
             else:
                 raw = result.raw_values.get(col["id"])
                 val = result.category_values.get(col["id"], 0)
-            if raw is None:
+            if not _category_applies(result, col["categories"]):
                 row.append("")
             elif export_display == "values":
                 row.append(round(val, 1))
+            elif raw is None:
+                row.append("")
             else:
                 row.append(format_stat(raw, col["id"]))
         writer.writerow(row)

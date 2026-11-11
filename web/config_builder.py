@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from urllib.parse import urlencode
 
-from league_values.models import LeagueConfig, ScoringMode, PointRule
+from league_values.models import LeagueConfig, ScoringMode, PointRule, PlayerPool
 
 from .category_registry import (
     DEFAULT_CATS,
@@ -46,9 +46,17 @@ def build_config(
 
     if scoring_mode is ScoringMode.POINTS:
         if pt_params:
-            point_rules = tuple(get_point_rules(
-                ",".join(f"{stat}:{pts}" for stat, pts in pt_params.items() if pts)
-            ))
+            pools = {rule.stat: rule.pool for rule in POINTS_PRESETS["default"]}
+            pools.update({cat.id: cat.pool for cat in get_categories(list(pt_params))})
+            pools["BB_P"] = PlayerPool.PITCHER
+            # Form controls are role-specific; legacy rules= keeps its all-pool contract.
+            point_rules = tuple(
+                dc_replace(rule, stat="BB" if rule.stat == "BB_P" else rule.stat,
+                           pool=pools.get(rule.stat, PlayerPool.ALL))
+                for rule in get_point_rules(
+                    ",".join(f"{stat}:{pts}" for stat, pts in pt_params.items())
+                )
+            )
         elif rules_str:
             point_rules = tuple(get_point_rules(rules_str))
         else:
@@ -108,6 +116,7 @@ def build_url_params(
     rules_str: str = "",
     split_rp: bool = False,
     weights: dict[str, float] | None = None,
+    pt_params: dict[str, float] | None = None,
 ) -> str:
     """Build URL query string from current state. Returns '' for defaults."""
     params: dict[str, str] = {}
@@ -131,6 +140,8 @@ def build_url_params(
     if mode == "points":
         if rules_str:
             params["rules"] = rules_str
+        if pt_params:
+            params.update({f"pt_{stat}": str(value) for stat, value in pt_params.items()})
     else:
         if cats and cats != DEFAULT_CATS:
             params["cats"] = ",".join(cats)

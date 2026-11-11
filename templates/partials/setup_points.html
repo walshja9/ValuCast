@@ -30,7 +30,7 @@
         <table class="points-table">
             <thead><tr><th>Stat</th><th>Points</th></tr></thead>
             <tbody>
-                {% for stat, label in [("IP","Innings"),("K","Strikeouts"),("W","Wins"),("SV","Saves"),("HLD","Holds"),("QS","Quality Starts"),("ER","Earned Runs"),("BB","Walks Allowed"),("H_ALLOWED","Hits Allowed")] %}
+                {% for stat, label in [("IP","Innings"),("K","Strikeouts"),("W","Wins"),("SV","Saves"),("HLD","Holds"),("QS","Quality Starts"),("ER","Earned Runs"),("BB_P","Walks Allowed"),("H_ALLOWED","Hits Allowed")] %}
                 <tr>
                     <td>{{ label }}</td>
                     <td><input type="number" name="pt_{{ stat }}" step="0.5"

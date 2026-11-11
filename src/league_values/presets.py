@@ -161,6 +161,10 @@ DD_7X7_ROSTER = RosterSettings(
 
 
 def dd_7x7() -> LeagueConfig:
+    """Legacy fixed-baseline preset; K/BB stays in raw-ratio units.
+
+    Live web presets use count-ratio impacts and are a different contract.
+    """
     return LeagueConfig(
         name="DD 7x7",
         scoring_mode=ScoringMode.CATEGORIES,
