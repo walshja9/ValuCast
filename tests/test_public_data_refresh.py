@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -344,6 +345,17 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
         paths[key].write_text('[{"name":"Test"}]', encoding="utf-8")
     paths["ACTUALS"].write_text(
         '[{"name":"Test","metadata":{"as_of":"2026-06-13"}}]', encoding="utf-8"
+    )
+    digest = lambda key: hashlib.sha256(paths[key].read_bytes()).hexdigest()
+    paths["REDRAFT_METADATA"].write_text(
+        json.dumps({
+            "as_of": "2026-06-13", "season": 2026,
+            "payload_provenance": {
+                "generated_at": "2026-06-13T00:00:00+00:00",
+                "current_sha256": digest("REDRAFT_CURRENT"),
+                "input_sha256": {"ros": digest("REDRAFT_ROS"), "actuals": digest("ACTUALS")},
+            },
+        }), encoding="utf-8"
     )
     monkeypatch.setattr(freshness, "ROOT", tmp_path)
     for key, path in paths.items():
