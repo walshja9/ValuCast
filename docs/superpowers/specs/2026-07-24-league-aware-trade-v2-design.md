@@ -47,7 +47,7 @@ Add a compact manual setup form to `/trade` with these query parameters:
 | Parameter | Values | Default |
 |---|---|---|
 | `league` | `1` enables V2 | absent |
-| `teams` | integer, clamped to 4–20 | 12 |
+| `teams` | integer, clamped to 4–30 | 12 |
 | `roster` | integer, clamped to 10–50 | 26 |
 | `pslots` | integer, clamped to 0–20 | 5 |
 | `preset` | existing `DYNASTY_VALUE_PRESETS` key or blank | blank |

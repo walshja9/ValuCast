@@ -2480,7 +2480,7 @@ class TestTradeAnalyzer(unittest.TestCase):
         ).data.decode()
 
         self.assertIn('name="league" value="1"', body)
-        self.assertRegex(body, r'name="teams"[^>]*value="20"')
+        self.assertRegex(body, r'name="teams"[^>]*max="30"[^>]*value="30"')
         self.assertRegex(body, r'name="roster"[^>]*value="10"')
         self.assertRegex(body, r'name="pslots"[^>]*value="20"')
         self.assertRegex(body, r'<option value="balanced"[^>]*selected')

@@ -302,8 +302,15 @@ function applyDynastyCategoryPreset(btn) {
             var applied = false;
             KEYS.forEach(function (k) {
                 var input = form.querySelector('[name="' + k + '"]');
-                if (input && saved[k] != null && String(saved[k]) !== input.value) {
-                    input.value = saved[k];
+                if (!input || saved[k] == null) return;
+                var value = saved[k];
+                if (k === 'teams') {
+                    if (typeof value !== 'number' && (typeof value !== 'string' || !/^[+-]?\d+$/.test(value.trim()))) return;
+                    if (!Number.isInteger(Number(value))) return;
+                    value = Math.max(Number(input.min), Math.min(Number(input.max), Number(value)));
+                }
+                if (String(value) !== input.value) {
+                    input.value = value;
                     applied = true;
                 }
             });

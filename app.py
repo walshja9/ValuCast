@@ -49,7 +49,7 @@ from web.config_builder import build_config, build_url_params, parse_list
 from web.public_snapshot_store import PublicSnapshotStore
 from web.site_metrics import SiteMetricsStore
 from web.valucast_buy_store import ValuCastBuyStore
-from web.league_settings import parse_league_settings
+from web.league_settings import _BOUNDS, parse_league_settings
 from web.league_import import import_league, ImportError_
 from web.season_outlook import (
     build_outlook_match_index,
@@ -5072,6 +5072,7 @@ def _watch_identity_for_row(row) -> str | None:
 
 
 app.jinja_env.globals.update(
+    league_bounds=_BOUNDS,
     offseason_hold_note=_offseason_hold_note,
     watch_identity_for_player=_watch_identity_for_player,
     watch_identity_for_row=_watch_identity_for_row,
@@ -5364,7 +5365,6 @@ def rankings():
             params["search"] = ctx["search"]
         if ctx.get("callups"):
             params["callups"] = ctx["callups"]
-        from web.league_settings import _BOUNDS
         for name in _BOUNDS:
             value = request.args.get(name)
             if value:

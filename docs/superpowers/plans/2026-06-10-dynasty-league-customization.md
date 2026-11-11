@@ -1,5 +1,7 @@
 # Dynasty League Customization Implementation Plan
 
+> 2026-11-11: Teams now support 4–30. The 20-team maximum in the historical snippets below is superseded by `web/league_settings.py`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let users tune the Dynasty board to their league (teams, budget, roster slots, prospect slots) with manual knobs plus a Fantrax/ESPN league-URL settings import, all stateless via form params + localStorage.
