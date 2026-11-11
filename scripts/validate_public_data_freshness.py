@@ -132,8 +132,7 @@ def _within_allowed_age(actual: str, expected_date: str, max_age_days: int) -> b
 
 def _validate_projection_payload_provenance(metadata: dict) -> list[str]:
     if "payload_provenance" not in metadata:
-        # Keep unbound committed metadata passing CI; a follow-up PR removes this after the first daily refresh commits bound metadata.
-        return []
+        return ["projection payload provenance is missing"]
     provenance = metadata["payload_provenance"]
     if (
         type(provenance) is not dict

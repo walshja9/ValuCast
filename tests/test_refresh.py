@@ -536,13 +536,13 @@ class TestPayloadProvenance(unittest.TestCase):
                     self._write_metadata(paths, metadata)
                     self._assert_binding_problem(self._problems(paths))
 
-    def test_freshness_keeps_absent_legacy_binding_compatible(self):
+    def test_freshness_blocks_absent_binding(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             _, paths = self._bundle(tmpdir)
             metadata = self._read_metadata(paths)
             metadata.pop("payload_provenance", None)
             self._write_metadata(paths, metadata)
-            self.assertEqual(self._problems(paths), [])
+            self._assert_binding_problem(self._problems(paths))
 
     def test_season_override_does_not_bypass_binding_validation(self):
         with tempfile.TemporaryDirectory() as tmpdir:
