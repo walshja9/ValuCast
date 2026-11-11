@@ -1564,8 +1564,7 @@ def _custom_dynasty_values(cats, pcats, teams, budget):
     """Feed-row id -> this-season auction dollars for a custom category tuple."""
     config = build_config(mode="categories", cats=list(cats), pcats=list(pcats))
     results = _redraft_value_players(_valuation_players(active_store=store), config)
-    metadata_pool = sorted(results, key=lambda r: r.total_value, reverse=True)[:200]
-    dollars = _compute_dollar_values(metadata_pool, num_teams=teams, budget=budget)
+    dollars = _compute_dollar_values(results, num_teams=teams, budget=budget)
     result_by_projection_id = {}
     for result in results:
         result_by_projection_id[result.player.id] = result
