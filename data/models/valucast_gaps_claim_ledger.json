@@ -3107,6 +3107,7 @@
       "team": "CLE"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 58,
       "claim_date": "2026-09-13",
       "claim_divergence": 28,
@@ -3114,7 +3115,8 @@
       "identity_key": "702652_hitter",
       "mlbam_id": "702652",
       "name": "Andrew Fischer",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-12",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
@@ -3487,13 +3489,28 @@
       "claim_date": "2026-11-10",
       "claim_divergence": 119,
       "claim_valucast_rank": 106,
+      "consensus_move_spots": -13,
       "identity_key": "815148_pitcher",
       "mlbam_id": "815148",
       "name": "Nestor German",
-      "outcome": "open",
+      "outcome": "resolved_by_consensus_move",
+      "resolved_date": "2026-11-12",
       "role": "pitcher",
       "side": "higher",
       "team": "BAL"
+    },
+    {
+      "claim_consensus_rank": 250,
+      "claim_date": "2026-11-12",
+      "claim_divergence": 106,
+      "claim_valucast_rank": 144,
+      "identity_key": "800724_hitter",
+      "mlbam_id": "800724",
+      "name": "Eric Bitonti",
+      "outcome": "open",
+      "role": "hitter",
+      "side": "higher",
+      "team": "MIL"
     },
     {
       "age_days": 60,
@@ -7563,7 +7580,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-11T12:17:25.638835+00:00",
+  "generated_at": "2026-11-12T12:29:38.846770+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7583,12 +7600,12 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 31,
-      "open": 23,
+      "expired_unresolved": 32,
+      "open": 22,
       "resolved_by_callup": 8,
-      "resolved_by_consensus_move": 47,
+      "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
-      "total": 236
+      "total": 237
     },
     "lower": {
       "expired_unresolved": 62,
