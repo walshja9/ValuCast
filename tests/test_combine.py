@@ -1,5 +1,7 @@
 import unittest
-from scraper.combine import combine_outlook, _pool_family
+from copy import deepcopy
+
+from scraper.combine import attach_actuals, combine_outlook, _pool_family
 
 
 class TestPoolFamily(unittest.TestCase):
@@ -177,3 +179,70 @@ class TestCombineOutlook(unittest.TestCase):
         out = combine_outlook(ros, actual)
         self.assertEqual(len(out), 1)
         self.assertEqual(out[0]["sources"], ["steamer"])
+
+
+class TestFinalPitcherRole(unittest.TestCase):
+    def test_roles_use_final_line_in_combine_and_preseason(self):
+        cases = (
+            (0, 60, "starter", "reliever", ["RP"]),
+            (33, 36, "reliever", "starter", ["SP"]),
+            (12, 37, "starter", "starter", ["SP", "RP"]),
+            (9, 9, "starter", "starter", ["SP"]),
+            (5, 10, "reliever", "starter", ["SP"]),
+            (10, 30, "reliever", "starter", ["SP", "RP"]),
+            (9, 20, "starter", "reliever", ["RP", "SP"]),
+            (4.999, 20, "starter", "reliever", ["RP"]),
+            (5, 20, "starter", "reliever", ["RP", "SP"]),
+            (12, 22, "starter", "starter", ["SP", "RP"]),
+            (12, 21.9999, "starter", "starter", ["SP"]),
+            (0, 0, "starter", "starter", ["SP"]),
+            (33, 0, "reliever", "reliever", ["RP", "SP"]),
+            (0, None, "starter", "starter", ["SP"]),
+            (0, None, "reliever", "reliever", ["RP"]),
+        )
+        for gs, g, incoming, pool, positions in cases:
+            stats = {"GS": gs, "SV": 30}
+            if g is not None:
+                stats["G"] = g
+            for path in ("matched", "ros_only", "no_mlbam_id", "preseason"):
+                with self.subTest(GS=gs, G=g, incoming=incoming, path=path):
+                    ros = {**ROS_PITCHER, "pool": incoming, "positions": ["SP"],
+                           "stats": stats, "metadata": {"mlbam_id": "669373"}}
+                    actual = {**ACTUAL_PITCHER, "stats": {}}
+                    if path == "matched" and g:
+                        ros["stats"] = {"GS": 0, "G": 1}
+                        actual["stats"] = {**stats, "G": g - 1}
+                    if path == "no_mlbam_id":
+                        ros["metadata"] = {}
+                    before = deepcopy((ros, actual))
+                    if path == "preseason":
+                        actual["stats"] = {"GS": 33, "G": 33}
+                        before = deepcopy((ros, actual))
+                        result = attach_actuals([ros], [actual])[0]
+                        self.assertEqual(result["stats"], stats)
+                    else:
+                        result = combine_outlook(
+                            [ros], [actual] if path == "matched" else [],
+                        )[0]
+                    self.assertEqual((result["pool"], result["positions"]),
+                                     (pool, positions))
+                    self.assertEqual((ros, actual), before)
+
+    def test_actuals_only_pitcher_keeps_labels(self):
+        actual = {**ACTUAL_PITCHER, "pool": "starter", "positions": ["SP"],
+                  "stats": {"GS": 0, "G": 60, "SV": 30}}
+        result = combine_outlook([], [actual])[0]
+        self.assertEqual((result["pool"], result["positions"]), ("starter", ["SP"]))
+        self.assertEqual(result["stats"], actual["stats"])
+
+    def test_two_way_hitter_is_untouched(self):
+        hitter = {**ROS_HITTER, "metadata": {"mlbam_id": "669373"}}
+        pitcher = {**ROS_PITCHER, "stats": {"GS": 0, "G": 60, "SV": 30}}
+        for build in (combine_outlook, attach_actuals):
+            with self.subTest(path=build.__name__):
+                hitter_only = build([hitter], [ACTUAL_PITCHER])[0]
+                result = build([hitter, pitcher], [ACTUAL_PITCHER])
+                self.assertEqual(result[0], hitter_only)
+                self.assertEqual((result[0]["pool"], result[0]["positions"]),
+                                 ("hitter", hitter["positions"]))
+                self.assertEqual(result[1]["pool"], "reliever")
