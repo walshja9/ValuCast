@@ -10,7 +10,7 @@
   },
   "contract_name": "ValuCast MLB Roster Status Contract",
   "contract_version": "0.1.0",
-  "generated_at": "2026-11-12",
+  "generated_at": "2026-11-13",
   "profiles": [
     {
       "active_mlb_roster": true,
@@ -679,6 +679,19 @@
       "active_mlb_roster": true,
       "mlbam_id": 669276,
       "name": "Dylan Lee",
+      "position": "P",
+      "position_name": "Pitcher",
+      "source": "official_mlb_statsapi_active_roster",
+      "status_code": "A",
+      "status_description": "Active",
+      "team_abbreviation": "ATL",
+      "team_id": 144,
+      "team_name": "Atlanta Braves"
+    },
+    {
+      "active_mlb_roster": true,
+      "mlbam_id": 623465,
+      "name": "Evan Phillips",
       "position": "P",
       "position_name": "Pitcher",
       "source": "official_mlb_statsapi_active_roster",
@@ -14327,7 +14340,7 @@
     "public_prospect_ranks_used": false
   },
   "validation": {
-    "active_roster_profile_count": 1100,
+    "active_roster_profile_count": 1101,
     "blockers": [],
     "duplicate_identity_count": 0,
     "ready_for_public_snapshot": true,

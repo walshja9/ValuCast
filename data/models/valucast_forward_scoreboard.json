@@ -38,7 +38,7 @@
     ],
     "status": "registered"
   },
-  "content_sha256": "9bf5c27aca0653536ee70b50a959ec2534c683cdc3b30d0cc973836ec16143cf",
+  "content_sha256": "0fea771a9eee69223626e07a67f6824949e4fdce2376e5f848914235e6cabc50",
   "dials": {
     "adverse_move_floor_spots": 10,
     "ci_percentile": 95,
@@ -50,14 +50,14 @@
     "buckets": {
       "adverse_at_expiry": 22,
       "adverse_before_retraction": 45,
-      "benign_expiry": 72,
+      "benign_expiry": 73,
       "callup_loss": 3,
       "callup_unscored": 0,
       "callup_win": 8,
       "clean_retraction": 232,
       "consensus_move_unscored": 0,
       "consensus_move_win": 89,
-      "open": 39,
+      "open": 41,
       "unclassified": 0
     },
     "by_side": {
@@ -71,13 +71,13 @@
         "clean_retraction": 103,
         "consensus_move_unscored": 0,
         "consensus_move_win": 48,
-        "open": 22,
+        "open": 24,
         "unclassified": 0
       },
       "lower": {
         "adverse_at_expiry": 17,
         "adverse_before_retraction": 21,
-        "benign_expiry": 45,
+        "benign_expiry": 46,
         "callup_loss": 3,
         "callup_unscored": 0,
         "callup_win": 0,
@@ -101,24 +101,24 @@
         "unclassified": 0
       }
     },
-    "excluded_from_pool": 343,
+    "excluded_from_pool": 346,
     "losses": 70,
-    "open": 39,
+    "open": 41,
     "pool_size": 167,
     "self_retraction_rate": {
-      "rate": 0.5431372549019607,
+      "rate": 0.5399610136452242,
       "retracted": 277,
-      "total": 510
+      "total": 513
     },
-    "total_claims": 510,
+    "total_claims": 513,
     "unscored_or_unclassified": 0,
     "wins": 97
   },
-  "generated_at": "2026-11-12T12:29:44.264785+00:00",
+  "generated_at": "2026-11-13T12:30:19.105212+00:00",
   "generated_by": "valucast",
   "independence_attestation": "ValuCast scores are computed without any consensus input; external source ranks are carried as context only and never feed the model. This independence is validator-enforced.",
   "ledger_ref": {
-    "generated_at": "2026-11-12T12:29:38.846770+00:00",
+    "generated_at": "2026-11-13T12:30:12.948615+00:00",
     "signal_version": "0.1.0"
   },
   "protocol_version": "030-v1",
