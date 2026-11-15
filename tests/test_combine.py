@@ -191,14 +191,20 @@ class TestFinalPitcherRole(unittest.TestCase):
             (5, 10, "reliever", "starter", ["SP"]),
             (10, 30, "reliever", "starter", ["SP", "RP"]),
             (9, 20, "starter", "reliever", ["RP", "SP"]),
-            (4.999, 20, "starter", "reliever", ["RP"]),
+            (2.999, 20, "starter", "reliever", ["RP"]),
+            (3, 20, "starter", "reliever", ["RP", "SP"]),
+            (4.999, 20, "starter", "reliever", ["RP", "SP"]),
             (5, 20, "starter", "reliever", ["RP", "SP"]),
             (12, 22, "starter", "starter", ["SP", "RP"]),
-            (12, 21.9999, "starter", "starter", ["SP"]),
-            (0, 0, "starter", "starter", ["SP"]),
+            (12, 20, "starter", "starter", ["SP", "RP"]),
+            (12, 19.9999, "starter", "starter", ["SP"]),
+            (0, 4.9, "starter", "starter", ["RP", "SP"]),
+            (4, 4.9, "reliever", "reliever", ["RP", "SP"]),
+            (0, 5, "starter", "reliever", ["RP"]),
+            (0, 0, "starter", "starter", ["RP", "SP"]),
             (33, 0, "reliever", "reliever", ["RP", "SP"]),
-            (0, None, "starter", "starter", ["SP"]),
-            (0, None, "reliever", "reliever", ["RP"]),
+            (0, None, "starter", "starter", ["RP", "SP"]),
+            (0, None, "reliever", "reliever", ["RP", "SP"]),
         )
         for gs, g, incoming, pool, positions in cases:
             stats = {"GS": gs, "SV": 30}
@@ -206,7 +212,8 @@ class TestFinalPitcherRole(unittest.TestCase):
                 stats["G"] = g
             for path in ("matched", "ros_only", "no_mlbam_id", "preseason"):
                 with self.subTest(GS=gs, G=g, incoming=incoming, path=path):
-                    ros = {**ROS_PITCHER, "pool": incoming, "positions": ["SP"],
+                    incoming_positions = ["RP", "SP"] if g is None or g < 5 else ["SP"]
+                    ros = {**ROS_PITCHER, "pool": incoming, "positions": incoming_positions,
                            "stats": stats, "metadata": {"mlbam_id": "669373"}}
                     actual = {**ACTUAL_PITCHER, "stats": {}}
                     if path == "matched" and g:

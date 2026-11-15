@@ -7,14 +7,16 @@ HITTER_COUNTING = ("PA", "AB", "H", "HR", "R", "RBI", "SB", "CS", "BB", "SO",
 PITCHER_COUNTING = ("IP", "ER", "BB", "H_ALLOWED", "K", "W", "L", "SV", "HLD",
                     "GS", "G", "QS", "HR", "R", "HBP", "BS", "TBF", "IBB")
 
-# Minimum share of appearances started for the starter pool.
+# Provisional default minimum share of appearances started for the starter pool.
 STARTER_MIN_START_SHARE = 0.5
-# Enough starts to keep swing men in the starter pool.
+# Provisional default starts to keep swing men in the starter pool.
 STARTER_MIN_STARTS = 10
-# Relief appearances needed to add RP eligibility to a starter.
-STARTER_MIN_RELIEF_APPEARANCES = 10
-# Starts needed to add SP eligibility to a reliever.
-RELIEVER_MIN_STARTS = 5
+# Provisional default relief appearances to add RP eligibility to a starter.
+STARTER_MIN_RELIEF_APPEARANCES = 8
+# Provisional default starts to add SP eligibility to a reliever.
+RELIEVER_MIN_STARTS = 3
+# Provisional default appearances before replacing incoming pitching labels.
+MIN_GAMES_TO_RELABEL = 5
 
 
 def _pool_family(pool: str) -> str:
@@ -34,10 +36,10 @@ def _with_pitcher_role(player: dict) -> dict:
         return player
     gs = _safe(player["stats"], "GS")
     g = _safe(player["stats"], "G")
-    pool = player["pool"]
-    if g > 0:
-        pool = ("starter" if gs / g >= STARTER_MIN_START_SHARE
-                or gs >= STARTER_MIN_STARTS else "reliever")
+    if g < MIN_GAMES_TO_RELABEL:
+        return player
+    pool = ("starter" if gs / g >= STARTER_MIN_START_SHARE
+            or gs >= STARTER_MIN_STARTS else "reliever")
     if pool == "starter":
         positions = ["SP"]
         if g - gs >= STARTER_MIN_RELIEF_APPEARANCES:
