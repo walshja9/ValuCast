@@ -3122,6 +3122,7 @@
       "team": "MIL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 79,
       "claim_date": "2026-09-16",
       "claim_divergence": 26,
@@ -3129,7 +3130,8 @@
       "identity_key": "702518_hitter",
       "mlbam_id": "702518",
       "name": "Jett Williams",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-15",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
@@ -3511,6 +3513,32 @@
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
+    },
+    {
+      "claim_consensus_rank": 293,
+      "claim_date": "2026-11-13",
+      "claim_divergence": 146,
+      "claim_valucast_rank": 147,
+      "identity_key": "800624_pitcher",
+      "mlbam_id": "800624",
+      "name": "Ben Jacobs",
+      "outcome": "open",
+      "role": "pitcher",
+      "side": "higher",
+      "team": "DET"
+    },
+    {
+      "claim_consensus_rank": 225,
+      "claim_date": "2026-11-13",
+      "claim_divergence": 119,
+      "claim_valucast_rank": 106,
+      "identity_key": "815148_pitcher",
+      "mlbam_id": "815148",
+      "name": "Nestor German",
+      "outcome": "open",
+      "role": "pitcher",
+      "side": "higher",
+      "team": "BAL"
     },
     {
       "age_days": 60,
@@ -7203,6 +7231,7 @@
       "team": "ARI"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 112,
       "claim_date": "2026-09-14",
       "claim_divergence": -187,
@@ -7210,7 +7239,8 @@
       "identity_key": "815617_hitter",
       "mlbam_id": "815617",
       "name": "Kayson Cunningham",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-13",
       "role": "hitter",
       "side": "lower",
       "team": "ARI"
@@ -7231,6 +7261,7 @@
       "team": "ATL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 226,
       "claim_date": "2026-09-16",
       "claim_divergence": -48,
@@ -7238,7 +7269,8 @@
       "identity_key": "802411_pitcher",
       "mlbam_id": "802411",
       "name": "JT Quinn",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-15",
       "role": "pitcher",
       "side": "lower",
       "team": "BAL"
@@ -7259,6 +7291,7 @@
       "team": "ATH"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 80,
       "claim_date": "2026-09-16",
       "claim_divergence": -26,
@@ -7266,7 +7299,8 @@
       "identity_key": "821100_hitter",
       "mlbam_id": "821100",
       "name": "Justin Gonzales",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-15",
       "role": "hitter",
       "side": "lower",
       "team": "BOS"
@@ -7572,6 +7606,19 @@
       "role": "pitcher",
       "side": "lower",
       "team": "BAL"
+    },
+    {
+      "claim_consensus_rank": 226,
+      "claim_date": "2026-11-13",
+      "claim_divergence": -54,
+      "claim_valucast_rank": 280,
+      "identity_key": "802411_pitcher",
+      "mlbam_id": "802411",
+      "name": "JT Quinn",
+      "outcome": "open",
+      "role": "pitcher",
+      "side": "lower",
+      "team": "BAL"
     }
   ],
   "dials": {
@@ -7580,7 +7627,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-12T12:29:38.846770+00:00",
+  "generated_at": "2026-11-15T12:18:32.925672+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7600,20 +7647,20 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 32,
-      "open": 22,
+      "expired_unresolved": 33,
+      "open": 23,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
-      "total": 237
+      "total": 239
     },
     "lower": {
-      "expired_unresolved": 62,
-      "open": 17,
+      "expired_unresolved": 65,
+      "open": 15,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
-      "total": 273
+      "total": 274
     }
   },
   "taxonomy": {
