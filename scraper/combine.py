@@ -7,6 +7,17 @@ HITTER_COUNTING = ("PA", "AB", "H", "HR", "R", "RBI", "SB", "CS", "BB", "SO",
 PITCHER_COUNTING = ("IP", "ER", "BB", "H_ALLOWED", "K", "W", "L", "SV", "HLD",
                     "GS", "G", "QS", "HR", "R", "HBP", "BS", "TBF", "IBB")
 
+# Provisional default minimum share of appearances started for the starter pool.
+STARTER_MIN_START_SHARE = 0.5
+# Provisional default starts to keep swing men in the starter pool.
+STARTER_MIN_STARTS = 10
+# Provisional default relief appearances to add RP eligibility to a starter.
+STARTER_MIN_RELIEF_APPEARANCES = 8
+# Provisional default starts to add SP eligibility to a reliever.
+RELIEVER_MIN_STARTS = 3
+# Provisional default appearances before replacing incoming pitching labels.
+MIN_GAMES_TO_RELABEL = 5
+
 
 def _pool_family(pool: str) -> str:
     """Map pool string to 'hitter' or 'pitcher'."""
@@ -17,6 +28,27 @@ def _pool_family(pool: str) -> str:
 
 def _safe(stats: dict, key: str) -> float:
     return float(stats.get(key, 0) or 0)
+
+
+def _with_pitcher_role(player: dict) -> dict:
+    """Derive pitching labels from the final outlook's opportunities."""
+    if player["pool"] == "hitter":
+        return player
+    gs = _safe(player["stats"], "GS")
+    g = _safe(player["stats"], "G")
+    if g < MIN_GAMES_TO_RELABEL:
+        return player
+    pool = ("starter" if gs / g >= STARTER_MIN_START_SHARE
+            or gs >= STARTER_MIN_STARTS else "reliever")
+    if pool == "starter":
+        positions = ["SP"]
+        if g - gs >= STARTER_MIN_RELIEF_APPEARANCES:
+            positions.append("RP")
+    else:
+        positions = ["RP"]
+        if gs >= RELIEVER_MIN_STARTS:
+            positions.append("SP")
+    return {**player, "pool": pool, "positions": positions}
 
 
 def _combine_hitter(ros: dict, actual: dict) -> dict:
@@ -88,7 +120,7 @@ def _combine_pitcher(ros: dict, actual: dict) -> dict:
     meta["stats_actual"] = actual["stats"]
     meta["stats_ros"] = ros["stats"]
 
-    return {
+    return _with_pitcher_role({
         "id": ros["id"],
         "name": ros["name"],
         "pool": ros["pool"],
@@ -98,7 +130,7 @@ def _combine_pitcher(ros: dict, actual: dict) -> dict:
                   for k_, v in combined_stats.items()},
         "metadata": meta,
         "sources": list(ros.get("sources", [])),
-    }
+    })
 
 
 def attach_actuals(ros_players: list[dict], actual_players: list[dict]) -> list[dict]:
@@ -125,7 +157,7 @@ def attach_actuals(ros_players: list[dict], actual_players: list[dict]) -> list[
                     meta["as_of"] = actual_meta["as_of"]
         ros_copy = dict(ros)
         ros_copy["metadata"] = meta
-        outlook.append(ros_copy)
+        outlook.append(_with_pitcher_role(ros_copy))
 
     return outlook
 
@@ -153,7 +185,7 @@ def combine_outlook(ros_players: list[dict], actual_players: list[dict]) -> list
             meta["has_ros"] = True
             ros_copy = dict(ros)
             ros_copy["metadata"] = meta
-            outlook.append(ros_copy)
+            outlook.append(_with_pitcher_role(ros_copy))
             continue
 
         key = (mlbam_id, _pool_family(ros["pool"]))
@@ -171,7 +203,7 @@ def combine_outlook(ros_players: list[dict], actual_players: list[dict]) -> list
             meta["has_ros"] = True
             ros_copy = dict(ros)
             ros_copy["metadata"] = meta
-            outlook.append(ros_copy)
+            outlook.append(_with_pitcher_role(ros_copy))
 
     for key, actual in actuals_by_key.items():
         if key not in matched_actual_keys:
