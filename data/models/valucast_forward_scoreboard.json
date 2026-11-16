@@ -1,7 +1,7 @@
 {
   "anticipation_score": {
     "ci_high": 7.0,
-    "ci_low": 0.0,
+    "ci_low": -1.0,
     "label": "leading, not yet significant",
     "median_lead_days": 3.0,
     "null": {
@@ -9,14 +9,14 @@
       "null_ci_low": -4.0,
       "null_median": 0.0
     },
-    "pool_size": 168,
+    "pool_size": 169,
     "provisional": false,
     "sign_test": {
       "basis": "exact_binomial_sign_test_p025_one_sided",
       "direction": "leading",
-      "n_nonzero": 168,
-      "negatives": 71,
-      "p_value": 0.02671620229064376,
+      "n_nonzero": 169,
+      "negatives": 72,
+      "p_value": 0.03227538017088799,
       "positives": 97,
       "significant": false,
       "zeros_excluded": 0
@@ -38,7 +38,7 @@
     ],
     "status": "registered"
   },
-  "content_sha256": "226e963b784309ff54388fd6bcaf165f67e15f697b712ae7a9b94e983cb9b787",
+  "content_sha256": "997213192a42298f38ce4f0827a898a26b2877365bd9aefd08590b5fadab7464",
   "dials": {
     "adverse_move_floor_spots": 10,
     "ci_percentile": 95,
@@ -48,7 +48,7 @@
   },
   "funnel": {
     "buckets": {
-      "adverse_at_expiry": 23,
+      "adverse_at_expiry": 24,
       "adverse_before_retraction": 45,
       "benign_expiry": 75,
       "callup_loss": 3,
@@ -57,12 +57,12 @@
       "clean_retraction": 232,
       "consensus_move_unscored": 0,
       "consensus_move_win": 89,
-      "open": 38,
+      "open": 37,
       "unclassified": 0
     },
     "by_side": {
       "higher": {
-        "adverse_at_expiry": 6,
+        "adverse_at_expiry": 7,
         "adverse_before_retraction": 24,
         "benign_expiry": 27,
         "callup_loss": 0,
@@ -71,7 +71,7 @@
         "clean_retraction": 103,
         "consensus_move_unscored": 0,
         "consensus_move_win": 48,
-        "open": 23,
+        "open": 22,
         "unclassified": 0
       },
       "lower": {
@@ -101,10 +101,10 @@
         "unclassified": 0
       }
     },
-    "excluded_from_pool": 345,
-    "losses": 71,
-    "open": 38,
-    "pool_size": 168,
+    "excluded_from_pool": 344,
+    "losses": 72,
+    "open": 37,
+    "pool_size": 169,
     "self_retraction_rate": {
       "rate": 0.5399610136452242,
       "retracted": 277,
@@ -114,11 +114,11 @@
     "unscored_or_unclassified": 0,
     "wins": 97
   },
-  "generated_at": "2026-11-15T12:18:44.401650+00:00",
+  "generated_at": "2026-11-16T12:16:58.474475+00:00",
   "generated_by": "valucast",
   "independence_attestation": "ValuCast scores are computed without any consensus input; external source ranks are carried as context only and never feed the model. This independence is validator-enforced.",
   "ledger_ref": {
-    "generated_at": "2026-11-15T12:18:32.925672+00:00",
+    "generated_at": "2026-11-16T12:16:48.933395+00:00",
     "signal_version": "0.1.0"
   },
   "protocol_version": "030-v1",

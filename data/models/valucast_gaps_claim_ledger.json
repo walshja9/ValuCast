@@ -3137,6 +3137,7 @@
       "team": "MIL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 290,
       "claim_date": "2026-09-17",
       "claim_divergence": 45,
@@ -3144,7 +3145,8 @@
       "identity_key": "702662_hitter",
       "mlbam_id": "702662",
       "name": "Dylan Dreiling",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-16",
       "role": "hitter",
       "side": "higher",
       "team": "TEX"
@@ -7627,7 +7629,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-15T12:18:32.925672+00:00",
+  "generated_at": "2026-11-16T12:16:48.933395+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7647,8 +7649,8 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 33,
-      "open": 23,
+      "expired_unresolved": 34,
+      "open": 22,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
