@@ -1,40 +1,57 @@
-name: Steamer feed check
+name: 2027 flip rehearsal (throwaway branch)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "10 12 * * *"
 
 permissions:
   contents: read
-  issues: write
+
+concurrency:
+  group: flip-2027-rehearsal-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  check:
+  rehearsal:
+    if: github.ref == 'refs/heads/rehearsal/flip-2027-20261116'
     runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      PYTHONPATH: "src:."
+      PYTHONDONTWRITEBYTECODE: "1"
+      REHEARSAL_OUT: ${{ runner.temp }}/flip-rehearsal-out
+      VALUCAST_SCOUTING_LLM: "0"
+      VALUCAST_BUYS_REVIEW_APPROVED: "1"
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
 
-      - name: Check full-season Steamer feed
-        id: feed
-        run: python scripts/check_steamer_season.py
-
-      - name: Open the season flip review issue
-        if: steps.feed.outputs.verdict == 'live'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Install dependencies quietly
         run: |
-          preseason=$(python -c "from scraper.season import is_preseason; print(is_preseason())")
-          if [ "$preseason" != "False" ]; then
-            exit 0
-          fi
-          title="Steamer 2027 looks live: review the season flip"
-          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
-          if [ -z "$issue" ]; then
-            gh issue create --title "$title" --body "The full-season Steamer feed includes at least 250 rows for 2025 draftees. Review the feed and TARGET_SEASON before flipping. Check: $RUN_URL"
-          fi
+          python -m pip install -r requirements.txt -e . pytest > "$RUNNER_TEMP/install.log" 2>&1
+
+      - name: Pin refresh date
+        run: echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+
+      - name: Run both passes and every inner stage
+        run: python scripts/rehearse_flip.py > "$RUNNER_TEMP/harness.log" 2>&1
+
+      - name: Upload only the reviewed public outputs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: flip-2027-rehearsal-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/flip-rehearsal-out/baseline_steps.csv
+            ${{ runner.temp }}/flip-rehearsal-out/candidate_steps.csv
+            ${{ runner.temp }}/flip-rehearsal-out/board_before.csv
+            ${{ runner.temp }}/flip-rehearsal-out/board_after.csv
+            ${{ runner.temp }}/flip-rehearsal-out/redraft_before.csv
+            ${{ runner.temp }}/flip-rehearsal-out/redraft_after.csv
+            ${{ runner.temp }}/flip-rehearsal-out/summary.md
+          if-no-files-found: error
+          retention-days: 3
