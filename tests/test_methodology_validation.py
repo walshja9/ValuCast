@@ -58,6 +58,21 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn("will not become the default", low)
         self.assertNotIn("external benchmark", low)
 
+    # The changelog says what a reader will notice, without announcing the season.
+    def test_changelog_records_age_basis_and_phase_wording(self):
+        glossary = json.loads(
+            (ROOT / "data" / "manual" / "valucast_glossary.json").read_text(encoding="utf-8")
+        )
+        entries = [c for c in glossary["changelog"] if c["date"] == "2026-11-17"]
+        self.assertEqual(len(entries), 1)
+        entry = entries[0]
+        self.assertIn(entry["title"], self.html)
+        self.assertIn("age on April 1 of the season being valued", entry["detail"])
+        self.assertIn("published projection data", entry["detail"])
+        for text in (entry["title"], entry["detail"]):
+            self.assertNotIn("2027", text)
+            self.assertNotIn("preseason", text.lower())
+
     # public page must not leak the internal own-xBA correlation figure
     def test_no_internal_corr_leak(self):
         self.assertNotIn("0.87", self.html)

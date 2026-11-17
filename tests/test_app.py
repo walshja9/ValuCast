@@ -3218,6 +3218,9 @@ class TestLlmsTxt(unittest.TestCase):
         # The pre-gate honesty rule travels with the citation guidance.
         self.assertIn("Do not state or estimate a success rate", body)
         self.assertIn("https://valucast.app/ledger", body)
+        # Static wording that stays true before and during a season.
+        self.assertIn("auction values for the season being projected", body)
+        self.assertNotIn("auction values for the current season", body)
         self.assertIn(
             "Age shown on the boards is the player's age on the board date; "
             "MLB dynasty values use age on April 1 of the season being valued.",

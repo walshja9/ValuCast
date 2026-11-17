@@ -182,6 +182,51 @@ def test_mlb_layer_records_explicit_projection_source():
     assert payload["players"][0]["stat_line"]["source"] == "valucast_hp_projection_run"
 
 
+def test_value_contract_text_follows_the_season_phase():
+    from unittest.mock import patch
+
+    import scraper.season as season
+
+    players = [_hitter(metadata={"age": 25}), _pitcher(metadata={"age": 28})]
+    identities = {"1": {"birth_date": "2001-01-01"}, "2": {"birth_date": "1998-01-01"}}
+    in_season = build_mlb_dynasty_layer(players, "2026-06-13", identities=identities)["value_contract"]
+    with patch.object(season, "TARGET_SEASON", 2027):
+        preseason = build_mlb_dynasty_layer(players, "2026-11-02", identities=identities)["value_contract"]
+
+    assert in_season["phase"] == "in_season"
+    assert preseason["phase"] == "preseason"
+    # Keys other code reads keep their names and values.
+    for key in ("value_kind", "horizon_years", "horizon_year_weights", "age_adjustment"):
+        assert preseason[key] == in_season[key]
+
+    # In season the text is what it always was.
+    assert in_season["projection_stability"] == (
+        "Blends current-season category value with the same player's ROS "
+        "true-talent annualized category value; extreme current-over-ROS outliers receive the "
+        "largest pullback before dynasty-horizon scaling."
+    )
+    assert in_season["true_talent_floor"] == (
+        "Established high-reliability MLB hitters and starters cannot fall below "
+        "85% of their annualized ROS true-talent category value."
+    )
+    assert in_season["horizon_production_score"].endswith("after ROS stability adjustment.")
+    assert in_season["age_source"] == (
+        "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID."
+    )
+
+    # Before the season the layer says what is not applied, and why.
+    stability = preseason["projection_stability"]
+    assert stability.startswith("Not applied before the season: no current-season results exist")
+    assert "current-line volatility discounts" in stability
+    floor = preseason["true_talent_floor"]
+    assert floor.startswith("Not applied before the season")
+    assert "track-record floor" in floor and "stays active" in floor
+    assert "after ROS stability adjustment" not in preseason["horizon_production_score"]
+    assert "no ROS stability adjustment" in preseason["horizon_production_score"]
+    assert preseason["age_source"].startswith("projections/data/identity.json birth_date")
+    assert "only" in preseason["age_source"] and "metadata" in preseason["age_source"]
+
+
 def test_mlb_layer_skips_missing_mlbam_and_records_blocker_context():
     payload = build_mlb_dynasty_layer(
         [
