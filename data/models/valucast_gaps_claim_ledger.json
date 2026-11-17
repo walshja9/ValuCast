@@ -3152,6 +3152,7 @@
       "team": "TEX"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 184,
       "claim_date": "2026-09-18",
       "claim_divergence": 48,
@@ -3159,12 +3160,14 @@
       "identity_key": "683352_pitcher",
       "mlbam_id": "683352",
       "name": "Mitch Bratt",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-17",
       "role": "pitcher",
       "side": "higher",
       "team": "ARI"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 148,
       "claim_date": "2026-09-18",
       "claim_divergence": 25,
@@ -3172,7 +3175,8 @@
       "identity_key": "815792_hitter",
       "mlbam_id": "815792",
       "name": "Chase Harlan",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-17",
       "role": "hitter",
       "side": "higher",
       "team": "LAD"
@@ -7629,7 +7633,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-16T12:16:48.933395+00:00",
+  "generated_at": "2026-11-17T12:24:22.537448+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7649,8 +7653,8 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 34,
-      "open": 22,
+      "expired_unresolved": 36,
+      "open": 20,
       "resolved_by_callup": 8,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
