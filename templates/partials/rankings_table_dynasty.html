@@ -51,7 +51,7 @@
             <th class="col-name sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(1)">Player</button></th>
             <th class="col-pos">Pos</th>
             <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
-            <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
+            <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" title="Age on the board date. MLB values use age on April 1 of the season being valued." onclick="sortTable(4)">Age</button></th>
             <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button> <a href="/glossary#dynasty-value" title="The format-specific 0-100 fantasy decision score.">?</a></th>
             {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none" title="Estimated arrival. A year is a per-player ETA when we have one; otherwise a level-based window (everyone at that level shares it), not a per-player forecast."><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button> <a href="/glossary#eta" title="How the displayed arrival estimate is chosen.">?</a></th>{% endif %}
             {% if mode == 'dd_dynasty' %}

@@ -137,6 +137,20 @@ class PublicSnapshotRow:
         return self.player_type == "prospect"
 
     @property
+    def valued_age(self) -> int | None:
+        """Age the MLB value formula used (age on April 1 of the season valued).
+
+        Read from the model age the snapshot already carries in context, and only
+        when it came from the identity birth date; prospects are not valued by it.
+        """
+        if self.player_type != "mlb" or not isinstance(self.context, dict):
+            return None
+        components = self.context.get("components")
+        if not isinstance(components, dict) or components.get("age_source") != "valucast_identity_birth_date":
+            return None
+        return self._coerce_int(self.context.get("model_age"))
+
+    @property
     def public_source_ranks(self) -> dict:
         return {
             source: rank

@@ -153,6 +153,23 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'not an apples-to-apples', body)
         self.assertNotIn(b'0.87', body)                          # no internal corr leak
 
+    AGE_BASIS = (b"Age shown is the player's age on the board date. "
+                 b"MLB dynasty values use age on April 1 of the season being valued.")
+
+    def test_dynasty_and_prospect_footers_state_the_age_basis(self):
+        for mode in ("dd_dynasty", "prospects"):
+            with self.subTest(mode=mode):
+                self.assertIn(self.AGE_BASIS, self.client.get(f"/?mode={mode}").data)
+        # Said once, on the dynasty/prospect footer: not on the redraft board.
+        self.assertNotIn(self.AGE_BASIS, self.client.get("/").data)
+
+    def test_methodology_states_the_dynasty_board_age_basis(self):
+        body = " ".join(self.client.get("/methodology").data.decode("utf-8").split())
+        self.assertIn("Age on the dynasty board.", body)
+        self.assertIn(self.AGE_BASIS.decode("utf-8"), body)
+        # Scoped to the dynasty board: the H+P pitching sentence is unchanged.
+        self.assertIn("the v1 pitching model has no aging curve", body)
+
     def test_methodology_footer_has_no_steamer_redraft_claim(self):
         r = self.client.get("/methodology")
         self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)

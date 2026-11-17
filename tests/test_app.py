@@ -187,6 +187,38 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
                 mlb_stats={"PA": 500},
             )
 
+    def render_snapshot_card(self, player_type="mlb", **context):
+        from flask import render_template
+        from web.public_snapshot_models import PublicSnapshotRow
+
+        row = PublicSnapshotRow(
+            id="valued-age-card", name="Valued Age Card", player_type=player_type,
+            positions=("OF",), team="TST", age=25, rank=1, value=50.0,
+            value_scale="0_100", value_source="test", confidence=None,
+            updated_at="2026-11-17", mlbam_id="999999", context=context,
+        )
+        with app.test_request_context("/player/valued-age-card"):
+            return render_template(
+                "partials/player_detail_dynasty.html", row=row, mlb_stats={"PA": 500},
+            )
+
+    def test_mlb_card_states_the_age_the_value_used(self):
+        carried = {"model_age": 26, "components": {"age_source": "valucast_identity_birth_date"}}
+        self.assertIn(
+            "Valued at age 26 (age on April 1 of the season being valued).",
+            self.render_snapshot_card(**carried),
+        )
+        # Omitted, never guessed, when the row does not carry the valued age.
+        for context in (
+            {},
+            {"model_age": 26},
+            {"model_age": 26, "components": {"age_source": "projection_metadata"}},
+        ):
+            with self.subTest(context=context):
+                self.assertNotIn("Valued at age", self.render_snapshot_card(**context))
+        # Prospects are not valued by this age.
+        self.assertNotIn("Valued at age", self.render_snapshot_card("prospect", **carried))
+
     def test_reading_guides_are_semantic(self):
         redraft = self.client.get(
             "/player/19755?mode=categories",
@@ -551,6 +583,32 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("text/csv", response.content_type)
         self.assertIn(b"Overall Dynasty Rank", response.data)
 
+    def test_dynasty_age_header_states_which_age_is_shown_and_valued(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        header = (
+            '<button type="button" class="sort-btn" '
+            'title="Age on the board date. MLB values use age on April 1 of the season being valued." '
+            'onclick="sortTable(4)">Age</button>'
+        )
+        for mode in ("dd_dynasty", "prospects"):
+            with self.subTest(mode=mode):
+                html = self.client.get(f"/rankings?mode={mode}").data.decode("utf-8")
+                self.assertIn(header, html)
+
+    def test_dynasty_compare_age_label_states_the_basis(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        ids = [row.id for row in dd_store.filter(pool="mlb")[:2]]
+        response = self.client.get(f"/compare?mode=dd_dynasty&p1={ids[0]}&p2={ids[1]}")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            '<td title="Age on the board date. MLB values use age on April 1 of the season being valued.">Age</td>',
+            response.data.decode("utf-8"),
+        )
+
     def test_dynasty_ignores_cats_params(self):
         """Custom category params should be ignored in dynasty mode."""
         from app import dd_store
@@ -764,6 +822,15 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("tooltip.replaceChildren", source)
         self.assertIn("nameEl.textContent = player.name", source)
         self.assertIn("metaEl.textContent =", source)
+
+    def test_value_map_caption_states_the_age_basis(self):
+        html = self.client.get("/map").data.decode("utf-8")
+        self.assertIn(
+            "<p>Age on the board date. MLB values use age on April 1 of the season being valued.</p>",
+            html,
+        )
+        # The axis label stays a plain 'Age' set through textContent.
+        self.assertIn("'text-anchor': 'middle' }, 'Age')", html)
 
     def test_buys_share_card_png_and_preview(self):
         # Held-path coverage: the "returns later this week" share card + placeholder
@@ -3151,6 +3218,11 @@ class TestLlmsTxt(unittest.TestCase):
         # The pre-gate honesty rule travels with the citation guidance.
         self.assertIn("Do not state or estimate a success rate", body)
         self.assertIn("https://valucast.app/ledger", body)
+        self.assertIn(
+            "Age shown on the boards is the player's age on the board date; "
+            "MLB dynasty values use age on April 1 of the season being valued.",
+            body,
+        )
 
 
 class TestConsensusLabelsAndYoungBadge(unittest.TestCase):
