@@ -81,13 +81,84 @@ def readiness_evidence(client):
     except Exception as exc:
         out["snapshot"] = type(exc).__name__
     try:
-        validation = load("data/models/valucast_mlb_dynasty_layer.json").get("validation") or {}
+        layer = load("data/models/valucast_mlb_dynasty_layer.json")
+        validation = layer.get("validation") or {}
         out["mlb_layer"] = {key: validation.get(key) for key in (
-            "ready_for_live_consumers", "missing_mlbam_count", "duplicate_identity_count",
+            "ready_for_live_consumers", "missing_mlbam_count", "missing_mlbam_blocking_count",
+            "missing_mlbam_excepted", "missing_mlbam_blocking", "unused_missing_mlbam_exceptions",
+            "missing_mlbam_exception_error", "duplicate_identity_count",
             "age_coverage_count", "age_coverage_rate", "player_count")}
         out["mlb_layer"]["blockers"] = _short(validation.get("blockers"))
+        out["mlb_layer"]["value_contract_phase"] = (_find_key(layer, "value_contract") or {}).get("phase")
     except Exception as exc:
         out["mlb_layer"] = type(exc).__name__
+    out["presentation"] = presentation_evidence(client)
+    return out
+
+
+def _find_key(node, key, depth=3):
+    """First value stored under `key` within a few levels of a JSON payload."""
+    if depth < 0 or not isinstance(node, dict):
+        return None
+    if key in node:
+        return node[key]
+    for value in node.values():
+        found = _find_key(value, key, depth - 1)
+        if found is not None:
+            return found
+    return None
+
+
+def _page_has(client, route, text, headers=None):
+    try:
+        return text in client.get(route, headers=headers or {}).get_data(as_text=True)
+    except Exception as exc:
+        return type(exc).__name__
+
+
+def presentation_evidence(client):
+    """Informational only, never gates ok: what the refreshed pages and records say."""
+    out = {
+        "dynasty_footer_age_basis_names_2027": _page_has(
+            client, "/?mode=dd_dynasty", "MLB dynasty values use age on April 1, 2027."),
+        "dynasty_footer_data_line_full_season": _page_has(
+            client, "/?mode=dd_dynasty", "Steamer 2027 full-season projections"),
+        "dynasty_footer_still_says_rest_of_season": _page_has(
+            client, "/?mode=dd_dynasty", "Steamer rest-of-season"),
+        "methodology_preseason_sentence": _page_has(
+            client, "/methodology",
+            "Before the season starts, the default board values Steamer full-season projections for 2027"),
+        "value_map_caption_names_2027": _page_has(client, "/map", "MLB values use age on April 1, 2027."),
+        "redraft_shows_season_final_notice": _page_has(client, "/", "season final."),
+        "redraft_shows_empty_feed_notice": _page_has(client, "/", "The latest projection feed was empty."),
+        "front_office_not_evaluated_label": _page_has(client, "/front-office", "not evaluated)"),
+    }
+    try:
+        header = client.get("/export?mode=dd_dynasty").get_data(as_text=True).splitlines()[0]
+        out["csv_last_column_is_valued_age"] = header.rstrip().endswith("Valued Age")
+    except Exception as exc:
+        out["csv_last_column_is_valued_age"] = type(exc).__name__
+    try:
+        rows = load("data/public/public_dynasty_snapshot.json").get("players") or []
+        row = next(item for item in rows if item.get("player_type") == "mlb"
+                   and (item.get("context") or {}).get("model_age") is not None)
+        html = client.get(f"/player/{row['id']}?mode=dd_dynasty",
+                          headers={"HX-Request": "true"}).get_data(as_text=True)
+        out["card_valued_age_line_names_2027"] = bool(
+            re.search(r"Valued at age \d+ \(age on April 1, 2027\)", html))
+    except Exception as exc:
+        out["card_valued_age_line_names_2027"] = type(exc).__name__
+    try:
+        checks = _find_key(load("data/models/valucast_quality_governor.json"), "checks") or []
+        check = next(item for item in checks if item.get("id") == "mlb_projection_stability_outliers")
+        metrics = check.get("metrics") or {}
+        out["stability_check"] = {
+            "status": check.get("status"), "evaluated": check.get("evaluated"),
+            "message": str(check.get("message"))[:200],
+            "eligible_count": metrics.get("eligible_count"),
+            "evaluated_count": metrics.get("evaluated_count")}
+    except Exception as exc:
+        out["stability_check"] = type(exc).__name__
     return out
 
 
