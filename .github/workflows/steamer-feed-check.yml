@@ -39,5 +39,21 @@ jobs:
           echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
           echo "REHEARSAL_OUT=$RUNNER_TEMP/flip-rehearsal-out" >> "$GITHUB_ENV"
 
-      - name: Probe one missing starter (flags and counts only)
-        run: python scripts/probe_greene.py
+      - name: Refresh feeds quietly with the flipped code
+        run: |
+          python -m scraper.refresh > "$RUNNER_TEMP/refresh.log" 2>&1 || { tail -3 "$RUNNER_TEMP/refresh.log"; exit 1; }
+
+      - name: Backfill identities exactly as the daily build does
+        run: python scripts/backfill_projection_identities.py
+
+      - name: Probe the preseason age path (counts in the log, names only in the report)
+        run: AGE_PROBE_OUT="$RUNNER_TEMP/age-probe" python scripts/probe_age_path.py
+
+      - name: Upload the short report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: age-path-${{ github.run_id }}
+          path: ${{ runner.temp }}/age-probe/age_path.md
+          if-no-files-found: error
+          retention-days: 1
