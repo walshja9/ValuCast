@@ -1,10 +1,32 @@
 import sys
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-from app import app, store
+from app import app, context_season, store
+
+
+@contextmanager
+def published_phase(phase, target):
+    """Serve pages as if the projection feed had been published with this phase and target season."""
+    with patch.object(store, "_projection_phase", phase),          patch.object(store, "_target_season", target):
+        yield
+
+
+def valued_age_years():
+    """(label, phase, target season, year the valued-age sentence must name).
+
+    The MLB dynasty value uses age on April 1 of ONE season: the target season before a
+    season starts, otherwise the context season. In season the expected year is computed
+    the way the page computes it, never typed in; the preseason target is the literal the
+    preseason tests patch in."""
+    context = context_season()
+    return (
+        ("in season", "in_season_outlook", context, context),
+        ("before a season", "preseason_full_season", 2027, 2027),
+    )
 
 
 class TestSourceSelection(unittest.TestCase):
@@ -153,22 +175,36 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'not an apples-to-apples', body)
         self.assertNotIn(b'0.87', body)                          # no internal corr leak
 
-    AGE_BASIS = (b"Age shown is the player's age on the board date. "
-                 b"MLB dynasty values use age on April 1 of the season being valued.")
+    @staticmethod
+    def age_basis(year):
+        return (f"Age shown is the player's age on the board date. "
+                f"MLB dynasty values use age on April 1, {year}.")
 
     def test_dynasty_and_prospect_footers_state_the_age_basis(self):
-        for mode in ("dd_dynasty", "prospects"):
-            with self.subTest(mode=mode):
-                self.assertIn(self.AGE_BASIS, self.client.get(f"/?mode={mode}").data)
-        # Said once, on the dynasty/prospect footer: not on the redraft board.
-        self.assertNotIn(self.AGE_BASIS, self.client.get("/").data)
+        for label, phase, target, year in valued_age_years():
+            with published_phase(phase, target):
+                for mode in ("dd_dynasty", "prospects"):
+                    with self.subTest(phase=label, mode=mode):
+                        body = self.client.get(f"/?mode={mode}").data.decode("utf-8")
+                        self.assertIn(self.age_basis(year), body)
+                        if year != context_season():
+                            # The target season wins before a season: never the context year.
+                            self.assertNotIn(self.age_basis(context_season()), body)
+                # Said once, on the dynasty/prospect footer: not on the redraft board.
+                with self.subTest(phase=label, mode="redraft"):
+                    self.assertNotIn(
+                        self.age_basis(year), self.client.get("/").data.decode("utf-8"))
 
     def test_methodology_states_the_dynasty_board_age_basis(self):
-        body = " ".join(self.client.get("/methodology").data.decode("utf-8").split())
-        self.assertIn("Age on the dynasty board.", body)
-        self.assertIn(self.AGE_BASIS.decode("utf-8"), body)
-        # Scoped to the dynasty board: the H+P pitching sentence is unchanged.
-        self.assertIn("the v1 pitching model has no aging curve", body)
+        for label, phase, target, year in valued_age_years():
+            with self.subTest(phase=label), published_phase(phase, target):
+                body = " ".join(self.client.get("/methodology").data.decode("utf-8").split())
+                self.assertIn("Age on the dynasty board.", body)
+                self.assertIn(self.age_basis(year), body)
+                if year != context_season():
+                    self.assertNotIn(self.age_basis(context_season()), body)
+                # Scoped to the dynasty board: the H+P pitching sentence is unchanged.
+                self.assertIn("the v1 pitching model has no aging curve", body)
 
     def test_methodology_footer_has_no_steamer_redraft_claim(self):
         r = self.client.get("/methodology")

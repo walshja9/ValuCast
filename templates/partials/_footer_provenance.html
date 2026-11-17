@@ -11,7 +11,7 @@
         {% elif methodology_page %}
         ValuCast methodology: how our projections are built and validated. The projection source for player values is selectable on the main board.
         {% elif mode == 'dd_dynasty' or mode == 'prospects' %}
-        Dynasty values blend current MLB value, age-adjusted future value, and prospect value. Age shown is the player's age on the board date. MLB dynasty values use age on April 1 of the season being valued.{% if mode == 'dd_dynasty' %} Tune dollars, tiers, and the cutoff to your league with the Customize panel.{% if dd_schema_version == '1.1' %} Category Fit re-ranks the visible pool by current-category context without changing ValuCast value.{% endif %}{% endif %}
+        Dynasty values blend current MLB value, age-adjusted future value, and prospect value. Age shown is the player's age on the board date. MLB dynasty values use age on April 1, {{ target_season if preseason else served_season }}.{% if mode == 'dd_dynasty' %} Tune dollars, tiers, and the cutoff to your league with the Customize panel.{% if dd_schema_version == '1.1' %} Category Fit re-ranks the visible pool by current-category context without changing ValuCast value.{% endif %}{% endif %}
         {% elif source == 'valucast' %}
         ValuCast H+P projection: hitters use Savant xBA/xSLG inputs; the pitching model is fully ValuCast-built, scored against your league's categories and weights.
         {% else %}

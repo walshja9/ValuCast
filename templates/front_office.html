@@ -117,7 +117,7 @@
                 <div>
                     {% set unevaluated = pillar.evidence.get("quality_governor_unevaluated_checks") or [] %}
                     {% if key == "quality_governor_all_checks_passed" and value and unevaluated %}
-                    <dt>Quality governor: all evaluated checks passed ({{ unevaluated | length }} not evaluated)</dt>
+                    <dt>Quality governor: all evaluated checks passed (at least {{ unevaluated | length }} not evaluated)</dt>
                     {% else %}
                     <dt>{{ evidence_labels.get(key, key | replace("_", " ") | title) }}</dt>
                     {% endif %}

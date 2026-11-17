@@ -327,7 +327,7 @@ def test_front_office_counts_unevaluated_governor_checks_without_changing_the_pa
 def test_front_office_evidence_label_names_unevaluated_checks():
     html = _render_front_office(_build_report(_unevaluated_governor()))
 
-    assert "Quality governor: all evaluated checks passed (1 not evaluated)" in html
+    assert "Quality governor: all evaluated checks passed (at least 1 not evaluated)" in html
     assert "Quality governor: all checks passed" not in html
 
 
