@@ -131,6 +131,32 @@ def test_zips_may_be_small_but_is_disclosed():
     assert payload["sources"]["zips"]["row_count"] == 0
 
 
+def test_archive_labels_in_house_season_without_claiming_raw_source_seasons(monkeypatch):
+    from scraper import season
+
+    monkeypatch.setattr(season, "TARGET_SEASON", 2027)
+    payload = build_archive_payload(
+        as_of="2026-11-16",
+        season=2026,
+        valucast_rows=[_hp_row(1)],
+        steamer_rows=[_hp_row(2)],
+        zips_rows=[],
+        min_rows=1,
+    )
+
+    assert payload["season"] == 2026
+    assert payload["in_house_season"] == 2026
+    assert payload["target_season"] == 2027
+    assert payload["season_note"] == "In-house line: 2026 season; not a 2027 comparison."
+    assert payload["sources"]["valucast_hp"]["projection_season"] == 2026
+    assert payload["sources"]["valucast_hp"]["projection_scope"] == "rest_of_season"
+    for source in ("steamer", "zips"):
+        assert payload["sources"][source]["projection_season"] is None
+        assert payload["sources"][source]["projection_scope"] == "unverified_raw_source"
+    assert payload["sources"]["valucast_hp"]["rows"] == _thin_rows([_hp_row(1)])["rows"]
+    assert payload["sources"]["steamer"]["rows"] == _thin_rows([_hp_row(2)])["rows"]
+
+
 def test_due_respects_weekly_cadence(tmp_path):
     archive_dir = tmp_path / "arch"
     assert _due(archive_dir, "2026-07-14") is True

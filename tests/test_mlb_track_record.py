@@ -134,7 +134,8 @@ def _pitcher_projection(mlbam_id="2", actual=None):
     }
 
 
-def test_track_record_builds_hitter_prior_current_and_floor():
+def test_track_record_builds_hitter_prior_current_and_floor(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     raw = _raw_history(
         hitting=[
             _hitting_split(2024, 620, 540, 150, 30, 2, 30, 70, sb=10, cs=2),
@@ -163,7 +164,8 @@ def test_track_record_builds_hitter_prior_current_and_floor():
     assert 55 < profile["track_record_floor_score"] < 63
 
 
-def test_track_record_builds_two_way_profiles_by_role():
+def test_track_record_builds_two_way_profiles_by_role(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     raw = _raw_history(
         hitting=[_hitting_split(2025, 500, 430, 120, 25, 3, 25, 60, sb=20, cs=5)],
         pitching=[_pitching_split(2025, "140.2", 48, 110, 40, 170)],
@@ -240,14 +242,19 @@ def test_run_mlb_track_record_writes_artifact_cache_and_archive(tmp_path):
     assert (archive_dir / "2026-06-13.json").exists()
 
 
-def test_run_mlb_track_record_can_limit_and_resume_fetches(tmp_path):
+@pytest.mark.parametrize("preseason", [False, True])
+def test_run_mlb_track_record_can_limit_and_resume_fetches(tmp_path, monkeypatch, preseason):
+    monkeypatch.setattr(
+        season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON + int(preseason)
+    )
     projection_path = tmp_path / "current.json"
     projection_path.write_text(
         json.dumps([_hitter_projection("40"), _hitter_projection("41")]),
         encoding="utf-8",
     )
+    generated_at = "2026-11-16T12:00:00+00:00" if preseason else "2026-06-13T12:00:00+00:00"
     (tmp_path / "metadata.json").write_text(
-        json.dumps({"as_of": "2026-06-13T12:00:00+00:00"}),
+        json.dumps({"as_of": generated_at}),
         encoding="utf-8",
     )
     cache_path = tmp_path / "cache.json"
@@ -425,6 +432,24 @@ def test_stale_cache_remains_available_without_refresh(kwargs):
         pytest.fail("disabled refresh must not fetch")
 
     assert _history_payloads(["1"], cache, season=2027, fetcher=fetcher, **kwargs) == ({"1": old}, [], 0)
+
+
+def test_shipped_preseason_counts_2026_as_prior_with_no_current_volume():
+    assert season_config.TARGET_SEASON == 2027
+    assert season_config.CONTEXT_SEASON == 2026
+    raw = _raw_history(hitting=[_hitting_split(2026, 300, 250, 75, 14, 1, 18, 42)])
+    payload = build_mlb_track_record(
+        [_hitter_projection("1")],
+        generated_at="2026-11-16T12:00:00Z",
+        cache={"players": {"1": {"raw": raw}}},
+        refresh_missing=False,
+    )
+    profile = payload["profiles"][0]
+    assert payload["season"] == 2027
+    assert profile["volume"]["prior_mlb"] == 300
+    assert profile["volume"]["career"] == 300
+    assert profile["volume"]["current_season"] == 0
+    assert profile["current_season"] == {}
 
 
 @pytest.mark.parametrize("explicit_season", [None, 2028])

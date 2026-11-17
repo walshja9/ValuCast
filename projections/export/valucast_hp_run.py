@@ -7,8 +7,17 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from scraper import season as season_config
+
 AS_OF_SEASON = 2026
 _PITCHER_POOLS = {"starter", "reliever", "pitcher"}
+
+
+def in_house_season_context() -> dict:
+    target = season_config.TARGET_SEASON
+    note = f"In-house line: {AS_OF_SEASON} season"
+    note += f"; not a {target} comparison." if AS_OF_SEASON != target else "."
+    return {"in_house_season": AS_OF_SEASON, "target_season": target, "season_note": note}
 
 
 def write_valucast_hp_run(

@@ -14,9 +14,9 @@ from scraper.refresh import refresh
 from web.projection_store import ProjectionStore
 
 
-def test_season_ships_in_season_and_can_be_patched():
-    assert getattr(season, "TARGET_SEASON", None) == 2026
-    assert season.is_preseason() is False
+def test_season_ships_preseason_and_can_be_patched():
+    assert getattr(season, "TARGET_SEASON", None) == 2027
+    assert season.is_preseason() is True
     with patch.object(season, "TARGET_SEASON", 2027):
         assert season.is_preseason() is True
         with patch.object(season, "CONTEXT_SEASON", 2027):

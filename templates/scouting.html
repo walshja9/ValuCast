@@ -147,6 +147,7 @@
             <article class="scouting-card">
                 {% set role_summary = (role_tracker.summary if role_tracker else {}) or {} %}
                 <h3>Playing-time / role tracker</h3>
+                <p class="scouting-card-note">{{ hp_season_context.season_note }}</p>
                 <dl>
                     <div><dt>Status</dt><dd>{{ "Live" if role_tracker and role_tracker.validation.ready_for_role_context else "Next build" }}</dd></div>
                     <div><dt>Profiles</dt><dd>{{ role_summary.profile_count or 0 }}</dd></div>

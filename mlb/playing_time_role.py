@@ -12,6 +12,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from projections.export.valucast_hp_run import in_house_season_context
+
 ROOT = Path(__file__).resolve().parents[1]
 PROJECTION_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
 ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
@@ -483,6 +485,7 @@ def build_playing_time_role_tracker(
         "artifact": ARTIFACT_NAME,
         "tracker_version": TRACKER_VERSION,
         "generated_at": generated_at,
+        **in_house_season_context(),
         "generated_by": "valucast",
         "source_policy": {
             "kind": "valucast_playing_time_role_tracker",
@@ -534,6 +537,9 @@ def archive_playing_time_role_tracker(
         "date": date_str,
         "tracker_version": payload["tracker_version"],
         "generated_at": payload["generated_at"],
+        "in_house_season": payload["in_house_season"],
+        "target_season": payload["target_season"],
+        "season_note": payload["season_note"],
         "profile_count": payload["validation"]["profile_count"],
         "summary": payload["summary"],
         "v2": payload.get("v2"),

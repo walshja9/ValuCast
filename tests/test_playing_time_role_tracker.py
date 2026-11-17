@@ -1,6 +1,7 @@
 import json
 
 from mlb.playing_time_role import build_playing_time_role_tracker
+from mlb.playing_time_role import archive_playing_time_role_tracker
 from mlb.playing_time_role import role_watch_rows
 from mlb.playing_time_role import run_playing_time_role_tracker
 from scripts.validate_playing_time_role_tracker import validate_playing_time_role_tracker
@@ -67,6 +68,26 @@ def test_playing_time_tracker_uses_mlbam_keyed_status_context():
     assert hitter["active_mlb_roster"] is True
     assert pitcher["projected_role"] == "rotation_workhorse"
     assert pitcher["active_injury_risk"] is True
+
+
+def test_tracker_and_archive_stamp_both_seasons_without_changing_profiles(monkeypatch, tmp_path):
+    from scraper import season
+
+    monkeypatch.setattr(season, "TARGET_SEASON", 2026)
+    baseline = build_playing_time_role_tracker(
+        projections=[_hitter(), _pitcher()], generated_at="2026-11-16T00:00:00+00:00",
+    )
+    monkeypatch.setattr(season, "TARGET_SEASON", 2027)
+    payload = build_playing_time_role_tracker(
+        projections=[_hitter(), _pitcher()], generated_at="2026-11-16T00:00:00+00:00",
+    )
+    assert payload["profiles"] == baseline["profiles"]
+    path, _ = archive_playing_time_role_tracker(payload, "2026-11-16", tmp_path)
+    archive = json.loads(path.read_text(encoding="utf-8"))
+    for artifact in (payload, archive):
+        assert artifact["in_house_season"] == 2026
+        assert artifact["target_season"] == 2027
+        assert artifact["season_note"] == "In-house line: 2026 season; not a 2027 comparison."
 
 
 def _reliever():
