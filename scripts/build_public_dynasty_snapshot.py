@@ -932,7 +932,11 @@ def _cross_universe_calibration_report(
         blockers.append("ValuCast MLB horizon is shorter than the compatibility gate.")
     if mlb_validation.get("duplicate_identity_count", 0) != 0:
         blockers.append("ValuCast MLB layer has duplicate MLBAM+role identities.")
-    if mlb_validation.get("missing_mlbam_count", 0) != 0:
+    # Reviewed, named exceptions are netted out by the layer; an older artifact
+    # without the blocking count falls back to the raw count (fails closed).
+    if mlb_validation.get(
+        "missing_mlbam_blocking_count", mlb_validation.get("missing_mlbam_count", 0)
+    ) != 0:
         blockers.append("ValuCast MLB layer has rows missing MLBAM identity.")
     if not mlb_validation.get("ranks_contiguous", False):
         blockers.append("ValuCast MLB layer ranks are not contiguous.")
