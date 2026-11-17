@@ -1,8 +1,14 @@
 """Tests for the shadow ValuCast MLB dynasty layer."""
 
+import json
+from datetime import datetime
+
+import pytest
+
 from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 from mlb.dynasty import (
     FUTURE_RELIABILITY_FLOOR,
+    MISSING_MLBAM_EXCEPTIONS_PATH,
     RELIEVER_DYNASTY_SCORE_CAP,
     VALUE_SOURCE,
     _future_reliability_factor,
@@ -10,6 +16,7 @@ from mlb.dynasty import (
     _limited_track_record_discount,
     _role_adjusted_score,
     build_mlb_dynasty_layer,
+    load_missing_mlbam_exceptions,
 )
 
 
@@ -241,6 +248,205 @@ def test_mlb_layer_skips_missing_mlbam_and_records_blocker_context():
     assert payload["validation"]["row_count"] == 1
     assert payload["validation"]["missing_mlbam_count"] == 1
     assert payload["players"][0]["mlbam_id"] == 1
+
+
+_EXCEPTION_ENTRY = {
+    "name": "Overseas Star",
+    "role": "hitter",
+    "reason": "Reviewed: signed from overseas, no MLBAM id assigned yet",
+    "added": "2026-11-17",
+}
+
+
+def _layer_with_exceptions(players, exceptions, error=None):
+    return build_mlb_dynasty_layer(
+        players,
+        "2026-06-13",
+        missing_mlbam_exceptions=exceptions,
+        missing_mlbam_exception_error=error,
+    )
+
+
+def test_mlb_layer_listed_missing_mlbam_stays_off_board_and_is_not_blocking():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "Overseas Star")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    validation = payload["validation"]
+    assert [row["mlbam_id"] for row in payload["players"]] == [1]
+    assert validation["row_count"] == 1
+    assert validation["missing_mlbam_count"] == 1
+    assert validation["missing_mlbam_blocking_count"] == 0
+    assert validation["missing_mlbam_blocking"] == []
+    assert validation["missing_mlbam_excepted"] == [
+        {
+            "id": "fg-9",
+            "name": "Overseas Star",
+            "role": "hitter",
+            "reason": _EXCEPTION_ENTRY["reason"],
+            "added": "2026-11-17",
+        }
+    ]
+    assert validation["unused_missing_mlbam_exceptions"] == []
+    assert validation["missing_mlbam_exception_error"] is None
+
+
+def test_mlb_layer_missing_mlbam_name_match_ignores_case_and_outer_whitespace():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "  OVERSEAS star ")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    assert payload["validation"]["missing_mlbam_blocking_count"] == 0
+    assert len(payload["validation"]["missing_mlbam_excepted"]) == 1
+
+
+def test_mlb_layer_unlisted_missing_mlbam_still_blocks_and_records_feed_id():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-7", "", "Someone Else")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    validation = payload["validation"]
+    assert validation["missing_mlbam_count"] == 1
+    assert validation["missing_mlbam_blocking_count"] == 1
+    assert validation["missing_mlbam_blocking"] == [
+        {"id": "fg-7", "name": "Someone Else", "role": "hitter"}
+    ]
+    assert validation["missing_mlbam_excepted"] == []
+    assert validation["unused_missing_mlbam_exceptions"] == [
+        {"id": "fg-9", "name": "Overseas Star"}
+    ]
+
+
+def test_mlb_layer_missing_mlbam_exception_does_not_match_on_name_and_role_alone():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-7", "", "Overseas Star")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    validation = payload["validation"]
+    assert validation["missing_mlbam_blocking_count"] == 1
+    assert validation["missing_mlbam_blocking"][0]["id"] == "fg-7"
+    assert validation["missing_mlbam_excepted"] == []
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        dict(_EXCEPTION_ENTRY, name="Different Name"),
+        dict(_EXCEPTION_ENTRY, role="pitcher"),
+    ],
+    ids=["name_differs", "role_differs"],
+)
+def test_mlb_layer_missing_mlbam_exception_needs_id_name_and_role_to_match(entry):
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "Overseas Star")],
+        {"fg-9": entry},
+    )
+
+    validation = payload["validation"]
+    assert validation["missing_mlbam_blocking_count"] == 1
+    assert validation["missing_mlbam_blocking"][0]["id"] == "fg-9"
+    assert validation["missing_mlbam_excepted"] == []
+    assert validation["unused_missing_mlbam_exceptions"] == [
+        {"id": "fg-9", "name": entry["name"]}
+    ]
+
+
+def test_mlb_layer_exception_for_player_with_mlbam_id_is_unused_and_changes_nothing():
+    players = [_hitter("fg-1", "1", "Overseas Star"), _pitcher()]
+    baseline = build_mlb_dynasty_layer(players, "2026-06-13")
+    payload = _layer_with_exceptions(players, {"fg-1": _EXCEPTION_ENTRY})
+
+    assert payload["validation"]["unused_missing_mlbam_exceptions"] == [
+        {"id": "fg-1", "name": "Overseas Star"}
+    ]
+    assert payload["validation"]["missing_mlbam_count"] == 0
+    assert payload["validation"]["missing_mlbam_blocking_count"] == 0
+    assert payload["players"] == baseline["players"]
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "{not json",
+        "[]",
+        '"text"',
+        json.dumps({"fg-9": "not an object"}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, role="catcher")}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, reason="")}),
+        json.dumps({"fg-9": {k: v for k, v in _EXCEPTION_ENTRY.items() if k != "name"}}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, added="2026-13-45")}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, added="2026-1-5")}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, added=20261117)}),
+        # One bad entry rejects the whole file, including the good entry.
+        json.dumps({"fg-9": _EXCEPTION_ENTRY, "fg-8": dict(_EXCEPTION_ENTRY, role="")}),
+    ],
+)
+def test_mlb_layer_invalid_exceptions_file_applies_nothing_and_records_error(
+    tmp_path, content
+):
+    path = tmp_path / "missing_mlbam_exceptions.json"
+    path.write_text(content, encoding="utf-8")
+
+    exceptions, error = load_missing_mlbam_exceptions(path)
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "Overseas Star")], exceptions, error
+    )
+
+    validation = payload["validation"]
+    assert exceptions == {}
+    assert error
+    assert validation["missing_mlbam_exception_error"] == error
+    assert validation["missing_mlbam_excepted"] == []
+    assert validation["missing_mlbam_count"] == 1
+    assert validation["missing_mlbam_blocking_count"] == validation["missing_mlbam_count"]
+
+
+def test_missing_mlbam_exceptions_file_absent_means_no_exceptions_and_no_error(tmp_path):
+    assert load_missing_mlbam_exceptions(tmp_path / "absent.json") == ({}, None)
+
+
+def test_missing_mlbam_exceptions_file_saved_with_a_byte_order_mark_is_read(tmp_path):
+    # Windows editors often add one; it must not turn a valid list into an error.
+    path = tmp_path / "missing_mlbam_exceptions.json"
+    path.write_text(json.dumps({"fg-9": _EXCEPTION_ENTRY}), encoding="utf-8-sig")
+
+    assert load_missing_mlbam_exceptions(path) == ({"fg-9": _EXCEPTION_ENTRY}, None)
+
+
+def test_mlb_layer_empty_exceptions_file_changes_nothing(tmp_path):
+    path = tmp_path / "missing_mlbam_exceptions.json"
+    path.write_text("{}\n", encoding="utf-8")
+    players = [_hitter(), _pitcher(), _hitter("missing", "", "No Id", pa=600)]
+
+    baseline = build_mlb_dynasty_layer(players, "2026-06-13")
+    exceptions, error = load_missing_mlbam_exceptions(path)
+    payload = _layer_with_exceptions(players, exceptions, error)
+
+    assert (exceptions, error) == ({}, None)
+    assert payload == baseline
+    assert payload["validation"]["missing_mlbam_count"] == 1
+    assert payload["validation"]["missing_mlbam_blocking_count"] == 1
+    assert payload["validation"]["missing_mlbam_blocking"] == [
+        {"id": "missing", "name": "No Id", "role": "hitter"}
+    ]
+    assert payload["validation"]["missing_mlbam_exception_error"] is None
+
+
+def test_committed_missing_mlbam_exceptions_file_is_well_formed():
+    entries = json.loads(MISSING_MLBAM_EXCEPTIONS_PATH.read_text(encoding="utf-8"))
+
+    assert isinstance(entries, dict)
+    for feed_id, entry in entries.items():
+        assert feed_id.strip()
+        assert entry["name"].strip()
+        assert entry["role"] in ("hitter", "pitcher")
+        assert entry["reason"].strip()
+        datetime.strptime(entry["added"], "%Y-%m-%d")
+    assert load_missing_mlbam_exceptions(MISSING_MLBAM_EXCEPTIONS_PATH) == (entries, None)
 
 
 def test_mlb_layer_dedupes_same_mlbam_role_to_best_projection():
