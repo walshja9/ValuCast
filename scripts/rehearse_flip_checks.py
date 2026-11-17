@@ -11,12 +11,16 @@ from pathlib import Path
 import re
 import subprocess
 import sys
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from unittest.mock import patch
+
+from scripts.rehearsal_errors import HarnessError, exception_evidence, process_evidence
 
 STAMP = {"in_house_season": 2026, "target_season": 2027,
          "season_note": "In-house line: 2026 season; not a 2027 comparison."}
 ROUTES = ("/health/ready", "/", "/?mode=dd_dynasty", "/export", "/methodology", "/role-watch")
+EXPECTED_STATUSES = {route: 200 for route in ROUTES}
+EXPECTED_STATUSES["/role-watch"] = "same as committed-state result"
 
 
 def stamp_evidence(payload):
@@ -48,12 +52,13 @@ def archive_stamp_state(current_bytes, committed_bytes):
     return {"stamp_check": "evaluated"}
 
 
-def startup(state):
+def startup(state, committed_routes=None):
     try:
         import app as application
     except Exception as exc:
-        return {"state": state, "ok": False, "routes": {
-            route: {"status": None, "error_type": type(exc).__name__} for route in ROUTES}}
+        return {"state": state, "ok": False, **exception_evidence(exc),
+                "expected_statuses": EXPECTED_STATUSES, "routes": {
+                    route: {"status": None, **exception_evidence(exc)} for route in ROUTES}}
     client = application.app.test_client()
     statuses = {}
     html = ""
@@ -64,9 +69,20 @@ def startup(state):
             if route == "/":
                 html = response.get_data(as_text=True)
         except Exception as exc:
-            statuses[route] = {"status": None, "error_type": type(exc).__name__}
-    result = {"state": state, "routes": statuses,
-              "ok": all(item["status"] == 200 for item in statuses.values())}
+            statuses[route] = {"status": None, **exception_evidence(exc)}
+    reference = statuses if state == "committed" else (committed_routes or {})
+    role_status = reference.get("/role-watch", {}).get("status")
+    for route, item in statuses.items():
+        item["expected_status"] = role_status if route == "/role-watch" else EXPECTED_STATUSES[route]
+    result = {"state": state, "routes": statuses, "expected_statuses": EXPECTED_STATUSES,
+              "notes": ["pre-existing: /role-watch 404 on committed data"] if role_status == 404 else [],
+              "ok": all(item["status"] is not None and item["status"] == item["expected_status"]
+                        for item in statuses.values())}
+    for item in statuses.values():
+        if "error_type" in item:
+            result.update({key: value for key, value in item.items()
+                           if key in ("error_type", "final_frame", "error_message")})
+            break
     if state == "refreshed":
         result["provenance"] = provenance_evidence(html, load("data/projections/metadata.json"))
         result["ok"] = result["ok"] and result["provenance"]["ok"]
@@ -82,7 +98,8 @@ def isolation():
         try:
             evidence = stamp_evidence(load(f"data/models/{name}.json"))
         except Exception as exc:
-            evidence = {"ok": False, "error_type": type(exc).__name__}
+            evidence = {"ok": False, **exception_evidence(exc)}
+            result.update(exception_evidence(exc))
         result["artifacts"][name] = evidence
         result["ok"] &= evidence["ok"]
     try:
@@ -91,6 +108,8 @@ def isolation():
         result["ok"] &= result["run_as_of_season"] == 2026
     except Exception as exc:
         result["manifest_error_type"] = type(exc).__name__
+        result["manifest_error"] = exception_evidence(exc)
+        result.update(exception_evidence(exc))
         result["ok"] = False
     as_of = str(load("data/projections/metadata.json")["as_of"])
     path = Path("data/prediction_archive/projection_source_ros") / f"{as_of}.json"
@@ -109,7 +128,7 @@ def isolation():
 
 
 def deny_write(*args, **kwargs):
-    raise AssertionError("Fault probe reached a write")
+    raise HarnessError("Fault probe reached a write")
 
 
 def fault():
@@ -121,7 +140,7 @@ def fault():
         deny_write()
     def actuals_guard(*args, **kwargs):
         result["actuals_reached"] += 1
-        raise AssertionError("Fault probe reached actuals")
+        raise HarnessError("Fault probe reached actuals")
     with patch.object(refresh, "fetch_all", return_value={"steamer_hitters": [], "steamer_pitchers": []}), \
          patch.object(refresh, "regular_season_games_final", return_value=0), \
          patch.object(refresh, "_write_json", side_effect=guard), \
@@ -131,8 +150,10 @@ def fault():
             refresh.refresh(metadata_path=metadata, delay=0)
         except RuntimeError as exc:
             result["target_mismatch"] = str(exc) == "Prior ROS target_season must match TARGET_SEASON"
+            if not result["target_mismatch"]:
+                result.update(exception_evidence(exc))
         except Exception as exc:
-            result["error_type"] = type(exc).__name__
+            result.update(exception_evidence(exc))
     result["ok"] = result["target_mismatch"] and result["writes_attempted"] == 0 and result["actuals_reached"] == 0
     return result
 
@@ -163,8 +184,11 @@ def feed():
                          capture_output=True, text=True, env=env)
     verdict = re.search(r"^verdict=(live|not_live|unknown)$", run.stdout, re.M)
     result["checker"] = {"exit_code": run.returncode,
+                         "script": "scripts/check_steamer_season.py",
                          "verdict": verdict.group(1) if verdict else None,
                          "counts": [int(value) for value in re.findall(r" rows: (\d+)$", run.stdout, re.M)]}
+    if run.returncode:
+        result["checker"].update(process_evidence(run.stdout + "\n" + run.stderr))
     result["ok"] = run.returncode == 0 and verdict is not None and all(pools.values())
     return result
 
@@ -182,12 +206,55 @@ def self_test():
     assert archive_stamp_state(b"old", b"old")["stamp_check"] == "not_evaluated"
     assert archive_stamp_state(b"new", b"old")["stamp_check"] == "evaluated"
     assert archive_stamp_state(b"new", None)["stamp_check"] == "evaluated"
+    def fake_isolation_load(path):
+        if str(path).endswith("valucast_mlb_projection_source_comparison.json"):
+            raise RuntimeError("private isolation rows")
+        if str(path).endswith("run_manifest.json"):
+            return {"as_of_season": 2026}
+        return {**STAMP, "as_of": "synthetic"}
+    with patch(__name__ + ".load", side_effect=fake_isolation_load), \
+         patch.object(Path, "exists", return_value=False), \
+         patch.dict(os.environ, {"REHEARSAL_COMMITTED_ROOT": "synthetic-committed"}):
+        failed_isolation = isolation()
+    assert not failed_isolation["ok"] and failed_isolation["error_type"] == "RuntimeError"
+    assert failed_isolation["final_frame"].endswith(":" + str(fake_isolation_load.__code__.co_firstlineno + 2))
+    assert "private isolation rows" not in json.dumps(failed_isolation)
+    assert failed_isolation["source_archive"]["stamp_check"] == "not_evaluated"
     assert globals()["refresh-counts".replace("-", "_")] is refresh_counts
     with patch.dict(sys.modules, {"app": None}):
         failed = startup("committed")
     assert not failed["ok"] and set(failed["routes"]) == set(ROUTES)
     assert all(item["status"] is None and item["error_type"] == "ModuleNotFoundError"
                for item in failed["routes"].values())
+    fake_app = ModuleType("app")
+    route_codes = {route: 200 for route in ROUTES}
+    route_codes["/role-watch"] = 404
+    fake_app.app = SimpleNamespace(test_client=lambda: SimpleNamespace(
+        get=lambda route: SimpleNamespace(status_code=route_codes[route],
+                                          get_data=lambda **kwargs: html)))
+    with patch.dict(sys.modules, {"app": fake_app}), patch(__name__ + ".load", return_value={"target_season": 2026}):
+        committed = startup("committed")
+        assert committed["ok"]
+        assert committed["notes"] == ["pre-existing: /role-watch 404 on committed data"]
+        assert committed["expected_statuses"]["/role-watch"] == "same as committed-state result"
+        with patch(__name__ + ".load", return_value=meta):
+            refreshed = startup("refreshed", committed["routes"])
+            assert refreshed["ok"] and refreshed["routes"]["/role-watch"]["expected_status"] == 404
+            assert not startup("refreshed")["ok"]
+            route_codes["/role-watch"] = 500
+            assert not startup("refreshed", committed["routes"])["ok"]
+            route_codes["/role-watch"] = 404
+            healthy_baseline = {route: {"status": 200} for route in ROUTES}
+            assert not startup("refreshed", healthy_baseline)["ok"]
+        route_codes["/methodology"] = 404
+        assert not startup("committed")["ok"]
+        def failed_route(route):
+            raise RuntimeError("private feed body")
+        fake_app.app = SimpleNamespace(test_client=lambda: SimpleNamespace(get=failed_route))
+        failed = startup("committed")
+        assert not failed["ok"] and failed["error_type"] == "RuntimeError"
+        assert failed["final_frame"].endswith(":" + str(failed_route.__code__.co_firstlineno + 1))
+        assert "private feed body" not in json.dumps(failed)
     fake_scraper = ModuleType("scraper")
     fake_season = ModuleType("scraper.season")
     fake_fangraphs = ModuleType("scraper.fangraphs")
@@ -209,7 +276,7 @@ def self_test():
         "Season": {"2027": 2}, "Year": {"2026": 1}}
     try:
         deny_write()
-    except AssertionError:
+    except HarnessError:
         pass
     else:
         raise AssertionError("write guard failed")
@@ -230,10 +297,32 @@ def main():
     sys.path.insert(0, str(Path.cwd() / "src"))
     with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
         try:
-            result = self_test() if args.self_test else (
-                startup(args.state) if args.command == "startup" else globals()[args.command.replace("-", "_")]())
+            if args.self_test:
+                result = self_test()
+            elif args.command == "startup":
+                reference = Path(os.environ["REHEARSAL_COMMITTED_STARTUP"])
+                if args.state == "refreshed" and not reference.is_file():
+                    raise HarnessError("Committed startup reference missing")
+                committed_routes = load(reference).get("routes", {}) if args.state == "refreshed" else None
+                result = startup(args.state, committed_routes)
+                if args.state == "committed":
+                    reference.write_text(json.dumps(result, sort_keys=True), encoding="utf-8")
+            else:
+                result = globals()[args.command.replace("-", "_")]()
+            if not result["ok"] and "error_type" not in result:
+                failures = {
+                    "startup": "Startup route status or projection provenance check failed",
+                    "isolation": "In-house season isolation check failed",
+                    "feed": "Full-season feed check failed",
+                    "fault": "Empty-feed fault isolation check failed",
+                    "refresh-counts": "Requested feed row check failed",
+                }
+                try:
+                    raise HarnessError(failures[args.command])
+                except HarnessError as exc:
+                    result.update(exception_evidence(exc))
         except Exception as exc:
-            result = {"ok": False, "error_type": type(exc).__name__}
+            result = {"ok": False, **exception_evidence(exc)}
     print(json.dumps(result, sort_keys=True))
     return 0 if result["ok"] else 1
 

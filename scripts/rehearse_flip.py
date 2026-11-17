@@ -18,6 +18,8 @@ import sys
 import time
 from pathlib import Path
 
+from scripts.rehearsal_errors import exception_evidence, process_evidence, public_file
+
 ARTIFACT_FILES = {
     "baseline_steps.csv", "candidate_steps.csv", "board_before.csv", "board_after.csv",
     "redraft_before.csv", "redraft_after.csv", "summary.md",
@@ -51,31 +53,74 @@ def last_error(text):
     return "[last line redacted; sha256=" + hashlib.sha256(lines[-1].encode()).hexdigest() + "]"
 
 
-def append_row(table, name, code, seconds, error=""):
+def append_row(table, name, code, seconds, error="", exception_class="", final_frame="", script=""):
     exists = table.exists()
     with table.open("a", encoding="utf-8", newline="") as handle:
         writer = csv.writer(handle)
         if not exists:
-            writer.writerow(("name", "exit_code", "seconds", "last_error_line"))
-        writer.writerow((name, code, round(seconds, 3), error))
+            writer.writerow(("name", "exit_code", "seconds", "last_error_line",
+                             "exception_class", "final_frame", "script"))
+        writer.writerow((name, code, round(seconds, 3), error, exception_class, final_frame, script))
 
 
-def run_step(name, command, root, env, table, private, timeout=None):
+def error_text(detail):
+    message = detail.get("error_message") if detail["error_type"] == "HarnessError" else None
+    return detail["error_type"] + ": " + (message or "[message redacted]")
+
+
+def failure_summary(out):
+    lines = ["## Failing steps", "",
+             "| Pass | Step | Script | Exception class | Final traceback frame | Error |",
+             "| --- | --- | --- | --- | --- | --- |"]
+    for label in ("baseline", "candidate"):
+        table = out / (label + "_steps.csv")
+        if not table.exists():
+            continue
+        with table.open(encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle):
+                if int(row["exit_code"]):
+                    cells = (label, row["name"], row.get("script") or "not available",
+                             row.get("exception_class") or "not available",
+                             row.get("final_frame") or "not available", row["last_error_line"])
+                    lines.append("| " + " | ".join(str(cell).replace("|", "\\|").replace("\n", " ")
+                                                   .replace("\r", " ") for cell in cells) + " |")
+    return "\n".join(lines) + "\n"
+
+
+def run_step(name, command, root, env, table, private, timeout=None, *, harness_check=False):
     started = time.monotonic()
     log = private / (hashlib.sha256(name.encode()).hexdigest() + ".log")
+    detail = {}
     with log.open("w", encoding="utf-8") as handle:
         try:
             done = subprocess.run(command, cwd=root, env=env, stdout=handle,
                                   stderr=subprocess.STDOUT, timeout=timeout, check=False)
             code = done.returncode
-        except subprocess.TimeoutExpired:
+        except subprocess.TimeoutExpired as exc:
             code = 124
+            detail = exception_evidence(exc)
             handle.write("\nTimeoutError: step exceeded deadline\n")
         except OSError as exc:
             code = 125
+            detail = exception_evidence(exc)
             handle.write("\n" + type(exc).__name__ + ": process could not start\n")
-    error = last_error(log.read_text(encoding="utf-8", errors="replace")) if code else ""
-    append_row(table, name, code, time.monotonic() - started, error)
+    output = log.read_text(encoding="utf-8", errors="replace") if code else ""
+    error = last_error(output) if code else ""
+    if code:
+        detail = detail or process_evidence(output)
+        if harness_check:
+            try:
+                probe = json.loads(output)
+                if "error_type" in probe:
+                    detail = probe
+                    error = error_text(probe)
+            except (ValueError, TypeError):
+                pass
+    script = public_file(str(command[1])) if len(command) > 1 else ""
+    if len(command) > 2 and command[1] == "-m":
+        script = "-m " + str(command[2])
+    append_row(table, name, code, time.monotonic() - started, error,
+               detail.get("error_type", ""), detail.get("final_frame", ""), script)
     # Public process output contains numbers only, never subprocess text.
     print(code, round(time.monotonic() - started, 3), flush=True)
     return code
@@ -154,6 +199,7 @@ def hosted(root):
     baseline = baseline_source(original)
     replay = Replay()
     env = {**os.environ, "REHEARSAL_PROXY": replay.base,
+           "REHEARSAL_COMMITTED_STARTUP": str(temp / "committed-startup.json"),
            "REHEARSAL_COMMITTED_ROOT": str(committed),
            "REHEARSAL_COMMITTED_METADATA": str(committed / "data/projections/metadata.json"),
            "PYTHONPATH": os.pathsep.join((str(root / "scripts/rehearsal_site"), str(root / "src"), str(root))),
@@ -165,7 +211,7 @@ def hosted(root):
 
     def check(label, mode, table):
         command = (sys.executable, str(root / "scripts/rehearse_flip_checks.py"), *mode)
-        code = run_step(label, command, root, env, table, temp)
+        code = run_step(label, command, root, env, table, temp, harness_check=True)
         log = temp / (hashlib.sha256(label.encode()).hexdigest() + ".log")
         # Probe commands emit sanitized JSON, not process logs or source rows.
         try:
@@ -173,6 +219,10 @@ def hosted(root):
         except (ValueError, OSError):
             detail = {"exit_code": code, "detail": "probe did not produce a complete result"}
         notes.append((label, detail))
+        checker = detail.get("checker", {})
+        if checker.get("exit_code"):
+            append_row(table, label + ": " + checker["script"], checker["exit_code"], 0,
+                       error_text(checker), checker["error_type"], checker["final_frame"], checker["script"])
         failures.append(code)
 
     try:
@@ -209,7 +259,9 @@ def hosted(root):
                 append_row(table, "export boards", 0, 0)
             except Exception as exc:
                 failures.append(1)
-                append_row(table, "export boards", 1, 0, type(exc).__name__ + ": [message redacted]")
+                detail = exception_evidence(exc)
+                append_row(table, "export boards", 1, 0, error_text(detail),
+                           detail["error_type"], detail["final_frame"], "scripts/summarize_rehearsal.py")
             if label == "candidate":
                 check("candidate refreshed startup", ("startup", "refreshed"), table)
                 check("candidate in-house isolation", ("isolation",), table)
@@ -228,13 +280,16 @@ def hosted(root):
         summary = "# Flip rehearsal\n\nBoard export failed; no board comparison is claimed.\n"
     summary += "\n## Checks\n\n"
     for label, detail in notes:
+        for note in detail.get("notes", []):
+            summary += note + "\n\n"
         summary += "### " + label + "\n\n```json\n" + json.dumps(detail, indent=2, sort_keys=True) + "\n```\n\n"
+    summary += failure_summary(out) + "\n"
     summary += "## Execution\n\n"
     summary += "- Baseline patches only TARGET_SEASON from 2027 to 2026; candidate code is unchanged.\n"
     summary += "- Each pass starts from this checkout's committed data, H+P runs and projection identity inputs.\n"
     summary += "- Real H+P build output is used by downstream build stages, then the committed 2026 run is restored before startup checks.\n"
     summary += "- LLM generation is disabled: no secrets are supplied. This is not paid scouting-generation evidence.\n"
-    summary += "- Error messages are redacted to exception class or last-line digest. Raw subprocess logs and feed bodies are not uploaded.\n"
+    summary += "- Repository subprocess messages are redacted; only harness-authored exception messages are shown. Failing steps include exception class, script and final traceback frame when available. Raw subprocess logs and feed bodies are not uploaded.\n"
     summary += "- External HTTP replay counts: " + json.dumps(counts, sort_keys=True) + ".\n"
     summary += "- Failed outer steps/checks: " + str(sum(bool(code) for code in failures)) + ". See step tables for every inner failure.\n"
     (out / "summary.md").write_text(summary, encoding="utf-8")
