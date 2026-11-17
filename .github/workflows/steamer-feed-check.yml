@@ -49,11 +49,16 @@ jobs:
       - name: Probe the preseason age path (counts in the log, names only in the report)
         run: AGE_PROBE_OUT="$RUNNER_TEMP/age-probe" python scripts/probe_age_path.py
 
+      - name: Leave one birth date out at a time (counts in the log, names only in the report)
+        run: AGE_PROBE_OUT="$RUNNER_TEMP/age-probe" python scripts/probe_age_neutral.py
+
       - name: Upload the short report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: age-path-${{ github.run_id }}
-          path: ${{ runner.temp }}/age-probe/age_path.md
+          path: |
+            ${{ runner.temp }}/age-probe/age_path.md
+            ${{ runner.temp }}/age-probe/age_neutral.csv
           if-no-files-found: error
           retention-days: 1
