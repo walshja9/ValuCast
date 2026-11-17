@@ -18,7 +18,6 @@ jobs:
     env:
       PYTHONPATH: "src:."
       PYTHONDONTWRITEBYTECODE: "1"
-      REHEARSAL_OUT: ${{ runner.temp }}/flip-rehearsal-out
       VALUCAST_SCOUTING_LLM: "0"
       VALUCAST_BUYS_REVIEW_APPROVED: "1"
     steps:
@@ -35,7 +34,9 @@ jobs:
           python -m pip install -r requirements.txt -e . pytest > "$RUNNER_TEMP/install.log" 2>&1
 
       - name: Pin refresh date
-        run: echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+        run: |
+          echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+          echo "REHEARSAL_OUT=$RUNNER_TEMP/flip-rehearsal-out" >> "$GITHUB_ENV"
 
       - name: Run both passes and every inner stage
         run: python scripts/rehearse_flip.py > "$RUNNER_TEMP/harness.log" 2>&1
