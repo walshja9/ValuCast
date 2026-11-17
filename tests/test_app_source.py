@@ -113,13 +113,26 @@ class TestSourceSelection(unittest.TestCase):
         self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
 
     def test_footer_steamer_board_unchanged(self):
-        with patch.object(store, "_ros_status", "fetched"):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             r = self.client.get("/")
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
         self.assertIn(
             b'all built in-house by ValuCast',
             r.data,
         )
+
+    def test_footer_steamer_board_preseason_names_the_target_season(self):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "preseason_full_season"), \
+             patch.object(store, "_target_season", 2027):
+            r = self.client.get("/")
+        self.assertIn(
+            b"Redraft values use Steamer 2027 full-season projections, "
+            b"scored against your league's categories and weights.",
+            r.data,
+        )
+        self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
 
     def test_caption_and_footer_refresh_oob_on_source_switch(self):
         # Both the caption and the footer live OUTSIDE #rankings-container, so an
@@ -131,7 +144,8 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'fully ValuCast-built', vc)               # footer OOB content
         self.assertIn(self.CAPTION_ANCHOR, vc)                   # caption OOB content
 
-        with patch.object(store, "_ros_status", "fetched"):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             st = self.client.get("/rankings").data
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
