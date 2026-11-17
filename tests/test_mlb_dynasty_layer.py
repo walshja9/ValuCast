@@ -1,8 +1,15 @@
 """Tests for the shadow ValuCast MLB dynasty layer."""
 
+import json
+from datetime import datetime
+
+import pytest
+
+import scraper.season as season_config
 from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 from mlb.dynasty import (
     FUTURE_RELIABILITY_FLOOR,
+    MISSING_MLBAM_EXCEPTIONS_PATH,
     RELIEVER_DYNASTY_SCORE_CAP,
     VALUE_SOURCE,
     _future_reliability_factor,
@@ -10,6 +17,7 @@ from mlb.dynasty import (
     _limited_track_record_discount,
     _role_adjusted_score,
     build_mlb_dynasty_layer,
+    load_missing_mlbam_exceptions,
 )
 
 
@@ -182,6 +190,53 @@ def test_mlb_layer_records_explicit_projection_source():
     assert payload["players"][0]["stat_line"]["source"] == "valucast_hp_projection_run"
 
 
+def test_value_contract_text_follows_the_season_phase():
+    from unittest.mock import patch
+
+    import scraper.season as season
+
+    players = [_hitter(metadata={"age": 25}), _pitcher(metadata={"age": 28})]
+    identities = {"1": {"birth_date": "2001-01-01"}, "2": {"birth_date": "1998-01-01"}}
+    # Pin both season constants so the test does not depend on the shipped values.
+    with patch.object(season, "CONTEXT_SEASON", 2026), patch.object(season, "TARGET_SEASON", 2026):
+        in_season = build_mlb_dynasty_layer(players, "2026-06-13", identities=identities)["value_contract"]
+    with patch.object(season, "CONTEXT_SEASON", 2026), patch.object(season, "TARGET_SEASON", 2027):
+        preseason = build_mlb_dynasty_layer(players, "2026-11-02", identities=identities)["value_contract"]
+
+    assert in_season["phase"] == "in_season"
+    assert preseason["phase"] == "preseason"
+    # Keys other code reads keep their names and values.
+    for key in ("value_kind", "horizon_years", "horizon_year_weights", "age_adjustment"):
+        assert preseason[key] == in_season[key]
+
+    # In season the text is what it always was.
+    assert in_season["projection_stability"] == (
+        "Blends current-season category value with the same player's ROS "
+        "true-talent annualized category value; extreme current-over-ROS outliers receive the "
+        "largest pullback before dynasty-horizon scaling."
+    )
+    assert in_season["true_talent_floor"] == (
+        "Established high-reliability MLB hitters and starters cannot fall below "
+        "85% of their annualized ROS true-talent category value."
+    )
+    assert in_season["horizon_production_score"].endswith("after ROS stability adjustment.")
+    assert in_season["age_source"] == (
+        "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID."
+    )
+
+    # Before the season the layer says what is not applied, and why.
+    stability = preseason["projection_stability"]
+    assert stability.startswith("Not applied before the season: no current-season results exist")
+    assert "current-line volatility discounts" in stability
+    floor = preseason["true_talent_floor"]
+    assert floor.startswith("Not applied before the season")
+    assert "track-record floor" in floor and "stays active" in floor
+    assert "after ROS stability adjustment" not in preseason["horizon_production_score"]
+    assert "no ROS stability adjustment" in preseason["horizon_production_score"]
+    assert preseason["age_source"].startswith("projections/data/identity.json birth_date")
+    assert "only" in preseason["age_source"] and "metadata" in preseason["age_source"]
+
+
 def test_mlb_layer_skips_missing_mlbam_and_records_blocker_context():
     payload = build_mlb_dynasty_layer(
         [
@@ -194,6 +249,205 @@ def test_mlb_layer_skips_missing_mlbam_and_records_blocker_context():
     assert payload["validation"]["row_count"] == 1
     assert payload["validation"]["missing_mlbam_count"] == 1
     assert payload["players"][0]["mlbam_id"] == 1
+
+
+_EXCEPTION_ENTRY = {
+    "name": "Overseas Star",
+    "role": "hitter",
+    "reason": "Reviewed: signed from overseas, no MLBAM id assigned yet",
+    "added": "2026-11-17",
+}
+
+
+def _layer_with_exceptions(players, exceptions, error=None):
+    return build_mlb_dynasty_layer(
+        players,
+        "2026-06-13",
+        missing_mlbam_exceptions=exceptions,
+        missing_mlbam_exception_error=error,
+    )
+
+
+def test_mlb_layer_listed_missing_mlbam_stays_off_board_and_is_not_blocking():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "Overseas Star")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    validation = payload["validation"]
+    assert [row["mlbam_id"] for row in payload["players"]] == [1]
+    assert validation["row_count"] == 1
+    assert validation["missing_mlbam_count"] == 1
+    assert validation["missing_mlbam_blocking_count"] == 0
+    assert validation["missing_mlbam_blocking"] == []
+    assert validation["missing_mlbam_excepted"] == [
+        {
+            "id": "fg-9",
+            "name": "Overseas Star",
+            "role": "hitter",
+            "reason": _EXCEPTION_ENTRY["reason"],
+            "added": "2026-11-17",
+        }
+    ]
+    assert validation["unused_missing_mlbam_exceptions"] == []
+    assert validation["missing_mlbam_exception_error"] is None
+
+
+def test_mlb_layer_missing_mlbam_name_match_ignores_case_and_outer_whitespace():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "  OVERSEAS star ")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    assert payload["validation"]["missing_mlbam_blocking_count"] == 0
+    assert len(payload["validation"]["missing_mlbam_excepted"]) == 1
+
+
+def test_mlb_layer_unlisted_missing_mlbam_still_blocks_and_records_feed_id():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-7", "", "Someone Else")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    validation = payload["validation"]
+    assert validation["missing_mlbam_count"] == 1
+    assert validation["missing_mlbam_blocking_count"] == 1
+    assert validation["missing_mlbam_blocking"] == [
+        {"id": "fg-7", "name": "Someone Else", "role": "hitter"}
+    ]
+    assert validation["missing_mlbam_excepted"] == []
+    assert validation["unused_missing_mlbam_exceptions"] == [
+        {"id": "fg-9", "name": "Overseas Star"}
+    ]
+
+
+def test_mlb_layer_missing_mlbam_exception_does_not_match_on_name_and_role_alone():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-7", "", "Overseas Star")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    validation = payload["validation"]
+    assert validation["missing_mlbam_blocking_count"] == 1
+    assert validation["missing_mlbam_blocking"][0]["id"] == "fg-7"
+    assert validation["missing_mlbam_excepted"] == []
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        dict(_EXCEPTION_ENTRY, name="Different Name"),
+        dict(_EXCEPTION_ENTRY, role="pitcher"),
+    ],
+    ids=["name_differs", "role_differs"],
+)
+def test_mlb_layer_missing_mlbam_exception_needs_id_name_and_role_to_match(entry):
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "Overseas Star")],
+        {"fg-9": entry},
+    )
+
+    validation = payload["validation"]
+    assert validation["missing_mlbam_blocking_count"] == 1
+    assert validation["missing_mlbam_blocking"][0]["id"] == "fg-9"
+    assert validation["missing_mlbam_excepted"] == []
+    assert validation["unused_missing_mlbam_exceptions"] == [
+        {"id": "fg-9", "name": entry["name"]}
+    ]
+
+
+def test_mlb_layer_exception_for_player_with_mlbam_id_is_unused_and_changes_nothing():
+    players = [_hitter("fg-1", "1", "Overseas Star"), _pitcher()]
+    baseline = build_mlb_dynasty_layer(players, "2026-06-13")
+    payload = _layer_with_exceptions(players, {"fg-1": _EXCEPTION_ENTRY})
+
+    assert payload["validation"]["unused_missing_mlbam_exceptions"] == [
+        {"id": "fg-1", "name": "Overseas Star"}
+    ]
+    assert payload["validation"]["missing_mlbam_count"] == 0
+    assert payload["validation"]["missing_mlbam_blocking_count"] == 0
+    assert payload["players"] == baseline["players"]
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "{not json",
+        "[]",
+        '"text"',
+        json.dumps({"fg-9": "not an object"}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, role="catcher")}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, reason="")}),
+        json.dumps({"fg-9": {k: v for k, v in _EXCEPTION_ENTRY.items() if k != "name"}}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, added="2026-13-45")}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, added="2026-1-5")}),
+        json.dumps({"fg-9": dict(_EXCEPTION_ENTRY, added=20261117)}),
+        # One bad entry rejects the whole file, including the good entry.
+        json.dumps({"fg-9": _EXCEPTION_ENTRY, "fg-8": dict(_EXCEPTION_ENTRY, role="")}),
+    ],
+)
+def test_mlb_layer_invalid_exceptions_file_applies_nothing_and_records_error(
+    tmp_path, content
+):
+    path = tmp_path / "missing_mlbam_exceptions.json"
+    path.write_text(content, encoding="utf-8")
+
+    exceptions, error = load_missing_mlbam_exceptions(path)
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-9", "", "Overseas Star")], exceptions, error
+    )
+
+    validation = payload["validation"]
+    assert exceptions == {}
+    assert error
+    assert validation["missing_mlbam_exception_error"] == error
+    assert validation["missing_mlbam_excepted"] == []
+    assert validation["missing_mlbam_count"] == 1
+    assert validation["missing_mlbam_blocking_count"] == validation["missing_mlbam_count"]
+
+
+def test_missing_mlbam_exceptions_file_absent_means_no_exceptions_and_no_error(tmp_path):
+    assert load_missing_mlbam_exceptions(tmp_path / "absent.json") == ({}, None)
+
+
+def test_missing_mlbam_exceptions_file_saved_with_a_byte_order_mark_is_read(tmp_path):
+    # Windows editors often add one; it must not turn a valid list into an error.
+    path = tmp_path / "missing_mlbam_exceptions.json"
+    path.write_text(json.dumps({"fg-9": _EXCEPTION_ENTRY}), encoding="utf-8-sig")
+
+    assert load_missing_mlbam_exceptions(path) == ({"fg-9": _EXCEPTION_ENTRY}, None)
+
+
+def test_mlb_layer_empty_exceptions_file_changes_nothing(tmp_path):
+    path = tmp_path / "missing_mlbam_exceptions.json"
+    path.write_text("{}\n", encoding="utf-8")
+    players = [_hitter(), _pitcher(), _hitter("missing", "", "No Id", pa=600)]
+
+    baseline = build_mlb_dynasty_layer(players, "2026-06-13")
+    exceptions, error = load_missing_mlbam_exceptions(path)
+    payload = _layer_with_exceptions(players, exceptions, error)
+
+    assert (exceptions, error) == ({}, None)
+    assert payload == baseline
+    assert payload["validation"]["missing_mlbam_count"] == 1
+    assert payload["validation"]["missing_mlbam_blocking_count"] == 1
+    assert payload["validation"]["missing_mlbam_blocking"] == [
+        {"id": "missing", "name": "No Id", "role": "hitter"}
+    ]
+    assert payload["validation"]["missing_mlbam_exception_error"] is None
+
+
+def test_committed_missing_mlbam_exceptions_file_is_well_formed():
+    entries = json.loads(MISSING_MLBAM_EXCEPTIONS_PATH.read_text(encoding="utf-8"))
+
+    assert isinstance(entries, dict)
+    for feed_id, entry in entries.items():
+        assert feed_id.strip()
+        assert entry["name"].strip()
+        assert entry["role"] in ("hitter", "pitcher")
+        assert entry["reason"].strip()
+        datetime.strptime(entry["added"], "%Y-%m-%d")
+    assert load_missing_mlbam_exceptions(MISSING_MLBAM_EXCEPTIONS_PATH) == (entries, None)
 
 
 def test_mlb_layer_dedupes_same_mlbam_role_to_best_projection():
@@ -212,7 +466,8 @@ def test_mlb_layer_dedupes_same_mlbam_role_to_best_projection():
     assert hitters[0]["stat_line"]["stats"]["PA"] == 650
 
 
-def test_mlb_layer_applies_age_from_valucast_identity_store():
+def test_mlb_layer_applies_age_from_valucast_identity_store(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     payload = build_mlb_dynasty_layer(
         [_hitter(mlbam_id="1")],
         "2026-06-13",
@@ -236,7 +491,8 @@ def test_mlb_layer_applies_age_from_valucast_identity_store():
     assert not any("age coverage" in blocker for blocker in payload["validation"]["blockers"])
 
 
-def test_mlb_layer_prefers_projection_metadata_age_over_identity():
+def test_mlb_layer_prefers_projection_metadata_age_over_identity(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     payload = build_mlb_dynasty_layer(
         [_hitter(mlbam_id="1", metadata={"age": 30})],
         "2026-06-13",
@@ -249,10 +505,17 @@ def test_mlb_layer_prefers_projection_metadata_age_over_identity():
     assert row["components"]["age_adjustment"] == 0.97
 
 
-def test_mlb_layer_horizon_declines_for_older_player_future_years():
+@pytest.mark.parametrize("preseason", [False, True])
+def test_mlb_layer_horizon_declines_for_older_player_future_years(monkeypatch, preseason):
+    monkeypatch.setattr(
+        season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON + int(preseason)
+    )
+    # Ageing must hold in both phases. Born 1991-07-01: 34 on April 1, 2026 (agrees
+    # with the row age in-season), 35 on April 1, 2027 (the only age preseason uses).
     payload = build_mlb_dynasty_layer(
         [_hitter(mlbam_id="1", metadata={"age": 34})],
         "2026-06-13",
+        identities={"1": {"birth_date": "1991-07-01"}},
     )
 
     years = payload["players"][0]["components"]["horizon_years"]
@@ -307,7 +570,8 @@ def test_partial_time_good_player_year2_horizon_not_crushed():
     assert r2 >= FUTURE_RELIABILITY_FLOOR
 
 
-def test_mlb_layer_records_ros_stability_pull_for_current_outlier():
+def test_mlb_layer_records_ros_stability_pull_for_current_outlier(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     payload = build_mlb_dynasty_layer(
         [
             _pitcher(
@@ -371,7 +635,8 @@ def test_mlb_layer_records_ros_stability_pull_for_current_outlier():
     assert outlier["projection_value"] == stability["stability_adjusted_category_value"]
 
 
-def test_mlb_layer_annualizes_ros_as_true_talent_prior_and_applies_star_floor():
+def test_mlb_layer_annualizes_ros_as_true_talent_prior_and_applies_star_floor(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     payload = build_mlb_dynasty_layer(
         [
             _hitter(
@@ -485,7 +750,8 @@ def test_mlb_layer_track_record_floor_cannot_bypass_reliever_cap():
     assert adjustments["track_record_floor_applied"] is False
 
 
-def test_mlb_layer_discounts_young_starter_current_line_volatility():
+def test_mlb_layer_discounts_young_starter_current_line_volatility(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     payload = build_mlb_dynasty_layer(
         [
             _pitcher(
@@ -545,7 +811,8 @@ def test_mlb_layer_discounts_young_starter_current_line_volatility():
     assert adjustments["young_sp_volatility_discount"] > 0
 
 
-def test_mlb_layer_discounts_young_hitter_current_line_volatility():
+def test_mlb_layer_discounts_young_hitter_current_line_volatility(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     payload = build_mlb_dynasty_layer(
         [
             _hitter(
@@ -872,3 +1139,244 @@ def test_mlb_layer_applies_official_availability_discount_by_mlbam():
     assert components["availability_risk_discount"] == 0.12
     assert components["availability"]["status"] == "injured"
     assert components["availability"]["source"] == "official_mlb_statsapi_transactions"
+
+
+# Preseason twins of the in-season tests above. The phase is set explicitly (target
+# season one above the context season), not left to the shipped default. Preseason
+# takes a player's age only from the identity birth date as of April 1 of the
+# target season and uses no rest-of-season data, so ages come from birth dates here.
+@pytest.fixture
+def preseason_phase(monkeypatch):
+    monkeypatch.setattr(season_config, "CONTEXT_SEASON", 2026)
+    monkeypatch.setattr(season_config, "TARGET_SEASON", 2027)
+
+
+def _born_aged(age):
+    # Identity record whose birth date makes a player `age` on April 1, 2027.
+    return {"birth_date": f"{2026 - age}-07-01"}
+
+
+_OUTLIER_ROS = {
+    "IP": 90, "W": 5, "QS": 8, "SV": 0, "HLD": 0, "K": 85, "ER": 36, "BB": 35, "H_ALLOWED": 82,
+    "ERA": 3.60, "WHIP": 1.30,
+}
+_STABLE_ROS = {
+    "IP": 95, "W": 7, "QS": 10, "SV": 0, "HLD": 0, "K": 115, "ER": 30, "BB": 22,
+    "H_ALLOWED": 74, "ERA": 2.84, "WHIP": 1.01,
+}
+_STAR_ROS = {
+    "PA": 200, "AB": 170, "H": 48, "HR": 14, "R": 36, "RBI": 38, "SB": 6, "BB": 32, "SO": 55,
+    "1B": 25, "2B": 8, "3B": 1, "AVG": .282, "OBP": .395, "OPS": .930,
+}
+_ANCHOR_ROS = {
+    "PA": 300, "AB": 260, "H": 65, "HR": 8, "R": 34, "RBI": 32, "SB": 4, "BB": 28, "SO": 70,
+    "1B": 42, "2B": 12, "3B": 3, "AVG": .250, "OBP": .325, "OPS": .725,
+}
+_YOUNG_SP_ROS = {
+    "IP": 95, "W": 6, "QS": 8, "SV": 0, "HLD": 0, "K": 90, "ER": 38, "BB": 35, "H_ALLOWED": 85,
+    "ERA": 3.60, "WHIP": 1.28,
+}
+_VETERAN_SP_ROS = {
+    "IP": 100, "W": 8, "QS": 12, "SV": 0, "HLD": 0, "K": 120, "ER": 30, "BB": 24,
+    "H_ALLOWED": 78, "ERA": 2.70, "WHIP": 1.02,
+}
+_YOUNG_BAT_ROS = {
+    "PA": 350, "AB": 310, "H": 65, "HR": 6, "R": 32, "RBI": 30, "SB": 3, "BB": 30, "SO": 75,
+    "1B": 49, "2B": 14, "3B": 1, "AVG": .210, "OBP": .285, "OPS": .620,
+}
+
+
+def test_mlb_layer_preseason_takes_age_from_birth_date_for_target_season(preseason_phase):
+    payload = build_mlb_dynasty_layer(
+        [_hitter(mlbam_id="1")],
+        "2026-11-16",
+        identities={"1": {"birth_date": "2001-07-01"}},
+    )
+
+    row = payload["players"][0]
+    # 24 on April 1, 2026 (the in-season twin), 25 on April 1, 2027.
+    assert row["age"] == 25
+    assert row["components"]["age_adjustment_status"] == "applied"
+    assert row["components"]["age_adjustment"] == 1.42
+    assert row["components"]["age_source"] == "valucast_identity_birth_date"
+    horizon_years = row["components"]["horizon_years"]
+    assert [year["season"] for year in horizon_years] == [2027, 2028, 2029]
+    assert [year["age"] for year in horizon_years] == [25, 26, 27]
+    assert payload["validation"]["age_coverage_count"] == 1
+    assert payload["validation"]["age_coverage_rate"] == 1.0
+
+
+def test_mlb_layer_preseason_ignores_projection_row_age_when_birth_date_present(preseason_phase):
+    payload = build_mlb_dynasty_layer(
+        [_hitter(mlbam_id="1", metadata={"age": 30})],
+        "2026-11-16",
+        identities={"1": {"birth_date": "2001-07-01"}},
+    )
+
+    row = payload["players"][0]
+    # The in-season twin keeps the row's 30 (projection_metadata, 0.97).
+    assert row["age"] == 25
+    assert row["components"]["age_source"] == "valucast_identity_birth_date"
+    assert row["components"]["age_adjustment"] == 1.42
+
+
+@pytest.mark.parametrize(
+    "identities",
+    [None, {"9": {"birth_date": "2001-07-01"}}, {"1": {}}],
+    ids=["no_identity_store", "no_identity_record", "record_without_birth_date"],
+)
+def test_mlb_layer_preseason_row_age_without_birth_date_gets_no_age_adjustment(
+    preseason_phase, identities
+):
+    """Owner decision 2026-11-17 for the flip: birth date only, no fallback to the
+    age on the projection row. This documents current behaviour, not a permanent
+    policy; a visible warning and alert for missing birth dates are designed apart."""
+
+    def build(metadata):
+        return build_mlb_dynasty_layer(
+            [
+                _hitter(mlbam_id="1", metadata=metadata),
+                _hitter("h2", "3", "Other Bat", hr=20, sb=8, avg=.260),
+                _pitcher(),
+            ],
+            "2026-11-16",
+            identities=identities,
+        )
+
+    payload = build({"age": 30})
+    row = next(item for item in payload["players"] if item["mlbam_id"] == 1)
+    control = next(item for item in build({})["players"] if item["mlbam_id"] == 1)
+
+    assert row["age"] is None
+    assert row["components"]["age_source"] == "missing_identity_birth_date"
+    assert row["components"]["age_adjustment_status"] == "missing_age"
+    assert row["components"]["age_adjustment"] is None
+    assert [year["age_factor"] for year in row["components"]["horizon_years"]] == [1.0, 1.0, 1.0]
+    assert payload["validation"]["age_coverage_count"] == 0
+    # An age of 30 reaching the engine would move the value.
+    assert row["components"]["season_category_value"] == control["components"]["season_category_value"]
+    assert row["dynasty_horizon_value"] == control["dynasty_horizon_value"]
+
+
+def test_mlb_layer_preseason_values_rows_without_their_rest_of_season_stats(preseason_phase):
+    payload = build_mlb_dynasty_layer(
+        [
+            _pitcher(
+                player_id="outlier",
+                mlbam_id="10",
+                name="Current Outlier",
+                ip=185,
+                strikeouts=285,
+                era=1.80,
+                metadata={"stats_ros": _OUTLIER_ROS},
+            ),
+            _pitcher(
+                player_id="stable",
+                mlbam_id="11",
+                name="Stable Ace",
+                ip=185,
+                strikeouts=220,
+                era=2.90,
+                metadata={"stats_ros": _STABLE_ROS},
+            ),
+            _hitter(
+                player_id="star",
+                mlbam_id="20",
+                name="Established Star",
+                pa=400,
+                hr=8,
+                sb=3,
+                avg=.230,
+                metadata={"stats_ros": _STAR_ROS},
+            ),
+            _hitter(
+                "anchor",
+                "21",
+                "Anchor Bat",
+                pa=600,
+                hr=24,
+                sb=8,
+                avg=.270,
+                metadata={"stats_ros": _ANCHOR_ROS},
+            ),
+            _pitcher(),
+        ],
+        "2026-11-16",
+        identities={
+            "10": _born_aged(24),
+            "11": _born_aged(25),
+            "20": _born_aged(29),
+            "21": _born_aged(28),
+            "2": _born_aged(28),
+        },
+    )
+
+    assert len(payload["players"]) == 5
+    for row in payload["players"]:
+        stability = row["components"]["projection_stability"]
+        assert stability["ros_category_value"] is None
+        assert stability["ros_true_talent_annualization_scale"] is None
+        assert stability["ros_stability_weight"] == 0
+        assert stability["stability_adjustment"] == 0
+        assert stability["true_talent_floor_value"] is None
+        assert stability["true_talent_floor_applied"] is False
+        assert row["projection_value"] == stability["current_season_category_value"]
+
+
+def test_mlb_layer_preseason_does_not_discount_young_starter_for_current_line_volatility(preseason_phase):
+    payload = build_mlb_dynasty_layer(
+        [
+            _pitcher(
+                player_id="young",
+                mlbam_id="30",
+                name="Young Current Spike",
+                ip=170,
+                strikeouts=245,
+                era=1.90,
+                metadata={"stats_actual": {"IP": 55}, "stats_ros": _YOUNG_SP_ROS},
+            ),
+            _hitter(),
+            _pitcher(
+                "stable",
+                "31",
+                "Stable Veteran",
+                metadata={"stats_ros": _VETERAN_SP_ROS},
+            ),
+        ],
+        "2026-11-16",
+        identities={"30": _born_aged(23), "1": _born_aged(25), "31": _born_aged(29)},
+    )
+
+    row = next(item for item in payload["players"] if item["name"] == "Young Current Spike")
+    adjustments = row["components"]["role_adjustments"]
+
+    assert row["age"] == 23  # in the young band, so a zero discount can only come from the absent rest-of-season data
+    assert adjustments["young_sp_volatility_discount"] == 0
+    assert adjustments["starter_volatility_discount"] == 0
+
+
+def test_mlb_layer_preseason_does_not_discount_young_hitter_for_current_line_volatility(preseason_phase):
+    payload = build_mlb_dynasty_layer(
+        [
+            _hitter(
+                player_id="young_bat",
+                mlbam_id="40",
+                name="Young Current Spike Bat",
+                pa=690,
+                hr=48,
+                sb=28,
+                avg=.330,
+                metadata={"stats_actual": {"PA": 260}, "stats_ros": _YOUNG_BAT_ROS},
+            ),
+            _hitter("steady", "41", "Steady Bat"),
+            _pitcher(),
+        ],
+        "2026-11-16",
+        identities={"40": _born_aged(24), "41": _born_aged(28), "2": _born_aged(28)},
+    )
+
+    row = next(item for item in payload["players"] if item["name"] == "Young Current Spike Bat")
+    adjustments = row["components"]["role_adjustments"]
+
+    assert row["age"] == 24  # in the young band, so a zero discount can only come from the absent rest-of-season data
+    assert adjustments["young_hitter_volatility_discount"] == 0

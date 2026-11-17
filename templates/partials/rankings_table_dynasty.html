@@ -51,12 +51,12 @@
             <th class="col-name sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(1)">Player</button></th>
             <th class="col-pos">Pos</th>
             <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
-            <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(4)">Age</button></th>
+            <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" title="Age on the board date. MLB values use age on April 1, {{ target_season if preseason else served_season }}." onclick="sortTable(4)">Age</button></th>
             <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button> <a href="/glossary#dynasty-value" title="The format-specific 0-100 fantasy decision score.">?</a></th>
             {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none" title="Estimated arrival. A year is a per-player ETA when we have one; otherwise a level-based window (everyone at that level shares it), not a per-player forecast."><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button> <a href="/glossary#eta" title="How the displayed arrival estimate is chosen.">?</a></th>{% endif %}
             {% if mode == 'dd_dynasty' %}
             <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button> <a href="/glossary#auction-value" title="Replacement-adjusted auction value.">?</a></th>
-            {% if custom_cats_active %}<th class="col-now-dollar sortable" aria-sort="none" title="This season only, in your categories — Steamer"><button type="button" class="sort-btn" onclick="sortTable(7)">Now $</button> <a href="/glossary#auction-value" title="Current-season auction value.">?</a></th>{% endif %}
+            {% if custom_cats_active %}<th class="col-now-dollar sortable" aria-sort="none" title="{% if preseason %}The upcoming {{ target_season }} season only{% else %}This season only{% endif %}, in your categories — Steamer"><button type="button" class="sort-btn" onclick="sortTable(7)">Now $</button> <a href="/glossary#auction-value" title="{% if preseason %}Upcoming-season{% else %}Current-season{% endif %} auction value.">?</a></th>{% endif %}
             {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable({{ 8 if custom_cats_active else 7 }})">Category Fit</button> <a href="/glossary#category-fit" title="How the selected categories reorder the visible pool.">?</a></th>{% endif %}
             {% endif %}
             {% if v11 %}

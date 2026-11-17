@@ -2,6 +2,7 @@ import csv
 import io
 import sys
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,6 +12,28 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import app as app_module
 from app import app, _valuation_players, store
+
+
+@contextmanager
+def published_phase(phase, target):
+    """Serve pages as if the projection feed had been published with this phase and target season."""
+    with patch.object(store, "_projection_phase", phase), \
+         patch.object(store, "_target_season", target):
+        yield
+
+
+def valued_age_years():
+    """(label, phase, target season, year the valued-age sentence must name).
+
+    The MLB dynasty value uses age on April 1 of ONE season: the target season before a
+    season starts, otherwise the context season. In season the expected year is computed
+    the way the page computes it, never typed in; the preseason target is the literal the
+    preseason tests patch in."""
+    context = app_module.context_season()
+    return (
+        ("in season", "in_season_outlook", context, context),
+        ("before a season", "preseason_full_season", 2027, 2027),
+    )
 
 
 class TestIndexRoute(unittest.TestCase):
@@ -187,6 +210,40 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
                 mlb_stats={"PA": 500},
             )
 
+    def render_snapshot_card(self, player_type="mlb", **context):
+        from flask import render_template
+        from web.public_snapshot_models import PublicSnapshotRow
+
+        row = PublicSnapshotRow(
+            id="valued-age-card", name="Valued Age Card", player_type=player_type,
+            positions=("OF",), team="TST", age=25, rank=1, value=50.0,
+            value_scale="0_100", value_source="test", confidence=None,
+            updated_at="2026-11-17", mlbam_id="999999", context=context,
+        )
+        with app.test_request_context("/player/valued-age-card"):
+            return render_template(
+                "partials/player_detail_dynasty.html", row=row, mlb_stats={"PA": 500},
+            )
+
+    def test_mlb_card_states_the_age_the_value_used(self):
+        carried = {"model_age": 26, "components": {"age_source": "valucast_identity_birth_date"}}
+        for label, phase, target, year in valued_age_years():
+            with self.subTest(phase=label), published_phase(phase, target):
+                self.assertIn(
+                    f"Valued at age 26 (age on April 1, {year}).",
+                    self.render_snapshot_card(**carried),
+                )
+        # Omitted, never guessed, when the row does not carry the valued age.
+        for context in (
+            {},
+            {"model_age": 26},
+            {"model_age": 26, "components": {"age_source": "projection_metadata"}},
+        ):
+            with self.subTest(context=context):
+                self.assertNotIn("Valued at age", self.render_snapshot_card(**context))
+        # Prospects are not valued by this age.
+        self.assertNotIn("Valued at age", self.render_snapshot_card("prospect", **carried))
+
     def test_reading_guides_are_semantic(self):
         redraft = self.client.get(
             "/player/19755?mode=categories",
@@ -291,10 +348,13 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         self.assertNotIn('<span class="stat-label">Roster Context</span>', body)
 
     def test_redraft_card_explains_the_decision_hierarchy(self):
-        response = self.client.get(
-            "/player/19755?mode=categories",
-            headers={"HX-Request": "true"},
-        )
+        # The card's rest-of-season section needs in-season rows (metadata stats_ros).
+        meta = app_module.store.get_by_id("19755").metadata
+        with patch.dict(meta, {"stats_ros": {"PA": 100, "HR": 5, "R": 20}}):
+            response = self.client.get(
+                "/player/19755?mode=categories",
+                headers={"HX-Request": "true"},
+            )
         self.assertEqual(response.status_code, 200)
         body = response.data.decode()
         self.assertIn("ValuCast Value: ", body)
@@ -309,6 +369,26 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         )
         self.assertIn("Rest-of-Season Projection (Steamer)", body)
         self.assertIn("via Baseball Savant", body)
+        self.assert_reading_guide(body)
+
+    def test_redraft_card_before_the_season_has_no_rest_of_season_section(self):
+        # Preseason rows carry last season's actuals and no stats_ros; the actuals are
+        # synthetic so this does not depend on what the committed row holds.
+        meta = app_module.store.get_by_id("19755").metadata
+        preseason = {**meta, "stats_actual": {"PA": 100, "HR": 5, "R": 20}}
+        preseason.pop("stats_ros", None)
+        with patch.dict(meta, preseason, clear=True):
+            response = self.client.get(
+                "/player/19755?mode=categories",
+                headers={"HX-Request": "true"},
+            )
+        self.assertEqual(response.status_code, 200)
+        body = response.data.decode()
+        self.assertNotIn("Rest-of-Season Projection (Steamer)", body)
+        self.assertIn(f"<h4>{app_module.context_season()} Actual Stats", body)
+        self.assertIn("ValuCast Value: ", body)
+        self.assertIn('<span class="profile-card-kicker">ValuCast Value</span>', body)
+        self.assertIn("<h4>Projected performance</h4>", body)
         self.assert_reading_guide(body)
 
 
@@ -551,6 +631,36 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("text/csv", response.content_type)
         self.assertIn(b"Overall Dynasty Rank", response.data)
 
+    def test_dynasty_age_header_states_which_age_is_shown_and_valued(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        for label, phase, target, year in valued_age_years():
+            header = (
+                '<button type="button" class="sort-btn" '
+                f'title="Age on the board date. MLB values use age on April 1, {year}." '
+                'onclick="sortTable(4)">Age</button>'
+            )
+            with published_phase(phase, target):
+                for mode in ("dd_dynasty", "prospects"):
+                    with self.subTest(phase=label, mode=mode):
+                        html = self.client.get(f"/rankings?mode={mode}").data.decode("utf-8")
+                        self.assertIn(header, html)
+
+    def test_dynasty_compare_age_label_states_the_basis(self):
+        from app import dd_store
+        if not dd_store.is_available:
+            self.skipTest("DD feed not available")
+        ids = [row.id for row in dd_store.filter(pool="mlb")[:2]]
+        for label, phase, target, year in valued_age_years():
+            with self.subTest(phase=label), published_phase(phase, target):
+                response = self.client.get(f"/compare?mode=dd_dynasty&p1={ids[0]}&p2={ids[1]}")
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(
+                    f'<td title="Age on the board date. MLB values use age on April 1, {year}.">Age</td>',
+                    response.data.decode("utf-8"),
+                )
+
     def test_dynasty_ignores_cats_params(self):
         """Custom category params should be ignored in dynasty mode."""
         from app import dd_store
@@ -764,6 +874,17 @@ class TestDynastyMode(unittest.TestCase):
         self.assertIn("tooltip.replaceChildren", source)
         self.assertIn("nameEl.textContent = player.name", source)
         self.assertIn("metaEl.textContent =", source)
+
+    def test_value_map_caption_states_the_age_basis(self):
+        for label, phase, target, year in valued_age_years():
+            with self.subTest(phase=label), published_phase(phase, target):
+                html = self.client.get("/map").data.decode("utf-8")
+                self.assertIn(
+                    f"<p>Age on the board date. MLB values use age on April 1, {year}.</p>",
+                    html,
+                )
+                # The axis label stays a plain 'Age' set through textContent.
+                self.assertIn("'text-anchor': 'middle' }, 'Age')", html)
 
     def test_buys_share_card_png_and_preview(self):
         # Held-path coverage: the "returns later this week" share card + placeholder
@@ -1241,7 +1362,8 @@ class TestConfidenceIntegration(unittest.TestCase):
         from unittest.mock import patch
         from app import store
 
-        with patch.object(store, "_ros_status", "retained"):
+        with patch.object(store, "_ros_status", "retained"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             redraft = self.client.get("/rankings?mode=categories&horizon=redraft").data.decode("utf-8")
             dynasty = self.client.get("/rankings?mode=dd_dynasty").data.decode("utf-8")
         self.assertIn("2026 season final.", redraft)
@@ -1250,7 +1372,8 @@ class TestConfidenceIntegration(unittest.TestCase):
         self.assertNotIn("rest-of-season projections", redraft)
         self.assertNotIn("season final.", dynasty)
 
-        with patch.object(store, "_ros_status", "fetched"):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             redraft = self.client.get("/rankings?mode=categories&horizon=redraft").data.decode("utf-8")
         self.assertNotIn("season final.", redraft)
         self.assertIn("rest-of-season projections", redraft)
@@ -3151,6 +3274,22 @@ class TestLlmsTxt(unittest.TestCase):
         # The pre-gate honesty rule travels with the citation guidance.
         self.assertIn("Do not state or estimate a success rate", body)
         self.assertIn("https://valucast.app/ledger", body)
+        # Static wording that stays true in every phase, so it names no season.
+        self.assertIn(
+            "[Redraft rankings](https://valucast.app/): single-season auction values, "
+            "scored against your league's categories",
+            body,
+        )
+        self.assertNotIn("season being projected", body)
+        self.assertNotIn("auction values for the current season", body)
+        self.assertIn(
+            "On the dynasty and prospect boards and the value map, the age shown is the "
+            "player's age on the board date; MLB dynasty values use the player's age on "
+            "April 1 of the season those values are based on, and each of those pages "
+            "names the year.",
+            body,
+        )
+        self.assertNotIn("season being valued", body)
 
 
 class TestConsensusLabelsAndYoungBadge(unittest.TestCase):

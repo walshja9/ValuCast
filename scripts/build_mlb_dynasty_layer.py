@@ -74,6 +74,7 @@ def main() -> None:
         f"projection_source={source} "
         f"rows={result['row_count']} "
         f"missing_mlbam={result['missing_mlbam_count']} "
+        f"missing_mlbam_blocking={result['missing_mlbam_blocking_count']} "
         f"availability_adjusted={result['availability_adjusted_count']} "
         f"ready={result['ready_for_live_consumers']} -> {result['artifact_path']}"
     )

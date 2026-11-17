@@ -1,10 +1,33 @@
 import sys
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-from app import app, store
+from app import app, context_season, store
+
+
+@contextmanager
+def published_phase(phase, target):
+    """Serve pages as if the projection feed had been published with this phase and target season."""
+    with patch.object(store, "_projection_phase", phase), \
+         patch.object(store, "_target_season", target):
+        yield
+
+
+def valued_age_years():
+    """(label, phase, target season, year the valued-age sentence must name).
+
+    The MLB dynasty value uses age on April 1 of ONE season: the target season before a
+    season starts, otherwise the context season. In season the expected year is computed
+    the way the page computes it, never typed in; the preseason target is the literal the
+    preseason tests patch in."""
+    context = context_season()
+    return (
+        ("in season", "in_season_outlook", context, context),
+        ("before a season", "preseason_full_season", 2027, 2027),
+    )
 
 
 class TestSourceSelection(unittest.TestCase):
@@ -113,13 +136,26 @@ class TestSourceSelection(unittest.TestCase):
         self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
 
     def test_footer_steamer_board_unchanged(self):
-        with patch.object(store, "_ros_status", "fetched"):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             r = self.client.get("/")
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
         self.assertIn(
             b'all built in-house by ValuCast',
             r.data,
         )
+
+    def test_footer_steamer_board_preseason_names_the_target_season(self):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "preseason_full_season"), \
+             patch.object(store, "_target_season", 2027):
+            r = self.client.get("/")
+        self.assertIn(
+            b"Redraft values use Steamer 2027 full-season projections, "
+            b"scored against your league's categories and weights.",
+            r.data,
+        )
+        self.assertNotIn(b'Redraft values use 2026 actual stats + Steamer', r.data)
 
     def test_caption_and_footer_refresh_oob_on_source_switch(self):
         # Both the caption and the footer live OUTSIDE #rankings-container, so an
@@ -131,7 +167,8 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'fully ValuCast-built', vc)               # footer OOB content
         self.assertIn(self.CAPTION_ANCHOR, vc)                   # caption OOB content
 
-        with patch.object(store, "_ros_status", "fetched"):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             st = self.client.get("/rankings").data
         self.assertIn(b'hx-swap-oob="innerHTML:#footer-provenance"', st)
         self.assertIn(b'Redraft values use 2026 actual stats + Steamer', st)  # footer reverts
@@ -152,6 +189,37 @@ class TestSourceSelection(unittest.TestCase):
         self.assertIn(b'June 2026', body)
         self.assertIn(b'not an apples-to-apples', body)
         self.assertNotIn(b'0.87', body)                          # no internal corr leak
+
+    @staticmethod
+    def age_basis(year):
+        return (f"Age shown is the player's age on the board date. "
+                f"MLB dynasty values use age on April 1, {year}.")
+
+    def test_dynasty_and_prospect_footers_state_the_age_basis(self):
+        for label, phase, target, year in valued_age_years():
+            with published_phase(phase, target):
+                for mode in ("dd_dynasty", "prospects"):
+                    with self.subTest(phase=label, mode=mode):
+                        body = self.client.get(f"/?mode={mode}").data.decode("utf-8")
+                        self.assertIn(self.age_basis(year), body)
+                        if year != context_season():
+                            # The target season wins before a season: never the context year.
+                            self.assertNotIn(self.age_basis(context_season()), body)
+                # Said once, on the dynasty/prospect footer: not on the redraft board.
+                with self.subTest(phase=label, mode="redraft"):
+                    self.assertNotIn(
+                        self.age_basis(year), self.client.get("/").data.decode("utf-8"))
+
+    def test_methodology_states_the_dynasty_board_age_basis(self):
+        for label, phase, target, year in valued_age_years():
+            with self.subTest(phase=label), published_phase(phase, target):
+                body = " ".join(self.client.get("/methodology").data.decode("utf-8").split())
+                self.assertIn("Age on the dynasty board.", body)
+                self.assertIn(self.age_basis(year), body)
+                if year != context_season():
+                    self.assertNotIn(self.age_basis(context_season()), body)
+                # Scoped to the dynasty board: the H+P pitching sentence is unchanged.
+                self.assertIn("the v1 pitching model has no aging curve", body)
 
     def test_methodology_footer_has_no_steamer_redraft_claim(self):
         r = self.client.get("/methodology")

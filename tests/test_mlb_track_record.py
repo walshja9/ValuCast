@@ -331,7 +331,8 @@ def test_run_mlb_track_record_fetches_missing_histories_in_bulk(tmp_path):
     assert result["ready_for_mlb_dynasty_layer"] is True
 
 
-def test_track_record_backfills_mlb_debut_date():
+def test_track_record_backfills_mlb_debut_date(monkeypatch):
+    monkeypatch.setattr(season_config, "TARGET_SEASON", season_config.CONTEXT_SEASON)
     raw = _raw_history(hitting=[_hitting_split(2025, 650, 560, 165, 35, 1, 38, 80)])
     captured = {}
 
@@ -347,6 +348,41 @@ def test_track_record_backfills_mlb_debut_date():
         debut_fetcher=debut_fetcher,
     )
 
+    assert captured["ids"] == ["40"]
+    assert payload["profiles"][0]["mlb_debut_date"] == "2025-04-01"
+
+
+def test_track_record_backfills_mlb_debut_date_in_preseason(monkeypatch):
+    # Both constants are pinned to literal years so the cache date below stays inside
+    # the refresh window whatever the repo's live season settings become.
+    monkeypatch.setattr(season_config, "CONTEXT_SEASON", 2026)
+    monkeypatch.setattr(season_config, "TARGET_SEASON", 2027)
+    raw = _raw_history(hitting=[_hitting_split(2025, 650, 560, 165, 35, 1, 38, 80)])
+    captured = {}
+    history_calls = []
+
+    def debut_fetcher(mlbam_ids):
+        captured["ids"] = list(mlbam_ids)
+        return {"40": "2025-04-01T00:00:00Z"}
+
+    def history_fetcher(mlbam_id):
+        # Injected so the real network fetchers are unreachable; any call fails the test.
+        history_calls.append(mlbam_id)
+        return {}
+
+    # The cache entry is newer than the preseason refresh cutoff (Nov 1 of the
+    # context season), so no history fetch is attempted: only the debut fetcher runs.
+    payload = build_mlb_track_record(
+        [_hitter_projection("40")],
+        generated_at="2026-11-16T12:00:00+00:00",
+        cache={"players": {"40": {"raw": raw, "fetched_at": "2026-11-16T12:00:00Z"}}},
+        refresh_missing=True,
+        fetcher=history_fetcher,
+        debut_fetcher=debut_fetcher,
+    )
+
+    assert history_calls == []
+    assert payload["season"] == 2027
     assert captured["ids"] == ["40"]
     assert payload["profiles"][0]["mlb_debut_date"] == "2025-04-01"
 
