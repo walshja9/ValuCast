@@ -39,26 +39,21 @@ jobs:
           echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
           echo "REHEARSAL_OUT=$RUNNER_TEMP/flip-rehearsal-out" >> "$GITHUB_ENV"
 
-      - name: In-season check on the committed in-season data (before any refresh)
-        run: PROBE_MODE=inseason AGE_PROBE_OUT="$RUNNER_TEMP/age-probe" python scripts/probe_best_case.py
+      - name: Run both passes and every inner stage
+        run: python scripts/rehearse_flip.py > "$RUNNER_TEMP/harness.log" 2>&1
 
-      - name: Refresh feeds quietly with the flipped code
-        run: |
-          python -m scraper.refresh > "$RUNNER_TEMP/refresh.log" 2>&1 || { tail -3 "$RUNNER_TEMP/refresh.log"; exit 1; }
-
-      - name: Backfill identities exactly as the daily build does
-        run: python scripts/backfill_projection_identities.py
-
-      - name: Preseason check on the flipped full-season feed
-        run: PROBE_MODE=preseason AGE_PROBE_OUT="$RUNNER_TEMP/age-probe" python scripts/probe_best_case.py
-
-      - name: Upload the short report
+      - name: Upload only the reviewed public outputs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: age-path-${{ github.run_id }}
+          name: flip-2027-rehearsal-${{ github.run_id }}
           path: |
-            ${{ runner.temp }}/age-probe/best_case_sample_inseason.csv
-            ${{ runner.temp }}/age-probe/best_case_sample_preseason.csv
+            ${{ runner.temp }}/flip-rehearsal-out/baseline_steps.csv
+            ${{ runner.temp }}/flip-rehearsal-out/candidate_steps.csv
+            ${{ runner.temp }}/flip-rehearsal-out/board_before.csv
+            ${{ runner.temp }}/flip-rehearsal-out/board_after.csv
+            ${{ runner.temp }}/flip-rehearsal-out/redraft_before.csv
+            ${{ runner.temp }}/flip-rehearsal-out/redraft_after.csv
+            ${{ runner.temp }}/flip-rehearsal-out/summary.md
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 3

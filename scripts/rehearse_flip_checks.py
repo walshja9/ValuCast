@@ -52,6 +52,45 @@ def archive_stamp_state(current_bytes, committed_bytes):
     return {"stamp_check": "evaluated"}
 
 
+def _short(items, limit=20):
+    return [str(item)[:240] for item in (items or [])][:limit]
+
+
+def readiness_evidence(client):
+    """Informational only, never gates ok: what the app and artifacts say is live."""
+    out = {"extra_routes": {}}
+    for route in ("/buys", "/movers", "/trade", "/?mode=prospects"):
+        try:
+            out["extra_routes"][route] = client.get(route).status_code
+        except Exception as exc:
+            out["extra_routes"][route] = type(exc).__name__
+    try:
+        body = client.get("/health/ready").get_json(silent=True)
+        text = json.dumps(body, sort_keys=True, default=str)
+        out["health_ready_body"] = body if len(text) <= 6000 else sorted(body)
+    except Exception as exc:
+        out["health_ready_body"] = type(exc).__name__
+    try:
+        validation = load("data/public/public_dynasty_snapshot.json").get("validation") or {}
+        out["snapshot"] = {
+            "ready_for_live_consumers": validation.get("ready_for_live_consumers"),
+            "surface_readiness": validation.get("surface_readiness"),
+            "blockers": _short(validation.get("blockers")),
+            "surface_blockers": {key: _short(value) for key, value in (validation.get("surface_blockers") or {}).items()},
+        }
+    except Exception as exc:
+        out["snapshot"] = type(exc).__name__
+    try:
+        validation = load("data/models/valucast_mlb_dynasty_layer.json").get("validation") or {}
+        out["mlb_layer"] = {key: validation.get(key) for key in (
+            "ready_for_live_consumers", "missing_mlbam_count", "duplicate_identity_count",
+            "age_coverage_count", "age_coverage_rate", "player_count")}
+        out["mlb_layer"]["blockers"] = _short(validation.get("blockers"))
+    except Exception as exc:
+        out["mlb_layer"] = type(exc).__name__
+    return out
+
+
 def startup(state, committed_routes=None):
     try:
         import app as application
@@ -83,6 +122,7 @@ def startup(state, committed_routes=None):
             result.update({key: value for key, value in item.items()
                            if key in ("error_type", "final_frame", "error_message")})
             break
+    result["readiness"] = readiness_evidence(client)
     if state == "refreshed":
         result["provenance"] = provenance_evidence(html, load("data/projections/metadata.json"))
         result["ok"] = result["ok"] and result["provenance"]["ok"]
