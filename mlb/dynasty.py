@@ -1202,7 +1202,8 @@ def build_mlb_dynasty_layer(
     missing_mlbam_exceptions: dict[str, dict] | None = None,
     missing_mlbam_exception_error: str | None = None,
 ) -> dict:
-    season = season_config.TARGET_SEASON if season_config.is_preseason() else _season_from_generated_at(generated_at)
+    preseason = season_config.is_preseason()
+    season = season_config.TARGET_SEASON if preseason else _season_from_generated_at(generated_at)
     players = _attach_ages(players, identities or {}, season)
     track_record_by_key = _track_record_lookup(track_record)
     availability_by_mlbam = mlb_availability_lookup(availability)
@@ -1331,6 +1332,7 @@ def build_mlb_dynasty_layer(
         "value_contract": {
             "score_range": [0.0, 100.0],
             "value_kind": "multi_year_dynasty_horizon",
+            "phase": "preseason" if preseason else "in_season",
             "horizon_years": len(HORIZON_YEAR_WEIGHTS),
             "horizon_year_weights": [
                 {"offset": offset, "weight": weight}
@@ -1340,16 +1342,33 @@ def build_mlb_dynasty_layer(
                 "horizon_production_score": PRODUCTION_WEIGHT,
                 "playing_time_reliability": RELIABILITY_WEIGHT,
             },
-            "horizon_production_score": "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible MLB projection rows after ROS stability adjustment.",
+            "horizon_production_score": (
+                "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible "
+                "MLB projection rows; no ROS stability adjustment is applied before the season."
+                if preseason else
+                "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible MLB projection rows after ROS stability adjustment."
+            ),
             "horizon_model": "Carries the current ValuCast category projection forward through age-curve ratios and reliability decay.",
             "projection_stability": (
-                "Blends current-season category value with the same player's ROS "
-                "true-talent annualized category value; extreme current-over-ROS outliers receive the "
-                "largest pullback before dynasty-horizon scaling."
+                "Not applied before the season: no current-season results exist, so there is no "
+                "ROS true-talent value to blend with. The current-over-ROS pullback and the "
+                "current-line volatility discounts (the young_hitter_, young_sp_ and starter_volatility_ "
+                "parameters under role_adjustments) do not apply; the full-season projection is used as it stands."
+                if preseason else (
+                    "Blends current-season category value with the same player's ROS "
+                    "true-talent annualized category value; extreme current-over-ROS outliers receive the "
+                    "largest pullback before dynasty-horizon scaling."
+                )
             ),
             "true_talent_floor": (
-                "Established high-reliability MLB hitters and starters cannot fall below "
-                f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."
+                "Not applied before the season: the floor is tied to annualized ROS true-talent "
+                "value, which needs current-season results. The track-record floor "
+                "(see mlb_track_record) is separate and stays active; with no ROS value, its "
+                "weak-projection block turns on the full-season projection alone."
+                if preseason else (
+                    "Established high-reliability MLB hitters and starters cannot fall below "
+                    f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."
+                )
             ),
             "role_adjustments": {
                 "young_hitter_volatility_age_max": YOUNG_HITTER_VOLATILITY_AGE_MAX,
@@ -1394,7 +1413,11 @@ def build_mlb_dynasty_layer(
                 "sixty_day_il_extra_discount": MLB_AVAILABILITY_60_DAY_EXTRA_DISCOUNT,
             },
             "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
-            "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",
+            "age_source": (
+                "projections/data/identity.json birth_date by MLBAM ID only; projection metadata age is not used before the season."
+                if preseason else
+                "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID."
+            ),
             "projection_source": projection_source,
             "projection_source_kind": projection_source_kind,
         },

@@ -52,7 +52,7 @@
                 {% endfor %}
             </div>
         </div>
-        <p class="profile-note">Now $ is this-season auction value in your categories, using Steamer. Dynasty Value is unchanged.</p>
+        <p class="profile-note">Now $ is {% if preseason %}auction value for the upcoming {{ target_season }} season only, in your categories, using Steamer{% else %}this-season auction value in your categories, using Steamer{% endif %}. Dynasty Value is unchanged.</p>
     </div>
 </details>
 

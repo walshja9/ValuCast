@@ -10,7 +10,7 @@ The public product and experimental research lineages have separate release gate
 
 ## What It Does
 
-- **Season outlook:** 2026 YTD actuals (MLB Stats API) + Steamer ROS projections (FanGraphs) = projected full-season stat lines
+- **Season outlook:** current-season YTD actuals (MLB Stats API) + Steamer ROS projections (FanGraphs) = projected full-season stat lines; before a season starts, Steamer full-season projections for the upcoming season
 - **Any format:** H2H Categories, Roto (SGP), or Points leagues
 - **26 categories:** 13 hitting + 13 pitching, with custom weights
 - **SP/RP split:** Separate baselines for starters and relievers
@@ -45,7 +45,7 @@ FanGraphs API  →  scraper/fangraphs.py    →  scraper/combine.py  →  data/p
 ```
 
 - **Actuals:** MLB Stats API season stats + game logs (for QS derivation)
-- **ROS:** Steamer Rest-of-Season projections via FanGraphs (`steamerr`)
+- **ROS:** Steamer Rest-of-Season projections via FanGraphs (`steamerr`); before a season starts, Steamer full-season projections (`steamer`) are fetched instead
 - **Combine:** Counting stats add directly. Rate stats (AVG, ERA, WHIP, etc.) recalculated from combined components — never averaged.
 - **IP normalization:** MLB API innings are in baseball notation (4.2 = 4⅔); adapter converts to decimal before arithmetic.
 - **Daily publish:** GitHub Actions refreshes actuals, Steamer ROS, Statcast player-card data, DD factual prospect inputs, the ValuCast public dynasty snapshot, ValuCast-owned buy signals, and prospect forward-validation reports each morning, then deploys only after same-day freshness checks pass.
@@ -94,7 +94,7 @@ python -m pytest
 - [x] Valuation engine with z-score, roto, and points modes
 - [x] FanGraphs data pipeline (Steamer ROS)
 - [x] Web app with category setup, rankings, player detail, compare, CSV export
-- [x] Season outlook: 2026 actuals + ROS projections
+- [x] Season outlook: current-season actuals + ROS projections (full-season projections before a season starts)
 - [x] Tier visualization, position ranks, auction dollars
 - [x] Dynasty mode (Beta) with combined MLB + prospect rankings
 - [x] Prospect board with source ranks, breakout indicators, MiLB stats

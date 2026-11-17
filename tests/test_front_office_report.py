@@ -269,6 +269,83 @@ def test_front_office_report_promotes_supported_pillars_to_a_plus():
     assert pillars["MLB front-office track"]["grade"] == "B+"
 
 
+def _unevaluated_governor(second_status="passed"):
+    return {
+        "ready_for_public_snapshot": True,
+        "checks": [
+            {"id": "snapshot", "status": "passed"},
+            {
+                "id": "mlb_projection_stability_outliers",
+                "status": second_status,
+                "evaluated": False,
+            },
+        ],
+    }
+
+
+def _build_report(governor):
+    return build_front_office_report(
+        _snapshot(),
+        governor,
+        _outcome(),
+        _v07(),
+        _raw(),
+        _buys_monitor(),
+        _failures(),
+        _milb_freshness(),
+        _pipeline_observability(),
+    )
+
+
+def _render_front_office(report):
+    with app_module.app.test_request_context("/front-office"):
+        return app_module.render_template("front_office.html", report=report)
+
+
+def test_front_office_counts_unevaluated_governor_checks_without_changing_the_pass():
+    baseline = {
+        pillar["name"]: pillar for pillar in _build_report(_governor())["pillars"]
+    }["Product readiness"]
+    product = {
+        pillar["name"]: pillar
+        for pillar in _build_report(_unevaluated_governor())["pillars"]
+    }["Product readiness"]
+
+    assert product["evidence"]["quality_governor_all_checks_passed"] is True
+    assert product["evidence"]["quality_governor_unevaluated_checks"] == [
+        "mlb_projection_stability_outliers"
+    ]
+    assert baseline["evidence"]["quality_governor_unevaluated_checks"] == []
+    # Grade, score and status are computed from the same True/False as before.
+    assert (product["score"], product["grade"], product["status"]) == (
+        baseline["score"],
+        baseline["grade"],
+        baseline["status"],
+    )
+
+
+def test_front_office_evidence_label_names_unevaluated_checks():
+    html = _render_front_office(_build_report(_unevaluated_governor()))
+
+    assert "Quality governor: all evaluated checks passed (at least 1 not evaluated)" in html
+    assert "Quality governor: all checks passed" not in html
+
+
+def test_front_office_evidence_label_is_unchanged_when_every_check_evaluated():
+    html = _render_front_office(_build_report(_governor()))
+
+    assert "Quality governor: all checks passed" in html
+    assert "all evaluated checks passed" not in html
+
+
+def test_front_office_evidence_label_is_unchanged_when_a_check_is_blocked():
+    # "all evaluated checks passed" would be false here, so the old label stays.
+    html = _render_front_office(_build_report(_unevaluated_governor("blocked")))
+
+    assert "Quality governor: all checks passed" in html
+    assert "all evaluated checks passed" not in html
+
+
 def test_run_and_validate_front_office_report(tmp_path):
     files = {}
     for name, payload in {

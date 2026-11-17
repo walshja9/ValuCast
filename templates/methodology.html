@@ -40,8 +40,8 @@
 
     <section>
         <h3>The two boards</h3>
-        <p>The <strong>default board</strong> values current-season actuals + Steamer
-        rest-of-season. The <strong>ValuCast board</strong> values our own full-season
+        <p>{% if preseason %}Before the season starts, the default board values Steamer full-season projections for {{ target_season }}; adjustments that depend on current-season results are not applied.{% else %}The <strong>default board</strong> values current-season actuals + Steamer
+        rest-of-season.{% endif %} The <strong>ValuCast board</strong> values our own full-season
         projection. Flipping the toggle is useful for eyeballing differences, but it is
         <strong>not an apples-to-apples backtest</strong>; our real check is the held-out
         validation below.</p>
@@ -64,6 +64,7 @@
             We do <em>not</em> claim a single unit-reconciled calibration across the two
             universes &mdash; treat a prospect's number and a big-leaguer's number as
             comparable in ballpark, not to the decimal.</li>
+            <li><strong>Age on the dynasty board.</strong> Age shown is the player's age on the board date. MLB dynasty values use age on April 1, {{ target_season if preseason else served_season }}.</li>
             <li><strong>The $ column.</strong> The dollar figure is a
             replacement-adjusted auction price: total payout equals teams &times; budget,
             spread across the pool by value, and driven by your roster / teams / budget

@@ -58,6 +58,35 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn("will not become the default", low)
         self.assertNotIn("external benchmark", low)
 
+    # The changelog says what a reader will notice, without announcing the season.
+    def test_changelog_records_age_basis_and_phase_wording(self):
+        glossary = json.loads(
+            (ROOT / "data" / "manual" / "valucast_glossary.json").read_text(encoding="utf-8")
+        )
+        entries = [c for c in glossary["changelog"] if c["date"] == "2026-11-17"]
+        self.assertEqual(len(entries), 1)
+        entry = entries[0]
+        self.assertIn(entry["title"], self.html)
+        self.assertIn("age on April 1 of a named season", entry["detail"])
+        self.assertIn("published projection data", entry["detail"])
+        self.assertIn("reworded to hold in every phase", entry["detail"])
+        for text in (entry["title"], entry["detail"]):
+            self.assertNotIn("2027", text)
+            self.assertNotIn("preseason", text.lower())
+
+    # The glossary is static, so it says "the season the board covers", never a phase.
+    def test_now_dollar_definition_holds_in_every_phase(self):
+        glossary = json.loads(
+            (ROOT / "data" / "manual" / "valucast_glossary.json").read_text(encoding="utf-8")
+        )
+        entry = next(t for t in glossary["terms"] if t["id"] == "auction-value")
+        self.assertIn(
+            "Now $ isolates one season's production, the season the board covers, "
+            "not the multi-year dynasty horizon.",
+            entry["definition"],
+        )
+        self.assertNotIn("single season the board is projecting", entry["definition"])
+
     # public page must not leak the internal own-xBA correlation figure
     def test_no_internal_corr_leak(self):
         self.assertNotIn("0.87", self.html)
