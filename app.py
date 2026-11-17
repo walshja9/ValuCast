@@ -11207,7 +11207,7 @@ def export_csv():
                          "Age", "Dynasty Value", "Dynasty $", "Confidence Level",
                          "Prospect Rank", "Level", "ETA",
                          "Board Rank", "MLBAM ID", "Role", "As Of", "Publication Status",
-                         "Publication Note", "League Rank"])
+                         "Publication Note", "League Rank", "Valued Age"])
         for board_rank, row in enumerate(rows, 1):
             confidence = row.confidence or {}
             writer.writerow([
@@ -11223,6 +11223,7 @@ def export_csv():
                 publication_status if row.is_prospect else "",
                 _csv_safe(publication_note) if row.is_prospect else "",
                 ctx.get("league_adapter_ranks", {}).get(row.id, ""),
+                row.valued_age or "",
             ])
 
         response = make_response(output.getvalue())

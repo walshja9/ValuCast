@@ -35,6 +35,7 @@ ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
 TRACK_RECORD_PATH = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
 IDENTITY_DATA_DIR = ROOT / "projections" / "data"
+MISSING_MLBAM_EXCEPTIONS_PATH = ROOT / "data" / "manual" / "missing_mlbam_exceptions.json"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
 LAYER_VERSION = "0.6.1"
@@ -881,14 +882,16 @@ def _category_drivers(result: ValuationResult) -> list[str]:
     return drivers
 
 
-def _dedupe_results(results: Iterable[ValuationResult]) -> tuple[list[ValuationResult], int, int]:
+def _dedupe_results(
+    results: Iterable[ValuationResult],
+) -> tuple[list[ValuationResult], list[PlayerProjection], int]:
     by_key: dict[tuple[str, str], ValuationResult] = {}
-    missing_identity_count = 0
+    missing_identity_players: list[PlayerProjection] = []
     duplicate_identity_count = 0
     for result in results:
         key = identity_key(result.player)
         if key is None:
-            missing_identity_count += 1
+            missing_identity_players.append(result.player)
             continue
         previous = by_key.get(key)
         if previous is not None:
@@ -896,7 +899,85 @@ def _dedupe_results(results: Iterable[ValuationResult]) -> tuple[list[ValuationR
             if result.total_value <= previous.total_value:
                 continue
         by_key[key] = result
-    return list(by_key.values()), missing_identity_count, duplicate_identity_count
+    return list(by_key.values()), missing_identity_players, duplicate_identity_count
+
+
+def _clean_missing_mlbam_exceptions(payload: Any) -> dict[str, dict]:
+    """Validate the reviewed list; one bad entry rejects the whole file."""
+    if not isinstance(payload, dict):
+        raise ValueError("top level is not an object")
+    for feed_id, entry in payload.items():
+        if not isinstance(entry, dict):
+            raise ValueError(f"entry {feed_id!r} is not an object")
+        for field in ("name", "reason"):
+            if not isinstance(entry.get(field), str) or not entry[field].strip():
+                raise ValueError(f"entry {feed_id!r} has no {field}")
+        if entry.get("role") not in ("hitter", "pitcher"):
+            raise ValueError(f"entry {feed_id!r} has a bad role")
+        added = entry.get("added")
+        if not isinstance(added, str) or len(added) != 10:
+            raise ValueError(f"entry {feed_id!r} has a bad added date")
+        datetime.strptime(added, "%Y-%m-%d")
+    return payload
+
+
+def load_missing_mlbam_exceptions(
+    path: Path = MISSING_MLBAM_EXCEPTIONS_PATH,
+) -> tuple[dict[str, dict], str | None]:
+    """Reviewed feed players known to have no MLBAM id yet, keyed by feed id.
+
+    Fail closed: no file means no exceptions; an unusable file means no
+    exceptions at all plus an error string, so every id-less row still blocks.
+    """
+    if not path.exists():
+        return {}, None
+    try:
+        return _clean_missing_mlbam_exceptions(
+            json.loads(path.read_text(encoding="utf-8-sig"))
+        ), None
+    except (OSError, ValueError) as exc:
+        return {}, f"{path.name} could not be used: {exc}"
+
+
+def _missing_mlbam_validation(
+    missing_players: list[PlayerProjection],
+    exceptions: dict[str, dict],
+    exception_error: str | None,
+) -> dict[str, Any]:
+    excepted = []
+    blocking = []
+    for player in missing_players:
+        entry = exceptions.get(player.id)
+        role = _role(player)
+        if (
+            entry
+            and entry["role"] == role
+            and entry["name"].strip().casefold() == player.name.strip().casefold()
+        ):
+            excepted.append(
+                {
+                    "id": player.id,
+                    "name": player.name,
+                    "role": role,
+                    "reason": entry["reason"],
+                    "added": entry["added"],
+                }
+            )
+        else:
+            blocking.append({"id": player.id, "name": player.name, "role": role})
+    matched_ids = {row["id"] for row in excepted}
+    return {
+        "missing_mlbam_count": len(missing_players),
+        "missing_mlbam_blocking_count": len(blocking),
+        "missing_mlbam_excepted": sorted(excepted, key=lambda row: row["id"]),
+        "missing_mlbam_blocking": sorted(blocking, key=lambda row: row["id"]),
+        "unused_missing_mlbam_exceptions": [
+            {"id": feed_id, "name": entry["name"]}
+            for feed_id, entry in sorted(exceptions.items())
+            if feed_id not in matched_ids
+        ],
+        "missing_mlbam_exception_error": exception_error,
+    }
 
 
 def _dynasty_preset_league(preset_id: str) -> LeagueConfig:
@@ -933,7 +1014,7 @@ def _scores_for_config(
         adjusted_results.append(adjusted)
         stability_by_player_id[adjusted.player.id] = stability
 
-    deduped, missing_identity_count, duplicate_identity_count = _dedupe_results(adjusted_results)
+    deduped, missing_identity_players, duplicate_identity_count = _dedupe_results(adjusted_results)
     horizon_baseline = min((result.total_value for result in deduped), default=0.0)
     horizon_rows = [
         (result, _horizon_profile(result, season, horizon_baseline))
@@ -1015,7 +1096,7 @@ def _scores_for_config(
             {
                 "rows": rows,
                 "stability_by_player_id": stability_by_player_id,
-                "missing_identity_count": missing_identity_count,
+                "missing_identity_players": missing_identity_players,
                 "duplicate_identity_count": duplicate_identity_count,
             }
         )
@@ -1118,8 +1199,11 @@ def build_mlb_dynasty_layer(
     availability: dict | None = None,
     projection_source: str = "data/projections/current.json",
     projection_source_kind: str = "valucast_current_projection",
+    missing_mlbam_exceptions: dict[str, dict] | None = None,
+    missing_mlbam_exception_error: str | None = None,
 ) -> dict:
-    season = season_config.TARGET_SEASON if season_config.is_preseason() else _season_from_generated_at(generated_at)
+    preseason = season_config.is_preseason()
+    season = season_config.TARGET_SEASON if preseason else _season_from_generated_at(generated_at)
     players = _attach_ages(players, identities or {}, season)
     track_record_by_key = _track_record_lookup(track_record)
     availability_by_mlbam = mlb_availability_lookup(availability)
@@ -1158,7 +1242,7 @@ def build_mlb_dynasty_layer(
 
     rows = default_details.get("rows", [])
     stability_by_player_id = default_details.get("stability_by_player_id", {})
-    missing_identity_count = default_details.get("missing_identity_count", 0)
+    missing_identity_players = default_details.get("missing_identity_players", [])
     duplicate_identity_count = default_details.get("duplicate_identity_count", 0)
 
     board = []
@@ -1248,6 +1332,7 @@ def build_mlb_dynasty_layer(
         "value_contract": {
             "score_range": [0.0, 100.0],
             "value_kind": "multi_year_dynasty_horizon",
+            "phase": "preseason" if preseason else "in_season",
             "horizon_years": len(HORIZON_YEAR_WEIGHTS),
             "horizon_year_weights": [
                 {"offset": offset, "weight": weight}
@@ -1257,16 +1342,33 @@ def build_mlb_dynasty_layer(
                 "horizon_production_score": PRODUCTION_WEIGHT,
                 "playing_time_reliability": RELIABILITY_WEIGHT,
             },
-            "horizon_production_score": "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible MLB projection rows after ROS stability adjustment.",
+            "horizon_production_score": (
+                "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible "
+                "MLB projection rows; no ROS stability adjustment is applied before the season."
+                if preseason else
+                "Three-year ValuCast MLB dynasty horizon scaled between p05 and max of eligible MLB projection rows after ROS stability adjustment."
+            ),
             "horizon_model": "Carries the current ValuCast category projection forward through age-curve ratios and reliability decay.",
             "projection_stability": (
-                "Blends current-season category value with the same player's ROS "
-                "true-talent annualized category value; extreme current-over-ROS outliers receive the "
-                "largest pullback before dynasty-horizon scaling."
+                "Not applied before the season: no current-season results exist, so there is no "
+                "ROS true-talent value to blend with. The current-over-ROS pullback and the "
+                "current-line volatility discounts (the young_hitter_, young_sp_ and starter_volatility_ "
+                "parameters under role_adjustments) do not apply; the full-season projection is used as it stands."
+                if preseason else (
+                    "Blends current-season category value with the same player's ROS "
+                    "true-talent annualized category value; extreme current-over-ROS outliers receive the "
+                    "largest pullback before dynasty-horizon scaling."
+                )
             ),
             "true_talent_floor": (
-                "Established high-reliability MLB hitters and starters cannot fall below "
-                f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."
+                "Not applied before the season: the floor is tied to annualized ROS true-talent "
+                "value, which needs current-season results. The track-record floor "
+                "(see mlb_track_record) is separate and stays active; with no ROS value, its "
+                "weak-projection block turns on the full-season projection alone."
+                if preseason else (
+                    "Established high-reliability MLB hitters and starters cannot fall below "
+                    f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."
+                )
             ),
             "role_adjustments": {
                 "young_hitter_volatility_age_max": YOUNG_HITTER_VOLATILITY_AGE_MAX,
@@ -1311,7 +1413,11 @@ def build_mlb_dynasty_layer(
                 "sixty_day_il_extra_discount": MLB_AVAILABILITY_60_DAY_EXTRA_DISCOUNT,
             },
             "age_adjustment": "ValuCast identity birth-date age curve applied as of April 1 of the projection season when age is available.",
-            "age_source": "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID.",
+            "age_source": (
+                "projections/data/identity.json birth_date by MLBAM ID only; projection metadata age is not used before the season."
+                if preseason else
+                "projection metadata first, else projections/data/identity.json birth_date by MLBAM ID."
+            ),
             "projection_source": projection_source,
             "projection_source_kind": projection_source_kind,
         },
@@ -1319,7 +1425,11 @@ def build_mlb_dynasty_layer(
             "ready_for_live_consumers": ready_for_live_consumers,
             "row_count": len(board),
             "eligible_projection_count": len(eligible),
-            "missing_mlbam_count": missing_identity_count,
+            **_missing_mlbam_validation(
+                missing_identity_players,
+                missing_mlbam_exceptions or {},
+                missing_mlbam_exception_error,
+            ),
             "duplicate_identity_count": duplicate_identity_count,
             "horizon_year_count": len(HORIZON_YEAR_WEIGHTS),
             "age_coverage_count": age_coverage_count,
@@ -1385,6 +1495,7 @@ def run_mlb_dynasty_layer(
     identity_data_dir: Path = IDENTITY_DATA_DIR,
     projection_source: str | None = None,
     projection_source_kind: str = "valucast_current_projection",
+    missing_mlbam_exceptions_path: Path = MISSING_MLBAM_EXCEPTIONS_PATH,
 ) -> dict:
     store = ProjectionStore(projection_path)
     identities = load_identity_store(identity_data_dir)
@@ -1398,12 +1509,17 @@ def run_mlb_dynasty_layer(
         if availability_path.exists()
         else None
     )
+    missing_mlbam_exceptions, missing_mlbam_exception_error = load_missing_mlbam_exceptions(
+        missing_mlbam_exceptions_path
+    )
     payload = build_mlb_dynasty_layer(
         store.get_all(),
         _generated_at(store),
         identities=identities,
         track_record=track_record,
         availability=availability,
+        missing_mlbam_exceptions=missing_mlbam_exceptions,
+        missing_mlbam_exception_error=missing_mlbam_exception_error,
         projection_source=projection_source or _display_path(projection_path),
         projection_source_kind=projection_source_kind,
     )
@@ -1422,6 +1538,7 @@ def run_mlb_dynasty_layer(
         "archive_changed": archive_changed,
         "row_count": payload["validation"]["row_count"],
         "missing_mlbam_count": payload["validation"]["missing_mlbam_count"],
+        "missing_mlbam_blocking_count": payload["validation"]["missing_mlbam_blocking_count"],
         "ready_for_live_consumers": payload["validation"]["ready_for_live_consumers"],
         "availability_adjusted_count": payload["validation"]["availability_adjusted_count"],
     }

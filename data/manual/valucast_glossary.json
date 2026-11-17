@@ -4,6 +4,11 @@
   "principle": "Missing data stays missing; estimates are labeled.",
   "changelog": [
     {
+      "date": "2026-11-17",
+      "title": "Age basis stated; season wording follows the data",
+      "detail": "The board now states which age it shows (age on the board date) and which age MLB dynasty values use (age on April 1 of a named season); the dynasty CSV export and MLB player card also show the valued age where the data carries it. Board wording about which season a projection covers now follows the published projection data; the glossary and site description were reworded to hold in every phase. No value, rank, or projection input changed."
+    },
+    {
       "date": "2026-07-30",
       "title": "Foul-tip convention unified (display only)",
       "detail": "A caught foul tip now counts as a whiff in the play-by-play plate-discipline layer, matching the Savant convention the AAA Statcast layer already used. Whiff%, SwStr%, and Z-Contact% display values shift slightly from this date; no value, rank, or projection input changed."
@@ -167,7 +172,7 @@
       "id": "auction-value",
       "term": "Auction value",
       "aliases": ["$", "Now $"],
-      "definition": "A replacement-adjusted dollar allocation for the supplied teams, budget, and roster depth. Now $ isolates current-season projected production.",
+      "definition": "A replacement-adjusted dollar allocation for the supplied teams, budget, and roster depth. Now $ isolates one season's production, the season the board covers, not the multi-year dynasty horizon.",
       "origin": "adopted from fantasy-baseball valuation",
       "see_also": ["league-context", "dynasty-value"]
     },

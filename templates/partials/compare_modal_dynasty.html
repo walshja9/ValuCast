@@ -53,7 +53,7 @@
             </tr>
             {% endif %}
             <tr>
-                <td>Age</td>
+                <td title="Age on the board date. MLB values use age on April 1, {{ target_season if preseason else served_season }}.">Age</td>
                 <td>{% if r1.age is not none %}{{ r1.age }}{% else %}&mdash;{% endif %}</td>
                 <td>{% if r2.age is not none %}{{ r2.age }}{% else %}&mdash;{% endif %}</td>
             </tr>

@@ -255,6 +255,35 @@ class TestDynastyPresetValueContext(unittest.TestCase):
             self.assertEqual(float(exported["Dynasty $"]), context["dynasty_dollars"][row.id])
 
 
+class TestValuedAgeExport(unittest.TestCase):
+    CARRIED = {"model_age": 26, "components": {"age_source": "valucast_identity_birth_date"}}
+
+    def setUp(self):
+        rows = [
+            replace(_snapshot_row("a", "Carried Age", 1, 90.0), context=self.CARRIED),
+            _snapshot_row("b", "No Context", 2, 80.0),
+            replace(_snapshot_row("c", "Prospect", 3, 70.0, player_type="prospect"),
+                    context=self.CARRIED),
+        ]
+        for patcher in (patch.object(app_module, "dd_store", _PresetValueStore(rows)),
+                        patch("app._dynasty_z_map", return_value={})):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def test_valued_age_is_the_last_column_and_blank_when_not_carried(self):
+        with flask_app.test_request_context("/export?mode=dd_dynasty"):
+            response = app_module.export_csv()
+        reader = csv.reader(io.StringIO(response.get_data(as_text=True)))
+        header = next(reader)
+        self.assertEqual(header[-1], "Valued Age")
+        self.assertEqual(header[header.index("Age")], "Age")
+        rows = {row[header.index("Player")]: row for row in reader}
+        self.assertEqual(rows["Carried Age"][-1], "26")
+        self.assertEqual(rows["Carried Age"][header.index("Age")], "27")
+        self.assertEqual(rows["No Context"][-1], "")
+        self.assertEqual(rows["Prospect"][-1], "")
+
+
 class TestProspectExportParity(unittest.TestCase):
     def setUp(self):
         rows = [

@@ -261,6 +261,114 @@ def test_redraft_footer_uses_published_phase():
     assert b"Redraft values use Steamer 2027 full-season projections, scored against your league's categories and weights." in response.data
 
 
+def _redraft_page(phase, target, ros_status):
+    import app as app_module
+
+    with patch.object(app_module.store, "_projection_phase", phase), \
+         patch.object(app_module.store, "_target_season", target), \
+         patch.object(app_module.store, "_ros_status", ros_status):
+        response = app_module.app.test_client().get("/rankings?mode=categories&horizon=redraft")
+    assert response.status_code == 200
+    return response.data.decode("utf-8")
+
+
+def test_preseason_retained_feed_banner_agrees_with_footer():
+    # refresh() only publishes a preseason "retained" state when the kept rows
+    # are the target season's projections (see
+    # test_preseason_retained_ros_requires_matching_target), so the board shows
+    # 2027 projections kept from the last good fetch; the banner must say that.
+    html = _redraft_page("preseason_full_season", 2027, "retained")
+
+    assert "Redraft values use Steamer 2027 full-season projections" in html
+    assert "The latest projection feed was empty." in html
+    assert "most recent 2027 projections" in html
+    assert "available yet" not in html
+    assert "season final" not in html
+    assert "2026 stats" not in html
+    assert "<span>Projections</span>" in html
+
+
+def test_in_season_retained_banner_and_toggle_are_unchanged():
+    html = _redraft_page("in_season_outlook", 2026, "retained")
+
+    assert "2026 season final." in html
+    assert "2027 projections aren't available yet." in html
+    assert "<span>2026 stats</span>" in html
+    assert "The latest projection feed was empty." not in html
+
+
+_IN_SEASON = ("in_season_outlook", 2026)
+_PRESEASON = ("preseason_full_season", 2027)
+_CUSTOM_CATS = "cats=R,HR,RBI,SB,OBP&pcats=W,SV,K,ERA,WHIP"
+
+
+def _page(path, phase, target):
+    """A page rendered from the given PUBLISHED phase metadata, whitespace-flattened."""
+    import app as app_module
+
+    with patch.object(app_module.store, "_projection_phase", phase), \
+         patch.object(app_module.store, "_target_season", target), \
+         patch.object(app_module.store, "_ros_status", "fetched"):
+        response = app_module.app.test_client().get(path)
+    assert response.status_code == 200
+    return " ".join(response.get_data(as_text=True).split())
+
+
+def test_dynasty_footer_data_line_follows_published_phase():
+    html = _page("/?mode=dd_dynasty", *_PRESEASON)
+    assert ("Data: Dynasty model + prospect feed - MLB stats from FanGraphs Steamer 2027 "
+            "full-season projections + MLB Stats API") in html
+    assert "Steamer rest-of-season + MLB Stats API" not in html
+
+    html = _page("/?mode=dd_dynasty", *_IN_SEASON)
+    assert ("Data: Dynasty model + prospect feed - MLB stats from FanGraphs Steamer "
+            "rest-of-season + MLB Stats API") in html
+    assert "full-season projections + MLB Stats API" not in html
+
+
+def test_redraft_footer_data_line_follows_published_phase():
+    html = _page("/", *_PRESEASON)
+    assert "Data: FanGraphs Steamer 2027 full-season projections + MLB Stats API" in html
+    assert "Steamer rest-of-season + MLB Stats API" not in html
+
+    html = _page("/", *_IN_SEASON)
+    assert "Data: FanGraphs Steamer rest-of-season + MLB Stats API" in html
+    assert "full-season projections + MLB Stats API" not in html
+
+
+def test_methodology_default_board_sentence_follows_published_phase():
+    html = _page("/methodology", *_PRESEASON)
+    assert ("Before the season starts, the default board values Steamer full-season "
+            "projections for 2027; adjustments that depend on current-season results "
+            "are not applied.") in html
+    assert "values current-season actuals + Steamer" not in html
+    assert "not an apples-to-apples backtest" in html
+
+    html = _page("/methodology", *_IN_SEASON)
+    assert ("The <strong>default board</strong> values current-season actuals + Steamer "
+            "rest-of-season.") in html
+    assert "Before the season starts" not in html
+    assert "not an apples-to-apples backtest" in html
+
+
+def test_now_dollar_wording_follows_published_phase():
+    path = "/?mode=dd_dynasty&" + _CUSTOM_CATS
+
+    html = _page(path, *_PRESEASON)
+    assert 'title="The upcoming 2027 season only, in your categories — Steamer"' in html
+    assert 'title="Upcoming-season auction value."' in html
+    assert ("Now $ is auction value for the upcoming 2027 season only, in your "
+            "categories, using Steamer.") in html
+    assert "This season only" not in html
+    assert "this-season auction value" not in html
+
+    html = _page(path, *_IN_SEASON)
+    assert 'title="This season only, in your categories — Steamer"' in html
+    assert 'title="Current-season auction value."' in html
+    assert "Now $ is this-season auction value in your categories, using Steamer." in html
+    assert "upcoming 2027 season" not in html
+
+
 @pytest.mark.parametrize("count,expected", [(250, "live"), (249, "not_live"), (0, "unknown")])
 def test_feed_verdict_thresholds(count, expected):
     from scripts.check_steamer_season import verdict
