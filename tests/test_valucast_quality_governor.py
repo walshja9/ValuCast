@@ -886,8 +886,8 @@ def test_stability_check_says_not_evaluated_when_no_row_has_a_ros_value():
     assert check["status"] == "passed"
     assert check["evaluated"] is False
     assert check["message"] == (
-        "Not evaluated: no top-25 MLB row carries a rest-of-season value. "
-        "This is expected before the season starts."
+        "Not evaluated: no top-25 MLB row carries a rest-of-season value, "
+        "so there was nothing to compare."
     )
     assert check["metrics"]["top_n"] == 25
     assert check["metrics"]["eligible_count"] == 3

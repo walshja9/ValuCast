@@ -1280,7 +1280,8 @@ def build_mlb_dynasty_layer(
             "true_talent_floor": (
                 "Not applied before the season: the floor is tied to annualized ROS true-talent "
                 "value, which needs current-season results. The track-record floor "
-                "(see mlb_track_record) is separate and stays active."
+                "(see mlb_track_record) is separate and stays active; with no ROS value, its "
+                "weak-projection block turns on the full-season projection alone."
                 if preseason else (
                     "Established high-reliability MLB hitters and starters cannot fall below "
                     f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."

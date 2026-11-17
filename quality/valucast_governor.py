@@ -552,8 +552,8 @@ def _mlb_projection_stability_outliers(players: list[dict]) -> dict:
         # Status stays "passed" (no row can fail), but the record must not read
         # as a real evaluation that found nothing.
         message = (
-            f"Not evaluated: no top-{MLB_STABILITY_TOP_N} MLB row carries a rest-of-season value. "
-            "This is expected before the season starts."
+            f"Not evaluated: no top-{MLB_STABILITY_TOP_N} MLB row carries a rest-of-season value, "
+            "so there was nothing to compare."
         )
     elif passed:
         message = "Top MLB rows do not retain extreme current-over-ROS projection outliers after stability adjustment."

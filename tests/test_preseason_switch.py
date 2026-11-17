@@ -306,7 +306,9 @@ def _page(path, phase, target):
     """A page rendered from the given PUBLISHED phase metadata, whitespace-flattened."""
     import app as app_module
 
-    with patch.object(app_module.store, "_projection_phase", phase),          patch.object(app_module.store, "_target_season", target),          patch.object(app_module.store, "_ros_status", "fetched"):
+    with patch.object(app_module.store, "_projection_phase", phase), \
+         patch.object(app_module.store, "_target_season", target), \
+         patch.object(app_module.store, "_ros_status", "fetched"):
         response = app_module.app.test_client().get(path)
     assert response.status_code == 200
     return " ".join(response.get_data(as_text=True).split())
