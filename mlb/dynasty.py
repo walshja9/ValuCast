@@ -933,7 +933,7 @@ def load_missing_mlbam_exceptions(
         return {}, None
     try:
         return _clean_missing_mlbam_exceptions(
-            json.loads(path.read_text(encoding="utf-8"))
+            json.loads(path.read_text(encoding="utf-8-sig"))
         ), None
     except (OSError, ValueError) as exc:
         return {}, f"{path.name} could not be used: {exc}"

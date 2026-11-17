@@ -273,6 +273,18 @@ def test_mlb_layer_unlisted_missing_mlbam_still_blocks_and_records_feed_id():
     ]
 
 
+def test_mlb_layer_missing_mlbam_exception_does_not_match_on_name_and_role_alone():
+    payload = _layer_with_exceptions(
+        [_hitter(), _hitter("fg-7", "", "Overseas Star")],
+        {"fg-9": _EXCEPTION_ENTRY},
+    )
+
+    validation = payload["validation"]
+    assert validation["missing_mlbam_blocking_count"] == 1
+    assert validation["missing_mlbam_blocking"][0]["id"] == "fg-7"
+    assert validation["missing_mlbam_excepted"] == []
+
+
 @pytest.mark.parametrize(
     "entry",
     [
@@ -348,6 +360,14 @@ def test_mlb_layer_invalid_exceptions_file_applies_nothing_and_records_error(
 
 def test_missing_mlbam_exceptions_file_absent_means_no_exceptions_and_no_error(tmp_path):
     assert load_missing_mlbam_exceptions(tmp_path / "absent.json") == ({}, None)
+
+
+def test_missing_mlbam_exceptions_file_saved_with_a_byte_order_mark_is_read(tmp_path):
+    # Windows editors often add one; it must not turn a valid list into an error.
+    path = tmp_path / "missing_mlbam_exceptions.json"
+    path.write_text(json.dumps({"fg-9": _EXCEPTION_ENTRY}), encoding="utf-8-sig")
+
+    assert load_missing_mlbam_exceptions(path) == ({"fg-9": _EXCEPTION_ENTRY}, None)
 
 
 def test_mlb_layer_empty_exceptions_file_changes_nothing(tmp_path):
