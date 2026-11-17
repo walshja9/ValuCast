@@ -11,7 +11,8 @@ from app import app, context_season, store
 @contextmanager
 def published_phase(phase, target):
     """Serve pages as if the projection feed had been published with this phase and target season."""
-    with patch.object(store, "_projection_phase", phase),          patch.object(store, "_target_season", target):
+    with patch.object(store, "_projection_phase", phase), \
+         patch.object(store, "_target_season", target):
         yield
 
 
