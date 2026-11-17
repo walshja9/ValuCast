@@ -261,6 +261,42 @@ def test_redraft_footer_uses_published_phase():
     assert b"Redraft values use Steamer 2027 full-season projections, scored against your league's categories and weights." in response.data
 
 
+def _redraft_page(phase, target, ros_status):
+    import app as app_module
+
+    with patch.object(app_module.store, "_projection_phase", phase), \
+         patch.object(app_module.store, "_target_season", target), \
+         patch.object(app_module.store, "_ros_status", ros_status):
+        response = app_module.app.test_client().get("/rankings?mode=categories&horizon=redraft")
+    assert response.status_code == 200
+    return response.data.decode("utf-8")
+
+
+def test_preseason_retained_feed_banner_agrees_with_footer():
+    # refresh() only publishes a preseason "retained" state when the kept rows
+    # are the target season's projections (see
+    # test_preseason_retained_ros_requires_matching_target), so the board shows
+    # 2027 projections kept from the last good fetch; the banner must say that.
+    html = _redraft_page("preseason_full_season", 2027, "retained")
+
+    assert "Redraft values use Steamer 2027 full-season projections" in html
+    assert "The latest projection feed was empty." in html
+    assert "most recent 2027 projections" in html
+    assert "available yet" not in html
+    assert "season final" not in html
+    assert "2026 stats" not in html
+    assert "<span>Projections</span>" in html
+
+
+def test_in_season_retained_banner_and_toggle_are_unchanged():
+    html = _redraft_page("in_season_outlook", 2026, "retained")
+
+    assert "2026 season final." in html
+    assert "2027 projections aren't available yet." in html
+    assert "<span>2026 stats</span>" in html
+    assert "The latest projection feed was empty." not in html
+
+
 @pytest.mark.parametrize("count,expected", [(250, "live"), (249, "not_live"), (0, "unknown")])
 def test_feed_verdict_thresholds(count, expected):
     from scripts.check_steamer_season import verdict

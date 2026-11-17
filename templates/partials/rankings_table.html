@@ -1,4 +1,6 @@
-{% if ros_retained %}
+{% if ros_retained and preseason %}
+<div class="notice" role="status"><strong>The latest projection feed was empty.</strong> These values use the most recent {{ target_season }} projections we have.</div>
+{% elif ros_retained %}
 <div class="notice" role="status"><strong>{{ served_season }} season final.</strong> These values show {{ served_season }} results, not a {{ served_season + 1 }} forecast. {{ served_season + 1 }} projections aren't available yet.</div>
 {% endif %}
 <div class="results-meta">
