@@ -189,8 +189,10 @@ def test_value_contract_text_follows_the_season_phase():
 
     players = [_hitter(metadata={"age": 25}), _pitcher(metadata={"age": 28})]
     identities = {"1": {"birth_date": "2001-01-01"}, "2": {"birth_date": "1998-01-01"}}
-    in_season = build_mlb_dynasty_layer(players, "2026-06-13", identities=identities)["value_contract"]
-    with patch.object(season, "TARGET_SEASON", 2027):
+    # Pin both season constants so the test does not depend on the shipped values.
+    with patch.object(season, "CONTEXT_SEASON", 2026), patch.object(season, "TARGET_SEASON", 2026):
+        in_season = build_mlb_dynasty_layer(players, "2026-06-13", identities=identities)["value_contract"]
+    with patch.object(season, "CONTEXT_SEASON", 2026), patch.object(season, "TARGET_SEASON", 2027):
         preseason = build_mlb_dynasty_layer(players, "2026-11-02", identities=identities)["value_contract"]
 
     assert in_season["phase"] == "in_season"
