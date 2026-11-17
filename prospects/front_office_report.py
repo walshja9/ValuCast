@@ -203,6 +203,11 @@ def build_front_office_report(
     governor_all_passed = bool(governor_checks) and all(
         check.get("status") == "passed" for check in governor_checks
     )
+    # Checks that passed without evaluating any row (see the governor's
+    # `evaluated` key); the evidence line says so but the pass is unchanged.
+    governor_unevaluated_checks = [
+        check.get("id") for check in governor_checks if check.get("evaluated") is False
+    ]
     public_ready = snapshot_validation.get("ready_for_live_consumers") is True
     surface_readiness = snapshot_validation.get("surface_readiness") or {}
     dynasty_ready = (
@@ -309,6 +314,7 @@ def build_front_office_report(
                 "public_snapshot_ready": public_ready,
                 "quality_governor_ready": governor_ready,
                 "quality_governor_all_checks_passed": governor_all_passed,
+                "quality_governor_unevaluated_checks": governor_unevaluated_checks,
                 "row_count": row_count,
                 "duplicate_identity_count": duplicate_identity_count,
                 "surface_readiness": snapshot_validation.get("surface_readiness"),

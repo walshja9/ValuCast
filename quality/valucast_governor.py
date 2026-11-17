@@ -516,6 +516,7 @@ def _mlb_projection_stability_outliers(players: list[dict]) -> dict:
         and (_clean_int(row.get("rank")) or 999999) <= MLB_STABILITY_TOP_N
     ]
     outliers = []
+    evaluated_count = 0
     for row in sorted(top_rows, key=lambda item: _clean_int(item.get("rank")) or 999999):
         stability = _projection_stability(row)
         current_value = _clean_float(stability.get("current_season_category_value"))
@@ -524,6 +525,7 @@ def _mlb_projection_stability_outliers(players: list[dict]) -> dict:
         ros_weight = _clean_float(stability.get("ros_stability_weight"))
         if current_value is None or ros_value is None or ros_weight is None:
             continue
+        evaluated_count += 1
         gap = round(current_value - ros_value, 4)
         adjusted_gap = round((adjusted_value if adjusted_value is not None else current_value) - ros_value, 4)
         if (
@@ -546,21 +548,32 @@ def _mlb_projection_stability_outliers(players: list[dict]) -> dict:
                 }
             )
     passed = not outliers
-    return _check(
+    if not evaluated_count:
+        # Status stays "passed" (no row can fail), but the record must not read
+        # as a real evaluation that found nothing.
+        message = (
+            f"Not evaluated: no top-{MLB_STABILITY_TOP_N} MLB row carries a rest-of-season value. "
+            "This is expected before the season starts."
+        )
+    elif passed:
+        message = "Top MLB rows do not retain extreme current-over-ROS projection outliers after stability adjustment."
+    else:
+        message = "Top MLB rows retain extreme current-over-ROS projection outliers after stability adjustment."
+    check = _check(
         "mlb_projection_stability_outliers",
         passed,
-        (
-            "Top MLB rows do not retain extreme current-over-ROS projection outliers after stability adjustment."
-            if passed
-            else "Top MLB rows retain extreme current-over-ROS projection outliers after stability adjustment."
-        ),
+        message,
         top_n=MLB_STABILITY_TOP_N,
         current_over_ros_gap_limit=MAX_TOP_MLB_CURRENT_OVER_ROS_GAP,
         adjusted_over_ros_gap_limit=MAX_TOP_MLB_ADJUSTED_OVER_ROS_GAP,
         ros_stability_weight_limit=MAX_TOP_MLB_ROS_STABILITY_WEIGHT,
+        eligible_count=len(top_rows),
+        evaluated_count=evaluated_count,
         outlier_count=len(outliers),
         samples=outliers[:10],
     )
+    check["evaluated"] = evaluated_count > 0
+    return check
 
 
 def _is_pitcher_row(row: dict) -> bool:

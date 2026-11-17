@@ -858,6 +858,81 @@ def test_quality_governor_allows_extreme_raw_mlb_outlier_after_stability_adjustm
     assert payload["blockers"] == []
 
 
+def _stability_payload(players, prospects):
+    return evaluate_quality_governor(
+        players,
+        prospect_rank=_prospect_rank(prospects),
+        prospect_coverage_audit=_coverage_audit(),
+        buy_signals=_buy_signals(ready=False),
+        buy_review={"review_status": "blocked"},
+        generated_at="2026-06-13T12:00:00+00:00",
+    )
+
+
+def test_stability_check_says_not_evaluated_when_no_row_has_a_ros_value():
+    # Before a season no row carries a rest-of-season value, so nothing can be
+    # compared. The record must say so, yet the check still counts as passed.
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    players = [
+        _mlb_row(1, "MLB Star", "hitter", 1, 90.0),
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        _mlb_row(3, "MLB Core", "pitcher", 3, 70.0),
+        *prospects,
+    ]
+
+    payload = _stability_payload(players, prospects)
+    check = _check_by_id(payload, "mlb_projection_stability_outliers")
+
+    assert check["status"] == "passed"
+    assert check["evaluated"] is False
+    assert check["message"] == (
+        "Not evaluated: no top-25 MLB row carries a rest-of-season value. "
+        "This is expected before the season starts."
+    )
+    assert check["metrics"]["top_n"] == 25
+    assert check["metrics"]["eligible_count"] == 3
+    assert check["metrics"]["evaluated_count"] == 0
+    assert check["metrics"]["outlier_count"] == 0
+    # Readiness is computed exactly as before: the unevaluated pass still passes.
+    assert payload["ready_for_public_snapshot"] is True
+    assert payload["blockers"] == []
+
+
+def test_stability_check_reports_evaluated_rows_with_the_normal_message():
+    prospects = [_prospect_row(index) for index in range(1, 51)]
+    evaluated = _mlb_row(1, "Adjusted Spike", "pitcher", 1, 92.0)
+    evaluated["context"] = {
+        "components": {
+            "projection_stability": {
+                "current_season_category_value": 24.0,
+                "ros_category_value": 11.0,
+                "stability_adjusted_category_value": 15.0,
+                "ros_stability_weight": 0.7,
+            }
+        }
+    }
+    players = [
+        evaluated,
+        _mlb_row(2, "MLB Anchor", "hitter", 2, 80.0),
+        _mlb_row(3, "MLB Core", "pitcher", 3, 70.0),
+        *prospects,
+    ]
+
+    check = _check_by_id(
+        _stability_payload(players, prospects), "mlb_projection_stability_outliers"
+    )
+
+    assert check["status"] == "passed"
+    assert check["evaluated"] is True
+    assert check["message"] == (
+        "Top MLB rows do not retain extreme current-over-ROS projection outliers "
+        "after stability adjustment."
+    )
+    assert check["metrics"]["eligible_count"] == 3
+    assert check["metrics"]["evaluated_count"] == 1
+    assert check["metrics"]["outlier_count"] == 0
+
+
 def test_quality_governor_blocks_pitcher_heavy_top_dynasty_board():
     prospects = [_prospect_row(index) for index in range(1, 51)]
     players = [
