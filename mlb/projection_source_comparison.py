@@ -19,6 +19,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from prospects.gate import decide_gate, validate_gate
+from projections.export.valucast_hp_run import AS_OF_SEASON, in_house_season_context
 
 ROOT = Path(__file__).resolve().parents[1]
 MARCEL_PATH = ROOT / "projections" / "runs" / "valucast_hp_2026_v2" / "projections.json"
@@ -137,6 +138,7 @@ def build_freeze(marcel_rows: list[dict], steamer_rows: list[dict], generated_at
         "date": _date_part(generated_at),
         "generated_at": generated_at,
         "comparison_version": COMPARISON_VERSION,
+        **in_house_season_context(),
         "sources": {
             "valucast_hp": {
                 "source": "projections/runs/valucast_hp_2026_v2/projections.json",
@@ -600,6 +602,7 @@ def build_comparison(
         "status": "shadow_only",  # repo-wide provenance label; this layer never feeds live
         "comparison_version": COMPARISON_VERSION,
         "generated_at": generated_at,
+        **in_house_season_context(),
         "advisory_only": True,
         "live_source_flip": {
             "automatic": False,
@@ -612,6 +615,8 @@ def build_comparison(
             "metric": METRIC,
             "rate_actuals_method": rate_actuals_method,
             "frozen_as_of": (frozen or {}).get("date"),
+            "frozen_in_house_season": (frozen or {}).get("in_house_season", AS_OF_SEASON),
+            "frozen_target_season": (frozen or {}).get("target_season"),
             "horizon_days": horizon_days,
             "min_horizon_days": MIN_HORIZON_DAYS,
             "horizon_sufficient": horizon_ok,

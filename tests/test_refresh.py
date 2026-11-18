@@ -458,7 +458,7 @@ class TestPayloadProvenance(unittest.TestCase):
             prior = (json.dumps([_FAKE_ROS_HITTER], indent=2) + "\r\n").encode("utf-8")
             with open(paths["ros_output_path"], "wb") as stream:
                 stream.write(prior)
-            self._write_metadata(paths, {"target_season": 2026})
+            self._write_metadata(paths, {"target_season": 2027})
             with patch("scraper.refresh.fetch_all",
                        return_value={key: [] for key in _RAW_RETURN}), \
                  patch("scraper.refresh.regular_season_games_final", return_value=0), \

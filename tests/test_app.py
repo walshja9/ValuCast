@@ -348,10 +348,13 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         self.assertNotIn('<span class="stat-label">Roster Context</span>', body)
 
     def test_redraft_card_explains_the_decision_hierarchy(self):
-        response = self.client.get(
-            "/player/19755?mode=categories",
-            headers={"HX-Request": "true"},
-        )
+        # The card's rest-of-season section needs in-season rows (metadata stats_ros).
+        meta = app_module.store.get_by_id("19755").metadata
+        with patch.dict(meta, {"stats_ros": {"PA": 100, "HR": 5, "R": 20}}):
+            response = self.client.get(
+                "/player/19755?mode=categories",
+                headers={"HX-Request": "true"},
+            )
         self.assertEqual(response.status_code, 200)
         body = response.data.decode()
         self.assertIn("ValuCast Value: ", body)
@@ -366,6 +369,26 @@ class TestPlayerCardDecisionHierarchy(unittest.TestCase):
         )
         self.assertIn("Rest-of-Season Projection (Steamer)", body)
         self.assertIn("via Baseball Savant", body)
+        self.assert_reading_guide(body)
+
+    def test_redraft_card_before_the_season_has_no_rest_of_season_section(self):
+        # Preseason rows carry last season's actuals and no stats_ros; the actuals are
+        # synthetic so this does not depend on what the committed row holds.
+        meta = app_module.store.get_by_id("19755").metadata
+        preseason = {**meta, "stats_actual": {"PA": 100, "HR": 5, "R": 20}}
+        preseason.pop("stats_ros", None)
+        with patch.dict(meta, preseason, clear=True):
+            response = self.client.get(
+                "/player/19755?mode=categories",
+                headers={"HX-Request": "true"},
+            )
+        self.assertEqual(response.status_code, 200)
+        body = response.data.decode()
+        self.assertNotIn("Rest-of-Season Projection (Steamer)", body)
+        self.assertIn(f"<h4>{app_module.context_season()} Actual Stats", body)
+        self.assertIn("ValuCast Value: ", body)
+        self.assertIn('<span class="profile-card-kicker">ValuCast Value</span>', body)
+        self.assertIn("<h4>Projected performance</h4>", body)
         self.assert_reading_guide(body)
 
 
@@ -1339,7 +1362,8 @@ class TestConfidenceIntegration(unittest.TestCase):
         from unittest.mock import patch
         from app import store
 
-        with patch.object(store, "_ros_status", "retained"):
+        with patch.object(store, "_ros_status", "retained"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             redraft = self.client.get("/rankings?mode=categories&horizon=redraft").data.decode("utf-8")
             dynasty = self.client.get("/rankings?mode=dd_dynasty").data.decode("utf-8")
         self.assertIn("2026 season final.", redraft)
@@ -1348,7 +1372,8 @@ class TestConfidenceIntegration(unittest.TestCase):
         self.assertNotIn("rest-of-season projections", redraft)
         self.assertNotIn("season final.", dynasty)
 
-        with patch.object(store, "_ros_status", "fetched"):
+        with patch.object(store, "_ros_status", "fetched"), \
+             patch.object(store, "_projection_phase", "in_season_outlook"):
             redraft = self.client.get("/rankings?mode=categories&horizon=redraft").data.decode("utf-8")
         self.assertNotIn("season final.", redraft)
         self.assertIn("rest-of-season projections", redraft)

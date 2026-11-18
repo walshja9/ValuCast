@@ -10,7 +10,7 @@ CONTEXT_SEASON = 2026
 
 # The season current.json projects. Flip to CONTEXT_SEASON + 1 by hand once
 # the full-season feed holds that season.
-TARGET_SEASON = 2026
+TARGET_SEASON = 2027
 
 
 def is_preseason() -> bool:

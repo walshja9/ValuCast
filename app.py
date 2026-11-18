@@ -31,6 +31,7 @@ from league_values.models import PlayerPool, ValuationResult
 from mlb.dynasty import _percentile, _scale_value
 from mlb.playing_time_role import TRACKER_VERSION as ROLE_TRACKER_VERSION
 from mlb.playing_time_role import role_watch_rows
+from projections.export.valucast_hp_run import in_house_season_context
 from scraper.season import context_season
 from scripts.validate_playing_time_role_tracker import validate_playing_time_role_tracker
 from scouting.voice import uncalibrated_projection_claims
@@ -501,6 +502,7 @@ def _snapshot_staleness():
         "served_season": context_season(),
         "preseason": store.projection_phase == "preseason_full_season",
         "target_season": store.target_season,
+        "hp_season_context": in_house_season_context(),
     }
 
 
@@ -4192,6 +4194,8 @@ def _dynasty_card_read(row, context):
             sentences.append(projection)
     if status:
         sentences.append(status)
+    if role_bits and role_profile.get("season_note"):
+        sentences.insert(0, role_profile["season_note"])
 
     read = re.sub(r"\bMlb\b", "MLB", " ".join(s for s in sentences if s).strip())
     if read:
@@ -5931,7 +5935,8 @@ def intelligence_hub():
             "kicker": "MLB role context",
             "copy": (
                 "Official MLB ID role profiles separate active roster status, injury risk, "
-                "projected volume, and role basis from the value score."
+                "projected volume, and role basis from the value score. "
+                + in_house_season_context()["season_note"]
             ),
             "metric": (
                 f"{((role_tracker or {}).get('summary') or {}).get('profile_count', 0)} profiles"
@@ -6261,7 +6266,7 @@ def _artifact_context_for_row(row) -> dict:
     )
     role_profile = _role_tracker_profile_for_row(role_profiles, row)
     if role_profile:
-        role_profile = dict(role_profile)
+        role_profile = {**role_profile, **in_house_season_context()}
         if role_profile.get("role_context_status") == "blocked":
             role_profile["projected_role_label"] = "Not rated"
             role_profile["projected_volume"] = None

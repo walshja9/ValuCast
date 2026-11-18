@@ -497,6 +497,7 @@
             {% if role_profile and role_profile.role_basis %}
             <p class="sample-context-note">{{ role_profile.role_basis | replace("_", " ") | capitalize }}.</p>
             {% endif %}
+            {% if role_profile %}<p class="sample-context-note">{{ hp_season_context.season_note }}</p>{% endif %}
         </div>
         {% endif %}
 
@@ -896,6 +897,7 @@
             {% if role_profile and role_profile.role_basis %}
             <p class="sample-context-note">{{ role_profile.role_basis | replace("_", " ") | capitalize }}.</p>
             {% endif %}
+            {% if role_profile %}<p class="sample-context-note">{{ hp_season_context.season_note }}</p>{% endif %}
         </div>
         {% endif %}
 

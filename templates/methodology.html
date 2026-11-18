@@ -40,6 +40,7 @@
 
     <section>
         <h3>The two boards</h3>
+        <p class="profile-note">{{ hp_season_context.season_note }}</p>
         <p>{% if preseason %}Before the season starts, the default board values Steamer full-season projections for {{ target_season }}; adjustments that depend on current-season results are not applied.{% else %}The <strong>default board</strong> values current-season actuals + Steamer
         rest-of-season.{% endif %} The <strong>ValuCast board</strong> values our own full-season
         projection. Flipping the toggle is useful for eyeballing differences, but it is
@@ -415,6 +416,7 @@
 
     <section>
         <h3>What we have and haven't proven</h3>
+        <p class="profile-note">{{ hp_season_context.season_note }}</p>
         <p>Our validation is against internal baselines (persistence and classic Marcel),
         which it beats on held-out data. ValuCast has <strong>not yet proven</strong> it
         beats Steamer or ZiPS: we lack matching archived preseason projections for a fair,

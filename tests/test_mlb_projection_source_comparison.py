@@ -15,6 +15,7 @@ from mlb.projection_source_comparison import (
     _scoreable,
 )
 from scripts.build_mlb_dynasty_layer import _resolve_source
+from scraper import season
 
 
 def _hitter(mlbam, avg, obp, slg, ops, pa=120.0):
@@ -195,6 +196,31 @@ def test_build_freeze_captures_rate_lines_and_coverage():
     hp = freeze["sources"]["valucast_hp"]
     assert hp["coverage"] == {"player_count": 1, "hitter_count": 1, "pitcher_count": 0}
     assert hp["rate_lines"]["1"]["rates"]["OPS"] == 0.880
+
+
+def test_comparison_labels_current_seasons_without_restamping_older_freeze(monkeypatch):
+    monkeypatch.setattr(season, "TARGET_SEASON", 2026)
+    frozen = build_freeze([], [], "2026-06-18T00:00:00+00:00")
+    assert frozen["in_house_season"] == 2026
+    assert frozen["target_season"] == 2026
+    kwargs = dict(
+        frozen=frozen, actual_lines={}, live_layer=None, shadow_layer=None,
+        generated_at="2026-11-16T00:00:00+00:00",
+    )
+    before = build_comparison(**kwargs)
+
+    monkeypatch.setattr(season, "TARGET_SEASON", 2027)
+    current = build_comparison(**kwargs)
+    assert current["in_house_season"] == 2026
+    assert current["target_season"] == 2027
+    assert current["season_note"] == "In-house line: 2026 season; not a 2027 comparison."
+    assert current["comparison_basis"]["frozen_in_house_season"] == 2026
+    assert current["comparison_basis"]["frozen_target_season"] == 2026
+    for key in ("scores", "role_scores", "gate", "role_gates", "publication_veto"):
+        assert current[key] == before[key]
+    new_freeze = build_freeze([], [], "2026-11-16T00:00:00+00:00")
+    assert new_freeze["in_house_season"] == 2026
+    assert new_freeze["target_season"] == 2027
 
 
 def test_marcel_wins_with_enough_horizon_and_sample():

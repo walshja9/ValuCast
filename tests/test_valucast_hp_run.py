@@ -6,6 +6,20 @@ from pathlib import Path
 from projections.export.valucast_hp_run import write_valucast_hp_run
 
 
+def test_in_house_season_context_follows_existing_season_constants(monkeypatch):
+    import scraper.season as season
+    from projections.export.valucast_hp_run import in_house_season_context
+
+    monkeypatch.setattr(season, "TARGET_SEASON", 2027)
+    assert in_house_season_context() == {
+        "in_house_season": 2026,
+        "target_season": 2027,
+        "season_note": "In-house line: 2026 season; not a 2027 comparison.",
+    }
+    monkeypatch.setattr(season, "TARGET_SEASON", 2026)
+    assert in_house_season_context()["season_note"] == "In-house line: 2026 season."
+
+
 def _h(pid):
     return {"id": f"mlbam_{pid}_H", "name": pid, "pool": "hitter", "positions": [],
             "stats": {"PA": 600, "HR": 25, "AVG": 0.280}, "metadata": {"mlbam_id": pid}}

@@ -58,6 +58,18 @@ class TestMethodologyValidation(unittest.TestCase):
         self.assertIn("will not become the default", low)
         self.assertNotIn("external benchmark", low)
 
+    def test_labels_in_house_season_when_target_differs(self):
+        with patch("scraper.season.TARGET_SEASON", 2027):
+            html = self.client.get("/methodology").data.decode("utf-8")
+        self.assertTrue(
+            "In-house line: 2026 season; not a 2027 comparison." in html,
+            "missing in-house season mismatch note",
+        )
+        with patch("scraper.season.TARGET_SEASON", 2026):
+            html = self.client.get("/methodology").data.decode("utf-8")
+        self.assertTrue("In-house line: 2026 season." in html, "missing in-house season note")
+        self.assertNotIn("not a 2027 comparison", html)
+
     # The changelog says what a reader will notice, without announcing the season.
     def test_changelog_records_age_basis_and_phase_wording(self):
         glossary = json.loads(

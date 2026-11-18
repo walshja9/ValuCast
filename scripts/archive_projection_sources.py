@@ -24,6 +24,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from projections.export.valucast_hp_run import in_house_season_context  # noqa: E402
+
 ARCHIVE_DIR = ROOT / "data" / "prediction_archive" / "projection_source_ros"
 RAW_DIR = ROOT / "data" / "projections" / "raw"
 METADATA_PATH = ROOT / "data" / "projections" / "metadata.json"
@@ -159,14 +161,18 @@ def build_archive_payload(
                 f"source {name} has {count} archivable rows (< {min_rows}) -- "
                 "refusing to archive a truncated vintage"
             )
+    season_context = in_house_season_context()
     return {
         "as_of": as_of,
         "season": season,
+        **season_context,
         "scope": "rest_of_season",
         "cadence_days": CADENCE_DAYS,
         "join_key": "mlbam_id",
         "sources": {
             name: {
+                "projection_season": season_context["in_house_season"] if name == "valucast_hp" else None,
+                "projection_scope": "rest_of_season" if name == "valucast_hp" else "unverified_raw_source",
                 "row_count": len(bundle["rows"]),
                 "dropped_no_mlbam": bundle["dropped_no_mlbam"],
                 "dropped_zero_volume": bundle["dropped_zero_volume"],
