@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-17",
+  "generated_at": "2026-11-18",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.6.1",
   "limitations": [],
@@ -161707,16 +161707,30 @@
     "blockers": [],
     "duplicate_identity_count": 0,
     "eligible_projection_count": 985,
-    "generated_date": "2026-11-17",
+    "generated_date": "2026-11-18",
     "horizon_year_count": 3,
+    "missing_mlbam_blocking": [],
+    "missing_mlbam_blocking_count": 0,
     "missing_mlbam_count": 0,
+    "missing_mlbam_excepted": [],
+    "missing_mlbam_exception_error": null,
     "ranks_contiguous": true,
     "ready_for_live_consumers": true,
     "row_count": 985,
     "track_record_coverage_rate": 1.0,
     "track_record_present": true,
     "track_record_profile_count": 985,
-    "track_record_ready": true
+    "track_record_ready": true,
+    "unused_missing_mlbam_exceptions": [
+      {
+        "id": "sa3062990",
+        "name": "Kaima Taira"
+      },
+      {
+        "id": "sa3063811",
+        "name": "Teruaki Sato"
+      }
+    ]
   },
   "value_by_preset_menu": [
     "5x5",
@@ -161756,6 +161770,7 @@
     "horizon_years": 3,
     "mlb_availability": "Optional official MLB Stats API transaction contract. Active injured-list and rehab statuses receive bounded role-aware risk discounts keyed only by MLBAM ID.",
     "mlb_track_record": "Optional ValuCast-owned factual MLB history contract. Established players can receive a track-record floor; limited-history players can receive a transparent certainty haircut.",
+    "phase": "in_season",
     "playing_time_reliability": "PA/IP volume shrinkage score from the same projection artifact.",
     "projection_source": "data/projections/current.json",
     "projection_source_kind": "valucast_current_projection",
