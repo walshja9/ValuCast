@@ -39,7 +39,7 @@
     "status": "watchlist_active",
     "v0_7_disagreement_count": 25
   },
-  "generated_at": "2026-11-18T12:18:04.694529+00:00",
+  "generated_at": "2026-11-18T14:34:36.411461+00:00",
   "next_build_order": [
     "Sustain the forward archive so the earned grade stays supported as new cohorts resolve.",
     "Run the Prospect Model v0.7-vs-v0.6 bucket comparison and publish the by-bucket verdict.",
@@ -80,8 +80,10 @@
         "public_snapshot_ready": false,
         "quality_governor_all_checks_passed": false,
         "quality_governor_ready": false,
-        "quality_governor_unevaluated_checks": [],
-        "row_count": 4160,
+        "quality_governor_unevaluated_checks": [
+          "mlb_projection_stability_outliers"
+        ],
+        "row_count": 4274,
         "surface_readiness": {
           "buys": true,
           "dynasty": true,

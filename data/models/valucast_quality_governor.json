@@ -9,33 +9,33 @@
       "id": "mlb_top_value_gap",
       "message": "Top MLB dynasty value is within the maximum spike threshold.",
       "metrics": {
-        "gap": 6.18,
+        "gap": 1.81,
         "max_allowed_gap": 18.0,
         "second": {
-          "mlbam_id": 691406,
-          "name": "Junior Caminero",
+          "mlbam_id": 694192,
+          "name": "Jackson Chourio",
           "rank": 2,
-          "value": 92.97
+          "value": 93.08
         },
         "top": {
-          "mlbam_id": 691718,
-          "name": "Pete Crow-Armstrong",
+          "mlbam_id": 691406,
+          "name": "Junior Caminero",
           "rank": 1,
-          "value": 99.15
+          "value": 94.89
         }
       },
       "status": "passed",
       "surface": "dynasty"
     },
     {
-      "evaluated": true,
+      "evaluated": false,
       "id": "mlb_projection_stability_outliers",
-      "message": "Top MLB rows do not retain extreme current-over-ROS projection outliers after stability adjustment.",
+      "message": "Not evaluated: no top-25 MLB row carries a rest-of-season value, so there was nothing to compare.",
       "metrics": {
         "adjusted_over_ros_gap_limit": 5.0,
         "current_over_ros_gap_limit": 10.0,
-        "eligible_count": 21,
-        "evaluated_count": 20,
+        "eligible_count": 23,
+        "evaluated_count": 0,
         "outlier_count": 0,
         "ros_stability_weight_limit": 0.69,
         "samples": [],
@@ -50,32 +50,48 @@
       "metrics": {
         "max_pitcher_count": 9,
         "max_reliever_count": 1,
-        "pitcher_count": 3,
+        "pitcher_count": 5,
         "pitcher_samples": [
-          {
-            "name": "Shohei Ohtani",
-            "positions": [
-              "DH",
-              "SP"
-            ],
-            "rank": 5,
-            "value": 74.83
-          },
           {
             "name": "Jacob Misiorowski",
             "positions": [
               "SP"
             ],
-            "rank": 6,
-            "value": 74.49
+            "rank": 3,
+            "value": 91.41
+          },
+          {
+            "name": "Paul Skenes",
+            "positions": [
+              "SP"
+            ],
+            "rank": 11,
+            "value": 76.87
           },
           {
             "name": "Cam Schlittler",
             "positions": [
               "SP"
             ],
+            "rank": 14,
+            "value": 72.09
+          },
+          {
+            "name": "Shohei Ohtani",
+            "positions": [
+              "DH",
+              "SP"
+            ],
+            "rank": 16,
+            "value": 71.54
+          },
+          {
+            "name": "Chase Burns",
+            "positions": [
+              "SP"
+            ],
             "rank": 18,
-            "value": 64.46
+            "value": 69.23
           }
         ],
         "reliever_count": 0,
@@ -587,7 +603,7 @@
     "mlb_stability_top_n": 25,
     "two_way_policy_rank_limit": 200
   },
-  "generated_at": "2026-11-18T12:18:04.694529+00:00",
+  "generated_at": "2026-11-18T14:34:36.411461+00:00",
   "governor_name": "ValuCast Quality Governor",
   "governor_version": "0.2.4",
   "metrics": {
@@ -603,9 +619,9 @@
       "public_snapshot": "2026-11-18",
       "recent_signal_report": "2026-11-18"
     },
-    "mlb_count": 953,
+    "mlb_count": 1067,
     "prospect_count": 3207,
-    "public_row_count": 4160
+    "public_row_count": 4274
   },
   "mover_blockers": [],
   "next_allowed_step": "repair_model_quality_before_public_promotion",
