@@ -1,10 +1,12 @@
 """Tests for the shadow ValuCast MLB dynasty layer."""
 
 import json
+from dataclasses import replace
 from datetime import datetime
 
 import pytest
 
+import mlb.dynasty as dynasty_module
 import scraper.season as season_config
 from league_values.models import PlayerPool, PlayerProjection, ValuationResult
 from mlb.dynasty import (
@@ -144,6 +146,66 @@ def _track_record_payload(profile):
     }
 
 
+def test_projected_pitcher_pool_is_authoritative_over_eligibility():
+    for pool, positions, starter, reliever in (
+        (PlayerPool.STARTER, ("RP",), True, False),
+        (PlayerPool.RELIEVER, ("SP",), False, True),
+        (PlayerPool.PITCHER, ("SP",), True, False),
+        (PlayerPool.PITCHER, ("RP",), False, True),
+        (PlayerPool.PITCHER, ("SP", "RP"), True, False),
+    ):
+        player = replace(_pitcher(), pool=pool, positions=positions)
+        assert dynasty_module._is_starter(player) is starter
+        assert dynasty_module._is_reliever_only(player) is reliever
+        assert player.positions == positions
+
+
+def test_starter_eligibility_does_not_change_projected_role_adjustments():
+    starter = _pitcher(ip=180, metadata={"age": 24, "stats_actual": {"IP": 90}})
+    rp_eligible = replace(starter, positions=("RP",))
+    stability = {"current_season_category_value": 10.0, "ros_category_value": 0.0}
+    assert dynasty_module._playing_time_reliability(rp_eligible) == dynasty_module._playing_time_reliability(starter)
+    assert _role_adjusted_score(rp_eligible, 80.0, stability) == _role_adjusted_score(starter, 80.0, stability)
+    assert dynasty_module._established_true_talent_floor(rp_eligible, 2.0, 80.0) == 1.7
+
+
+def test_nonpositive_ros_cannot_raise_a_projection_above_its_talent():
+    player = _pitcher(ip=180, metadata={"age": 24})
+    for ros_value in (-2.0, 0.0):
+        assert dynasty_module._established_true_talent_floor(player, ros_value, 80.0) is None
+    current = ValuationResult(player, -3.0, {}, {}, {})
+    ros = ValuationResult(player, -2.0, {}, {}, {})
+    adjusted, stability = dynasty_module._stability_adjusted_result(
+        current, {dynasty_module.identity_key(player): ros},
+    )
+    assert round(adjusted.total_value, 4) == -2.6
+    assert stability["true_talent_floor_applied"] is False
+    assert dynasty_module._established_true_talent_floor(player, 2.0, 80.0) == 1.7
+    assert dynasty_module._established_true_talent_floor(player, 2.0, 60.0) is None
+
+
+def test_unavailable_ros_volume_does_not_create_a_true_talent_line():
+    for ros_stats in ({"IP": 0.0, "K": 0.0}, {"IP": -1.0, "K": 10.0}, {"K": 10.0}, {"IP": float("nan"), "K": 10.0}):
+        player = _pitcher(ip=180, metadata={"age": 24, "stats_ros": ros_stats})
+        assert dynasty_module._annualized_ros_projection_stats(player) == ({}, 1.0)
+        assert dynasty_module._ros_players([player]) == []
+        lookup = dynasty_module._ros_lookup(dynasty_module.ValuationEngine(), [player])
+        current = ValuationResult(player, 8.0, {}, {}, {})
+        adjusted, stability = dynasty_module._stability_adjusted_result(current, lookup)
+        assert adjusted.total_value == 8.0
+        assert stability["ros_category_value"] is None
+        assert stability["ros_stability_weight"] == 0.0
+    hitter = _hitter(metadata={"stats_ros": {"PA": 0.0, "HR": 0.0}})
+    assert dynasty_module._ros_players([hitter]) == []
+
+
+def test_positive_tiny_ros_annualization_keeps_existing_policy():
+    player = _hitter(metadata={"stats_ros": {"PA": 4.0, "HR": 1.0}})
+    annualized, scale = dynasty_module._annualized_ros_projection_stats(player)
+    assert annualized == {"PA": 600.0, "HR": 150.0}
+    assert scale == 150.0
+
+
 def test_mlb_layer_is_shadow_only_and_independent():
     payload = build_mlb_dynasty_layer(
         [
@@ -155,6 +217,7 @@ def test_mlb_layer_is_shadow_only_and_independent():
     )
 
     assert payload["status"] == "shadow_only"
+    assert payload["layer_version"] == "0.6.2"
     assert payload["source_policy"]["dd_values_used"] is False
     assert payload["source_policy"]["dd_ranks_used"] is False
     assert payload["source_policy"]["external_rankings_used_for_score"] is False
@@ -216,8 +279,8 @@ def test_value_contract_text_follows_the_season_phase():
         "largest pullback before dynasty-horizon scaling."
     )
     assert in_season["true_talent_floor"] == (
-        "Established high-reliability MLB hitters and starters cannot fall below "
-        "85% of their annualized ROS true-talent category value."
+        "Established high-reliability MLB hitters and starters with positive "
+        "annualized ROS category value cannot fall below 85% of that value."
     )
     assert in_season["horizon_production_score"].endswith("after ROS stability adjustment.")
     assert in_season["age_source"] == (
