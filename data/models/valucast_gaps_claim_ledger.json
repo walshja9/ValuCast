@@ -3182,6 +3182,7 @@
       "team": "LAD"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 49,
       "claim_date": "2026-09-20",
       "claim_divergence": 27,
@@ -3189,7 +3190,8 @@
       "identity_key": "815824_hitter",
       "mlbam_id": "815824",
       "name": "Josiah Hartshorn",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-19",
       "role": "hitter",
       "side": "higher",
       "team": "CHC"
@@ -7637,7 +7639,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-18T14:42:48.401523+00:00",
+  "generated_at": "2026-11-19T12:24:43.104636+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7657,8 +7659,8 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 36,
-      "open": 18,
+      "expired_unresolved": 37,
+      "open": 17,
       "resolved_by_callup": 10,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
