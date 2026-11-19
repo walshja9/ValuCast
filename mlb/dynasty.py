@@ -38,7 +38,7 @@ IDENTITY_DATA_DIR = ROOT / "projections" / "data"
 MISSING_MLBAM_EXCEPTIONS_PATH = ROOT / "data" / "manual" / "missing_mlbam_exceptions.json"
 
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
-LAYER_VERSION = "0.6.1"
+LAYER_VERSION = "0.6.2"
 VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_5"
 
 MIN_HITTER_PA = 100
@@ -439,9 +439,7 @@ def _playing_time_reliability(player: PlayerProjection) -> float:
     volume = _volume(player)
     if player.pool is PlayerPool.HITTER:
         regression = 150.0
-    elif player.pool is PlayerPool.RELIEVER or (
-        "RP" in player.positions and "SP" not in player.positions
-    ):
+    elif _is_reliever_only(player):
         regression = 20.0
     else:
         regression = 45.0
@@ -509,7 +507,7 @@ def _annualized_ros_projection_stats(player: PlayerProjection) -> tuple[dict[str
     ros_volume = _finite_float(ros_volume)
     target_volume = _true_talent_target_volume(player)
     if ros_volume is None or ros_volume <= 0 or target_volume <= 0:
-        return stats, 1.0
+        return {}, 1.0
     scale = target_volume / ros_volume
     annualized = {}
     for key, value in stats.items():
@@ -600,12 +598,15 @@ def _stability_adjusted_result(
 
 def _is_reliever_only(player: PlayerProjection) -> bool:
     return player.pool is PlayerPool.RELIEVER or (
-        "RP" in player.positions and "SP" not in player.positions
+        player.pool is PlayerPool.PITCHER
+        and "RP" in player.positions and "SP" not in player.positions
     )
 
 
 def _is_starter(player: PlayerProjection) -> bool:
-    return player.pool is PlayerPool.STARTER or "SP" in player.positions
+    return player.pool is PlayerPool.STARTER or (
+        player.pool is PlayerPool.PITCHER and "SP" in player.positions
+    )
 
 
 def _actual_ip(player: PlayerProjection) -> float:
@@ -623,7 +624,7 @@ def _established_true_talent_floor(
     ros_value: float | None,
     reliability: float,
 ) -> float | None:
-    if ros_value is None or reliability < 70.0:
+    if ros_value is None or ros_value <= 0 or reliability < 70.0:
         return None
     age = _coerce_age(player.metadata.get("age"))
     if age is None:
@@ -1366,8 +1367,9 @@ def build_mlb_dynasty_layer(
                 "(see mlb_track_record) is separate and stays active; with no ROS value, its "
                 "weak-projection block turns on the full-season projection alone."
                 if preseason else (
-                    "Established high-reliability MLB hitters and starters cannot fall below "
-                    f"{TRUE_TALENT_FLOOR_SHARE:.0%} of their annualized ROS true-talent category value."
+                    "Established high-reliability MLB hitters and starters with positive "
+                    "annualized ROS category value cannot fall below "
+                    f"{TRUE_TALENT_FLOOR_SHARE:.0%} of that value."
                 )
             ),
             "role_adjustments": {

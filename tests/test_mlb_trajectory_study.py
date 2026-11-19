@@ -158,7 +158,7 @@ def test_frozen_constants_match_safe_source_literals_and_hand_chain():
     assert PEAK_AGE == 29
     assert study.age_feature(PEAK_AGE) == 0
     nodes = [node for node in ast.parse((ROOT / "mlb/dynasty.py").read_text(encoding="utf-8-sig")).body
-             if isinstance(node, ast.FunctionDef) and node.name in ("_volume", "_playing_time_reliability")]
+             if isinstance(node, ast.FunctionDef) and node.name in ("_volume", "_is_reliever_only", "_playing_time_reliability")]
     namespace = {"PlayerProjection": PlayerProjection, "PlayerPool": PlayerPool}
     exec(compile(ast.Module(body=nodes, type_ignores=[]), "source-reliability-only", "exec"), namespace)
     volume = VolumeMultiplier()
