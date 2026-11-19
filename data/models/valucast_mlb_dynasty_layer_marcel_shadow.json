@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-18T13:58:59.703016+00:00",
+  "generated_at": "2026-11-19T11:36:09.640719+00:00",
   "layer_name": "ValuCast MLB Dynasty Value Layer",
   "layer_version": "0.6.1",
   "limitations": [],
@@ -5938,7 +5938,7 @@
       ],
       "dynasty_horizon_value": -1.8805,
       "id": "vc_mlb_672580_hitter",
-      "mlb_team": "KCR",
+      "mlb_team": "SEA",
       "mlbam_id": 672580,
       "name": "Maikel Garcia",
       "player_type": "mlb",
@@ -5987,7 +5987,7 @@
           "SB": 20.092
         }
       },
-      "team": "KCR",
+      "team": "SEA",
       "value": 48.72,
       "value_by_preset": {
         "5x5": 48.72,
@@ -21657,8 +21657,8 @@
           "reliever_score_cap": null,
           "score_before_role_adjustment": 30.37,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": null,
-          "track_record_experience_band": null,
+          "track_record_certainty": 7.98,
+          "track_record_experience_band": "minimal_mlb_track_record",
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -21667,7 +21667,17 @@
         },
         "season_category_value": -2.643,
         "track_record": {
-          "present": false
+          "experience_band": "minimal_mlb_track_record",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 7.98,
+          "track_record_floor_score": 35.44,
+          "volume": {
+            "career": 85.0,
+            "current_season": 0.0,
+            "prior_mlb": 85.0,
+            "recent_3yr_prior": 85.0
+          }
         }
       },
       "confidence": "low",
@@ -22429,8 +22439,8 @@
           "reliever_score_cap": 52.0,
           "score_before_role_adjustment": 30.05,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": null,
-          "track_record_experience_band": null,
+          "track_record_certainty": 19.14,
+          "track_record_experience_band": "current_year_only_or_limited",
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -22439,7 +22449,17 @@
         },
         "season_category_value": -2.8034,
         "track_record": {
-          "present": false
+          "experience_band": "current_year_only_or_limited",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 19.14,
+          "track_record_floor_score": 32.93,
+          "volume": {
+            "career": 80.0,
+            "current_season": 0.0,
+            "prior_mlb": 80.0,
+            "recent_3yr_prior": 56.667
+          }
         }
       },
       "confidence": "medium",
@@ -22452,7 +22472,7 @@
       ],
       "dynasty_horizon_value": -4.7069,
       "id": "vc_mlb_663704_pitcher",
-      "mlb_team": "KCR",
+      "mlb_team": "SEA",
       "mlbam_id": 663704,
       "name": "James McArthur",
       "player_type": "mlb",
@@ -22502,7 +22522,7 @@
           "WHIP": 1.276
         }
       },
-      "team": "KCR",
+      "team": "SEA",
       "value": 30.05,
       "value_by_preset": {
         "5x5": 30.05,
@@ -28391,13 +28411,12 @@
       ],
       "dynasty_horizon_value": -5.6793,
       "id": "vc_mlb_688138_pitcher",
-      "mlb_team": "SEA",
+      "mlb_team": "KCR",
       "mlbam_id": 688138,
       "name": "Logan Evans",
       "player_type": "mlb",
       "pool": "starter",
       "positions": [
-        "RP",
         "SP"
       ],
       "projection_value": -3.8039,
@@ -28442,7 +28461,7 @@
           "WHIP": 1.375
         }
       },
-      "team": "SEA",
+      "team": "KCR",
       "value": 25.45,
       "value_by_preset": {
         "5x5": 25.45,
@@ -37889,8 +37908,8 @@
           "reliever_score_cap": null,
           "score_before_role_adjustment": 21.62,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": null,
-          "track_record_experience_band": null,
+          "track_record_certainty": 14.02,
+          "track_record_experience_band": "minimal_mlb_track_record",
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -37899,7 +37918,17 @@
         },
         "season_category_value": -5.0263,
         "track_record": {
-          "present": false
+          "experience_band": "minimal_mlb_track_record",
+          "present": true,
+          "source": "mlb_stats_api_year_by_year_and_current_actuals",
+          "track_record_certainty": 14.02,
+          "track_record_floor_score": 31.05,
+          "volume": {
+            "career": 160.0,
+            "current_season": 0.0,
+            "prior_mlb": 160.0,
+            "recent_3yr_prior": 160.0
+          }
         }
       },
       "confidence": "medium",
@@ -37912,7 +37941,7 @@
       ],
       "dynasty_horizon_value": -6.8097,
       "id": "vc_mlb_690291_hitter",
-      "mlb_team": "DET",
+      "mlb_team": "LAA",
       "mlbam_id": 690291,
       "name": "Jace Jung",
       "player_type": "mlb",
@@ -37961,7 +37990,7 @@
           "SB": 3.019
         }
       },
-      "team": "DET",
+      "team": "LAA",
       "value": 21.62,
       "value_by_preset": {
         "5x5": 21.62,
@@ -59320,7 +59349,7 @@
       ],
       "dynasty_horizon_value": -7.9874,
       "id": "vc_mlb_666150_hitter",
-      "mlb_team": "",
+      "mlb_team": "CIN",
       "mlbam_id": 666150,
       "name": "Dominic Fletcher",
       "player_type": "mlb",
@@ -59369,7 +59398,7 @@
           "SB": 2.575
         }
       },
-      "team": "",
+      "team": "CIN",
       "value": 15.91,
       "value_by_preset": {
         "5x5": 15.91,
@@ -80653,7 +80682,7 @@
       ],
       "dynasty_horizon_value": -8.6797,
       "id": "vc_mlb_682119_hitter",
-      "mlb_team": "WSN",
+      "mlb_team": "",
       "mlbam_id": 682119,
       "name": "Levi Jordan",
       "player_type": "mlb",
@@ -80702,7 +80731,7 @@
           "SB": 3.712
         }
       },
-      "team": "WSN",
+      "team": "",
       "value": 12.29,
       "value_by_preset": {
         "5x5": 12.29,
@@ -100080,8 +100109,8 @@
           "reliever_score_cap": null,
           "score_before_role_adjustment": 9.6,
           "starter_volatility_discount": 0.0,
-          "track_record_certainty": 25.99,
-          "track_record_experience_band": "current_year_only_or_limited",
+          "track_record_certainty": null,
+          "track_record_experience_band": null,
           "track_record_floor_applied": false,
           "track_record_floor_blocked_reason": "weak_current_and_ros_projection",
           "track_record_floor_score": null,
@@ -100090,17 +100119,7 @@
         },
         "season_category_value": -7.8822,
         "track_record": {
-          "experience_band": "current_year_only_or_limited",
-          "present": true,
-          "source": "mlb_stats_api_year_by_year_and_current_actuals",
-          "track_record_certainty": 25.99,
-          "track_record_floor_score": 35.03,
-          "volume": {
-            "career": 345.0,
-            "current_season": 0.0,
-            "prior_mlb": 345.0,
-            "recent_3yr_prior": 345.0
-          }
+          "present": false
         }
       },
       "confidence": "low",
@@ -110417,7 +110436,7 @@
       ],
       "dynasty_horizon_value": -9.4791,
       "id": "vc_mlb_640459_hitter",
-      "mlb_team": "",
+      "mlb_team": "PHI",
       "mlbam_id": 640459,
       "name": "Brian Navarreto",
       "player_type": "mlb",
@@ -110466,7 +110485,7 @@
           "SB": 3.726
         }
       },
-      "team": "",
+      "team": "PHI",
       "value": 7.96,
       "value_by_preset": {
         "5x5": 7.96,
@@ -140908,7 +140927,7 @@
     "blockers": [],
     "duplicate_identity_count": 0,
     "eligible_projection_count": 910,
-    "generated_date": "2026-11-18",
+    "generated_date": "2026-11-19",
     "horizon_year_count": 3,
     "missing_mlbam_blocking": [],
     "missing_mlbam_blocking_count": 0,
@@ -140918,9 +140937,9 @@
     "ranks_contiguous": true,
     "ready_for_live_consumers": true,
     "row_count": 910,
-    "track_record_coverage_rate": 0.9494,
+    "track_record_coverage_rate": 0.9454,
     "track_record_present": true,
-    "track_record_profile_count": 1164,
+    "track_record_profile_count": 1161,
     "track_record_ready": true,
     "unused_missing_mlbam_exceptions": [
       {
