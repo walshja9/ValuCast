@@ -74,7 +74,7 @@ COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
 MLB_VALUE_HISTORY_LIMIT = 30
 PROSPECT_VALUE_HISTORY_EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
 CALIBRATION_METHOD = "raw_scale_compatibility_certification_v2"
-TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_1"
+TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_2"
 TWO_WAY_SECONDARY_VALUE_WEIGHT = 0.65
 MLB_COLLISION_PROMOTION_MAX_RANK = 75
 MLB_COLLISION_PROMOTION_MIN_VALUE = 45.0
@@ -569,19 +569,12 @@ def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
             primary_vbp = {}
         combined_vbp = {}
         for preset_id in primary_vbp:
-            secondary_vbp = sum(
-                _clean_float((row.get("value_by_preset") or {}).get(preset_id)) or 0.0
-                for row in ordered[1:]
+            combined_vbp[preset_id] = _combined_mlb_history_value([
+                (_clean_float((row.get("value_by_preset") or {}).get(preset_id)) or 0.0)
                 if isinstance(row.get("value_by_preset") or {}, dict)
-            )
-            combined_vbp[preset_id] = round(
-                min(
-                    100.0,
-                    (_clean_float(primary_vbp.get(preset_id)) or 0.0)
-                    + TWO_WAY_SECONDARY_VALUE_WEIGHT * secondary_vbp,
-                ),
-                2,
-            )
+                else 0.0
+                for row in ordered
+            ])
         positions = []
         for row in ordered:
             for position in row.get("positions") or []:
