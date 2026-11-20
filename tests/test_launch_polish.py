@@ -2,9 +2,11 @@ import re
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+import app as app_module
 from app import app
 
 
@@ -118,7 +120,9 @@ class TestLaunchPolish(unittest.TestCase):
         self.assertIn("panel.scrollIntoView", html)
 
     def test_redraft_mobile_disclosure_contains_secondary_controls(self):
-        html = self.html("/")
+        # The in-house source choice is paused between seasons; make it current explicitly.
+        with patch.object(app_module, "_inhouse_source_current", return_value=True):
+            html = self.html("/")
         self.assertIn(
             '<button type="button" class="toolbar-filters-btn" aria-expanded="false" '
             'aria-controls="toolbar-secondary" onclick="toggleToolbarFilters(this)">'

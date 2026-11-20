@@ -1,8 +1,10 @@
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import app as app_module
 from app import app
 
 
@@ -18,12 +20,15 @@ class TestToolbar(unittest.TestCase):
         self.assertNotIn('class="filter-bar"', html)
 
     def test_source_present_in_points(self):
-        html = self.client.get("/?mode=points").data.decode("utf-8")
+        # The in-house source is paused between seasons; make it current explicitly.
+        with patch.object(app_module, "_inhouse_source_current", return_value=True):
+            html = self.client.get("/?mode=points").data.decode("utf-8")
         self.assertIn('name="source"', html)             # source works in points
         self.assertNotIn('name="display"', html)         # toggle still cats/roto only
 
     def test_source_and_toggle_in_categories(self):
-        html = self.client.get("/").data.decode("utf-8")
+        with patch.object(app_module, "_inhouse_source_current", return_value=True):
+            html = self.client.get("/").data.decode("utf-8")
         self.assertIn('name="source"', html)
         self.assertIn('name="display"', html)
 

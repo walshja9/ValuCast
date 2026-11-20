@@ -3235,7 +3235,9 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         self.assertIn("calls tracked since", html)
 
     def test_new_chip_on_opt_in_valucast_source(self):
-        html = self.client.get("/?source=valucast").data.decode("utf-8")
+        # The in-house source is paused between seasons; make it current explicitly.
+        with patch.object(app_module, "_inhouse_source_current", return_value=True):
+            html = self.client.get("/?source=valucast").data.decode("utf-8")
         self.assertIn("new-chip", html)
 
     def test_cards_gallery_indexes_share_cards(self):

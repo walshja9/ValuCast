@@ -43,7 +43,7 @@
         </div>
         <div>
             {% set promotion = (hp_sanity.promotion if hp_sanity else {}) or {} %}
-            <span>{{ "Opt-in" if promotion.ready_for_opt_in_source else "Building" }}</span>
+            <span>{{ "Paused" if hp_paused else "Opt-in" if promotion.ready_for_opt_in_source else "Building" }}</span>
             <small>MLB projection track</small>
         </div>
     </section>
@@ -162,7 +162,7 @@
                 <p class="scouting-card-note">{{ promotion.recommended_next_step }}</p>
                 {% endif %}
                 <dl>
-                    <div><dt>ValuCast source</dt><dd>{{ "Available" if promotion.ready_for_opt_in_source else "Building" }}</dd></div>
+                    <div><dt>ValuCast source</dt><dd>{{ "Paused" if hp_paused else "Available" if promotion.ready_for_opt_in_source else "Building" }}</dd></div>
                     <div><dt>Default source</dt><dd>{{ promotion.default_source or "Steamer" }}</dd></div>
                     <div><dt>Default setting</dt><dd>{{ "Manual only" if promotion.human_approval_required_for_default else "Automatic" }}</dd></div>
                 </dl>

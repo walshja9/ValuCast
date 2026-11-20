@@ -35,7 +35,7 @@
         <p>ValuCast turns player projections into values tuned to <em>your</em> league's
         categories, weights, and roster rules. You can value players from two sources:
         <strong>Steamer</strong> (an external comparison board, and the default) or
-        <strong>ValuCast H+P</strong>, our own in-house projection.</p>
+        <strong>ValuCast H+P</strong>, our own in-house projection.{% if hp_paused %} ValuCast H+P is paused between seasons, so the main board currently shows Steamer only.{% endif %}</p>
     </section>
 
     <section>
@@ -43,11 +43,11 @@
         <p class="profile-note">{{ hp_season_context.season_note }}</p>
         <p>{% if preseason %}Before the season starts, the default board values Steamer full-season projections for {{ target_season }}; adjustments that depend on current-season results are not applied.{% else %}The <strong>default board</strong> values current-season actuals + Steamer
         rest-of-season.{% endif %} The <strong>ValuCast board</strong> values our own full-season
-        projection. Flipping the toggle is useful for eyeballing differences, but it is
+        projection. {% if hp_paused %}A side-by-side look{% else %}Flipping the toggle{% endif %} is useful for eyeballing differences, but it is
         <strong>not an apples-to-apples backtest</strong>; our real check is the held-out
         validation below.</p>
-        <p><strong>Promotion posture:</strong> ValuCast H+P is available as an opt-in
-        projection source so users can compare it directly. It will not become the default
+        <p><strong>Promotion posture:</strong> {% if hp_paused %}ValuCast H+P is paused between seasons; its last run covers {{ hp_season_context.in_house_season }}, and it returns as an opt-in source when the {{ hp_season_context.target_season }} run is built.{% else %}ValuCast H+P is available as an opt-in
+        projection source so users can compare it directly.{% endif %} It will not become the default
         board until its track record and live behavior clear the same honesty gates shown
         here.</p>
     </section>

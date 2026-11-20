@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import app as app_module
 from app import app
 
 ROOT = Path(__file__).parent.parent
@@ -15,7 +16,10 @@ class TestMethodologyValidation(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
         self.art = json.loads(ART.read_text(encoding="utf-8"))
-        self.html = self.client.get("/methodology").data.decode("utf-8")
+        # The in-house source is paused between seasons, which changes the promotion
+        # sentence; make it current explicitly (paused wording: test_inhouse_source_pause.py).
+        with patch.object(app_module, "_inhouse_source_current", return_value=True):
+            self.html = self.client.get("/methodology").data.decode("utf-8")
 
     # E2/E6: page renders the artifact's numbers verbatim (page <-> artifact drift-lock)
     def test_renders_artifact_aggregate_numbers(self):
@@ -254,12 +258,15 @@ class TestReframeRipples(unittest.TestCase):
         self.client = app.test_client()
 
     def test_caption_reframed(self):
-        html = self.client.get("/rankings?source=valucast").data.decode("utf-8")
+        # The in-house source is paused between seasons; make it current explicitly.
+        with patch.object(app_module, "_inhouse_source_current", return_value=True):
+            html = self.client.get("/rankings?source=valucast").data.decode("utf-8")
         self.assertIn("comparison board", html.lower())
         self.assertNotIn("external benchmark", html.lower())
 
     def test_footer_reframed(self):
-        html = self.client.get("/?source=valucast").data.decode("utf-8")
+        with patch.object(app_module, "_inhouse_source_current", return_value=True):
+            html = self.client.get("/?source=valucast").data.decode("utf-8")
         self.assertNotIn("external benchmark", html.lower())
 
 
