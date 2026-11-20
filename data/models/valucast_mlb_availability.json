@@ -17,7 +17,7 @@
   },
   "contract_name": "ValuCast MLB Availability Contract",
   "contract_version": "0.2.0",
-  "generated_at": "2026-11-19",
+  "generated_at": "2026-11-20",
   "profiles": [
     {
       "active_injury_risk": true,
@@ -125,11 +125,13 @@
       "active_injury_risk": true,
       "description": "Milwaukee Brewers transferred LHP Angel Zerpa from the 15-day injured list to the 60-day injured list. Left forearm tightness.",
       "effective_date": "2026-05-31",
+      "held_since": "2026-11-02",
+      "hold_note": "End-of-season injury status held. MLB's offseason roster activation on 2026-11-02 is not treated as a return. This clears when the player appears in a game.",
       "list_type": "60-day injured list",
       "mlbam_id": 672582,
       "name": "Angel Zerpa",
+      "offseason_hold": true,
       "source": "official_mlb_statsapi_transactions",
-      "stale_status": true,
       "status": "injured",
       "team": "Milwaukee Brewers",
       "transaction_date": "2026-05-31",
@@ -313,11 +315,13 @@
       "active_injury_risk": true,
       "description": "Milwaukee Brewers transferred LHP Brian Fitzpatrick from the 15-day injured list to the 60-day injured list. Left elbow injury.",
       "effective_date": "2026-06-09",
+      "held_since": "2026-11-02",
+      "hold_note": "End-of-season injury status held. MLB's offseason roster activation on 2026-11-02 is not treated as a return. This clears when the player appears in a game.",
       "list_type": "60-day injured list",
       "mlbam_id": 702153,
       "name": "Brian Fitzpatrick",
+      "offseason_hold": true,
       "source": "official_mlb_statsapi_transactions",
-      "stale_status": true,
       "status": "injured",
       "team": "Milwaukee Brewers",
       "transaction_date": "2026-06-09",
@@ -1899,11 +1903,13 @@
       "active_injury_risk": true,
       "description": "Milwaukee Brewers placed RHP Quinn Priester on the 60-day injured list. Right thoracic outlet syndrome.",
       "effective_date": "2026-06-06",
+      "held_since": "2026-11-02",
+      "hold_note": "End-of-season injury status held. MLB's offseason roster activation on 2026-11-02 is not treated as a return. This clears when the player appears in a game.",
       "list_type": "60-day injured list",
       "mlbam_id": 682990,
       "name": "Quinn Priester",
+      "offseason_hold": true,
       "source": "official_mlb_statsapi_transactions",
-      "stale_status": true,
       "status": "injured",
       "team": "Milwaukee Brewers",
       "transaction_date": "2026-06-06",
@@ -10413,7 +10419,7 @@
     }
   ],
   "query": {
-    "end_date": "2026-11-19",
+    "end_date": "2026-11-20",
     "source": "official_mlb_statsapi_transactions",
     "sport_id": 1,
     "start_date": "2026-03-01"
@@ -10438,17 +10444,17 @@
     "offseason_hold": {
       "active": true,
       "cleared_by_appearance": 17,
-      "held_count": 70,
+      "held_count": 73,
       "played_date_count": 0,
       "release_state": "pending",
       "season_end": "2026-09-27",
-      "stale_count": 68
+      "stale_count": 65
     },
     "profile_count": 672,
     "ready_for_mlb_dynasty_layer": true,
     "rehab_count": 31,
     "risk_profile_count": 138,
     "tracked_mlbam_count": 9329,
-    "transaction_count": 13634
+    "transaction_count": 13667
   }
 }

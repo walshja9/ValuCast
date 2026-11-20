@@ -3197,6 +3197,7 @@
       "team": "CHC"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 102,
       "claim_date": "2026-09-21",
       "claim_divergence": 25,
@@ -3204,12 +3205,14 @@
       "identity_key": "694876_hitter",
       "mlbam_id": "694876",
       "name": "Cooper Ingle",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-20",
       "role": "hitter",
       "side": "higher",
       "team": "CLE"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 118,
       "claim_date": "2026-09-21",
       "claim_divergence": 26,
@@ -3217,12 +3220,14 @@
       "identity_key": "703448_hitter",
       "mlbam_id": "703448",
       "name": "Cam Cannarella",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-20",
       "role": "hitter",
       "side": "higher",
       "team": "MIA"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 83,
       "claim_date": "2026-09-21",
       "claim_divergence": 25,
@@ -3230,12 +3235,14 @@
       "identity_key": "814409_hitter",
       "mlbam_id": "814409",
       "name": "Seaver King",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-20",
       "role": "hitter",
       "side": "higher",
       "team": "WSN"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 153,
       "claim_date": "2026-09-21",
       "claim_divergence": 26,
@@ -3243,7 +3250,8 @@
       "identity_key": "815792_hitter",
       "mlbam_id": "815792",
       "name": "Chase Harlan",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-20",
       "role": "hitter",
       "side": "higher",
       "team": "LAD"
@@ -7438,6 +7446,7 @@
       "team": "TEX"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 273,
       "claim_date": "2026-09-21",
       "claim_divergence": -25,
@@ -7445,7 +7454,8 @@
       "identity_key": "815119_pitcher",
       "mlbam_id": "815119",
       "name": "Tanner Franklin",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-20",
       "role": "pitcher",
       "side": "lower",
       "team": "STL"
@@ -7639,7 +7649,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-19T12:24:43.104636+00:00",
+  "generated_at": "2026-11-20T12:29:01.010671+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7659,16 +7669,16 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 37,
-      "open": 17,
+      "expired_unresolved": 41,
+      "open": 13,
       "resolved_by_callup": 10,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
       "total": 239
     },
     "lower": {
-      "expired_unresolved": 65,
-      "open": 15,
+      "expired_unresolved": 66,
+      "open": 14,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
