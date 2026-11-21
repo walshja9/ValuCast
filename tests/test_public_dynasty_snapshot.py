@@ -933,6 +933,62 @@ def test_snapshot_carries_peak_projection_card_context(tmp_path):
     assert row.peak_shape_items[0]["label"] == "Hit"
 
 
+def _two_way_preset_rows(hitter_value=90.0, pitcher_value=80.0):
+    return [
+        {
+            "id": "invented_h", "mlbam_id": "invented_two_way",
+            "name": "Invented Two Way", "role": "hitter", "positions": ["DH"],
+            "value": hitter_value, "value_by_preset": {"points": 20.0},
+        },
+        {
+            "id": "invented_p", "mlbam_id": "invented_two_way",
+            "name": "Invented Two Way", "role": "pitcher", "positions": ["SP"],
+            "value": pitcher_value, "value_by_preset": {"points": 60.0},
+        },
+    ]
+
+
+def test_two_way_preset_matches_scalar_merge_for_same_league():
+    for hitter_points, pitcher_points in ((20, 60), (60, 20), (90, 60), (60, 60)):
+        rows = _two_way_preset_rows()
+        for row, points in zip(rows, (hitter_points, pitcher_points)):
+            row["value_by_preset"]["points"] = points
+        merged = snapshot_builder._merge_two_way_mlb_rows(rows)[0]
+        scalar_rows = [{**row, "value": row["value_by_preset"]["points"]} for row in rows]
+        scalar_value = snapshot_builder._merge_two_way_mlb_rows(scalar_rows)[0]["value"]
+        helper_value = snapshot_builder._combined_mlb_history_value([hitter_points, pitcher_points])
+        assert merged["value_by_preset"]["points"] == scalar_value == helper_value
+        assert merged["value_by_preset"]["points"] <= 100.0
+
+
+def test_two_way_preset_is_independent_of_default_primary_role():
+    hitter_primary = snapshot_builder._merge_two_way_mlb_rows(_two_way_preset_rows())[0]
+    pitcher_primary = snapshot_builder._merge_two_way_mlb_rows(_two_way_preset_rows(80, 90))[0]
+    assert hitter_primary["value_by_preset"] == pitcher_primary["value_by_preset"] == {"points": 73.0}
+    assert hitter_primary["context"]["primary_role"] == "hitter"
+    assert pitcher_primary["context"]["primary_role"] == "pitcher"
+    assert hitter_primary["value"] == pitcher_primary["value"] == 100.0
+    assert hitter_primary["value_source"] == "valucast_mlb_two_way_combined_v0_2"
+
+
+def test_two_way_preset_missing_leg_uses_zero_without_default_value():
+    rows = _two_way_preset_rows()
+    rows[0]["value_by_preset"]["points"] = None
+    merged = snapshot_builder._merge_two_way_mlb_rows(rows)[0]
+    assert merged["value_by_preset"] == {"points": 60.0}
+    rows[1]["value_by_preset"] = {}
+    assert snapshot_builder._merge_two_way_mlb_rows(rows)[0]["value_by_preset"] == {"points": 0.0}
+
+
+def test_two_way_preset_keeps_existing_primary_preset_menu():
+    rows = _two_way_preset_rows()
+    rows[0]["value_by_preset"] = {}
+    assert snapshot_builder._merge_two_way_mlb_rows(rows)[0]["value_by_preset"] == {}
+    rows[0]["value_by_preset"] = {"points": 20.0}
+    rows[1]["value_by_preset"] = {"obp": 80.0}
+    assert snapshot_builder._merge_two_way_mlb_rows(rows)[0]["value_by_preset"] == {"points": 20.0}
+
+
 def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
     mlb_layer = _ready_mlb_payload()
     hitter_presets = {
