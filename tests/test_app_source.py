@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+import app as app_module
 from app import app, context_season, store
 
 
@@ -34,6 +35,12 @@ class TestSourceSelection(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
         app.config["TESTING"] = True
+        # The in-house source is paused while its run's season differs from the target
+        # season. These tests exercise the opt-in source itself, so make it current
+        # (the paused behaviour is covered in test_inhouse_source_pause.py).
+        patcher = patch.object(app_module, "_inhouse_source_current", return_value=True)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def test_default_board_is_steamer(self):
         r = self.client.get("/rankings")
