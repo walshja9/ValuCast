@@ -16,15 +16,15 @@
     }
   ],
   "forward_archive_progress": {
-    "buy_comparison_count": 90,
+    "buy_comparison_count": 92,
     "current_supported_grade": "A+",
     "minimum_buy_comparisons": 7,
     "minimum_rank_comparisons": 7,
     "minimum_span_days": 14,
     "missing": [],
     "next_target_grade": "A-",
-    "observation_span_days": 112,
-    "rank_comparison_count": 90,
+    "observation_span_days": 114,
+    "rank_comparison_count": 92,
     "remaining_buy_comparisons": 0,
     "remaining_rank_comparisons": 0,
     "remaining_span_days": 0,
@@ -255,6 +255,22 @@
       "score": 12.58
     },
     {
+      "level": "AAA",
+      "mlbam_id": 686796,
+      "name": "Blake Walston",
+      "rank": 112,
+      "reasons": [
+        "availability=thin_current_sample",
+        "risk_discount=0.040",
+        "uncertainty=wide",
+        "score_source=universal_fallback",
+        "skill_band=thin"
+      ],
+      "risk_score": 11.8,
+      "role": "pitcher",
+      "score": 32.53
+    },
+    {
       "level": "AA",
       "mlbam_id": 696143,
       "name": "Anthony Solometo",
@@ -428,10 +444,10 @@
       "score": 3.68
     },
     {
-      "level": "A",
-      "mlbam_id": 803424,
-      "name": "Juan Sanchez",
-      "rank": 3145,
+      "level": "AA",
+      "mlbam_id": 691330,
+      "name": "Moises Chace",
+      "rank": 2636,
       "reasons": [
         "availability=stale_or_inactive",
         "risk_discount=0.100",
@@ -440,25 +456,10 @@
       ],
       "risk_score": 10.0,
       "role": "pitcher",
-      "score": 0.0
-    },
-    {
-      "level": "A",
-      "mlbam_id": 823801,
-      "name": "Tanner Smith",
-      "rank": 3194,
-      "reasons": [
-        "availability=stale_or_inactive",
-        "risk_discount=0.100",
-        "uncertainty=wide",
-        "skill_band=limited"
-      ],
-      "risk_score": 10.0,
-      "role": "pitcher",
-      "score": 0.0
+      "score": 2.82
     }
   ],
-  "generated_at": "2026-11-19T00:00:00+00:00",
+  "generated_at": "2026-11-21T00:00:00+00:00",
   "latest_buy_largest_movers": [
     {
       "availability_status": "missing",
@@ -1565,12 +1566,12 @@
         },
         {
           "availability_status": "thin_current_sample",
-          "current_rank": 1078,
+          "current_rank": 1079,
           "current_score": 14.15,
           "level": "AAA",
           "mlbam_id": 687210,
           "name": "Nathan Martorella",
-          "previous_rank": 1078,
+          "previous_rank": 1079,
           "previous_score": 14.15,
           "rank_change": 0,
           "role": "hitter",
@@ -1579,12 +1580,12 @@
         },
         {
           "availability_status": "thin_current_sample",
-          "current_rank": 1082,
+          "current_rank": 1083,
           "current_score": 14.12,
           "level": "AAA",
           "mlbam_id": 690992,
           "name": "Ed Howard",
-          "previous_rank": 1082,
+          "previous_rank": 1083,
           "previous_score": 14.12,
           "rank_change": 0,
           "role": "hitter",
@@ -1963,7 +1964,7 @@
       "level": "A+",
       "mlbam_id": 815501,
       "name": "Bryce Meccage",
-      "rank_v1_rank": 1051,
+      "rank_v1_rank": 1052,
       "rank_v1_score": 14.3,
       "role": "pitcher",
       "score_source": "prospect_model_v0_6",

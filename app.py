@@ -503,6 +503,7 @@ def _snapshot_staleness():
         "preseason": store.projection_phase == "preseason_full_season",
         "target_season": store.target_season,
         "hp_season_context": in_house_season_context(),
+        "hp_paused": not _inhouse_source_current(),
     }
 
 
@@ -695,6 +696,22 @@ def _active_store(source):
         if "hitter" not in pools or not ({"starter", "reliever", "pitcher"} & pools):
             raise SourceError(source)
     return s
+
+
+def _inhouse_source_current():
+    """True when the in-house run is for the season the board serves. Otherwise the run
+    is a leftover (what is still to come in a season that is over) and the redraft board
+    pauses the opt-in source. Reads the season context the rest of the site labels with."""
+    # ponytail: after the target season's regular season ends and before the next flip, a rest-of-season
+    # run is a leftover again; scraper/season.py has no helper to tell, so this does not pause then.
+    season = in_house_season_context()
+    return season["in_house_season"] == season["target_season"]
+
+
+def _effective_source(source):
+    """The source a request is served from: 'valucast' becomes the default (Steamer)
+    while the in-house source is paused; anything else passes through unchanged."""
+    return "" if source == "valucast" and not _inhouse_source_current() else source
 
 
 @app.errorhandler(SourceError)
@@ -4881,8 +4898,12 @@ def _build_context(args):
         display = "projections"
 
     # Resolve the projection source (default Steamer). Unknown/unavailable -> SourceError
-    # (caught by the errorhandler -> 400) before any valuation runs.
-    active = _active_store(args.get("source", ""))
+    # (caught by the errorhandler -> 400) before any valuation runs. While the in-house
+    # source is paused, valucast resolves to the default: everything below (cache key,
+    # context, labels) uses this effective source, never the requested one.
+    requested_source = args.get("source", "")
+    source = _effective_source(requested_source)
+    active = _active_store(source)
 
     # Collect pt_* params for points mode. Same guard as the w_* weights below:
     # raw query params, so `pt_HR=abc` must not 500 and `pt_HR=inf` must not
@@ -4931,7 +4952,7 @@ def _build_context(args):
     # and never mutates the cached objects.
     bundle = _redraft_board_bundle(
         active, config,
-        args.get("source", "") or "steamer", active.as_of,
+        source or "steamer", active.as_of,
         mode, tuple(cats), tuple(pcats), rules_str,
         tuple(sorted(pt_params.items())), split_rp,
         tuple(sorted(weights.items())),
@@ -5048,7 +5069,8 @@ def _build_context(args):
         "redraft_value_scale": redraft_value_scale,
         "config_summary": _config_summary(mode, cats, pcats, split_rp),
         "as_of": active.as_of,
-        "source": args.get("source", "") or "steamer",
+        "source": source or "steamer",
+        "source_paused": source != requested_source,  # asked for the paused in-house source
         "display": display,
         "horizon": _horizon_of(mode),
         "active_store": active,
@@ -5828,6 +5850,7 @@ def intelligence_hub():
     card_audit = _load_artifact(models / "valucast_prospect_card_data_audit.json")
     role_tracker = _load_artifact(models / "valucast_playing_time_role_tracker.json")
     hp_sanity = _load_artifact(models / "valucast_hp_promotion_sanity_report.json")
+    hp_paused = not _inhouse_source_current()
     peak_calibration = _load_artifact(
         models / "valucast_prospect_peak_projection_calibration.json"
     )
@@ -5946,11 +5969,19 @@ def intelligence_hub():
         },
         {
             "name": "MLB Projection Track",
-            "status": "Opt-in" if _artifact_ready(hp_sanity, "validation", "ready_for_opt_in_source") else "Building",
+            "status": "Paused" if hp_paused else (
+                "Opt-in" if _artifact_ready(hp_sanity, "validation", "ready_for_opt_in_source") else "Building"
+            ),
             "kicker": "projection evidence",
             "copy": (
-                "The ValuCast Hitter + Pitcher source stays opt-in while the methodology "
-                "page publishes the held-out scorecard and what has not been proven yet."
+                "The ValuCast Hitter + Pitcher source is paused until ValuCast's "
+                f"{in_house_season_context()['target_season']} projections are built, and "
+                "returns as an option when the new run is ready. The pause does not depend on "
+                "the held-out scorecard, which the methodology page publishes along with what "
+                "has not been proven yet."
+                if hp_paused else
+                "The ValuCast Hitter + Pitcher source stays opt-in while the methodology page "
+                "publishes the held-out scorecard and what has not been proven yet."
             ),
             "metric": "ValuCast Hitter + Pitcher v1",
             "href": "/methodology",
@@ -11097,7 +11128,7 @@ def player_detail(player_id):
             player_name = row.name if row else None
         else:
             try:
-                active = _active_store(request.args.get("source", ""))
+                active = _active_store(_effective_source(request.args.get("source", "")))
             except SourceError:
                 active = store
             projection = active.get_by_id(player_id)
@@ -11503,6 +11534,16 @@ def _build_redraft_player_card_context(player_id, args):
 @app.route("/redraft/player-card/<player_id>")
 def redraft_player_card_preview(player_id):
     context, status = _build_redraft_player_card_context(player_id, request.args)
+    if status == 404 and request.args.get("source") == "valucast" and not _inhouse_source_current():
+        # An old H+P card link: its player ids are the in-house run's own, so the default
+        # board cannot show this card. Say why instead of answering with a blank page.
+        # No lookup of the same player on the default board: an honest "not available" page
+        # beats the risk of linking to the wrong player.
+        season = in_house_season_context()["target_season"]
+        return render_template(
+            "error.html", code=404,
+            message=f"ValuCast H+P is paused until its {season} projections are built, "
+                    "so this player card is not available right now."), 404
     if status != 200:
         return "", status
 
@@ -11516,7 +11557,7 @@ def redraft_player_card_preview(player_id):
     back_url = f"/?{query}" if query else "/"
     html = build_share_preview_html(
         title=f"{player.name} | Redraft Value Card",
-        subtitle=f"{player.name} - redraft value + MLB Statcast context",
+        subtitle=f"{player.name} - redraft value + MLB Statcast context" + _paused_share_note(context),
         png_url=png_url,
         filename=filename,
         public_png_url=_public_url(png_url),
@@ -11752,8 +11793,13 @@ class _RedraftShareRow:
 
 def _redraft_share_labels(ctx, args):
     mode = (ctx.get("mode") or "categories").replace("_", " ").title()
-    src = (args.get("source") or "steamer").title()
+    src = (_effective_source(args.get("source")) or "steamer").title()
     return mode, src
+
+
+def _paused_share_note(ctx):
+    """Subtitle suffix for a share page reached through an old H+P link while paused."""
+    return " - ValuCast H+P is paused; showing Steamer" if ctx.get("source_paused") else ""
 
 
 @app.route("/redraft/share-card.png")
@@ -11789,7 +11835,7 @@ def redraft_share_card():
     params = request.args.to_dict()
     params["limit"] = limit
     png_url = "/redraft/share-card.png?" + urlencode(params)
-    title = f"Top {limit} Redraft - {mode} ({src})"
+    title = f"Top {limit} Redraft - {mode} ({src})" + _paused_share_note(ctx)
     preview_title = f"ValuCast Redraft Top {limit}"
     html = build_share_preview_html(
         title=preview_title,
