@@ -1,9 +1,9 @@
 {
   "artifact": "valucast_prospect_peak_projection_v1",
-  "generated_at": "2026-11-20T00:00:00+00:00",
+  "generated_at": "2026-11-21T00:00:00+00:00",
   "generated_by": "valucast",
   "input_artifacts": {
-    "prospect_rank_v1_generated_at": "2026-11-20T00:00:00+00:00",
+    "prospect_rank_v1_generated_at": "2026-11-21T00:00:00+00:00",
     "prospect_rank_v1_status": "candidate_ready",
     "prospect_rank_v1_version": "0.2.9"
   },
@@ -14889,7 +14889,7 @@
       "role": "pitcher",
       "sample_context": {
         "availability_risk_discount": 0.04,
-        "availability_status": "available",
+        "availability_status": "thin_current_sample",
         "sample": 11.7,
         "sample_reliability": 56.5,
         "sample_unit": "IP",
@@ -350557,7 +350557,7 @@
       "role": "pitcher",
       "sample_context": {
         "availability_risk_discount": 0.1,
-        "availability_status": "available",
+        "availability_status": "stale_or_inactive",
         "sample": 16.7,
         "sample_reliability": 25.0,
         "sample_unit": "IP",

@@ -3257,6 +3257,7 @@
       "team": "LAD"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 58,
       "claim_date": "2026-09-22",
       "claim_divergence": 25,
@@ -3264,7 +3265,8 @@
       "identity_key": "702652_hitter",
       "mlbam_id": "702652",
       "name": "Andrew Fischer",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-21",
       "role": "hitter",
       "side": "higher",
       "team": "MIL"
@@ -7461,6 +7463,7 @@
       "team": "STL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 224,
       "claim_date": "2026-09-22",
       "claim_divergence": -76,
@@ -7468,7 +7471,8 @@
       "identity_key": "829741_hitter",
       "mlbam_id": "829741",
       "name": "Sebastian Dos Santos",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-21",
       "role": "hitter",
       "side": "lower",
       "team": "STL"
@@ -7649,7 +7653,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-20T12:29:01.010671+00:00",
+  "generated_at": "2026-11-21T12:31:21.342012+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7669,16 +7673,16 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 41,
-      "open": 13,
+      "expired_unresolved": 42,
+      "open": 12,
       "resolved_by_callup": 10,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
       "total": 239
     },
     "lower": {
-      "expired_unresolved": 66,
-      "open": 14,
+      "expired_unresolved": 67,
+      "open": 13,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,

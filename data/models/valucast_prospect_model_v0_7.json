@@ -1,6 +1,6 @@
 {
   "artifact": "valucast_prospect_model_v0_7_preview",
-  "as_of": "2026-11-20",
+  "as_of": "2026-11-21",
   "bucket_comparison": {
     "bucket_count": 7,
     "bucket_definition": "role|level_band|score_source|availability_status",
@@ -82,7 +82,7 @@
         "avg_rank_v1_score": 32.53,
         "avg_v0_7_delta": -3.557,
         "avg_v0_7_shadow_score": 28.973,
-        "bucket": "pitcher|upper_level|universal_fallback|available",
+        "bucket": "pitcher|upper_level|universal_fallback|thin_current_sample",
         "count": 1,
         "factual_context_coverage": 1.0,
         "negative_delta_count": 1,
@@ -3725,7 +3725,7 @@
       "candidate_features": {
         "age_level_context": null,
         "availability_risk_discount": 0.04,
-        "availability_status": "available",
+        "availability_status": "thin_current_sample",
         "bb_per_9": 3.1,
         "bucket_calibration": null,
         "current_sample": 11.7,
@@ -94152,7 +94152,7 @@
       "candidate_features": {
         "age_level_context": null,
         "availability_risk_discount": 0.1,
-        "availability_status": "available",
+        "availability_status": "stale_or_inactive",
         "bb_per_9": 4.2,
         "bucket_calibration": {
           "adjustment": -21.3,
@@ -125107,7 +125107,7 @@
       "bucket_calibration"
     ]
   },
-  "generated_at": "2026-11-20T00:00:00+00:00",
+  "generated_at": "2026-11-21T00:00:00+00:00",
   "input_artifacts": {
     "outcome_backtest_grade": "A-",
     "outcome_backtest_version": "0.2.0",
