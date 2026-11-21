@@ -1,6 +1,7 @@
 """The redraft board pauses the in-house (H+P) source while its run is for another season."""
 import json
 import re
+from html import unescape
 from urllib.parse import quote
 
 import pytest
@@ -112,6 +113,36 @@ def test_paused_old_links_never_load_the_in_house_run(client, paused, monkeypatc
         f"/player/{player}?mode=categories&source=valucast", headers={"HX-Request": "true"}
     )
     assert detail.status_code == 200
+    # Opened in a browser (no HX header) the same address looks the name up and redirects.
+    page = client.get(f"/player/{player}?mode=categories&source=valucast")
+    assert page.status_code == 302
+
+
+def test_paused_old_player_card_link_says_why_the_card_is_gone(client, monkeypatch):
+    # Player ids on the in-house board are the run's own; the default board does not know them.
+    monkeypatch.setattr(app_module, "in_house_season_context", seasons(2027, 2027))
+    in_house_id = quote(
+        first_player_id(
+            client.get("/rankings?mode=categories&source=valucast").get_data(as_text=True)
+        ),
+        safe="",
+    )
+    monkeypatch.setattr(app_module, "in_house_season_context", seasons(2026, 2027))
+    card = client.get(f"/redraft/player-card/{in_house_id}?source=valucast")
+    assert card.status_code == 404
+    assert (
+        "ValuCast H+P is paused until its 2027 projections are built, "
+        "so this player card is not available right now."
+    ) in card.get_data(as_text=True)
+    assert client.get(f"/redraft/player-card/{in_house_id}.png?source=valucast").status_code == 404
+    # An id nobody knows keeps the plain empty 404.
+    unknown = client.get(f"/redraft/player-card/{in_house_id}")
+    assert unknown.status_code == 404
+    assert unknown.get_data(as_text=True) == ""
+
+
+def test_paused_unknown_source_is_still_refused(client, paused):
+    assert client.get("/rankings?mode=categories&source=bogus").status_code == 400
 
 
 def test_old_share_link_serves_the_in_house_run_again_when_the_pause_lifts(
@@ -147,27 +178,37 @@ def test_paused_pages_do_not_offer_the_source_choice(client, paused):
 def test_paused_methodology_says_h_and_p_returns_when_the_run_is_built(client, paused):
     html = " ".join(client.get("/methodology").get_data(as_text=True).split())
     assert (
-        "ValuCast H+P is paused between seasons; its last run covers 2026, and it returns "
-        "as an opt-in source when the 2027 run is built."
+        "ValuCast H+P is paused until ValuCast's 2027 projections are built; its last run "
+        "covers 2026. The scorecard below does not control the pause: H+P returns as an "
+        "option when the new run is ready."
     ) in html
     assert "available as an opt-in" not in html
     assert "You can value players from two sources" in html
     assert (
-        "ValuCast H+P is paused between seasons, so the main board currently shows Steamer only."
+        "ValuCast H+P is paused until ValuCast's 2027 projections are built, so the main "
+        "board currently shows Steamer only."
     ) in html
-    assert "A side-by-side look is useful for eyeballing differences" in html
+    assert (
+        "projection and is an option that returns when the new run is ready. "
+        "A side-by-side look is useful for eyeballing differences"
+    ) in html
+    # The pause is tied to the missing run, not to the calendar.
+    assert "between seasons" not in html
     assert "Flipping the toggle" not in html
     assert "selectable on the main board" not in html
 
 
 def test_paused_hub_and_scouting_do_not_call_h_and_p_opt_in_or_available(client, paused):
-    hub = client.get("/intelligence").get_data(as_text=True)
+    hub = unescape(client.get("/intelligence").get_data(as_text=True))
     assert ">Paused</span>" in hub
     assert (
-        "The ValuCast Hitter + Pitcher source is paused between seasons while the methodology "
-        "page publishes the held-out scorecard and what has not been proven yet."
+        "The ValuCast Hitter + Pitcher source is paused until ValuCast's 2027 projections are "
+        "built, and returns as an option when the new run is ready. The pause does not depend "
+        "on the held-out scorecard, which the methodology page publishes along with what has "
+        "not been proven yet."
     ) in hub
     assert "stays opt-in" not in hub
+    assert "paused between seasons" not in hub
     scouting = client.get("/scouting").get_data(as_text=True)
     assert "<span>Paused</span>" in scouting
     assert "<dt>ValuCast source</dt><dd>Paused</dd>" in scouting
@@ -190,8 +231,9 @@ def test_current_source_is_offered_and_honoured(client, current):
         "Categories", "Valucast")
     methodology = " ".join(client.get("/methodology").get_data(as_text=True).split())
     assert "ValuCast H+P is available as an opt-in" in methodology
-    assert "paused between seasons" not in methodology
-    assert "Flipping the toggle is useful" in methodology
+    assert "is paused until" not in methodology
+    assert "returns when the new run is ready" not in methodology
+    assert "projection. Flipping the toggle is useful" in methodology
     assert "The projection source for player values is selectable on the main board." in methodology
     hub = client.get("/intelligence").get_data(as_text=True)
     assert "source stays opt-in while the methodology page" in " ".join(hub.split())

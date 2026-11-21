@@ -5974,10 +5974,14 @@ def intelligence_hub():
             ),
             "kicker": "projection evidence",
             "copy": (
-                "The ValuCast Hitter + Pitcher source "
-                + ("is paused between seasons" if hp_paused else "stays opt-in")
-                + " while the methodology page publishes the held-out scorecard and what has "
-                "not been proven yet."
+                "The ValuCast Hitter + Pitcher source is paused until ValuCast's "
+                f"{in_house_season_context()['target_season']} projections are built, and "
+                "returns as an option when the new run is ready. The pause does not depend on "
+                "the held-out scorecard, which the methodology page publishes along with what "
+                "has not been proven yet."
+                if hp_paused else
+                "The ValuCast Hitter + Pitcher source stays opt-in while the methodology page "
+                "publishes the held-out scorecard and what has not been proven yet."
             ),
             "metric": "ValuCast Hitter + Pitcher v1",
             "href": "/methodology",
@@ -11530,6 +11534,16 @@ def _build_redraft_player_card_context(player_id, args):
 @app.route("/redraft/player-card/<player_id>")
 def redraft_player_card_preview(player_id):
     context, status = _build_redraft_player_card_context(player_id, request.args)
+    if status == 404 and request.args.get("source") == "valucast" and not _inhouse_source_current():
+        # An old H+P card link: its player ids are the in-house run's own, so the default
+        # board cannot show this card. Say why instead of answering with a blank page.
+        # No lookup of the same player on the default board: an honest "not available" page
+        # beats the risk of linking to the wrong player.
+        season = in_house_season_context()["target_season"]
+        return render_template(
+            "error.html", code=404,
+            message=f"ValuCast H+P is paused until its {season} projections are built, "
+                    "so this player card is not available right now."), 404
     if status != 200:
         return "", status
 
