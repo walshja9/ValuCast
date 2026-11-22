@@ -40,6 +40,15 @@ MISSING_MLBAM_EXCEPTIONS_PATH = ROOT / "data" / "manual" / "missing_mlbam_except
 LAYER_NAME = "ValuCast MLB Dynasty Value Layer"
 LAYER_VERSION = "0.6.2"
 VALUE_SOURCE = "valucast_mlb_dynasty_horizon_v0_5"
+# Chart method ID. Bump the revision by hand only when default (5x5) scoring changes
+# broadly; labels, narrow fixes and LAYER_VERSION bumps do not bump it, because a new
+# ID restarts every MLB chart line.
+VALUE_METHOD_REVISION = 1
+
+
+def value_method_id(phase: str, projection_source_kind: str) -> str:
+    return f"mlb-5x5-r{VALUE_METHOD_REVISION}-{phase}-{projection_source_kind}"
+
 
 MIN_HITTER_PA = 100
 MIN_SP_IP = 40
@@ -1204,6 +1213,7 @@ def build_mlb_dynasty_layer(
     missing_mlbam_exception_error: str | None = None,
 ) -> dict:
     preseason = season_config.is_preseason()
+    phase = "preseason" if preseason else "in_season"
     season = season_config.TARGET_SEASON if preseason else _season_from_generated_at(generated_at)
     players = _attach_ages(players, identities or {}, season)
     track_record_by_key = _track_record_lookup(track_record)
@@ -1312,6 +1322,7 @@ def build_mlb_dynasty_layer(
         "status": "shadow_only",
         "layer_name": LAYER_NAME,
         "layer_version": LAYER_VERSION,
+        "method_id": value_method_id(phase, projection_source_kind),
         "generated_at": generated_at,
         "value_by_preset_menu": preset_ids,
         "source_policy": {
@@ -1333,7 +1344,7 @@ def build_mlb_dynasty_layer(
         "value_contract": {
             "score_range": [0.0, 100.0],
             "value_kind": "multi_year_dynasty_horizon",
-            "phase": "preseason" if preseason else "in_season",
+            "phase": phase,
             "horizon_years": len(HORIZON_YEAR_WEIGHTS),
             "horizon_year_weights": [
                 {"offset": offset, "weight": weight}
@@ -1475,6 +1486,7 @@ def archive_layer(
     archive = {
         "date": date_str,
         "layer_version": payload["layer_version"],
+        "method_id": payload.get("method_id"),
         "generated_at": payload["generated_at"],
         "validation": payload["validation"],
         "players": payload["players"],

@@ -72,6 +72,11 @@ SCHEMA_VERSION = "1.1"
 ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
 COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
 MLB_VALUE_HISTORY_LIMIT = 30
+# ponytail: dated layer files written before the method ID existed carry none; the 2027
+# flip landed in the 2026-11-18 file, so unstamped files before it are the old (in-season)
+# method. Delete this once the 30-file window holds only stamped files.
+MLB_LEGACY_METHOD_BREAK_DATE = "2026-11-18"
+MLB_LEGACY_METHOD_ID = "legacy-in-season"
 PROSPECT_VALUE_HISTORY_EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
 CALIBRATION_METHOD = "raw_scale_compatibility_certification_v2"
 TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_2"
@@ -171,6 +176,7 @@ def _combined_mlb_history_value(values: list[float]) -> float:
 
 def _mlb_value_history_from_archives(
     archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
+    current_method_id: str | None = None,
 ) -> dict[str, list[tuple[str, float]]]:
     if not archive_dir:
         return {}
@@ -184,8 +190,16 @@ def _mlb_value_history_from_archives(
         date_str = _date_part(path.stem)
         if not date_str:
             continue
+        archive = _load_json(path)
+        method_id = archive.get("method_id") if isinstance(archive, dict) else None
+        if method_id is None and date_str < MLB_LEGACY_METHOD_BREAK_DATE:
+            method_id = MLB_LEGACY_METHOD_ID
+        if current_method_id and method_id and method_id != current_method_id:
+            # The chart's scoring method changed after this file, so the line restarts.
+            history.clear()
+            continue
         by_player: dict[str, list[float]] = {}
-        for row in _mlb_archive_rows(_load_json(path)):
+        for row in _mlb_archive_rows(archive):
             mlbam_id = _mlbam_id(row)
             value = _clean_float(row.get("value"))
             if not mlbam_id or value is None or not math.isfinite(value):
@@ -1481,7 +1495,10 @@ def build_snapshot(
         _apply_common_value_scale(combined_rows, calibration_report)
     _attach_mlb_value_history(
         mlb_rows,
-        _mlb_value_history_from_archives(mlb_value_history_archive_dir),
+        _mlb_value_history_from_archives(
+            mlb_value_history_archive_dir,
+            (mlb_layer or {}).get("method_id"),
+        ),
         generated_at,
     )
     _attach_prospect_value_history(
@@ -1519,6 +1536,7 @@ def build_snapshot(
         },
         "input_artifacts": {
             "mlb_dynasty_layer_version": (mlb_layer or {}).get("layer_version"),
+            "mlb_dynasty_method_id": (mlb_layer or {}).get("method_id"),
             "mlb_dynasty_layer_status": (mlb_layer or {}).get("status"),
             "mlb_roster_status_version": (mlb_roster_status or {}).get("contract_version"),
             "mlb_roster_status_ready": (
