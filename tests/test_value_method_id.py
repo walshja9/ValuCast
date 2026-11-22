@@ -8,7 +8,7 @@ from mlb.dynasty import archive_layer, value_method_id
 from scripts.build_public_dynasty_snapshot import (
     MLB_LEGACY_METHOD_BREAK_DATE,
     TWO_WAY_SECONDARY_VALUE_WEIGHT,
-    _mlb_value_history_from_archives,
+    _mlb_value_histories_from_archives,
 )
 
 
@@ -28,7 +28,7 @@ def test_same_method_id_keeps_every_point(tmp_path):
     _write(tmp_path, "2026-12-02", [_row(81.5)], "m1")
     _write(tmp_path, "2026-12-03", [_row(83.0)], "m1")
 
-    history = _mlb_value_history_from_archives(tmp_path, "m1")
+    _, history = _mlb_value_histories_from_archives(tmp_path, "m1")
 
     assert history["99"] == [("2026-12-01", 80.0), ("2026-12-02", 81.5), ("2026-12-03", 83.0)]
 
@@ -39,7 +39,7 @@ def test_unstamped_files_on_or_after_the_legacy_date_are_compatible(tmp_path):
     _write(tmp_path, MLB_LEGACY_METHOD_BREAK_DATE, [_row(70.0)])
     _write(tmp_path, day_after, [_row(71.0)])
 
-    history = _mlb_value_history_from_archives(tmp_path, "m1")
+    _, history = _mlb_value_histories_from_archives(tmp_path, "m1")
 
     assert history["99"] == [(MLB_LEGACY_METHOD_BREAK_DATE, 70.0), (day_after, 71.0)]
 
@@ -50,7 +50,7 @@ def test_method_id_change_keeps_only_points_after_the_change(tmp_path):
     _write(tmp_path, "2026-12-03", [_row(75.0)], "m2")
     _write(tmp_path, "2026-12-04", [_row(76.0)], "m2")
 
-    history = _mlb_value_history_from_archives(tmp_path, "m2")
+    _, history = _mlb_value_histories_from_archives(tmp_path, "m2")
 
     assert history["99"] == [("2026-12-03", 75.0), ("2026-12-04", 76.0)]
     # A player who only appears before the change has no line left.
@@ -63,7 +63,9 @@ def test_a_later_change_wipes_earlier_compatible_points(tmp_path):
     _write(tmp_path, "2026-12-01", [_row(61.0)], "m1")
     _write(tmp_path, "2026-12-02", [_row(75.0)], "m2")
 
-    assert _mlb_value_history_from_archives(tmp_path, "m2")["99"] == [("2026-12-02", 75.0)]
+    _, chart = _mlb_value_histories_from_archives(tmp_path, "m2")
+
+    assert chart["99"] == [("2026-12-02", 75.0)]
 
 
 def test_switching_away_and_back_keeps_only_the_latest_run(tmp_path):
@@ -72,7 +74,9 @@ def test_switching_away_and_back_keeps_only_the_latest_run(tmp_path):
     _write(tmp_path, "2026-12-03", [_row(40.0)], "b")
     _write(tmp_path, "2026-12-04", [_row(62.0)], "a")
 
-    assert _mlb_value_history_from_archives(tmp_path, "a")["99"] == [("2026-12-04", 62.0)]
+    _, chart = _mlb_value_histories_from_archives(tmp_path, "a")
+
+    assert chart["99"] == [("2026-12-04", 62.0)]
 
 
 def test_first_rebuild_after_deploy_starts_at_the_legacy_date(tmp_path):
@@ -83,7 +87,9 @@ def test_first_rebuild_after_deploy_starts_at_the_legacy_date(tmp_path):
     _write(tmp_path, "2026-11-19", [_row(71.6)])
     _write(tmp_path, "2026-11-20", [_row(71.4)], "m1")
 
-    assert _mlb_value_history_from_archives(tmp_path, "m1")["99"] == [
+    _, chart = _mlb_value_histories_from_archives(tmp_path, "m1")
+
+    assert chart["99"] == [
         ("2026-11-18", 71.5),
         ("2026-11-19", 71.6),
         ("2026-11-20", 71.4),
@@ -120,7 +126,7 @@ def test_two_way_label_change_does_not_break_the_line(tmp_path):
         "m1",
     )
 
-    history = _mlb_value_history_from_archives(tmp_path, "m1")
+    _, history = _mlb_value_histories_from_archives(tmp_path, "m1")
 
     assert history["660271"] == [
         ("2026-12-01", round(50.0 + TWO_WAY_SECONDARY_VALUE_WEIGHT * 20.0, 2)),
@@ -133,8 +139,8 @@ def test_unstamped_file_before_the_legacy_date_is_the_old_method(tmp_path):
     _write(tmp_path, "2026-11-17", [_row(51.0)])
     _write(tmp_path, MLB_LEGACY_METHOD_BREAK_DATE, [_row(70.0)])
 
-    cut = _mlb_value_history_from_archives(tmp_path, "m1")
-    uncut = _mlb_value_history_from_archives(tmp_path, None)
+    _, cut = _mlb_value_histories_from_archives(tmp_path, "m1")
+    _, uncut = _mlb_value_histories_from_archives(tmp_path, None)
 
     assert cut["99"] == [(MLB_LEGACY_METHOD_BREAK_DATE, 70.0)]
     assert uncut["99"] == [
@@ -148,7 +154,7 @@ def test_unknown_current_method_id_never_cuts_stamped_files(tmp_path):
     _write(tmp_path, "2026-12-01", [_row(60.0)], "m1")
     _write(tmp_path, "2026-12-02", [_row(61.0)], "m2")
 
-    history = _mlb_value_history_from_archives(tmp_path, None)
+    _, history = _mlb_value_histories_from_archives(tmp_path, None)
 
     assert history["99"] == [("2026-12-01", 60.0), ("2026-12-02", 61.0)]
 

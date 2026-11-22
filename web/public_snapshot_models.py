@@ -721,6 +721,12 @@ class PublicSnapshotRow:
         except (TypeError, ValueError):
             return None
 
+    @property
+    def chart_value_history(self) -> tuple:
+        if "chart_value_history" in self.context:
+            return self._coerce_value_history(self.context["chart_value_history"])
+        return self.value_history
+
     @staticmethod
     def _coerce_value_history(raw) -> tuple:
         out = []

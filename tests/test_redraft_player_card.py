@@ -243,6 +243,19 @@ def test_dynasty_player_card_fields_include_value_momentum():
     assert fields["momentum_label"] == "UP +3.2 OVER 16D"
 
 
+def test_dynasty_player_card_fields_use_chart_history_for_momentum():
+    row = _card_dynasty_row((
+        ("2026-06-12", 80.0),
+        ("2026-06-26", 65.0),
+        ("2026-06-28", 70.0),
+    ))
+    row.chart_value_history = row.value_history[1:]
+
+    fields = app_module._card_value_fields("dynasty", row, {"statcast_groups": []})
+
+    assert fields["momentum_label"] == "UP +5.0 OVER 2D"
+
+
 def test_dynasty_player_card_fields_skip_empty_value_momentum():
     fields = app_module._card_value_fields(
         "dynasty",

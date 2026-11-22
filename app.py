@@ -72,7 +72,7 @@ from web.fg_fv_store import FgFvStore
 from web.player_links import build_player_links
 from web.search_fold import fold as fold_search
 from web.prospect_league_ranks import format_ranks_for
-from web.value_spark import build_spark
+from web.value_spark import build_spark, chart_value_history
 from web import buy_score
 from web import prospect_percentiles
 from web.share_pages import build_share_preview_html
@@ -1050,8 +1050,9 @@ def _buy_spark_label(spark: dict | None) -> str:
     return f"{direction} {delta:+.1f}{suffix}"
 
 
-def _value_momentum_label(row) -> str:
-    return _buy_spark_label(build_spark(getattr(row, "value_history", None)))
+def _value_momentum_label(row, *, for_chart=False) -> str:
+    history = chart_value_history(row) if for_chart else getattr(row, "value_history", None)
+    return _buy_spark_label(build_spark(history))
 
 
 dd_store, dynasty_data_source = _select_dynasty_store(public_snapshot_store)
@@ -2127,6 +2128,7 @@ def _prospect_graphic_png(
     hero_kicker=None,
     footer_note=None,
     as_of=None,
+    use_chart_history=False,
 ):
     """Render an Ahead of the Curve-style PNG for easy posting/saving.
 
@@ -2219,7 +2221,8 @@ def _prospect_graphic_png(
         return "BOARD RANK"
 
     def spark_points(row, x, y, w, h):
-        spark = build_spark(getattr(row, "value_history", None), width=w, height=h)
+        history = chart_value_history(row) if use_chart_history else getattr(row, "value_history", None)
+        spark = build_spark(history, width=w, height=h)
         if not spark:
             return None
         points = []
@@ -4326,7 +4329,7 @@ def _card_value_fields(mode, row, context):
         preset_items = _dynasty_value_preset_items(row)
         if preset_items:
             value_notes.append(" / ".join(f"{label} {val}" for label, val in preset_items[:2]))
-        momentum_label = _value_momentum_label(row)
+        momentum_label = _value_momentum_label(row, for_chart=True)
         return {
             "headline": "DYNASTY VALUE CARD",
             "subtitle": subtitle,
@@ -4410,7 +4413,13 @@ def _player_value_card_png(row, context, mode):
     fields = _card_value_fields(mode, row, context)
     statcast_items = _dynasty_statcast_card_items(context)
 
-    _graphic_header(img, draw, headline=fields["headline"], subtitle=fields["subtitle"], value_history=getattr(row, "value_history", None))
+    _graphic_header(
+        img,
+        draw,
+        headline=fields["headline"],
+        subtitle=fields["subtitle"],
+        value_history=chart_value_history(row) if mode == "dynasty" else getattr(row, "value_history", None),
+    )
 
     _graphic_glass_panel(img, draw, (48, 218, 1032, 410), radius=12)
     name_font = _graphic_font(48, bold=True)
@@ -11098,7 +11107,7 @@ def _build_dynasty_player_detail_context(player_id, args):
         "dyn_result": dyn_result,
         "dyn_categories": dyn_categories,
         "dyn_category_summary": dyn_category_summary,
-        "spark": build_spark(dd_row.value_history),
+        "spark": build_spark(chart_value_history(dd_row)),
         "mlb_stats": mlb_stats,
         "mlb_stats_actual": mlb_stats_actual,
         "mlb_stats_ros": mlb_stats_ros,
@@ -11733,6 +11742,7 @@ def dynasty_share_card_png():
         noun="Dynasty",
         hero_kicker="TOP DYNASTY ASSET",
         footer_note=DYNASTY_SHARE_FOOTER,
+        use_chart_history=True,
     )
     response = make_response(png)
     response.headers["Content-Type"] = "image/png"
