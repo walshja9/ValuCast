@@ -9,6 +9,11 @@ from __future__ import annotations
 W, H, PAD = 280, 56, 4
 
 
+def chart_value_history(row):
+    history = getattr(row, "chart_value_history", None)
+    return history if history is not None else getattr(row, "value_history", None)
+
+
 def build_spark(value_history, width: int = W, height: int = H, window_days: int | None = None):
     """value_history: ((date, value), ...) chronological. None when < 2 pts.
 

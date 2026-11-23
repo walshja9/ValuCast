@@ -845,6 +845,7 @@ def test_build_snapshot_adds_mlb_value_history_from_archive(tmp_path):
         buy_signals=_buy_payload(),
         generated_at="2026-06-13T12:00:00+00:00",
         mlb_value_history_archive_dir=tmp_path,
+        prospect_value_history_archive_dir=None,
     )
 
     mlb = next(row for row in payload["players"] if row["mlbam_id"] == 99)
@@ -855,8 +856,46 @@ def test_build_snapshot_adds_mlb_value_history_from_archive(tmp_path):
         ("2026-06-12", 85.5),
         ("2026-06-13", 90.0),
     ]
+    assert mlb["context"]["chart_value_history"] == mlb["context"]["value_history"]
     assert len(mlb["context"]["value_history"]) <= 30
     assert "value_history" not in prospect["context"]
+    assert "chart_value_history" not in prospect["context"]
+
+
+def test_build_snapshot_restarts_only_mlb_chart_history_when_method_id_changes(tmp_path):
+    for date_str, value, method_id in [
+        ("2026-06-10", 80.0, "m1"),
+        ("2026-06-11", 85.5, "m2"),
+        ("2026-06-12", 88.0, "m2"),
+    ]:
+        (tmp_path / f"{date_str}.json").write_text(
+            json.dumps({"method_id": method_id, "players": [{"mlbam_id": 99, "value": value}]}),
+            encoding="utf-8",
+        )
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer={**_ready_mlb_payload(), "method_id": "m2"},
+        buy_signals=_buy_payload(),
+        generated_at="2026-06-13T12:00:00+00:00",
+        mlb_value_history_archive_dir=tmp_path,
+        prospect_value_history_archive_dir=None,
+    )
+
+    mlb = next(row for row in payload["players"] if row["mlbam_id"] == 99)
+
+    assert mlb["context"]["value_history"] == [
+        ("2026-06-10", 80.0),
+        ("2026-06-11", 85.5),
+        ("2026-06-12", 88.0),
+        ("2026-06-13", 90.0),
+    ]
+    assert mlb["context"]["chart_value_history"] == [
+        ("2026-06-11", 85.5),
+        ("2026-06-12", 88.0),
+        ("2026-06-13", 90.0),
+    ]
+    assert payload["input_artifacts"]["mlb_dynasty_method_id"] == "m2"
 
 
 def test_build_snapshot_adds_prospect_value_history_from_rank_archive(tmp_path):

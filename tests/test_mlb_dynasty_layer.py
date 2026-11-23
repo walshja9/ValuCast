@@ -20,6 +20,7 @@ from mlb.dynasty import (
     _role_adjusted_score,
     build_mlb_dynasty_layer,
     load_missing_mlbam_exceptions,
+    value_method_id,
 )
 
 
@@ -251,6 +252,10 @@ def test_mlb_layer_records_explicit_projection_source():
     )
     assert payload["value_contract"]["projection_source_kind"] == "valucast_hp_projection_run"
     assert payload["players"][0]["stat_line"]["source"] == "valucast_hp_projection_run"
+    assert payload["method_id"] == value_method_id(
+        payload["value_contract"]["phase"],
+        payload["source_policy"]["projection_source_kind"],
+    )
 
 
 def test_value_contract_text_follows_the_season_phase():
