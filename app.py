@@ -48,6 +48,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.public_snapshot_store import PublicSnapshotStore
+from web.roster_event_display import roster_event_badges
 from web.site_metrics import SiteMetricsStore
 from web.valucast_buy_store import ValuCastBuyStore
 from web.league_settings import _BOUNDS, parse_league_settings
@@ -1789,11 +1790,8 @@ def _prospect_category_state(args):
 
 def _apply_prospect_board_context(ctx, args):
     """Apply dedicated prospect-board rows and metadata to a DD context."""
-    # Debut-status view filter (renamed from "MiLB only" 7/2 — debut is the concept
-    # users actually reason about). "Debuted" = has reached the majors: on an active
-    # roster now (rookie-rule retention) OR a prior call-up since optioned back down
-    # (the MLB-taste guys). Applied BEFORE the top-200 slice so the board
-    # repopulates to full depth; P# gaps are honest — same as the position filter.
+    # Filter on recorded MLB appearances before slicing, so each view can fill
+    # the board to its requested depth.
     raw_callups = args.get("callups") or ""
     callups = {"milb": "undebuted"}.get(raw_callups, raw_callups)
     if callups not in ("debuted", "undebuted"):
@@ -1852,10 +1850,7 @@ def _apply_prospect_board_context(ctx, args):
         for row in rows
         if (key := _row_identity_key(row)) in call_up_by_key
     }
-    # Rookie-eligible prospects who've already had a taste of the majors (e.g. a
-    # cup-of-coffee call-up since optioned back down) -- so the board doesn't look
-    # naive to anyone who already knows the player debuted. Same source as the
-    # backfields "Got the Call" MLB-taste badge; display-only, doesn't affect rank.
+    # Recorded MLB service, shared with the Backfields roster-status display.
     ctx["mlb_debut_by_id"] = {
         row.id: debuted_ids[str(row.mlbam_id)]
         for row in rows
@@ -6881,6 +6876,7 @@ def _team_board_callups(org_rows, movements, debuted_ids, pulse_keys, *, limit=5
     candidates = [
         row for row in org_rows
         if _team_board_level(row) in _TEAM_BOARD_CALLUP_LEVELS
+        and not _prospect_has_roster_signal(row, pulse_keys)
         and not _prospect_has_debuted(row, debuted_ids, pulse_keys)
     ]
     candidates.sort(key=lambda row: _team_board_callup_score(row, movements), reverse=True)
@@ -7116,8 +7112,8 @@ def _build_backfields_page_context():
     pulse_keys = _call_up_pulse_keys()
     # The debut/level filter pills are client-side only (no server round trip), so a
     # naive top-100-of-everyone slice starves a filtered view: if 30 of the top 100
-    # have already debuted, "Not debuted" only ever has 70 rows to show, even though
-    # there are genuinely top-100-worthy undebuted prospects ranked 101+. Walk the
+    # have a debut recorded, "No debut recorded" only has 70 rows to show, even
+    # when qualifying prospects are ranked 101+. Walk the
     # full ranked pool (true rank preserved per row, NOT re-enumerated) until both the
     # debuted and undebuted subsets independently reach 100 -- same "repopulate to
     # full depth" fix the main board already applies via row_filter-before-slice
@@ -7293,7 +7289,6 @@ def _build_backfields_page_context():
         link_fields = player_link_fields(row.name, row.id)
         level = level_for(row)
         rankings.append({
-            # Debut filter: shared predicate (active roster / MLB service / pulse).
             "debuted": _prospect_has_debuted(row, debuted_ids, pulse_keys),
             "rank": rank,
             "name": row.name,
@@ -7346,6 +7341,7 @@ def _build_backfields_page_context():
     callup_rows = [
         row for row in all_prospects
         if level_for(row) in {"AAA", "AA"}
+        and not _prospect_has_roster_signal(row, pulse_keys)
         and not _prospect_has_debuted(row, debuted_ids, pulse_keys)
     ]
     eta_points = {
@@ -7396,25 +7392,23 @@ def _build_backfields_page_context():
             "value": value,
         })
 
-    # "Got the Call" — the companion to the doorstep desk: rookie-eligible prospects who
-    # have already reached an MLB active roster (so they're off the ranked minors board).
-    # Top graduates show as cards; the rest fold into a "see all" dropdown so the rail
-    # stays compact while still accounting for everyone.
-    called_up_all = []
+    # Combine current appearance evidence with the cached roster listings at render time.
+    roster_listed_all = []
     for r in _active_mlb_roster_rows():
         positions = r.get("positions") or []
         pos = "/".join(str(p) for p in positions[:2] if p) or "-"
         team = r.get("mlb_team") or "-"
         val = fmt_value(r.get("score"))
-        called_up_all.append({
+        roster_listed_all.append({
             "name": r.get("name") or "Unknown",
             "flag": f"{team} · {pos}",
             "why": f"Val {val} · rookie-eligible",
-            "status": "In the show",
+            "roster_badges": roster_event_badges(
+                roster_listed=True,
+                debut_recorded=str(r.get("mlbam_id", "")) in debuted_ids,
+            ),
             "value": val,
         })
-    recently_called_up = called_up_all[:8]
-    recently_called_up_more = called_up_all[8:]
 
     def leaders(rows, stat_key, label, *, high=True, value_format=fmt_value, limit=2):
         qualified = [
@@ -7560,9 +7554,9 @@ def _build_backfields_page_context():
         "rankings": rankings,
         "risers": risers,
         "callups": callups,
-        "recently_called_up": recently_called_up,
-        "recently_called_up_more": recently_called_up_more,
-        "recently_called_up_total": len(_active_mlb_roster_rows()),
+        "recently_called_up": roster_listed_all[:8],
+        "recently_called_up_more": roster_listed_all[8:],
+        "recently_called_up_total": len(roster_listed_all),
         "stats": {
             "hitting": hitting_stats,
             "pitching": pitching_stats,
@@ -7732,19 +7726,9 @@ _ACTIVE_ROSTER_PULSE_PATH = Path(__file__).parent / "data" / "models" / "valucas
 
 
 def _active_mlb_roster_rows():
-    """Rookie-eligible prospects currently on an MLB active roster — the 'Got the
-    Call' companion to the Call-Up Desk. Sourced from the served snapshot's RETAINED
-    rows (7/2): rookie-rule retention keeps these players ranked on the board, so
-    the rank artifact's active_mlb_roster_board is graduates-only and correctly
-    empty — reading it here showed a false '0 rookie-eligible in the majors'.
+    """Roster listings from retained snapshot rows and the intraday pulse.
 
-    Keyed on the call-up pulse file's mtime (7/6): the pulse refreshes intraday,
-    independent of the morning build, so a bare "compute once" cache could freeze a
-    long-lived worker's answer from before a same-day promotion. Without this, a
-    freshly-pulsed player could show debuted=True in the rankings (which reads the
-    pulse through the mtime-aware _load_artifact) while still missing from 'Got the
-    Call' and undercounted in recently_called_up_total — two facts about the same
-    player disagreeing purely from cache-freshness skew, not real data.
+    The pulse timestamp keeps the listings fresh between snapshot builds.
     """
     global _ACTIVE_ROSTER_ROWS
     try:
@@ -7761,13 +7745,13 @@ def _active_mlb_roster_rows():
                 seen.add(_row_identity_key(r) or "")
                 rows.append({
                     "name": getattr(r, "name", None),
+                    "mlbam_id": getattr(r, "mlbam_id", None),
                     "positions": list(getattr(r, "positions", None) or []),
                     "mlb_team": getattr(r, "mlb_team", None) or getattr(r, "team", None),
                     "score": getattr(r, "value", None),
                 })
-        # Same-day pulse call-ups: promoted AFTER the morning feed build, so
-        # the feed flag doesn't know them yet (7/3: Jim Jarvis was invisible
-        # here for a day). The pulse entry is thin — enrich from the feed row.
+        # The pulse can add listings after the morning build. Enrich them from
+        # the matching snapshot row when available.
         row_by_key = {_row_identity_key(r): r for r in dd_store.get_all()}
         pulse = _load_artifact(_ACTIVE_ROSTER_PULSE_PATH) or {}
         for key, entry in (pulse.get("by_identity") or {}).items():
@@ -7776,6 +7760,7 @@ def _active_mlb_roster_rows():
             r = row_by_key.get(key)
             rows.append({
                 "name": entry.get("name") or (getattr(r, "name", None) if r else None) or "Unknown",
+                "mlbam_id": (getattr(r, "mlbam_id", None) if r else None) or entry.get("mlbam_id"),
                 "positions": (list(getattr(r, "positions", None) or []) if r else [])
                              or ([entry.get("position")] if entry.get("position") else []),
                 "mlb_team": entry.get("mlb_team")
@@ -7794,7 +7779,7 @@ _DEBUTED_PROSPECT_IDS_PATH = Path(__file__).parent / "data" / "prospects" / "pro
 def _debuted_prospect_ids():
     """{mlbam(str): taste} for rookie-eligible prospects who have logged MLB service
     (graduated=False) — taste is the MLB sample so far, e.g. '2 PA' or '27 IP'.
-    Powers the backfields 'MLB · <taste>' badge. Sourced offline from the model inputs.
+    Sourced offline from the model inputs for display badges and debut filters.
 
     Keyed on this file's mtime (7/6) — same cache-freshness fix as
     _active_mlb_roster_rows, so a rebuilt prospect_model_inputs.json is picked up by
@@ -7807,18 +7792,22 @@ def _debuted_prospect_ids():
     if _DEBUTED_PROSPECT_IDS is not None and _DEBUTED_PROSPECT_IDS[0] == stamp:
         return _DEBUTED_PROSPECT_IDS[1]
     try:
-        svc = (json.loads(_DEBUTED_PROSPECT_IDS_PATH.read_text(encoding="utf-8")) or {}).get("mlb_service") or []
+        payload = json.loads(_DEBUTED_PROSPECT_IDS_PATH.read_text(encoding="utf-8"))
     except (OSError, ValueError):
+        payload = None
+    svc = payload.get("mlb_service") if isinstance(payload, dict) else None
+    if not isinstance(svc, list):
         svc = []
     out = {}
     for s in svc:
         if not isinstance(s, dict) or s.get("mlbam_id") is None or s.get("graduated"):
             continue
-        pa, ip = s.get("pa") or 0, s.get("ip") or 0
-        if pa > 0:
+        pa, ip = s.get("pa"), s.get("ip")
+        if type(pa) in (int, float) and 0 < pa < math.inf:
             out[str(s["mlbam_id"])] = f"{int(pa)} PA"
-        elif ip > 0:
-            out[str(s["mlbam_id"])] = f"{ip:g} IP"
+        elif type(ip) in (int, float) and 0 < ip < math.inf:
+            innings = f"{ip:g}" if type(ip) is float else ip
+            out[str(s["mlbam_id"])] = f"{innings} IP"
     _DEBUTED_PROSPECT_IDS = (stamp, out)
     return out
 
@@ -7830,25 +7819,24 @@ def _row_mlb_debut(row):
 
 
 def _call_up_pulse_keys() -> frozenset:
-    """Identity keys ('687312_pitcher') on a fresh MLB active roster per the
-    same-day call-up pulse — called up AFTER the morning feed build, so neither
-    active_mlb_callup nor the MLB-service taste knows them yet."""
+    """Identity keys listed by the intraday roster pulse."""
     pulse = _load_artifact(
         Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
     ) or {}
     return frozenset(pulse.get("by_identity") or ())
 
 
-def _prospect_has_debuted(row, debuted_ids, pulse_keys) -> bool:
-    """The ONE debut predicate for every surface (board filter, share cards,
-    backfields). 7/3 bug: the filter didn't check the same-day pulse, so the
-    'Not debuted' board kept players the UI was simultaneously badging
-    CALLED UP (Gabriel Hughes) — filter and badge must read the same sources."""
+def _prospect_has_roster_signal(row, pulse_keys) -> bool:
+    """Preserve the roster-based exclusions used by both Call-Up Desks."""
     return bool(
         getattr(row, "active_mlb_callup", False)
-        or str(getattr(row, "mlbam_id", "")) in debuted_ids
         or (_row_identity_key(row) or "") in pulse_keys
     )
+
+
+def _prospect_has_debuted(row, debuted_ids, pulse_keys) -> bool:
+    """Classify a recorded appearance using the positive MLB PA/IP map."""
+    return str(getattr(row, "mlbam_id", "")) in debuted_ids
 
 
 def _team_board_share_card_png(board, *, limit):
@@ -9406,7 +9394,18 @@ def _track_record_context():
         "sc": _track_record_scorecard(_load_scorecard_payload()),
         **_build_receipts_page_context(),
         "forward_sc": None,
+        "call_roster_badges": [],
     }
+    if context["sc"]:
+        debuted_ids = _debuted_prospect_ids()
+        for call in context["sc"]["calls"]:
+            key = call.get("identity_key")
+            person_id, _, role = key.partition("_") if isinstance(key, str) else ("", "", "")
+            identity_valid = person_id.isascii() and person_id.isdecimal() and role in {"hitter", "pitcher"}
+            context["call_roster_badges"].append(roster_event_badges(
+                roster_listed=call.get("in_mlb"),
+                debut_recorded=identity_valid and person_id in debuted_ids,
+            ))
     if not SCOREBOARD_HOLD:
         payload = _load_forward_scoreboard_payload()
         view = _scoreboard_view(payload) if payload else None
@@ -11360,7 +11359,10 @@ def _prospect_share_debut_view(args):
     return (lambda row: not _prospect_has_debuted(row, debuted_ids, pulse_keys)), "undebuted"
 
 
-_DEBUT_VIEW_NOUN = {"debuted": "Debuted Prospects", "undebuted": "Not-Yet-Debuted Prospects"}
+_DEBUT_VIEW_NOUN = {
+    "debuted": "Prospects With a Debut Recorded",
+    "undebuted": "Prospects With No Debut Recorded",
+}
 
 
 def _prospect_graphic_payload():

@@ -4675,9 +4675,10 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .backfields-page .bf-callup-more > summary:hover,
 .backfields-page .bf-callup-more[open] > summary { color: var(--bf-text); }
 .backfields-page .bf-callup-more-list { list-style: none; margin: .3rem 0 0; padding: 0; max-height: 320px; overflow-y: auto; }
-.backfields-page .bf-callup-more-list li { display: flex; justify-content: space-between; gap: .6rem; padding: .35rem 0; border-top: 1px solid rgba(255,255,255,.06); font-size: .82rem; }
+.backfields-page .bf-callup-more-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .2rem .6rem; padding: .35rem 0; border-top: 1px solid rgba(255,255,255,.06); font-size: .82rem; }
 .backfields-page .bf-callup-more-name { color: var(--bf-text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .backfields-page .bf-callup-more-meta { color: var(--bf-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.backfields-page .bf-callup-more-status { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .15rem .5rem; color: var(--bf-muted); overflow-wrap: anywhere; }
 
 /* Ahead-of-the-Curve track record (earliness scorecard, gated until credible) */
 .backfields-page .bf-aotc-record { display: flex; flex-wrap: wrap; gap: .35rem 1rem; align-items: baseline; margin-top: .5rem; padding-top: .5rem; border-top: 1px solid var(--bf-hairline, rgba(255,255,255,.08)); }
@@ -4850,7 +4851,7 @@ body:has(.backfields-page) .site-nav a[aria-current="page"] {
 .ledger-calls { padding: .6rem .9rem .8rem; border-radius: var(--radius-lg); }
 .ledger-row { padding: .55rem .15rem; border-bottom: 1px solid rgba(148, 163, 184, .10); }
 .ledger-row:last-child { border-bottom: none; }
-.ledger-row-main { display: flex; align-items: center; gap: .55rem; }
+.ledger-row-main { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; }
 .ledger-row-name { font-family: var(--font-display); font-weight: 600; }
 .ledger-chip {
     font-family: var(--font-mono);

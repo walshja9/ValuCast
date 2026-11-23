@@ -97,9 +97,11 @@
         <summary class="buys-fineprint">Rules, board policy &amp; vintage</summary>
         <p class="buys-fineprint">Board policy change 2026-07-02: rookie-eligible call-ups now stay
         ranked instead of leaving the board — 8 already-debuted players entered tracking that week
-        under the same pre-registered rules, disclosed rather than curated. Any call currently on an
-        MLB active roster wears an <span class="ledger-chip ledger-chip-mlb">in the majors</span>
-        chip below; the dynasty-rank bet stays open until he graduates the rookie limits.</p>
+        under the same pre-registered rules, disclosed rather than curated. The dynasty-rank bet
+        stays open until the player graduates the rookie limits.</p>
+        <p class="buys-fineprint">The roster listing badge marks a player listed in our roster data with
+        active status unverified. 40-man membership, active-roster status, and a recorded MLB debut
+        are separate facts.</p>
         <p class="buys-fineprint">Rules <a href="/methodology#aotc-rules">pre-registered 2026-07-02</a>
         &middot; raw artifact at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a> — snapshot it yourself.</p>
         <p class="buys-fineprint">Field-consensus vintage: the outside boards we compare
@@ -213,7 +215,9 @@ we never flagged{% else %} &middot; success rate and matched-control comparison 
         <div class="ledger-row-main">
             <span class="ledger-row-name">{{ c.name }}{% include "partials/_prospect_tag.html" %}</span>
             <span class="ledger-chip ledger-chip-{{ kind }}">{{ label }}</span>
-            {% if c.in_mlb %}<span class="ledger-chip ledger-chip-mlb" title="On an MLB active roster — the dynasty-rank bet stays open until he graduates the rookie limits">in the majors</span>{% endif %}
+            {% for badge in call_roster_badges[loop.index0] %}
+            <span class="ledger-chip ledger-chip-mlb" title="{{ badge.title }}">{{ badge.label }}</span>
+            {% endfor %}
         </div>
         <div class="ledger-row-detail">
             {# streak_since = the current UNBROKEN guarded run; a call that lapsed
