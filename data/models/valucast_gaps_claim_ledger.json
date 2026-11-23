@@ -3272,6 +3272,7 @@
       "team": "MIL"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 111,
       "claim_date": "2026-09-24",
       "claim_divergence": 89,
@@ -3279,7 +3280,8 @@
       "identity_key": "702566_pitcher",
       "mlbam_id": "702566",
       "name": "Owen Murphy",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-23",
       "role": "pitcher",
       "side": "higher",
       "team": "ATL"
@@ -7653,7 +7655,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-22T12:24:14.465751+00:00",
+  "generated_at": "2026-11-23T12:32:05.466708+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7673,8 +7675,8 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 42,
-      "open": 12,
+      "expired_unresolved": 43,
+      "open": 11,
       "resolved_by_callup": 10,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
