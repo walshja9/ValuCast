@@ -1,6 +1,7 @@
 """Read and timestamp qualified official roster evidence for display only."""
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
+from http.client import HTTPException
 import json
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -16,7 +17,7 @@ def _fetch(path, **query):
     try:
         with urlopen(request, timeout=5) as response:
             payload = json.load(response)
-    except (OSError, ValueError):
+    except (OSError, ValueError, HTTPException):
         return {}
     return payload if isinstance(payload, dict) else {}
 
@@ -35,6 +36,8 @@ def _roster_ids(payload, roster_type, team_id):
             return None
         status = row.get("status")
         status = status.get("code") if isinstance(status, dict) else None
+        if not isinstance(status, str) or not status or status.strip() != status:
+            return None
         if player_id in ids and ids[player_id] != status:
             return None
         ids[player_id] = status
@@ -82,11 +85,11 @@ def collect_roster_display(*, fetch=_fetch, clock=lambda: datetime.now(timezone.
         stamp = completed.astimezone(timezone.utc).isoformat()
         return {
             player_id: {
-                "on_40_man": True,
-                "active_roster": valid_active and active.get(player_id) == "A",
+                "on_40_man": status != "D60",
+                "active_roster": status != "D60" and valid_active and active.get(player_id) == "A",
                 "observed_at": stamp,
             }
-            for player_id in forty
+            for player_id, status in forty.items()
         }
 
     by_mlbam = {}

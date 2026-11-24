@@ -16,7 +16,7 @@ def roster_id(value):
 def mlb_date(timestamp):
     try:
         return timestamp.astimezone(ZoneInfo("America/New_York")).date()
-    except (ValueError, ZoneInfoNotFoundError):
+    except (ValueError, OverflowError, ZoneInfoNotFoundError):
         return None
 
 
@@ -54,7 +54,7 @@ def qualified_roster_display(evidence, *, now=None):
         if not isinstance(observed, str):
             continue
         try:
-            timestamp = datetime.fromisoformat(observed)
+            timestamp = datetime.fromisoformat(observed.replace("Z", "+00:00"))
         except ValueError:
             continue
         if timestamp.utcoffset() != timedelta(0) or mlb_date(timestamp) != effective:

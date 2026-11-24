@@ -563,3 +563,118 @@ def test_qualified_display_rejects_bad_provenance_dates_clock_and_identity():
     assert not qualified_roster_display({**payload, "source": "legacy_roster"}, now=now)
     assert not qualified_roster_display({**payload, "season_end": "20260927"}, now=now)
     assert not qualified_roster_display(payload, now=datetime(2026, 9, 28, 10, tzinfo=timezone.utc))
+
+
+def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_path):
+    import os
+
+    from mlb.roster_display import collect_roster_display
+    from web.roster_event_display import qualified_roster_display
+
+    observed = datetime(2026, 8, 9, 20, tzinfo=timezone.utc)
+    now = datetime(2026, 8, 9, 22, tzinfo=timezone.utc)
+    board_path, roster_path = tmp_path / "board.json", tmp_path / "roster.json"
+    pulse_path = tmp_path / "data" / "models" / "valucast_call_up_pulse.json"
+    board_path.write_text(json.dumps({"board": [
+        {"mlbam_id": LUKE_ID, "role": "hitter", "name": "Luke Adams", "rank": 1},
+        {"mlbam_id": 800008, "role": "pitcher", "name": "Pulse-only Prospect", "rank": 2},
+        {"mlbam_id": 800007, "role": "hitter", "name": "Upcoming Prospect", "rank": 3},
+    ]}), encoding="utf-8")
+    roster_path.write_text(json.dumps({"profiles": [
+        {"mlbam_id": LUKE_ID, "active_mlb_roster": True, "team_abbreviation": "MIL"},
+        {"mlbam_id": 800008, "active_mlb_roster": True, "team_abbreviation": "MIL"},
+    ]}), encoding="utf-8")
+    pulse = {
+        "json": json, "os": os, "datetime": SimpleNamespace(now=lambda _: now),
+        "timezone": timezone, "Path": Path, "BOARD_PATH": board_path,
+        "ROSTER_PATH": roster_path, "ARTIFACT_PATH": pulse_path,
+        "ARTIFACT_NAME": "valucast_call_up_pulse", "SIGNAL_VERSION": "0.1.0",
+    }
+    for path, names in (
+        ("mlb/roster_status.py", {"active_roster_lookup"}),
+        ("scripts/build_call_up_pulse.py", {"_load", "_identity_key", "build_call_up_pulse", "run_call_up_pulse"}),
+    ):
+        tree = ast.parse((ROOT / path).read_text(encoding="utf-8"))
+        selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
+        assert {node.name for node in selected} == names
+        exec(compile(ast.Module(body=selected, type_ignores=[]), path, "exec"), pulse)
+
+    publish = pulse["run_call_up_pulse"]
+    publish()
+    legacy = json.loads(pulse_path.read_text(encoding="utf-8"))
+
+    def source(path, **params):
+        if path == "/seasons/2026":
+            return {"seasons": [{"seasonId": "2026", "regularSeasonStartDate": "2026-03-25",
+                                  "regularSeasonEndDate": "2026-09-27"}]}
+        if path == "/teams":
+            return {"teams": [{"id": team, "sport": {"id": 1}} for team in range(1, 31)]}
+        team = int(path.split("/")[2])
+        ids = ([LUKE_ID, 800008, 800010, *range(500000, 500037)] if team == 1
+               else list(range(900000 + team * 100, 900040 + team * 100)))
+        if params["rosterType"] == "active":
+            ids = ([800008, 800010, *range(500000, 500024)] if team == 1 else ids[:26])
+        assert params["date"] == "2026-08-09"
+        return {"teamId": team, "rosterType": params["rosterType"],
+                "roster": [{"person": {"id": player}, "status": {"code": "A"}} for player in ids]}
+
+    publish(display_fetcher=lambda: collect_roster_display(fetch=source, clock=lambda: observed))
+    published = json.loads(pulse_path.read_text(encoding="utf-8"))
+    evidence = published.pop("roster_display_evidence")
+    assert published == legacy
+    assert list(published["by_identity"]) == list(legacy["by_identity"])
+    assert "800010_pitcher" not in published["by_identity"]
+    assert evidence["by_mlbam"]["800010"]["active_roster"] is True
+    assert evidence["by_mlbam"]["800008"]["observed_at"] == observed.isoformat()
+
+    reader = app_functions(
+        ("_load_artifact", "_call_up_pulse_keys"), Path=Path, json=json,
+        __file__=str(tmp_path / "app.py"), _ARTIFACT_CACHE={},
+    )
+    read_pulse = lambda path: reader["_load_artifact"](path) if path == pulse_path else None
+    app = Flask(__name__)
+    routes = {"app": app, "render_template": lambda name, **ctx: render(name, ctx),
+              "qualified_roster_display": lambda payload: qualified_roster_display(payload, now=now)}
+    bf_app = backfields_app({str(LUKE_ID): "3 PA"}, routes=routes)
+    bf_app.update(_load_artifact=read_pulse, _ACTIVE_ROSTER_PULSE_PATH=pulse_path,
+                  _call_up_pulse_keys=reader["_call_up_pulse_keys"])
+    sc = scorecard()
+    sc["calls"].append(call("800008_pitcher", "open_toward", False))
+    original = deepcopy(sc)
+    service = service_fixture({"mlb_service": [
+        {"mlbam_id": 800008, "pa": 0, "ip": 0}, {"mlbam_id": 800010, "ip": 4},
+    ]})
+    ld_app = ledger_app(sc, service, routes=routes)
+    ld_app.update(_load_artifact=read_pulse, _ACTIVE_ROSTER_PULSE_PATH=pulse_path)
+    before = bf_app["_build_backfields_page_context"]()
+    cached_rows = bf_app["_ACTIVE_ROSTER_ROWS"]
+    ld = ld_app["_track_record_context"]()
+    assert ld["sc"] is sc and sc == original
+    assert [badge["label"] for badge in before["recently_called_up"][0]["roster_badges"]] == ["40-man roster", DEBUT]
+    assert [badge["label"] for badge in before["recently_called_up_more"][0]["roster_badges"]] == ["40-man roster", "Active MLB roster"]
+    assert [badge["label"] for badge in ld["call_roster_badges"][-1]] == ["40-man roster", "Active MLB roster"]
+    assert [badge["label"] for badge in ld["call_roster_badges"][1]] == ["40-man roster", "Active MLB roster", DEBUT]
+    with app.test_client() as client:
+        for path in ("/backfields", "/ledger"):
+            response = client.get(path)
+            assert response.status_code == 200
+            assert "Active MLB roster" in response.get_data(as_text=True)
+
+    stamp = pulse_path.stat().st_mtime_ns
+    now = datetime(2026, 8, 11, tzinfo=timezone.utc)
+    after = bf_app["_build_backfields_page_context"]()
+    assert pulse_path.stat().st_mtime_ns == stamp
+    assert bf_app["_ACTIVE_ROSTER_ROWS"] is cached_rows
+    assert after["rankings"] == before["rankings"]
+    assert after["callups"] == before["callups"]
+    assert [(entry["name"], entry["flag"], entry["why"], entry["value"])
+            for entry in after["recently_called_up"] + after["recently_called_up_more"]] == [
+                (entry["name"], entry["flag"], entry["why"], entry["value"])
+                for entry in before["recently_called_up"] + before["recently_called_up_more"]]
+    assert ld_app["_track_record_context"]()["sc"] is sc and sc == original
+    with app.test_client() as client:
+        for path in ("/backfields", "/ledger"):
+            response = client.get(path)
+            assert response.status_code == 200
+            html = response.get_data(as_text=True)
+            assert NEUTRAL in html and "Active MLB roster" not in html and DEBUT in html
