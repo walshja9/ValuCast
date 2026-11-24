@@ -563,6 +563,15 @@ def test_qualified_display_rejects_bad_provenance_dates_clock_and_identity():
     assert not qualified_roster_display({**payload, "source": "legacy_roster"}, now=now)
     assert not qualified_roster_display({**payload, "season_end": "20260927"}, now=now)
     assert not qualified_roster_display(payload, now=datetime(2026, 9, 28, 10, tzinfo=timezone.utc))
+    boundary = {**payload, "effective_date": "2026-09-26", "by_mlbam": {
+        "99": {**good, "observed_at": "2026-09-26T20:00:00Z"},
+    }}
+    assert qualified_roster_display(
+        boundary, now=datetime(2026, 9, 27, 19, 59, 59, 999999, tzinfo=timezone.utc),
+    )
+    assert not qualified_roster_display(
+        boundary, now=datetime(2026, 9, 27, 20, tzinfo=timezone.utc),
+    )
 
 
 def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_path):
