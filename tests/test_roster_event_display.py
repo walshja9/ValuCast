@@ -1,5 +1,6 @@
 import ast
 from copy import deepcopy
+from datetime import datetime, timezone
 from functools import lru_cache
 import json
 import math
@@ -10,6 +11,7 @@ import unittest
 from urllib.parse import quote, urlencode
 from xml.etree import ElementTree
 
+from flask import Flask
 from jinja2 import DictLoader, Environment, select_autoescape
 
 
@@ -77,7 +79,7 @@ def row(mlbam_id, name, score, retained=False):
     )
 
 
-def backfields_app(service):
+def backfields_app(service, qualified=None, routes=None):
     luke = row(LUKE_ID, "Luke Adams", 20, retained=True)
     fillers = [row(800000 + i, f"Prospect {i}", 19 - i, retained=True) for i in range(7)]
     watch = row(800007, "Upcoming Prospect", 4)
@@ -88,12 +90,13 @@ def backfields_app(service):
     }}
 
     def load_artifact(path):
-        return pulse if path.name == "valucast_call_up_pulse.json" else None
+        return {**pulse, "roster_display_evidence": qualified} if path.name == "valucast_call_up_pulse.json" else None
 
     return app_functions(
         (
             "_identity_key", "_row_identity_key", "_prospect_has_debuted",
             "_active_mlb_roster_rows", "_build_backfields_page_context", "_prospect_has_roster_signal",
+            *(("backfields", "_qualified_roster_display") if routes else ()),
         ),
         Path=Path,
         __file__="synthetic-app-root/app.py",
@@ -103,6 +106,8 @@ def backfields_app(service):
             name="valucast_call_up_pulse.json", stat=lambda: SimpleNamespace(st_mtime_ns=91),
         ),
         _load_artifact=load_artifact,
+        _qualified_roster_display=lambda: {},
+        **(routes or {}),
         _prospect_tiers=lambda: {},
         _prospect_rows=lambda: snapshot,
         _debuted_prospect_ids=lambda: service,
@@ -161,10 +166,15 @@ def service_fixture(payload):
     return fixture
 
 
-def ledger_app(sc, service_path):
+def ledger_app(sc, service_path, qualified=None, routes=None):
     return app_functions(
-        ("_track_record_scorecard", "_track_record_context", "_debuted_prospect_ids"),
+        ("_track_record_scorecard", "_track_record_context", "_debuted_prospect_ids",
+         *(("ledger", "_qualified_roster_display") if routes else ())),
         _load_scorecard_payload=lambda: sc,
+        _qualified_roster_display=lambda: {},
+        _load_artifact=lambda _: {"roster_display_evidence": qualified},
+        _ACTIVE_ROSTER_PULSE_PATH=None,
+        **(routes or {}),
         _build_receipts_page_context=lambda: {"receipts_available": False},
         _DEBUTED_PROSPECT_IDS=None,
         _DEBUTED_PROSPECT_IDS_PATH=service_path,
@@ -422,3 +432,134 @@ class LedgerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+def test_qualified_badges_flow_through_both_pages_and_leave_scorecard_intact():
+    from web.roster_event_display import qualified_roster_display
+
+    now = datetime(2026, 8, 9, 22, tzinfo=timezone.utc)
+    observed = "2026-08-09T20:00:00+00:00"
+    source = {
+        "source": "official_mlb_statsapi_dated_team_rosters", "effective_date": "2026-08-09",
+        "season_start": "2026-03-25", "season_end": "2026-09-27",
+        "by_mlbam": {
+            str(LUKE_ID): {"on_40_man": True, "active_roster": False, "observed_at": observed},
+            "800008": {"on_40_man": True, "active_roster": True, "observed_at": observed},
+            "800010": {"on_40_man": True, "active_roster": True, "observed_at": observed},
+        },
+    }
+    app = Flask(__name__)
+    routes = {"app": app, "render_template": lambda name, **ctx: render(name, ctx),
+              "qualified_roster_display": lambda payload: qualified_roster_display(payload, now=now)}
+    bf_app = backfields_app({str(LUKE_ID): "3 PA"}, source, routes)
+    bf = bf_app["_build_backfields_page_context"]()
+    main = bf["recently_called_up"][0]
+    folded = bf["recently_called_up_more"][0]
+    assert [b["label"] for b in main["roster_badges"]] == ["40-man roster", DEBUT]
+    assert [b["label"] for b in folded["roster_badges"]] == ["40-man roster", "Active MLB roster"]
+    assert "Active MLB roster" in render("backfields.html", bf)
+    sc = scorecard()
+    sc["calls"].append(call("800008_pitcher", "open_toward", False))
+    original = deepcopy(sc)
+    svc = service_fixture({"mlb_service": [{"mlbam_id": 800010, "ip": 4}]})
+    ld_app = ledger_app(sc, svc, source, routes)
+    ld = ld_app["_track_record_context"]()
+    assert ld["sc"] is sc and ld["sc"] == original
+    assert [[b["label"] for b in group] for group in ld["call_roster_badges"]] == [
+        ["40-man roster"], ["40-man roster", "Active MLB roster", DEBUT],
+        [], ["40-man roster", "Active MLB roster"],
+    ]
+    with app.test_client() as client:
+        for path in ("/ledger", "/backfields"):
+            result = client.get(path)
+            assert result.status_code == 200
+            html = result.get_data(as_text=True)
+            assert all(label in html for label in ("40-man roster", "Active MLB roster", DEBUT, observed))
+    for group in (main["roster_badges"], folded["roster_badges"], ld["call_roster_badges"][-1]):
+        assert group[0]["observed_at"] == observed
+    without_badges = lambda html: re.sub(r'\s*<span class="ledger-chip ledger-chip-mlb"[^>]*>.*?</span>', "", html)
+    with app.test_client() as client:
+        before_expiry = without_badges(client.get("/ledger").get_data(as_text=True))
+    now = datetime(2026, 8, 11, tzinfo=timezone.utc)
+    with app.test_client() as client:
+        for path in ("/ledger", "/backfields"):
+            html = client.get(path).get_data(as_text=True)
+            assert NEUTRAL in html and "Active MLB roster" not in html
+            assert DEBUT in html
+            if path == "/ledger":
+                assert without_badges(html) == before_expiry
+
+
+def test_official_dated_source_does_not_promote_collapsed_or_unmatched_rosters():
+    from mlb.roster_display import collect_roster_display
+    from web.roster_event_display import qualified_roster_display
+
+    day = datetime(2026, 8, 9, 22, tzinfo=timezone.utc)
+    requests = []
+
+    def source(path, **params):
+        requests.append((path, params))
+        if path == "/seasons/2026":
+            return {"seasons": [{"seasonId": "2026", "regularSeasonStartDate": "2026-03-25",
+                                 "regularSeasonEndDate": "2026-09-27"}]}
+        if path == "/teams":
+            return {"teams": [{"id": i, "sport": {"id": 1}} for i in range(1, 31)]}
+        team = int(path.split("/")[2])
+        typ = params["rosterType"]
+        ids = list(range(team * 100, team * 100 + 40))
+        if typ == "active" and team == 1:
+            ids = ids[:26]
+        if typ == "active" and team == 3:
+            ids = ids[:25] + [997000]  # cannot prove this list is scoped to the team
+        if typ == "40Man" and team == 4:
+            typ = "active"  # response does not match the request
+        if team == 5:
+            ids += [100]  # identity assigned to two teams, evidence is ambiguous
+        return {
+            "rosterType": typ, "teamId": 7 if team == 6 else team,
+            "roster": [{"person": {"id": i}, "status": {"code": "IL" if i == 120 else "A"}}
+                       for i in ids],
+        }
+
+    result = collect_roster_display(fetch=source, clock=lambda: day)
+    rows = qualified_roster_display(result, now=day)
+    assert rows["101"]["active_roster"] is True
+    assert rows["101"]["observed_at"] == day.isoformat()
+    assert rows["120"]["active_roster"] is False
+    assert rows["139"]["active_roster"] is False
+    assert rows["200"]["active_roster"] is False  # same 40 active and 40-man IDs
+    assert rows["300"]["active_roster"] is False
+    assert {"100", "400", "600", "997000"}.isdisjoint(rows)
+    assert len(requests) == 62
+    assert all(params["date"] == "2026-08-09" for path, params in requests if path.endswith("/roster"))
+    requests.clear()
+    assert collect_roster_display(
+        fetch=source, clock=lambda: datetime(2026, 11, 24, 20, tzinfo=timezone.utc)
+    ) == {}
+    assert len(requests) == 1  # no roster request outside the verified regular season
+
+
+def test_qualified_display_rejects_bad_provenance_dates_clock_and_identity():
+    from web.roster_event_display import OFFICIAL_SOURCE, qualified_roster_display
+
+    now = datetime(2026, 9, 27, 22, tzinfo=timezone.utc)
+    observed = "2026-09-27T20:00:00Z"
+    good = {"on_40_man": True, "active_roster": True, "observed_at": observed}
+    payload = {
+        "source": OFFICIAL_SOURCE, "effective_date": "2026-09-27",
+        "season_start": "2026-03-25", "season_end": "2026-09-27",
+        "by_mlbam": {
+            "99": good, "099": good, "98E": good,
+            "100": {**good, "observed_at": "2026-09-27T23:00:00Z"},
+            "101": {**good, "observed_at": "2026-09-27T20:00:00"},
+            "102": {**good, "observed_at": "2026-09-26T20:00:00Z"},
+            "103": {**good, "on_40_man": 1},
+            "104": {**good, "active_roster": 1},
+        },
+    }
+    assert qualified_roster_display(payload, now=now) == {
+        "99": good, "104": {**good, "active_roster": False},
+    }
+    assert not qualified_roster_display({**payload, "source": "legacy_roster"}, now=now)
+    assert not qualified_roster_display({**payload, "season_end": "20260927"}, now=now)
+    assert not qualified_roster_display(payload, now=datetime(2026, 9, 28, 10, tzinfo=timezone.utc))

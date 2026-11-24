@@ -48,7 +48,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.public_snapshot_store import PublicSnapshotStore
-from web.roster_event_display import roster_event_badges
+from web.roster_event_display import qualified_roster_display, roster_event_badges
 from web.site_metrics import SiteMetricsStore
 from web.valucast_buy_store import ValuCastBuyStore
 from web.league_settings import _BOUNDS, parse_league_settings
@@ -7394,6 +7394,7 @@ def _build_backfields_page_context():
 
     # Combine current appearance evidence with the cached roster listings at render time.
     roster_listed_all = []
+    roster_display = _qualified_roster_display()
     for r in _active_mlb_roster_rows():
         positions = r.get("positions") or []
         pos = "/".join(str(p) for p in positions[:2] if p) or "-"
@@ -7406,6 +7407,7 @@ def _build_backfields_page_context():
             "roster_badges": roster_event_badges(
                 roster_listed=True,
                 debut_recorded=str(r.get("mlbam_id", "")) in debuted_ids,
+                **roster_display.get(str(r.get("mlbam_id", "")), {}),
             ),
             "value": val,
         })
@@ -7723,6 +7725,12 @@ def _team_board_share_limit():
 
 _ACTIVE_ROSTER_ROWS = None
 _ACTIVE_ROSTER_PULSE_PATH = Path(__file__).parent / "data" / "models" / "valucast_call_up_pulse.json"
+
+
+def _qualified_roster_display():
+    pulse = _load_artifact(_ACTIVE_ROSTER_PULSE_PATH)
+    evidence = pulse.get("roster_display_evidence") if isinstance(pulse, dict) else None
+    return qualified_roster_display(evidence)
 
 
 def _active_mlb_roster_rows():
@@ -9398,6 +9406,7 @@ def _track_record_context():
     }
     if context["sc"]:
         debuted_ids = _debuted_prospect_ids()
+        roster_display = _qualified_roster_display()
         for call in context["sc"]["calls"]:
             key = call.get("identity_key")
             person_id, _, role = key.partition("_") if isinstance(key, str) else ("", "", "")
@@ -9405,6 +9414,7 @@ def _track_record_context():
             context["call_roster_badges"].append(roster_event_badges(
                 roster_listed=call.get("in_mlb"),
                 debut_recorded=identity_valid and person_id in debuted_ids,
+                **(roster_display.get(person_id, {}) if identity_valid else {}),
             ))
     if not SCOREBOARD_HOLD:
         payload = _load_forward_scoreboard_payload()

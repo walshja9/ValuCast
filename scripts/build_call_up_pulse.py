@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from mlb.roster_status import active_roster_lookup  # noqa: E402
+from mlb.roster_display import collect_roster_display  # noqa: E402
 
 BOARD_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ROSTER_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
@@ -122,8 +123,12 @@ def run_call_up_pulse(
     board_path: Path = BOARD_PATH,
     roster_path: Path = ROSTER_PATH,
     artifact_path: Path = ARTIFACT_PATH,
+    display_fetcher=None,
 ) -> dict:
     payload = build_call_up_pulse(board_path=board_path, roster_path=roster_path)
+    if display_fetcher is not None:
+        # This namespace is never consumed by models or the legacy signal path.
+        payload["roster_display_evidence"] = display_fetcher()
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -136,7 +141,7 @@ def run_call_up_pulse(
 
 
 def main() -> int:
-    result = run_call_up_pulse()
+    result = run_call_up_pulse(display_fetcher=collect_roster_display)
     print(
         "call-up pulse: "
         f"status={result['status']} call_ups={result['call_up_count']} "
