@@ -48,7 +48,7 @@ from web.category_registry import (
 )
 from web.config_builder import build_config, build_url_params, parse_list
 from web.public_snapshot_store import PublicSnapshotStore
-from web.roster_event_display import qualified_roster_display, roster_event_badges
+from web.roster_event_display import qualified_appearance_display, qualified_roster_display, roster_event_badges
 from web.site_metrics import SiteMetricsStore
 from web.valucast_buy_store import ValuCastBuyStore
 from web.league_settings import _BOUNDS, parse_league_settings
@@ -7395,6 +7395,7 @@ def _build_backfields_page_context():
     # Combine current appearance evidence with the cached roster listings at render time.
     roster_listed_all = []
     roster_display = _qualified_roster_display()
+    appearances = _appearance_ids()
     for r in _active_mlb_roster_rows():
         positions = r.get("positions") or []
         pos = "/".join(str(p) for p in positions[:2] if p) or "-"
@@ -7406,7 +7407,7 @@ def _build_backfields_page_context():
             "why": f"Val {val} · rookie-eligible",
             "roster_badges": roster_event_badges(
                 roster_listed=True,
-                debut_recorded=str(r.get("mlbam_id", "")) in debuted_ids,
+                debut_recorded=str(r.get("mlbam_id", "")) in appearances,
                 **roster_display.get(str(r.get("mlbam_id", "")), {}),
             ),
             "value": val,
@@ -7731,6 +7732,12 @@ def _qualified_roster_display():
     pulse = _load_artifact(_ACTIVE_ROSTER_PULSE_PATH)
     evidence = pulse.get("roster_display_evidence") if isinstance(pulse, dict) else None
     return qualified_roster_display(evidence)
+
+
+def _appearance_ids():
+    pulse = _load_artifact(_ACTIVE_ROSTER_PULSE_PATH)
+    evidence = pulse.get("appearance_display_evidence") if isinstance(pulse, dict) else None
+    return qualified_appearance_display(evidence)
 
 
 def _active_mlb_roster_rows():
@@ -9405,7 +9412,7 @@ def _track_record_context():
         "call_roster_badges": [],
     }
     if context["sc"]:
-        debuted_ids = _debuted_prospect_ids()
+        appearances = _appearance_ids()
         roster_display = _qualified_roster_display()
         for call in context["sc"]["calls"]:
             key = call.get("identity_key")
@@ -9413,7 +9420,7 @@ def _track_record_context():
             identity_valid = person_id.isascii() and person_id.isdecimal() and role in {"hitter", "pitcher"}
             context["call_roster_badges"].append(roster_event_badges(
                 roster_listed=call.get("in_mlb"),
-                debut_recorded=identity_valid and person_id in debuted_ids,
+                debut_recorded=identity_valid and person_id in appearances,
                 **(roster_display.get(person_id, {}) if identity_valid else {}),
             ))
     if not SCOREBOARD_HOLD:

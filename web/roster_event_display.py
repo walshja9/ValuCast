@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 OFFICIAL_SOURCE = "official_mlb_statsapi_dated_team_rosters"
+APPEARANCE_SOURCE = "official_mlb_statsapi_people_mlb_debut_date"
 
 
 def roster_id(value):
@@ -63,6 +64,33 @@ def qualified_roster_display(evidence, *, now=None):
             continue
         facts[key] = {"on_40_man": True, "active_roster": row.get("active_roster") is True,
                       "observed_at": observed}
+    return facts
+
+
+def qualified_appearance_display(evidence, *, now=None):
+    """Keep verified historical appearances independently of current roster status."""
+    now = now if now is not None else datetime.now(timezone.utc)
+    if not isinstance(evidence, dict) or evidence.get("source") != APPEARANCE_SOURCE:
+        return {}
+    rows = evidence.get("by_mlbam")
+    if not isinstance(rows, dict) or now.utcoffset() is None:
+        return {}
+    facts = {}
+    for key, row in rows.items():
+        if not isinstance(key, str) or roster_id(key) != key or not isinstance(row, dict):
+            continue
+        debut = _date(row.get("mlb_debut_date"))
+        observed = row.get("observed_at")
+        if not debut or not isinstance(observed, str):
+            continue
+        try:
+            timestamp = datetime.fromisoformat(observed.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        day = mlb_date(timestamp)
+        if timestamp.utcoffset() != timedelta(0) or not day or debut > day or timestamp > now:
+            continue
+        facts[key] = {"mlb_debut_date": row["mlb_debut_date"], "observed_at": observed}
     return facts
 
 

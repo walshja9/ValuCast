@@ -79,24 +79,32 @@ def row(mlbam_id, name, score, retained=False):
     )
 
 
-def backfields_app(service, qualified=None, routes=None):
+def appearance_payload(ids):
+    return {"source": "official_mlb_statsapi_people_mlb_debut_date", "by_mlbam": {
+        key: {"mlb_debut_date": "2026-08-09", "observed_at": "2026-08-09T20:00:00+00:00"}
+        for key in ids
+    }}
+
+
+def backfields_app(service, qualified=None, routes=None, appearances=None, extra_rows=()):
     luke = row(LUKE_ID, "Luke Adams", 20, retained=True)
     fillers = [row(800000 + i, f"Prospect {i}", 19 - i, retained=True) for i in range(7)]
     watch = row(800007, "Upcoming Prospect", 4)
-    snapshot = [luke, *fillers, watch]
+    snapshot = [luke, *fillers, watch, *extra_rows]
     pulse_key = "800008_pitcher"
     pulse = {"by_identity": {
         pulse_key: {"mlbam_id": "800008", "name": "Pulse-only Prospect", "mlb_team": "MIL"},
     }}
 
     def load_artifact(path):
-        return {**pulse, "roster_display_evidence": qualified} if path.name == "valucast_call_up_pulse.json" else None
+        return {**pulse, "roster_display_evidence": qualified,
+                "appearance_display_evidence": appearance_payload(appearances or {})} if path.name == "valucast_call_up_pulse.json" else None
 
     return app_functions(
         (
             "_identity_key", "_row_identity_key", "_prospect_has_debuted",
             "_active_mlb_roster_rows", "_build_backfields_page_context", "_prospect_has_roster_signal",
-            *(("backfields", "_qualified_roster_display") if routes else ()),
+            *(("backfields", "_qualified_roster_display", "_appearance_ids") if routes else ()),
         ),
         Path=Path,
         __file__="synthetic-app-root/app.py",
@@ -107,6 +115,7 @@ def backfields_app(service, qualified=None, routes=None):
         ),
         _load_artifact=load_artifact,
         _qualified_roster_display=lambda: {},
+        _appearance_ids=lambda: appearances or {},
         **(routes or {}),
         _prospect_tiers=lambda: {},
         _prospect_rows=lambda: snapshot,
@@ -166,13 +175,15 @@ def service_fixture(payload):
     return fixture
 
 
-def ledger_app(sc, service_path, qualified=None, routes=None):
+def ledger_app(sc, service_path, qualified=None, routes=None, appearances=None):
     return app_functions(
         ("_track_record_scorecard", "_track_record_context", "_debuted_prospect_ids",
-         *(("ledger", "_qualified_roster_display") if routes else ())),
+         *(("ledger", "_qualified_roster_display", "_appearance_ids") if routes else ())),
         _load_scorecard_payload=lambda: sc,
         _qualified_roster_display=lambda: {},
-        _load_artifact=lambda _: {"roster_display_evidence": qualified},
+        _appearance_ids=lambda: appearances or {},
+        _load_artifact=lambda _: {"roster_display_evidence": qualified,
+                                 "appearance_display_evidence": appearance_payload(appearances or {})},
         _ACTIVE_ROSTER_PULSE_PATH=None,
         **(routes or {}),
         _build_receipts_page_context=lambda: {"receipts_available": False},
@@ -191,7 +202,7 @@ def ledger_app(sc, service_path, qualified=None, routes=None):
 
 def ledger_context(sc):
     service = service_fixture({"mlb_service": [{"mlbam_id": 800010, "ip": 4}]})
-    return ledger_app(sc, service)["_track_record_context"]()
+    return ledger_app(sc, service, appearances={"800010": True})["_track_record_context"]()
 
 
 class RosterBadgeTests(unittest.TestCase):
@@ -257,7 +268,7 @@ class DebutFilterTests(unittest.TestCase):
 
 class BackfieldsTests(unittest.TestCase):
     def test_folded_row_keeps_roster_badges_outside_team_and_value(self):
-        context = backfields_app({"800008": "3 IP"})["_build_backfields_page_context"]()
+        context = backfields_app({"800008": "3 IP"}, appearances={"800008": True})["_build_backfields_page_context"]()
         player = context["recently_called_up_more"][0]
         html = render("backfields.html", context)
         folded = html.split('<ul class="bf-callup-more-list">', 1)[1].split('</ul>', 1)[0]
@@ -294,7 +305,7 @@ class BackfieldsTests(unittest.TestCase):
         self.assertNotIn("In the show", section)
         self.assertNotIn(DEBUT, section)
 
-    def test_service_changes_refresh_labels_with_cached_roster_rows(self):
+    def test_service_changes_do_not_create_badges(self):
         service = {}
         namespace = backfields_app(service)
         context = namespace["_build_backfields_page_context"]()
@@ -305,7 +316,7 @@ class BackfieldsTests(unittest.TestCase):
         self.assertIs(namespace["_ACTIVE_ROSTER_ROWS"], cached_rows)
         self.assertTrue(context["rankings"][0]["debuted"])
         for field in ("recently_called_up", "recently_called_up_more"):
-            self.assertEqual([b["label"] for b in context[field][0]["roster_badges"]], [NEUTRAL, DEBUT])
+            self.assertEqual([b["label"] for b in context[field][0]["roster_badges"]], [NEUTRAL])
 
     def test_explicit_facts_and_html_escaping_in_real_template(self):
         context = backfields_app({})["_build_backfields_page_context"]()
@@ -357,7 +368,7 @@ class LedgerTests(unittest.TestCase):
         ]
         sc = scorecard()
         original = deepcopy(sc)
-        namespace = ledger_app(sc, service_fixture({"mlb_service": service_rows}))
+        namespace = ledger_app(sc, service_fixture({"mlb_service": service_rows}), appearances={"800010": True})
         context = namespace["_track_record_context"]()
         self.assertIs(context["sc"], sc)
         self.assertEqual(sc, original)
@@ -383,7 +394,7 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(read_service(), {"800010": "4 IP"})
         self.assertEqual(
             [[b["label"] for b in group] for group in context["call_roster_badges"]],
-            [[NEUTRAL], [DEBUT], []],
+            [[NEUTRAL], [], []],
         )
 
     def test_badges_join_by_identity_without_mutating_scorecard(self):
@@ -434,8 +445,16 @@ if __name__ == "__main__":
     unittest.main(verbosity=2)
 
 
+def test_appearance_badges_ignore_samples_on_both_pages():
+    # Positive numbers alone cannot make a debut badge either.
+    bf = backfields_app({str(LUKE_ID): "50 PA"})
+    ld = ledger_app(scorecard(), service_fixture({"mlb_service": [{"mlbam_id": LUKE_ID, "pa": 50}]}))
+    assert DEBUT not in render("backfields.html", bf["_build_backfields_page_context"]())
+    assert DEBUT not in render("track_record.html", ld["_track_record_context"]())
+
+
 def test_qualified_badges_flow_through_both_pages_and_leave_scorecard_intact():
-    from web.roster_event_display import qualified_roster_display
+    from web.roster_event_display import qualified_appearance_display, qualified_roster_display
 
     now = datetime(2026, 8, 9, 22, tzinfo=timezone.utc)
     observed = "2026-08-09T20:00:00+00:00"
@@ -450,8 +469,9 @@ def test_qualified_badges_flow_through_both_pages_and_leave_scorecard_intact():
     }
     app = Flask(__name__)
     routes = {"app": app, "render_template": lambda name, **ctx: render(name, ctx),
-              "qualified_roster_display": lambda payload: qualified_roster_display(payload, now=now)}
-    bf_app = backfields_app({str(LUKE_ID): "3 PA"}, source, routes)
+              "qualified_roster_display": lambda payload: qualified_roster_display(payload, now=now),
+              "qualified_appearance_display": lambda payload: qualified_appearance_display(payload, now=now)}
+    bf_app = backfields_app({str(LUKE_ID): "3 PA"}, source, routes, {str(LUKE_ID): True})
     bf = bf_app["_build_backfields_page_context"]()
     main = bf["recently_called_up"][0]
     folded = bf["recently_called_up_more"][0]
@@ -462,7 +482,7 @@ def test_qualified_badges_flow_through_both_pages_and_leave_scorecard_intact():
     sc["calls"].append(call("800008_pitcher", "open_toward", False))
     original = deepcopy(sc)
     svc = service_fixture({"mlb_service": [{"mlbam_id": 800010, "ip": 4}]})
-    ld_app = ledger_app(sc, svc, source, routes)
+    ld_app = ledger_app(sc, svc, source, routes, {"800010": True})
     ld = ld_app["_track_record_context"]()
     assert ld["sc"] is sc and ld["sc"] == original
     assert [[b["label"] for b in group] for group in ld["call_roster_badges"]] == [
@@ -492,7 +512,7 @@ def test_qualified_badges_flow_through_both_pages_and_leave_scorecard_intact():
 
 def test_official_dated_source_does_not_promote_collapsed_or_unmatched_rosters():
     from mlb.roster_display import collect_roster_display
-    from web.roster_event_display import qualified_roster_display
+    from web.roster_event_display import qualified_appearance_display, qualified_roster_display
 
     day = datetime(2026, 8, 9, 22, tzinfo=timezone.utc)
     requests = []
@@ -577,13 +597,14 @@ def test_qualified_display_rejects_bad_provenance_dates_clock_and_identity():
 def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_path):
     import os
 
-    from mlb.roster_display import collect_roster_display
-    from web.roster_event_display import qualified_roster_display
+    from mlb.roster_display import collect_appearance_display, collect_roster_display
+    from web.roster_event_display import qualified_appearance_display, qualified_roster_display
 
     observed = datetime(2026, 8, 9, 20, tzinfo=timezone.utc)
     now = datetime(2026, 8, 9, 22, tzinfo=timezone.utc)
     board_path, roster_path = tmp_path / "board.json", tmp_path / "roster.json"
     pulse_path = tmp_path / "data" / "models" / "valucast_call_up_pulse.json"
+    scorecard_path = tmp_path / "scorecard.json"
     board_path.write_text(json.dumps({"board": [
         {"mlbam_id": LUKE_ID, "role": "hitter", "name": "Luke Adams", "rank": 1},
         {"mlbam_id": 800008, "role": "pitcher", "name": "Pulse-only Prospect", "rank": 2},
@@ -593,15 +614,21 @@ def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_p
         {"mlbam_id": LUKE_ID, "active_mlb_roster": True, "team_abbreviation": "MIL"},
         {"mlbam_id": 800008, "active_mlb_roster": True, "team_abbreviation": "MIL"},
     ]}), encoding="utf-8")
+    sc = scorecard()
+    sc["calls"].append(call("800008_pitcher", "open_toward", False))
+    scorecard_path.write_text(json.dumps(sc), encoding="utf-8")
     pulse = {
         "json": json, "os": os, "datetime": SimpleNamespace(now=lambda _: now),
         "timezone": timezone, "Path": Path, "BOARD_PATH": board_path,
         "ROSTER_PATH": roster_path, "ARTIFACT_PATH": pulse_path,
         "ARTIFACT_NAME": "valucast_call_up_pulse", "SIGNAL_VERSION": "0.1.0",
+        "APPEARANCE_SOURCE": "official_mlb_statsapi_people_mlb_debut_date",
+        "qualified_appearance_display": lambda evidence: qualified_appearance_display(evidence, now=now),
+        "roster_id": __import__("web.roster_event_display", fromlist=["roster_id"]).roster_id,
     }
     for path, names in (
         ("mlb/roster_status.py", {"active_roster_lookup"}),
-        ("scripts/build_call_up_pulse.py", {"_load", "_identity_key", "build_call_up_pulse", "run_call_up_pulse"}),
+        ("scripts/build_call_up_pulse.py", {"_load", "_identity_key", "_appearance_player_ids", "build_call_up_pulse", "run_call_up_pulse"}),
     ):
         tree = ast.parse((ROOT / path).read_text(encoding="utf-8"))
         selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
@@ -613,6 +640,14 @@ def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_p
     legacy = json.loads(pulse_path.read_text(encoding="utf-8"))
 
     def source(path, **params):
+        if path == "/people":
+            ids = params["personIds"].split(",")
+            assert {str(LUKE_ID), "800008", "800010"}.issubset(ids)
+            return {"people": [
+                {"id": LUKE_ID, "mlbDebutDate": "2026-08-09"},  # pinch runner: never bats
+                {"id": 800008, "mlbDebutDate": "2026-08-09"},  # pitcher: no outs
+                {"id": 800010},  # active but has not appeared
+            ]}
         if path == "/seasons/2026":
             return {"seasons": [{"seasonId": "2026", "regularSeasonStartDate": "2026-03-25",
                                   "regularSeasonEndDate": "2026-09-27"}]}
@@ -627,9 +662,15 @@ def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_p
         return {"teamId": team, "rosterType": params["rosterType"],
                 "roster": [{"person": {"id": player}, "status": {"code": "A"}} for player in ids]}
 
-    publish(display_fetcher=lambda: collect_roster_display(fetch=source, clock=lambda: observed))
+    baseline_app = backfields_app({str(LUKE_ID): "3 PA"}, extra_rows=(row(800010, "Unplayed Active", 12, True),))
+    baseline = baseline_app["_build_backfields_page_context"]()
+    publish(display_fetcher=lambda: collect_roster_display(fetch=source, clock=lambda: observed),
+            appearance_fetcher=lambda ids: collect_appearance_display(ids, fetch=source, clock=lambda: observed),
+            scorecard_path=scorecard_path)
     published = json.loads(pulse_path.read_text(encoding="utf-8"))
     evidence = published.pop("roster_display_evidence")
+    appearances = published.pop("appearance_display_evidence")
+    assert set(appearances["by_mlbam"]) == {str(LUKE_ID), "800008"}
     assert published == legacy
     assert list(published["by_identity"]) == list(legacy["by_identity"])
     assert "800010_pitcher" not in published["by_identity"]
@@ -643,15 +684,16 @@ def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_p
     read_pulse = lambda path: reader["_load_artifact"](path) if path == pulse_path else None
     app = Flask(__name__)
     routes = {"app": app, "render_template": lambda name, **ctx: render(name, ctx),
-              "qualified_roster_display": lambda payload: qualified_roster_display(payload, now=now)}
-    bf_app = backfields_app({str(LUKE_ID): "3 PA"}, routes=routes)
+              "qualified_roster_display": lambda payload: qualified_roster_display(payload, now=now),
+              "qualified_appearance_display": lambda payload: qualified_appearance_display(payload, now=now)}
+    bf_app = backfields_app({str(LUKE_ID): "3 PA"}, routes=routes,
+                           extra_rows=(row(800010, "Unplayed Active", 12, True),))
     bf_app.update(_load_artifact=read_pulse, _ACTIVE_ROSTER_PULSE_PATH=pulse_path,
                   _call_up_pulse_keys=reader["_call_up_pulse_keys"])
-    sc = scorecard()
-    sc["calls"].append(call("800008_pitcher", "open_toward", False))
     original = deepcopy(sc)
     service = service_fixture({"mlb_service": [
-        {"mlbam_id": 800008, "pa": 0, "ip": 0}, {"mlbam_id": 800010, "ip": 4},
+        {"mlbam_id": LUKE_ID, "pa": 0}, {"mlbam_id": 800008, "ip": 0},
+        {"mlbam_id": 800010, "pa": 0, "ip": 0},
     ]})
     ld_app = ledger_app(sc, service, routes=routes)
     ld_app.update(_load_artifact=read_pulse, _ACTIVE_ROSTER_PULSE_PATH=pulse_path)
@@ -660,14 +702,21 @@ def test_collected_evidence_survives_pulse_publication_and_both_page_paths(tmp_p
     ld = ld_app["_track_record_context"]()
     assert ld["sc"] is sc and sc == original
     assert [badge["label"] for badge in before["recently_called_up"][0]["roster_badges"]] == ["40-man roster", DEBUT]
-    assert [badge["label"] for badge in before["recently_called_up_more"][0]["roster_badges"]] == ["40-man roster", "Active MLB roster"]
-    assert [badge["label"] for badge in ld["call_roster_badges"][-1]] == ["40-man roster", "Active MLB roster"]
-    assert [badge["label"] for badge in ld["call_roster_badges"][1]] == ["40-man roster", "Active MLB roster", DEBUT]
+    by_name = {entry["name"]: entry for entry in before["recently_called_up"] + before["recently_called_up_more"]}
+    assert [b["label"] for b in by_name["Pulse-only Prospect"]["roster_badges"]] == ["40-man roster", "Active MLB roster", DEBUT]
+    assert [b["label"] for b in by_name["Unplayed Active"]["roster_badges"]] == ["40-man roster", "Active MLB roster"]
+    assert [b["label"] for b in ld["call_roster_badges"][-1]] == ["40-man roster", "Active MLB roster", DEBUT]
+    assert [b["label"] for b in ld["call_roster_badges"][1]] == ["40-man roster", "Active MLB roster"]
+    assert before["rankings"] == baseline["rankings"]
+    assert before["callups"] == baseline["callups"]
+    assert scorecard_path.read_text(encoding="utf-8") == json.dumps(original)
     with app.test_client() as client:
         for path in ("/backfields", "/ledger"):
             response = client.get(path)
             assert response.status_code == 200
-            assert "Active MLB roster" in response.get_data(as_text=True)
+            html = response.get_data(as_text=True)
+            assert "Active MLB roster" in html
+            assert html.count(DEBUT) == 2
 
     stamp = pulse_path.stat().st_mtime_ns
     now = datetime(2026, 8, 11, tzinfo=timezone.utc)

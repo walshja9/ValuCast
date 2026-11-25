@@ -6,7 +6,10 @@ import json
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from web.roster_event_display import OFFICIAL_SOURCE, mlb_date, roster_id, season_dates
+from web.roster_event_display import (
+    APPEARANCE_SOURCE, OFFICIAL_SOURCE, mlb_date, qualified_appearance_display,
+    roster_id, season_dates,
+)
 
 _API = "https://statsapi.mlb.com/api/v1"
 
@@ -42,6 +45,31 @@ def _roster_ids(payload, roster_type, team_id):
             return None
         ids[player_id] = status
     return ids
+
+
+def collect_appearance_display(player_ids, *, fetch=_fetch, clock=lambda: datetime.now(timezone.utc)):
+    """Official debut dates include appearances with no PA or pitching outs."""
+    player_ids = sorted({player_id for value in player_ids if (player_id := roster_id(value))})
+    by_mlbam = {}
+    for offset in range(0, len(player_ids), 100):
+        batch = player_ids[offset:offset + 100]
+        payload = fetch("/people", personIds=",".join(batch))
+        people = payload.get("people") if isinstance(payload, dict) else None
+        if not isinstance(people, list):
+            continue
+        observed = clock().astimezone(timezone.utc).isoformat()
+        ambiguous = set()
+        for person in people:
+            if not isinstance(person, dict) or (player_id := roster_id(person.get("id"))) not in batch:
+                continue
+            row = {"mlb_debut_date": person.get("mlbDebutDate"), "observed_at": observed}
+            if player_id in by_mlbam and by_mlbam[player_id] != row:
+                ambiguous.add(player_id)
+            by_mlbam[player_id] = row
+        for player_id in ambiguous:
+            by_mlbam.pop(player_id, None)
+    evidence = {"source": APPEARANCE_SOURCE, "by_mlbam": by_mlbam}
+    return {**evidence, "by_mlbam": qualified_appearance_display(evidence, now=clock())}
 
 
 def collect_roster_display(*, fetch=_fetch, clock=lambda: datetime.now(timezone.utc)):
