@@ -22,10 +22,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from mlb.roster_status import active_roster_lookup  # noqa: E402
+from mlb.roster_display import collect_appearance_display, collect_roster_display  # noqa: E402
+from web.roster_event_display import APPEARANCE_SOURCE, qualified_appearance_display, roster_id  # noqa: E402
 
 BOARD_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
 ROSTER_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
 ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_call_up_pulse.json"
+SCORECARD_PATH = ROOT / "data" / "models" / "valucast_ahead_of_consensus_scorecard.json"
 
 ARTIFACT_NAME = "valucast_call_up_pulse"
 SIGNAL_VERSION = "0.1.0"
@@ -117,13 +120,48 @@ def build_call_up_pulse(
     }
 
 
+def _appearance_player_ids(board, roster, scorecard, pulse):
+    ids = set()
+    for payload, key in ((board, "board"), (roster, "profiles")):
+        rows = payload.get(key) if isinstance(payload, dict) else None
+        if isinstance(rows, list):
+            ids.update(player_id for row in rows if isinstance(row, dict)
+                       and (player_id := roster_id(row.get("mlbam_id"))))
+    calls = scorecard.get("calls") if isinstance(scorecard, dict) else None
+    if isinstance(calls, list):
+        for call in calls:
+            key = call.get("identity_key") if isinstance(call, dict) else None
+            person, _, role = key.partition("_") if isinstance(key, str) else ("", "", "")
+            if roster_id(person) and role in {"hitter", "pitcher"}:
+                ids.add(person)
+    entries = pulse.get("by_identity") if isinstance(pulse, dict) else None
+    if isinstance(entries, dict):
+        ids.update(player_id for row in entries.values() if isinstance(row, dict)
+                   and (player_id := roster_id(row.get("mlbam_id"))))
+    return ids
+
+
 def run_call_up_pulse(
     *,
     board_path: Path = BOARD_PATH,
     roster_path: Path = ROSTER_PATH,
     artifact_path: Path = ARTIFACT_PATH,
+    display_fetcher=None,
+    appearance_fetcher=None,
+    scorecard_path: Path | None = None,
 ) -> dict:
     payload = build_call_up_pulse(board_path=board_path, roster_path=roster_path)
+    if display_fetcher is not None:
+        # This namespace is never consumed by models or the legacy signal path.
+        payload["roster_display_evidence"] = display_fetcher()
+    if appearance_fetcher is not None:
+        previous = _load(artifact_path)
+        evidence = previous.get("appearance_display_evidence") if isinstance(previous, dict) else None
+        facts = qualified_appearance_display(evidence)
+        ids = _appearance_player_ids(_load(board_path), _load(roster_path),
+                                     _load(scorecard_path) if scorecard_path is not None else {}, previous)
+        facts.update(qualified_appearance_display(appearance_fetcher(sorted(ids | facts.keys()))))
+        payload["appearance_display_evidence"] = {"source": APPEARANCE_SOURCE, "by_mlbam": facts}
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = artifact_path.with_suffix(artifact_path.suffix + ".tmp")
     tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -136,7 +174,10 @@ def run_call_up_pulse(
 
 
 def main() -> int:
-    result = run_call_up_pulse()
+    result = run_call_up_pulse(
+        display_fetcher=collect_roster_display,
+        appearance_fetcher=collect_appearance_display, scorecard_path=SCORECARD_PATH,
+    )
     print(
         "call-up pulse: "
         f"status={result['status']} call_ups={result['call_up_count']} "

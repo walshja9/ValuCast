@@ -12,6 +12,11 @@ class TestToolbar(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
 
+    def _prospect_board(self, callups=""):
+        response = self.client.get("/", query_string={"mode": "prospects", "callups": callups})
+        self.assertEqual(response.status_code, 200)
+        return response.get_data(as_text=True)
+
     def test_single_toolbar_element(self):
         html = self.client.get("/").data.decode("utf-8")
         self.assertEqual(html.count('id="rank-toolbar"'), 1)
@@ -52,50 +57,46 @@ class TestToolbar(unittest.TestCase):
         self.assertIn("openProspectGraphic", html)
 
     def test_prospects_debut_filter_hides_and_isolates_debuted_players(self):
-        # Debuted players carry SOME callup-chip variant ("Called up · TEAM" when
-        # the same-day pulse has them, "In MLB · rookie-eligible" otherwise,
-        # "MLB taste" for optioned-back guys) — assert on the chip class, not one
-        # wording, so pulse freshness can't flake this test.
-        default = self.client.get("/?mode=prospects").data.decode("utf-8")
-        undebuted = self.client.get("/?mode=prospects&callups=undebuted").data.decode("utf-8")
-        if 'class="callup-chip"' not in default:
-            self.skipTest("no debuted prospects in current data")
-        # The not-debuted view has no debuted players, hence no callup chips.
-        self.assertNotIn('class="callup-chip"', undebuted)
-        # Legacy param value keeps working for any shared URLs.
-        legacy = self.client.get("/?mode=prospects&callups=milb").data.decode("utf-8")
-        self.assertNotIn('class="callup-chip"', legacy)
-        # Filtering runs BEFORE the top-200 slice, so the not-debuted view
-        # repopulates to full depth instead of leaving a shorter board.
-        self.assertEqual(
-            default.count('class="player-row'),
-            undebuted.count('class="player-row'),
-        )
-        # The debuted view surfaces retained call-ups from BEYOND the unfiltered
-        # top-200 (62 active-roster retainees exist; only ~2 dozen rank inside it).
-        debuted = self.client.get("/?mode=prospects&callups=debuted").data.decode("utf-8")
-        self.assertGreater(debuted.count('class="player-row'), 30)
+        # Put recorded MLB service on both sides of the unfiltered limit.
+        rows = app_module._prospect_rows(limit=None)
+        self.assertGreater(len(rows), 201)
+        inside = next(row for row in rows[:200] if row.mlbam_id not in (None, ""))
+        refill = rows[200]
+        outside = next(row for row in rows[201:] if row.mlbam_id not in (None, ""))
+        service = {
+            str(row.mlbam_id): "1 IP" if row.role == "pitcher" else "4 PA"
+            for row in (inside, outside)
+        }
+        with patch.object(app_module, "_debuted_prospect_ids", return_value=service):
+            boards = {view: self._prospect_board(view) for view in ("", "undebuted", "milb", "debuted")}
 
-    def test_prospect_debut_filter_reads_same_day_pulse(self):
-        # 7/3 Jarvis bug: a player called up AFTER the morning build exists only
-        # in the call-up pulse -- the debut filter must read the pulse the badge
-        # reads, or "Not debuted" shows players the UI badges CALLED UP.
-        import app as app_module
-        pulse_keys = app_module._call_up_pulse_keys()
-        pulse_rows = [
-            r for r in app_module.dd_store.filter(pool="prospect")
-            if (app_module._row_identity_key(r) or "") in pulse_keys
-        ]
-        if not pulse_rows:
-            self.skipTest("no same-day pulse call-ups on the current board")
-        undebuted = self.client.get("/?mode=prospects&callups=undebuted").data.decode("utf-8")
-        debuted = self.client.get("/?mode=prospects&callups=debuted").data.decode("utf-8")
-        for row in pulse_rows:
-            self.assertNotIn(f'data-player-id="{row.id}"', undebuted)
-        self.assertTrue(
-            any(f'data-player-id="{row.id}"' in debuted for row in pulse_rows),
-            "pulse call-ups missing from the Debuted view",
-        )
+        for view, count, expected in (
+            ("", 200, (True, False, False)),
+            ("undebuted", 200, (False, True, False)),
+            ("milb", 200, (False, True, False)),
+            ("debuted", 2, (True, False, True)),
+        ):
+            with self.subTest(view=view):
+                html = boards[view]
+                self.assertEqual(html.count('class="player-row'), count)
+                for row, visible in zip((inside, refill, outside), expected):
+                    self.assertEqual(f'data-player-id="{row.id}"' in html, visible, row.id)
+
+    def test_prospect_debut_filter_requires_service_for_same_day_pulse(self):
+        row = next(row for row in app_module._prospect_rows() if app_module._row_identity_key(row))
+        key = app_module._row_identity_key(row)
+        player_id = f'data-player-id="{row.id}"'
+        service = {str(row.mlbam_id): "1 IP" if row.role == "pitcher" else "4 PA"}
+        with (
+            patch.object(app_module, "_call_up_pulse_keys", return_value=frozenset({key})),
+            patch.object(app_module, "_debuted_prospect_ids") as read_service,
+        ):
+            read_service.return_value = {}
+            self.assertTrue(player_id in self._prospect_board("undebuted"), row.id)
+            self.assertFalse(player_id in self._prospect_board("debuted"), row.id)
+            read_service.return_value = service
+            self.assertFalse(player_id in self._prospect_board("undebuted"), row.id)
+            self.assertTrue(player_id in self._prospect_board("debuted"), row.id)
 
     def test_got_the_call_includes_same_day_pulse(self):
         # Backfields "Got the Call" read only the morning feed flag -- same-day

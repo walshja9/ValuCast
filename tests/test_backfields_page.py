@@ -463,13 +463,16 @@ def test_backfields_rankings_repopulate_undebuted_beyond_the_top_100_slice(monke
     # 100. The main board already solved this for its own filter (row_filter applied
     # BEFORE the slice, in _apply_prospect_board_context) -- Backfields never got it.
     rows = []
+    debuted_ids = {}
     for rank in range(1, 101):
         row = _row(f"Debuted {rank}", "BOS", prospect_rank=rank)
-        row.active_mlb_callup = True
+        row.mlbam_id = 800000 + rank
+        debuted_ids[str(row.mlbam_id)] = "4 PA"
         rows.append(row)
     for rank in range(101, 161):
         row = _row(f"Prospect {rank}", "BOS", prospect_rank=rank)
-        row.active_mlb_callup = False
+        row.mlbam_id = 800000 + rank
+        row.active_mlb_callup = rank == 101
         rows.append(row)
     fake_store = SimpleNamespace(
         generated_at="2026-07-06",
@@ -483,7 +486,7 @@ def test_backfields_rankings_repopulate_undebuted_beyond_the_top_100_slice(monke
     monkeypatch.setattr(app_module, "_build_buys_page_context", lambda _size: {"graphic_rows": []})
     monkeypatch.setattr(app_module, "_build_team_board_context", lambda *args, **kwargs: {})
     monkeypatch.setattr(app_module, "_load_artifact", lambda _path: {})
-    monkeypatch.setattr(app_module, "_debuted_prospect_ids", lambda: {})
+    monkeypatch.setattr(app_module, "_debuted_prospect_ids", lambda: debuted_ids)
     monkeypatch.setattr(app_module, "_call_up_pulse_keys", lambda: frozenset())
 
     ctx = app_module._build_backfields_page_context()

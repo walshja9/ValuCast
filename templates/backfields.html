@@ -22,7 +22,7 @@
             <details class="graphic-menu bf-share-actions" aria-label="Share the prospect board">
                 <summary class="bf-share">Share graphic</summary>
                 <div class="graphic-menu-list graphic-menu-grid">
-                    {% for view, label in [('', 'Full board'), ('undebuted', 'Not debuted'), ('debuted', 'Debuted')] %}
+                    {% for view, label in [('', 'Full board'), ('undebuted', 'No debut recorded'), ('debuted', 'Debut recorded')] %}
                     <span class="graphic-menu-label">{{ label }}</span>
                     <span class="graphic-menu-sizes">
                         {% for n in [20, 50, 100, 200] %}
@@ -41,7 +41,7 @@
             {% endif %}
             <a href="#ahead-of-consensus">Early Calls</a>
             <a href="#call-up-desk">Call-Up Desk</a>
-            <a href="#got-the-call">Got the Call</a>
+            <a href="#got-the-call">MLB roster status</a>
             <a href="#stats">Stats</a>
             <a href="#team-boards">Team Boards</a>
         </nav>
@@ -170,8 +170,12 @@
                     {% endfor %}
                 </div>
                 <div class="bf-filter-pills" aria-label="Filter rankings by debut status">
-                    {% for opt in ["All", "Debuted", "Not debuted"] %}
-                    <button type="button" class="bf-pill{% if loop.first %} is-active{% endif %}" data-bf-debut="{{ opt }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"{% if opt == 'Debuted' %} title="Rookie-eligible players who have reached the majors — active roster or a prior call-up"{% elif opt == 'Not debuted' %} title="Prospects who have not yet reached the majors"{% endif %}>{{ opt }}</button>
+                    {% for opt, label, title in [
+                        ('All', 'All', ''),
+                        ('Debuted', 'Debut recorded', 'Prospects with a recorded MLB plate appearance or innings pitched'),
+                        ('Not debuted', 'No debut recorded', 'Prospects without a recorded MLB appearance in our data')
+                    ] %}
+                    <button type="button" class="bf-pill{% if loop.first %} is-active{% endif %}" data-bf-debut="{{ opt }}" aria-pressed="{{ 'true' if loop.first else 'false' }}"{% if title %} title="{{ title }}"{% endif %}>{{ label }}</button>
                     {% endfor %}
                 </div>
             </div>
@@ -253,8 +257,9 @@
             <section id="got-the-call" class="bf-rail-card" aria-labelledby="bf-gotcall-title">
                 <div class="bf-card-head">
                     <div>
-                        <h2 id="bf-gotcall-title">Got the Call</h2>
-                        <p>{{ recently_called_up_total }} rookie-eligible in the majors</p>
+                        <h2 id="bf-gotcall-title">MLB roster status</h2>
+                        <p>{{ recently_called_up_total }} rookie-eligible prospects listed</p>
+                        <p>40-man additions, active call-ups, and MLB debuts are separate events.</p>
                     </div>
                     <span class="bf-live-dot" aria-hidden="true"></span>
                 </div>
@@ -266,23 +271,33 @@
                             <h3>{{ player.name }}{% include "partials/_prospect_tag.html" %}</h3>
                             <p>{{ player.flag }}</p>
                             <p class="bf-callup-why">{{ player.why }}</p>
+                            {% for badge in player.roster_badges %}
+                            <span class="bf-callup-status" title="{{ badge.title }}">{{ badge.label }}</span>
+                            {% endfor %}
                         </div>
-                        <span class="bf-callup-status">{{ player.status }}</span>
                     </article>
                     {% endfor %}
                 </div>
                 {% if recently_called_up_more %}
                 <details class="bf-callup-more">
-                    <summary>See all {{ recently_called_up_total }} in the majors</summary>
+                    <summary>See all {{ recently_called_up_total }} roster listings</summary>
                     <ul class="bf-callup-more-list">
                         {% for player in recently_called_up_more %}
-                        <li><span class="bf-callup-more-name">{{ player.name }}{% include "partials/_prospect_tag.html" %}</span><span class="bf-callup-more-meta">{{ player.flag }} · {{ player.value }}</span></li>
+                        <li>
+                            <span class="bf-callup-more-name">{{ player.name }}{% include "partials/_prospect_tag.html" %}</span>
+                            <span class="bf-callup-more-meta">{{ player.flag }} · {{ player.value }}</span>
+                            <div class="bf-callup-more-status">
+                                {% for badge in player.roster_badges %}
+                                <span title="{{ badge.title }}">{{ badge.label }}</span>
+                                {% endfor %}
+                            </div>
+                        </li>
                         {% endfor %}
                     </ul>
                 </details>
                 {% endif %}
                 {% else %}
-                <p class="bf-empty">No recent call-ups available.</p>
+                <p class="bf-empty">No roster listings available.</p>
                 {% endif %}
             </section>
 
