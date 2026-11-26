@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import re
 import statistics
+import threading
 from bisect import bisect_left
 from collections import OrderedDict
 from datetime import date as _date
@@ -125,6 +126,7 @@ class BoardTimeMachineStore:
         self._row_limit = row_limit
         self._dates_cache: tuple[float, list[str]] | None = None  # (dir mtime, dates)
         self._board_cache: OrderedDict[str, tuple[int, dict]] = OrderedDict()
+        self._cache_lock = threading.Lock()
 
     def available_dates(self) -> list[str]:
         """Sorted ISO dates with an archive file present. Stat/stem only."""
@@ -165,10 +167,11 @@ class BoardTimeMachineStore:
             stamp = path.stat().st_mtime_ns
         except OSError:
             return None  # unavailable -> fail soft
-        cached = self._board_cache.get(date)
-        if cached and cached[0] == stamp:
-            self._board_cache.move_to_end(date)
-            return cached[1]
+        with self._cache_lock:
+            cached = self._board_cache.get(date)
+            if cached and cached[0] == stamp:
+                self._board_cache.move_to_end(date)
+                return cached[1]
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
@@ -208,8 +211,9 @@ class BoardTimeMachineStore:
             "rows": rows,
             "total_rows": len(board),
         }
-        self._board_cache[date] = (stamp, view)
-        self._board_cache.move_to_end(date)
-        while len(self._board_cache) > _CACHE_MAX:
-            self._board_cache.popitem(last=False)
+        with self._cache_lock:
+            self._board_cache[date] = (stamp, view)
+            self._board_cache.move_to_end(date)
+            while len(self._board_cache) > _CACHE_MAX:
+                self._board_cache.popitem(last=False)
         return view

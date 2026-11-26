@@ -534,6 +534,7 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     ready = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
     monkeypatch.delenv("VALUCAST_USE_VALUCAST_BUYS", raising=False)
     monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", False)
+    monkeypatch.setattr(app_module, "dd_store", SimpleNamespace(surface_readiness={"buys": True}))
     _select_buy_source = app_module._select_buy_source
 
     # Buys not ready -> unavailable, never DD.

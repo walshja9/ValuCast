@@ -1009,6 +1009,7 @@ def _select_buy_source(
     if (
         enabled
         and snapshot_active
+        and (getattr(dd_store, "surface_readiness", {}) or {}).get("buys") is True
         and buy_candidate.is_available
         and buy_candidate.ready_for_live_consumers
     ):
@@ -5446,27 +5447,28 @@ def my_players():
     return response
 
 
-# /league-import holds a worker for an outbound fetch (up to ~5s) and we run
-# only 2 gunicorn workers — a cheap per-IP throttle keeps one client from
-# pinning the deploy. In-memory per worker, so the effective ceiling is 2x.
+# /league-import holds a thread for an outbound fetch. A per-IP throttle keeps
+# one client from pinning all four Gunicorn threads.
 _IMPORT_HITS: dict[str, list[float]] = {}
+_IMPORT_HITS_LOCK = threading.Lock()
 _IMPORT_RATE_MAX = 5
 _IMPORT_RATE_WINDOW = 60.0
 
 
 def _import_rate_limited(ip: str) -> bool:
     now = time.monotonic()
-    if len(_IMPORT_HITS) > 1000:
-        stale = [k for k, v in _IMPORT_HITS.items()
-                 if not v or now - v[-1] > _IMPORT_RATE_WINDOW]
-        for k in stale:
-            _IMPORT_HITS.pop(k, None)
-    hits = [t for t in _IMPORT_HITS.get(ip, []) if now - t < _IMPORT_RATE_WINDOW]
-    limited = len(hits) >= _IMPORT_RATE_MAX
-    if not limited:
-        hits.append(now)
-    _IMPORT_HITS[ip] = hits
-    return limited
+    with _IMPORT_HITS_LOCK:
+        if len(_IMPORT_HITS) > 1000:
+            stale = [k for k, v in _IMPORT_HITS.items()
+                     if not v or now - v[-1] > _IMPORT_RATE_WINDOW]
+            for k in stale:
+                _IMPORT_HITS.pop(k, None)
+        hits = [t for t in _IMPORT_HITS.get(ip, []) if now - t < _IMPORT_RATE_WINDOW]
+        limited = len(hits) >= _IMPORT_RATE_MAX
+        if not limited:
+            hits.append(now)
+        _IMPORT_HITS[ip] = hits
+        return limited
 
 
 @app.route("/league-import")
@@ -10949,13 +10951,7 @@ def health_ready():
         stores["public_snapshot_available"] = dd_store.is_available
     # Buys readiness is informational only — a governor block on /buys must not
     # fail health and block the deploy. ponytail: reported, never gating.
-    buys_live = (
-        os.environ.get("VALUCAST_USE_VALUCAST_BUYS", "1") == "1"
-        and valucast_buy_store.is_available
-        and valucast_buy_store.ready_for_live_consumers
-        and dynasty_data_source == "valucast_public_snapshot"
-        and not AHEAD_OF_THE_CURVE_HOLD
-    )
+    buys_live = _select_buy_source(valucast_buy_store)[1] == "valucast_buys"
     ready = all(stores.values())
     body = {
         "ready": ready,
