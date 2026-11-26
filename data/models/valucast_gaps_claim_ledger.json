@@ -3302,6 +3302,7 @@
       "team": "WSN"
     },
     {
+      "age_days": 62,
       "claim_consensus_rank": 82,
       "claim_date": "2026-09-25",
       "claim_divergence": 25,
@@ -3309,12 +3310,14 @@
       "identity_key": "814409_hitter",
       "mlbam_id": "814409",
       "name": "Seaver King",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-26",
       "role": "hitter",
       "side": "higher",
       "team": "WSN"
     },
     {
+      "age_days": 60,
       "claim_consensus_rank": 102,
       "claim_date": "2026-09-27",
       "claim_divergence": 25,
@@ -3322,7 +3325,8 @@
       "identity_key": "694876_hitter",
       "mlbam_id": "694876",
       "name": "Cooper Ingle",
-      "outcome": "open",
+      "outcome": "expired_unresolved",
+      "resolved_date": "2026-11-26",
       "role": "hitter",
       "side": "higher",
       "team": "CLE"
@@ -7647,6 +7651,32 @@
       "role": "pitcher",
       "side": "lower",
       "team": "BAL"
+    },
+    {
+      "claim_consensus_rank": 134,
+      "claim_date": "2026-11-26",
+      "claim_divergence": -27,
+      "claim_valucast_rank": 161,
+      "identity_key": "701339_hitter",
+      "mlbam_id": "701339",
+      "name": "Marek Houston",
+      "outcome": "open",
+      "role": "hitter",
+      "side": "lower",
+      "team": "MIN"
+    },
+    {
+      "claim_consensus_rank": 59,
+      "claim_date": "2026-11-26",
+      "claim_divergence": -26,
+      "claim_valucast_rank": 85,
+      "identity_key": "815896_hitter",
+      "mlbam_id": "815896",
+      "name": "Emil Morales",
+      "outcome": "open",
+      "role": "hitter",
+      "side": "lower",
+      "team": "LAD"
     }
   ],
   "dials": {
@@ -7655,7 +7685,7 @@
     "launch_date": "2026-06-16",
     "model_move_floor_spots": 10
   },
-  "generated_at": "2026-11-23T12:32:05.466708+00:00",
+  "generated_at": "2026-11-26T03:58:34.157262+00:00",
   "generated_by": "valucast",
   "signal_name": "ValuCast Gaps Claim Ledger",
   "signal_version": "0.1.0",
@@ -7675,8 +7705,8 @@
   "summary": {
     "expiry_days": 60,
     "higher": {
-      "expired_unresolved": 43,
-      "open": 11,
+      "expired_unresolved": 45,
+      "open": 9,
       "resolved_by_callup": 10,
       "resolved_by_consensus_move": 48,
       "retracted_by_model_move": 127,
@@ -7684,11 +7714,11 @@
     },
     "lower": {
       "expired_unresolved": 67,
-      "open": 13,
+      "open": 15,
       "resolved_by_callup": 3,
       "resolved_by_consensus_move": 41,
       "retracted_by_model_move": 150,
-      "total": 274
+      "total": 276
     }
   },
   "taxonomy": {
