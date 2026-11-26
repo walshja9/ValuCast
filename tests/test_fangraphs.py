@@ -2,6 +2,8 @@ import http.client
 import io
 import json
 import unittest
+from email.message import Message
+from urllib.error import HTTPError
 from unittest.mock import patch, MagicMock
 
 from scraper.fangraphs import fetch_projections, fetch_all, PROJECTION_URL
@@ -59,6 +61,45 @@ class TestFetchProjections(unittest.TestCase):
             fetch_projections("steamerr", "bat")
         mock_urlopen.assert_called_once()
 
+    @patch("scraper.fangraphs.time.sleep")
+    @patch("scraper.fangraphs.urlopen")
+    def test_cloudflare_challenge_explains_block_without_retry(self, mock_urlopen, mock_sleep):
+        headers = Message()
+        headers["cf-mitigated"] = "challenge"
+        failure = HTTPError(PROJECTION_URL, 403, "Forbidden", headers, None)
+        mock_urlopen.side_effect = failure
+
+        with self.assertRaisesRegex(RuntimeError, "FanGraphs.*machine access.*approved feed") as raised:
+            fetch_projections("steamer", "bat")
+
+        self.assertIs(raised.exception.__cause__, failure)
+        mock_urlopen.assert_called_once()
+        mock_sleep.assert_not_called()
+
+    @patch("scraper.fangraphs.time.sleep")
+    @patch("scraper.fangraphs.urlopen")
+    def test_ordinary_forbidden_preserves_http_error_without_retry(self, mock_urlopen, mock_sleep):
+        failure = HTTPError(PROJECTION_URL, 403, "Forbidden", None, None)
+        mock_urlopen.side_effect = failure
+
+        with self.assertRaises(HTTPError) as raised:
+            fetch_projections("steamer", "bat")
+
+        self.assertIs(raised.exception, failure)
+        mock_urlopen.assert_called_once()
+        mock_sleep.assert_not_called()
+
+    @patch("scraper.fangraphs.time.sleep")
+    @patch("scraper.fangraphs.urlopen")
+    def test_transient_server_error_still_retries(self, mock_urlopen, mock_sleep):
+        failure = HTTPError(PROJECTION_URL, 503, "Unavailable", None, None)
+        mock_urlopen.side_effect = [failure, self._mock_response([])]
+
+        self.assertEqual(fetch_projections("steamer", "bat"), [])
+
+        self.assertEqual(mock_urlopen.call_count, 2)
+        mock_sleep.assert_called_once_with(2)
+
     @patch("scraper.fangraphs.urlopen")
     def test_fetch_builds_correct_url(self, mock_urlopen):
         mock_urlopen.return_value = self._mock_response([])
@@ -66,6 +107,22 @@ class TestFetchProjections(unittest.TestCase):
         called_url = mock_urlopen.call_args[0][0].full_url
         self.assertIn("type=steamerr", called_url)
         self.assertIn("stats=pit", called_url)
+
+    @patch("scraper.fangraphs.urlopen")
+    def test_both_projection_requests_use_accepted_client_header(self, mock_urlopen):
+        mock_urlopen.return_value = self._mock_response([])
+        fetch_all(delay=0, system="steamer")
+
+        self.assertEqual(mock_urlopen.call_count, 2)
+        for call, stats in zip(mock_urlopen.call_args_list, ("bat", "pit")):
+            with self.subTest(stats=stats):
+                request = call.args[0]
+                self.assertEqual(request.get_header("User-agent"), "okhttp/4.12.0")
+                self.assertEqual(
+                    request.full_url,
+                    "https://www.fangraphs.com/api/projections"
+                    f"?type=steamer&stats={stats}&pos=all&team=0&players=0&lg=all",
+                )
 
     @patch("scraper.fangraphs.urlopen")
     def test_fetch_all_returns_two_keys(self, mock_urlopen):
