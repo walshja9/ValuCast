@@ -260,11 +260,16 @@ def _feature_vector(record: dict, role: str) -> list[float] | None:
     import math
 
     if role == "hitter":
+        avg = _num(record.get("avg"))
+        obp = _num(record.get("obp"))
+        slg = _num(record.get("slg"))
+        babip = _num(record.get("babip"))
+        ops = _num(record.get("ops"))
         extras = [
-            _num(record.get("avg")) or 0.250,
-            _num(record.get("obp")) or 0.320,
-            _num(record.get("slg")) or max(0.0, (_num(record.get("ops")) or 0.720) - 0.320),
-            _num(record.get("babip")) or 0.300,
+            0.250 if avg is None else avg,
+            0.320 if obp is None else obp,
+            max(0.0, (0.720 if ops is None else ops) - 0.320) if slg is None else slg,
+            0.300 if babip is None else babip,
             _rate_per(record, "home_runs", sample, 600.0),
             _rate_per(record, "stolen_bases", sample, 600.0),
             math.log1p(sample),
@@ -876,6 +881,7 @@ def _coherent_outcome_distribution(outcomes: dict) -> dict:
     established = _clamp(
         float(outcomes["established_probability"]["prediction"])
     )
+    star = _clamp(float(outcomes["star_probability"]["prediction"]))
     # Volume monotonicity: reaching the lower established threshold (300 PA / 50 IP)
     # must be at least as likely as reaching the stricter regular/rotation threshold
     # (450 PA / 120 IP). The heads are trained independently and one may be a gate
@@ -886,12 +892,12 @@ def _coherent_outcome_distribution(outcomes: dict) -> dict:
     for stricter_key in ("regular_probability", "rotation_probability"):
         node = outcomes.get(stricter_key)
         if isinstance(node, dict) and node.get("prediction") is not None:
-            established = max(established, _clamp(float(node["prediction"])))
+            stricter_probability = _clamp(float(node["prediction"]))
+            established = max(established, stricter_probability)
+            # A star season must also clear its stricter playing-time threshold.
+            star = min(star, stricter_probability)
     outcomes["established_probability"]["prediction"] = round(established, 4)
-    star = min(
-        established,
-        _clamp(float(outcomes["star_probability"]["prediction"])),
-    )
+    star = min(established, star)
     outcomes["star_probability"]["prediction"] = round(star, 4)
     return {
         "bust_probability": round(1.0 - established, 4),
