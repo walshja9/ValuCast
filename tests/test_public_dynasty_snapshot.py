@@ -1185,6 +1185,8 @@ def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
         _rank_payload(),
         mlb_layer=mlb_layer,
         buy_signals=_buy_payload(),
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=None,
     )
 
     ohtani_rows = [
@@ -1275,6 +1277,8 @@ def test_quality_governor_blocks_public_snapshot_promotion():
         _rank_payload(),
         mlb_layer=mlb_layer,
         buy_signals=_buy_payload(),
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=None,
     )
     # Plan 036 R3: evaluate once on the built snapshot, then inject-apply —
     # the same path the pipeline takes.
