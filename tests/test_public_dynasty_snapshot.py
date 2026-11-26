@@ -553,6 +553,31 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert "shadow-only" in payload["validation"]["blockers"][0]
 
 
+def test_snapshot_overlays_accepted_public_values_after_legacy_selection(monkeypatch):
+    previous_layer = {**_mlb_payload(value=45), "method_id": "a"}
+    previous = build_snapshot(
+        _rank_payload(), mlb_layer=previous_layer,
+        generated_at="2026-06-13T12:00:00+00:00",
+        mlb_value_history_archive_dir=None, prospect_value_history_archive_dir=None,
+    )
+    current_rank = {**_rank_payload(), "generated_at": "2026-06-14T12:00:00+00:00"}
+    current_layer = {**previous_layer, "generated_at": "2026-06-14T12:00:00+00:00"}
+    monkeypatch.setattr(snapshot_builder, "_mlb_value_histories_from_archives", lambda *_: (
+        {"99": [("2026-06-13", 3.0)]}, {"99": [("2026-06-13", 3.0)]},
+        {"dates": ["2026-06-13"], "latest_incompatible_date": None},
+    ))
+    kwargs = dict(mlb_layer=current_layer, generated_at=current_rank["generated_at"],
+                  mlb_value_history_archive_dir=None, prospect_value_history_archive_dir=None)
+    baseline = build_snapshot(current_rank, **kwargs)
+    repaired = build_snapshot(current_rank, previous_public_snapshot_bytes=json.dumps(previous).encode(), **kwargs)
+    row = next(row for row in repaired["players"] if row["mlbam_id"] == 99)
+    assert row["context"]["value_history"] == [("2026-06-13", 45.0), ("2026-06-14", 45.0)]
+    assert row["context"]["chart_value_history"] == row["context"]["value_history"]
+    fields = ("id", "rank", "value", "value_by_preset", "confidence")
+    assert [tuple(row.get(field) for field in fields) for row in repaired["players"]] == [
+        tuple(row.get(field) for field in fields) for row in baseline["players"]]
+
+
 def test_snapshot_preserves_universal_version_without_changing_rows_or_history():
     def build(rank):
         return build_snapshot(

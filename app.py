@@ -1053,6 +1053,10 @@ def _buy_spark_label(spark: dict | None) -> str:
 
 
 def _value_momentum_label(row, *, for_chart=False) -> str:
+    context = getattr(row, "context", None)
+    basis = context.get("value_history_basis") if isinstance(context, dict) else None
+    if not for_chart and isinstance(basis, dict) and basis.get("movement_comparable") is False:
+        return "NOT COMPARABLE"
     history = chart_value_history(row) if for_chart else getattr(row, "value_history", None)
     return _buy_spark_label(build_spark(history))
 

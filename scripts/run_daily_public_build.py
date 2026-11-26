@@ -11,6 +11,7 @@ import argparse
 import subprocess
 import sys
 from collections import Counter
+from pathlib import Path
 
 
 BUILD_STEPS: list[tuple[str, ...]] = [
@@ -240,9 +241,11 @@ def validate_steps() -> None:
             raise ValueError(f"duplicate {stage} command(s): {formatted}")
 
 
-def run_stage(stage: str) -> None:
+def run_stage(stage: str, previous_public_snapshot: str | None = None) -> None:
     validate_steps()
     for step in STAGES[stage]:
+        if step[0] == "scripts/build_public_dynasty_snapshot.py" and previous_public_snapshot is not None:
+            step = (*step, "--previous-public-snapshot", previous_public_snapshot)
         cmd = (sys.executable, *step)
         print("+", " ".join(cmd), flush=True)
         subprocess.run(cmd, check=True, timeout=STEP_TIMEOUT_SECONDS.get(step[0]))
@@ -256,11 +259,18 @@ def main(argv: list[str] | None = None) -> int:
         default="all",
         help="Run one stage or the full build+validate sequence.",
     )
+    parser.add_argument("--previous-public-snapshot", help="Immutable prior canonical snapshot captured before this build.")
     args = parser.parse_args(argv)
+    if args.only in {"all", "build"} and not args.previous_public_snapshot:
+        parser.error("build requires --previous-public-snapshot before any candidate writes")
+    if args.only in {"all", "build"}:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+        from web.recorded_public_history import validate_prior_canonical_snapshot
+        validate_prior_canonical_snapshot(Path(args.previous_public_snapshot).read_bytes())
 
     stages = ("build", "validate") if args.only == "all" else (args.only,)
     for stage in stages:
-        run_stage(stage)
+        run_stage(stage, previous_public_snapshot=args.previous_public_snapshot)
     return 0
 
 

@@ -1184,6 +1184,7 @@ def test_rank_v1_reports_the_served_stage1_contract():
     )
     assert payload["input_artifacts"]["stage1_contract_version"] == "1.0.0"
     assert payload["input_artifacts"]["stage1_state"] == "incumbent"
+    assert payload["input_artifacts"]["stage1_score_source"] == "prospect_model_v0_6"
     assert payload["input_artifacts"]["stage1_profile_count"] == 2
 
 

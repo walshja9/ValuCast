@@ -2565,6 +2565,7 @@ def build_prospect_rank_from_stage1(
             "universal_model_version": stage1.get("universal_model_version"),
             "stage1_contract_version": stage1["contract_version"],
             "stage1_state": stage1["state"],
+            "stage1_score_source": stage1["score_source"],
             "stage1_profile_count": len(stage1_by_key),
             "prospect_input_schema_version": input_contract.get("schema_version"),
             "prospect_availability_version": (prospect_availability or {}).get(
