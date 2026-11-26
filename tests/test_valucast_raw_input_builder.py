@@ -706,6 +706,157 @@ def test_unverified_pitcher_service_counts_preserve_prior_cache(monkeypatch, tmp
     _assert_unverified_service_counts_preserve_cache(monkeypatch, tmp_path, "pitcher")
 
 
+def _assert_malformed_service_measurements_preserve_cache(monkeypatch, tmp_path, role, cases):
+    candidate = {"mlbam_id": 101, "role": role, "level": "AA", "age": 22,
+                 "plate_appearances": 200, "innings_pitched": 60.0}
+    current = {"hitters": [candidate] if role == "hitter" else [],
+               "pitchers": [candidate] if role == "pitcher" else []}
+    verified = [{"year": 2026, "pa": 100, "ab": 87, "ops": 0.8}] if role == "hitter" else [{"year": 2026, "ip": 25.0, "era": 3.0}]
+    for index, (season, stat) in enumerate(cases):
+        payload = {"stats": [{"splits": [{"sport": {"id": 1}, "season": season, "stat": stat}]}]}
+        monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(payload).encode()))
+        cache_path = tmp_path / f"optional_{role}_{index}.json"
+        prior = {f"101_{role}": [dict(row) for row in verified]}
+        cache_path.write_text(json.dumps(prior), encoding="utf-8")
+        before = cache_path.read_bytes()
+        result = exporter.refresh_mlb_service_cache(
+            current=current, mlb_seasons=prior, cache_path=cache_path, max_workers=1,
+        )
+        assert result["fetched"] == 0 and result["failed"] == 1, "Malformed measurement counted as a successful fetch"
+        assert result["written"] is False and cache_path.read_bytes() == before
+        assert prior == {f"101_{role}": verified}
+
+
+def test_malformed_optional_hitter_service_stats_preserve_verified_cache(monkeypatch, tmp_path):
+    invalid = (float("nan"), float("inf"), -float("inf"), "NaN", "1e309", True, False,
+               "invalid", "1 extra", "", " -.--", "-.-- ", "N/A", [], {}, 10**1000)
+    cases = [("2026", {"plateAppearances": 10, "atBats": 8, field: value})
+             for field in ("ops", "avg", "runs", "homeRuns", "rbi", "stolenBases", "strikeOuts")
+             for value in invalid]
+    _assert_malformed_service_measurements_preserve_cache(monkeypatch, tmp_path, "hitter", cases)
+
+
+def test_malformed_optional_pitcher_service_stats_preserve_verified_cache(monkeypatch, tmp_path):
+    invalid = (float("nan"), float("inf"), -float("inf"), "NaN", "1e309", True, False,
+               "invalid", "1 extra", "", " -.--", "-.-- ", "N/A", [], {}, 10**1000)
+    cases = [("2026", {"inningsPitched": "25.1", field: value})
+             for field in ("era", "whip", "strikeOuts", "saves", "holds", "losses", "strikeoutWalkRatio")
+             for value in invalid]
+    _assert_malformed_service_measurements_preserve_cache(monkeypatch, tmp_path, "pitcher", cases)
+
+
+def test_fractional_or_negative_optional_hitter_counts_preserve_verified_cache(monkeypatch, tmp_path):
+    cases = [("2026", {"plateAppearances": 10, "atBats": 8, field: value})
+             for field in ("runs", "homeRuns", "rbi", "stolenBases", "strikeOuts")
+             for value in (1.5, "1.5", -1, "-1", -1.5, "-1.5")]
+    _assert_malformed_service_measurements_preserve_cache(monkeypatch, tmp_path, "hitter", cases)
+
+
+def test_fractional_or_negative_optional_pitcher_counts_preserve_verified_cache(monkeypatch, tmp_path):
+    cases = [("2026", {"inningsPitched": "25.1", field: value})
+             for field in ("strikeOuts", "saves", "holds", "losses")
+             for value in (1.5, "1.5", -1, "-1", -1.5, "-1.5")]
+    _assert_malformed_service_measurements_preserve_cache(monkeypatch, tmp_path, "pitcher", cases)
+
+
+def test_malformed_service_seasons_preserve_verified_cache(monkeypatch, tmp_path):
+    invalid = (0, "0", 0.0, "0.0", -1, "-1", True, False, 2026.5, "2026.5", float("nan"), float("inf"), -float("inf"),
+               "NaN", "1e309", 10**1000, None, "invalid", "2026 extra", [], {})
+    for role, required in (("hitter", {"plateAppearances": 10, "atBats": 8}),
+                           ("pitcher", {"inningsPitched": "25.1"})):
+        _assert_malformed_service_measurements_preserve_cache(
+            monkeypatch, tmp_path, role, [(season, required) for season in invalid],
+        )
+
+
+def test_valid_optional_service_stats_and_integer_seasons_can_refresh_cache(monkeypatch, tmp_path):
+    for role, required, optional in (
+        ("hitter", {"plateAppearances": 0, "atBats": 0},
+         {"runs": ("r", 0), "homeRuns": ("hr", 0), "rbi": ("rbi", 0), "stolenBases": ("sb", 0),
+          "avg": ("avg", 0), "ops": ("ops", 0), "strikeOuts": ("so", 0)}),
+        ("pitcher", {"inningsPitched": "0.0"},
+         {"era": ("era", 99), "whip": ("whip", 99), "strikeOuts": ("so", 0), "saves": ("sv", 0),
+          "holds": ("hld", 0), "losses": ("l", 0), "strikeoutWalkRatio": ("k_bb", None)}),
+    ):
+        candidate = {"mlbam_id": 101, "role": role, "level": "AA", "age": 22,
+                     "plate_appearances": 200, "innings_pitched": 60.0}
+        current = {"hitters": [candidate] if role == "hitter" else [],
+                   "pitchers": [candidate] if role == "pitcher" else []}
+        rate_fields = {"avg", "ops", "era", "whip", "k_bb"}
+        for season in (1, "1", 1999, "1999", 1999.0, " 1999 "):
+            for count, rate in ((None, None), (0, 0), ("0", "0"), (1, 1.5), ("1", "1.5")):
+                for supplied in (False, True):
+                    stat = {**required, **({field: rate if output in rate_fields else count
+                                           for field, (output, _) in optional.items()} if supplied else {})}
+                    payload = {"stats": [{"splits": [{"sport": {"id": 1}, "season": season, "stat": stat}]}]}
+                    monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(payload).encode()))
+                    cache_path = tmp_path / f"valid_optional_{role}.json"
+                    result = exporter.refresh_mlb_service_cache(
+                        current=current, mlb_seasons={}, cache_path=cache_path, max_workers=1,
+                    )
+                    assert result["fetched"] == 1 and result["failed"] == 0 and result["written"] is True
+                    row = json.loads(cache_path.read_text(encoding="utf-8"))[f"101_{role}"][0]
+                    assert row["year"] == int(season)
+                    for output, default in optional.values():
+                        value = rate if output in rate_fields else count
+                        expected = default if not supplied or value is None else float(value)
+                        assert row[output] == expected
+
+
+def test_official_zero_ip_unavailable_rates_refresh_without_mutating_response(monkeypatch, tmp_path):
+    """Synthetic format regression, not a historical or predictive model evaluation.
+
+    Official source: https://statsapi.mlb.com/api/v1/people/115372/stats?stats=yearByYear&group=pitching&gameType=R
+    Observed raw response SHA-256: ac2ef76f08e58be3ad0119b1bfb79d82293378b39de9f19ea329c5fe2527d908
+    """
+    payload = {"stats": [{"splits": [{"sport": {"id": 1}, "season": "1922", "stat": {
+        "inningsPitched": "0.0", "era": "-.--", "whip": "-.--", "gamesPlayed": 1,
+        "strikeoutWalkRatio": "0.00", "strikeOuts": 0, "saves": 0, "holds": 0, "losses": 0,
+    }}]}]}
+    decoded = []
+    load = exporter.json.load
+    def record_source(response):
+        source = load(response)
+        decoded.append((source, json.dumps(source, sort_keys=True)))
+        return source
+    monkeypatch.setattr(exporter.json, "load", record_source)
+    monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(payload).encode()))
+    cache_path = tmp_path / "synthetic_zero_ip.json"
+    result = exporter.refresh_mlb_service_cache(
+        current={"hitters": [], "pitchers": [{"mlbam_id": 101, "level": "AA", "age": 22, "innings_pitched": 60}]},
+        mlb_seasons={"101_pitcher": [{"year": 2026, "ip": 25.0, "era": 3.0}]},
+        cache_path=cache_path, max_workers=1,
+    )
+    assert result["fetched"] == 1 and result["failed"] == 0 and result["written"] is True, "Official unavailable rates must preserve verified zero-IP service"
+    row = json.loads(cache_path.read_text(encoding="utf-8"))["101_pitcher"][0]
+    assert row == {"year": 1922, "ip": 0.0, "era": None, "whip": None,
+                   "so": 0, "sv": 0, "hld": 0, "l": 0, "k_bb": 0.0}
+    assert len(decoded) == 1 and json.dumps(decoded[0][0], sort_keys=True) == decoded[0][1]
+
+
+def test_exact_unavailable_marker_is_preserved_for_optional_service_rates(monkeypatch):
+    for role, required, fields in (
+        ("hitter", {"plateAppearances": 0, "atBats": 0}, {"avg": "avg", "ops": "ops"}),
+        ("pitcher", {"inningsPitched": "0.0"}, {"era": "era", "whip": "whip", "strikeoutWalkRatio": "k_bb"}),
+    ):
+        for field, output in fields.items():
+            payload = {"stats": [{"splits": [{"sport": {"id": 1}, "season": "1922", "stat": {**required, field: "-.--"}}]}]}
+            monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(payload).encode()))
+            seasons = exporter._statsapi_service_seasons(101, role)
+            assert seasons is not None and seasons[0][output] is None, "Unavailable rate marker must remain None"
+
+
+def test_unavailable_rate_marker_cannot_replace_service_counts(monkeypatch, tmp_path):
+    for role, required, fields in (
+        ("hitter", {"plateAppearances": 10, "atBats": 8},
+         ("plateAppearances", "atBats", "runs", "homeRuns", "rbi", "stolenBases", "strikeOuts")),
+        ("pitcher", {"inningsPitched": "0.0"}, ("inningsPitched", "strikeOuts", "saves", "holds", "losses")),
+    ):
+        _assert_malformed_service_measurements_preserve_cache(
+            monkeypatch, tmp_path, role, [("1922", {**required, field: "-.--"}) for field in fields],
+        )
+
+
 def test_write_contract_round_trips(tmp_path):
     payload = exporter.build_contract(
         dataset=_historical(),

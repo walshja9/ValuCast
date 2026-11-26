@@ -494,14 +494,19 @@ def _statsapi_innings(value, default=0.0):
         return default
 
 
-def _statsapi_service_count(value) -> int | None:
+def _statsapi_service_number(value) -> float | None:
     if isinstance(value, bool):
         return None
     try:
         numeric = float(value)
     except (TypeError, ValueError, OverflowError):
         return None
-    if not math.isfinite(numeric) or numeric < 0 or not numeric.is_integer():
+    return numeric if math.isfinite(numeric) else None
+
+
+def _statsapi_service_count(value) -> int | None:
+    numeric = _statsapi_service_number(value)
+    if numeric is None or numeric < 0 or not numeric.is_integer():
         return None
     return int(numeric)
 
@@ -539,12 +544,23 @@ def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
                 return None
             if sport_id != "1":
                 continue
-            try:
-                year = int(split["season"])
-            except (KeyError, TypeError, ValueError):
+            year = _statsapi_service_count(split.get("season"))
+            if year is None or year == 0:
                 return None
             stat = split.get("stat")
             if not isinstance(stat, dict):
+                return None
+            optional_counts = (
+                ("runs", "homeRuns", "rbi", "stolenBases", "strikeOuts")
+                if role == "hitter" else
+                ("strikeOuts", "saves", "holds", "losses")
+            )
+            optional_rates = ("avg", "ops") if role == "hitter" else ("era", "whip", "strikeoutWalkRatio")
+            if any(stat.get(field) is not None and _statsapi_service_count(stat[field]) is None
+                   for field in optional_counts):
+                return None
+            if any(stat.get(field) not in (None, "-.--") and _statsapi_service_number(stat[field]) is None
+                   for field in optional_rates):
                 return None
             if role == "hitter":
                 pa = _statsapi_service_count(stat.get("plateAppearances"))
@@ -560,8 +576,8 @@ def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
                         "hr": int(_statsapi_number(stat.get("homeRuns"))),
                         "rbi": int(_statsapi_number(stat.get("rbi"))),
                         "sb": int(_statsapi_number(stat.get("stolenBases"))),
-                        "avg": _statsapi_number(stat.get("avg")),
-                        "ops": _statsapi_number(stat.get("ops")),
+                        "avg": None if stat.get("avg") == "-.--" else _statsapi_number(stat.get("avg")),
+                        "ops": None if stat.get("ops") == "-.--" else _statsapi_number(stat.get("ops")),
                         "so": int(_statsapi_number(stat.get("strikeOuts"))),
                     }
                 )
@@ -576,13 +592,13 @@ def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
                     {
                         "year": year,
                         "ip": ip,
-                        "era": _statsapi_number(stat.get("era"), 99.0),
-                        "whip": _statsapi_number(stat.get("whip"), 99.0),
+                        "era": None if stat.get("era") == "-.--" else _statsapi_number(stat.get("era"), 99.0),
+                        "whip": None if stat.get("whip") == "-.--" else _statsapi_number(stat.get("whip"), 99.0),
                         "so": int(_statsapi_number(stat.get("strikeOuts"))),
                         "sv": int(_statsapi_number(stat.get("saves"))),
                         "hld": int(_statsapi_number(stat.get("holds"))),
                         "l": int(_statsapi_number(stat.get("losses"))),
-                        "k_bb": _statsapi_number(stat.get("strikeoutWalkRatio"), None),
+                        "k_bb": None if stat.get("strikeoutWalkRatio") == "-.--" else _statsapi_number(stat.get("strikeoutWalkRatio"), None),
                     }
                 )
     return seasons
