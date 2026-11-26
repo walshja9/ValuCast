@@ -141,5 +141,6 @@ def build_stage1_contract(
         "layer_consumer": expected_layer_consumer,
         "score_source": expected_score_source,
         "layer_version": dynasty_layer.get("layer_version"),
+        "universal_model_version": dynasty_layer.get("universal_model_version"),
         "profiles_by_key": profiles,
     }

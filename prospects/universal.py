@@ -48,7 +48,7 @@ ARCHIVE_DIR = (
 OUTCOME_HORIZON_YEARS = 4  # fixed training-label window (mirrors adapter/dynasty backtests)
 
 MODEL_NAME = "ValuCast Universal Prospect Model"
-MODEL_VERSION = "0.4.0"
+MODEL_VERSION = "0.4.1"
 MODEL_STATUS = "shadow_only"
 INPUT_SCHEMA_SOURCES = {
     "1.0": {

@@ -553,6 +553,30 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert "shadow-only" in payload["validation"]["blockers"][0]
 
 
+def test_snapshot_preserves_universal_version_without_changing_rows_or_history():
+    def build(rank):
+        return build_snapshot(
+            rank, mlb_layer=_mlb_payload(), buy_signals=_buy_payload(),
+            generated_at="2026-06-13T12:00:00+00:00",
+            mlb_value_history_archive_dir=None,
+            prospect_value_history_archive_dir=None,
+        )
+
+    rank = _rank_payload()
+    rank["board"][0]["value_history"] = [54.0, 55.5]
+    legacy = build(rank)
+    assert legacy["input_artifacts"]["prospect_universal_model_version"] is None
+    rank["input_artifacts"] = {"universal_model_version": "synthetic-component-version"}
+
+    tagged = build(rank)
+
+    assert tagged["input_artifacts"]["prospect_universal_model_version"] == "synthetic-component-version"
+    assert tagged["players"] == legacy["players"]
+    tagged["input_artifacts"].pop("prospect_universal_model_version")
+    legacy["input_artifacts"].pop("prospect_universal_model_version")
+    assert tagged == legacy
+
+
 def test_build_snapshot_certifies_compatibility_without_claiming_calibrated_units():
     payload = build_snapshot(
         _rank_payload(),

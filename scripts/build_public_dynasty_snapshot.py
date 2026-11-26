@@ -1577,6 +1577,9 @@ def build_snapshot(
                 milb_stat_freshness_audit or {}
             ).get("status"),
             "prospect_rank_v1_version": prospect_rank.get("rank_version"),
+            "prospect_universal_model_version": (
+                prospect_rank.get("input_artifacts") or {}
+            ).get("universal_model_version"),
             "prospect_rank_v1_status": prospect_rank.get("status"),
             "prospect_universe_source": (prospect_rank.get("rank_contract") or {}).get(
                 "prospect_universe_source"

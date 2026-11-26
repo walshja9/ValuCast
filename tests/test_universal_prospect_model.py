@@ -502,6 +502,26 @@ def test_missing_service_fact_fails_closed():
     assert payload["profiles"] == []
 
 
+def test_corrected_implementation_version_reaches_artifact_and_archive(tmp_path, monkeypatch):
+    from prospects import universal
+
+    def no_training(*args, **kwargs):
+        raise AssertionError("Version provenance must not fit a model")
+
+    profiles = [{"mlbam_id": 1, "role": "hitter", "probabilities": {"star": 0.0}}]
+    monkeypatch.setattr(universal, "TARGET_SPECS", {"hitter": {}, "pitcher": {}})
+    monkeypatch.setattr(universal, "train_target", no_training)
+    monkeypatch.setattr(universal, "score_current", lambda *_: profiles)
+    payload = build_shadow_model(_contract(), now="2026-06-12T00:00:00+00:00")
+    path, changed = archive_predictions(payload, "2026-06-12", tmp_path)
+    archived = json.loads(path.read_text(encoding="utf-8"))
+
+    assert changed is True
+    assert payload["model_version"] == "0.4.1"
+    assert archived["model_version"] == payload["model_version"]
+    assert payload["profiles"] == profiles == archived["profiles"]
+
+
 def test_archive_is_deterministic(tmp_path):
     payload = build_shadow_model(_contract(), now="2026-06-12T00:00:00+00:00")
     path, changed = archive_predictions(payload, "2026-06-12", tmp_path / "archive")

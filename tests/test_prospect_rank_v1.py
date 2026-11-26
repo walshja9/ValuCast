@@ -57,6 +57,59 @@ def test_rank_v1_wrapper_equals_shared_core_exactly():
     assert shared == wrapped
 
 
+def test_rank_preserves_universal_version_without_changing_board():
+    def build(layer):
+        stage1 = rank_v1.build_stage1_contract(
+            _prospect_model(), layer, _input_contract()["generated_at"]
+        )
+        return build_prospect_rank_from_stage1(
+            _universe(), stage1, _input_contract(),
+            investment_permitted_use="prospect_rank_v1_factual_investment_context_only",
+            rank_name="ValuCast Prospect Rank v1",
+            rank_version="0.2.9",
+            score_source="prospect_model_v0_6",
+            model_score_field=None,
+            normalize_role_quantiles=True,
+            manual_graduated_ids=set(),
+            consensus_snapshots={
+                name: {} for name in ("sts", "fangraphs", "prospectslive", "pipeline", "hkb")
+            },
+        )
+
+    layer = _dynasty_layer()
+    legacy = build(layer)
+    assert legacy["input_artifacts"]["universal_model_version"] is None
+    layer["universal_model_version"] = "synthetic-component-version"
+
+    tagged = build(layer)
+
+    assert tagged["input_artifacts"]["universal_model_version"] == "synthetic-component-version"
+    assert tagged["board"] == legacy["board"]
+    tagged["input_artifacts"].pop("universal_model_version")
+    legacy["input_artifacts"].pop("universal_model_version")
+    assert tagged == legacy
+
+
+@pytest.mark.parametrize("version", [None, "synthetic-component-version"])
+def test_rank_archive_preserves_universal_version_and_full_rows(tmp_path, version):
+    payload = {
+        "rank_version": "0.2.9",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "candidate_count": 1,
+        "ranked_count": 1,
+        "validation": {"ranks_contiguous": True},
+        "board": [{"mlbam_id": 1, "rank": 1, "score": 55.5, "value_history": [4, 5]}],
+        "input_artifacts": {} if version is None else {"universal_model_version": version},
+    }
+    path, changed = rank_v1.archive_rank(payload, "2026-06-13", tmp_path)
+    archived = json.loads(path.read_text(encoding="utf-8"))
+
+    assert changed is True
+    assert archived["universal_model_version"] == version
+    assert archived["board"] == payload["board"]
+    assert rank_v1.archive_rank(payload, "2026-06-13", tmp_path) == (path, False)
+
+
 def test_layer_reliability_wins_over_model_profile():
     # 0.3.2: layer-profile precedence restored (0.3.0 order). The 0.3.1
     # model-first swap was reverted by the registered study's SPLIT-REMEDIATE
