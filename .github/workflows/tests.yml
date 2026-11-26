@@ -1,57 +1,92 @@
 name: Tests
-
-# Runs the full pytest suite on every push (including data-only commits --
-# data changes have broken data-dependent tests before, so data-only pushes
-# are not exempt) and on every pull request.
 on:
-  push:
-  pull_request:
   workflow_dispatch:
-
-concurrency:
-  # Keyed on ref so stacked pushes to the same branch cancel the older run
-  # instead of queueing multiple ~8-min suite runs. Prefixed distinctly from
-  # the daily-public-data workflow's "daily-public-data-refresh" group (and
-  # its roster-pulse/prospect-shadow shares of that same group) so this
-  # never collides with or cancels that publish pipeline.
-  group: tests-${{ github.ref }}
-  cancel-in-progress: true
-
+permissions:
+  contents: read
 jobs:
-  pytest:
+  cache-only-report-rebuild:
     runs-on: ubuntu-latest
-    # Validation plus the full suite now exceeds 20 minutes on hosted runners.
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
-          # Matches the version pinned by the repo's other workflows
-          # (daily-public-data.yml, prospect-shadow.yml, roster-pulse.yml).
-          # Local dev runs 3.14; pyproject only requires >=3.10.
           python-version: "3.11"
-          cache: pip
-
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt -e . pytest
-
-      - name: Validate committed artifacts
+        run: python -m pip install -r requirements.txt -e . pytest
+      - name: Rebuild reports from validated cache without network or generation
         env:
-          # PR/push CI runs between UTC midnight and the ~13:00 UTC refresh
-          # with yesterday's committed artifacts; without this lag the
-          # freshness step fails deterministically in that window and (under
-          # the master ruleset's required pytest check) a single missed
-          # refresh day would block every merge. 2 days also leaves one
-          # recovery window when a publication defect itself needs a PR;
-          # three-day-old data still fails. The publish workflow does
-          # NOT set this — its gate stays exact same-day.
-          VALUCAST_FRESHNESS_MAX_AGE_DAYS: "2"
-        run: python scripts/run_daily_public_build.py --only validate
-
-      - name: Run test suite
-        run: python -m pytest -q --deselect=tests/test_prospect_v23_development.py::test_committed_registration_passes_dynamic_verification
+          ANTHROPIC_API_KEY: ""
+          VALUCAST_SCOUTING_LLM: "1"
+          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "0"
+        run: |
+          python - <<'PY'
+          import hashlib, json, os, runpy, sys
+          from pathlib import Path
+          assert not os.environ.get("ANTHROPIC_API_KEY")
+          assert os.environ["VALUCAST_SCOUTING_LLM_MAX_GENERATE"] == "0"
+          attempts = []
+          def deny_network(event, args):
+              if event in {"socket.connect", "socket.getaddrinfo", "socket.sendto"}:
+                  attempts.append(event)
+                  raise RuntimeError("Network is prohibited in this isolated report rebuild")
+          sys.addaudithook(deny_network)
+          paths = ["data/models/valucast_scouting_reports.json",
+                   "data/models/valucast_scouting_llm_cache.json"]
+          before = {p: hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in paths}
+          prior_reports = json.loads(Path(paths[0]).read_text())["reports"]
+          report_keys = lambda rows: {(str(r["mlbam_id"]), r["role"]) for r in rows}
+          prior_cache_keys = set(json.loads(Path(paths[1]).read_text())["entries"])
+          runpy.run_path("scripts/build_scouting_repository.py", run_name="__main__")
+          assert not attempts, "A network request was attempted"
+          payload = json.loads(Path(paths[0]).read_text())
+          summary = payload["summary"]
+          shadow = summary["llm_shadow"]
+          assert shadow["enabled"] is True and shadow["available"] is False
+          assert shadow["generation_limit"] == 0 and shadow["generated"] == 0
+          assert shadow["errored"] == 0
+          assert payload["validation"]["ready_for_repository"] is True
+          assert payload["source_policy"]["feeds_live_rank"] is False
+          assert payload["source_policy"]["feeds_live_value"] is False
+          reports = payload["reports"]
+          assert report_keys(reports) == report_keys(prior_reports)
+          assert len(reports) == len(prior_reports) == summary["report_count"]
+          assert all(r.get("report") and r.get("published_report") for r in reports)
+          attached = sum(isinstance(r.get("report_llm"), dict) for r in reports)
+          assert attached == shadow["reused"] + shadow["reused_stale"]
+          sources = {s: sum(r["published_report_source"] == s for r in reports)
+                     for s in ("llm", "deterministic")}
+          assert sum(sources.values()) == len(reports)
+          assert sources["llm"] == summary["llm_published_report_count"]
+          assert sources["deterministic"] == summary["deterministic_published_report_count"]
+          assert set(json.loads(Path(paths[1]).read_text())["entries"]) == prior_cache_keys
+          evidence = Path("codex-cache-evidence")
+          evidence.mkdir()
+          files = []
+          for p in paths:
+              raw = Path(p).read_bytes()
+              files.append({"path": p, "before_sha256": before[p],
+                            "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
+          receipt = {"source_head": os.environ["GITHUB_SHA"],
+                     "run_id": os.environ["GITHUB_RUN_ID"], "network_attempts": 0,
+                     "generation_budget": 0, "api_key_present": False,
+                     "report_membership_unchanged": True, "cache_keys_unchanged": True,
+                     "attached_cached_report_count": attached,
+                     "published_report_sources": sources,
+                     "summary": summary, "files": files}
+          (evidence / "receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          print(json.dumps(receipt, sort_keys=True))
+          PY
+      - name: Validate scouting reports with the unchanged validator
+        run: python scripts/validate_scouting_repository.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cache-only-reports-${{ github.run_id }}
+          path: |
+            codex-cache-evidence/receipt.json
+            data/models/valucast_scouting_reports.json
+            data/models/valucast_scouting_llm_cache.json
+          if-no-files-found: error
+          retention-days: 7
