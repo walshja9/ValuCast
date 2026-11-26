@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ast
+import builtins
 from collections import OrderedDict
 import json
 import math
@@ -202,6 +203,32 @@ class PublicConsumerSafety(unittest.TestCase):
                        if line.strip().startswith("VALUCAST_BUYS_REVIEW_APPROVED:")]
         self.assertEqual(len(expressions), 1)
         self.assertRegex(expressions[0], r"^\$\{\{\s*inputs\.approve_valucast_buys\s*&&\s*'1'\s*\|\|\s*'0'\s*\}\}$")
+
+    def test_request_weights_drop_negatives_without_changing_point_coefficients(self):
+        class Args(dict):
+            def getlist(self, key):
+                return [] if key not in self else [self[key]]
+        class ConfigCaptured(Exception):
+            pass
+        captured = {}
+        def capture_config(**kwargs):
+            captured.update(kwargs)
+            raise ConfigCaptured
+        def controlled_import(name, *args, **kwargs):
+            if name == "web.category_registry":
+                return SimpleNamespace(canonicalize_cats=lambda values: values)
+            return builtins.__import__(name, *args, **kwargs)
+        namespace = definitions("app.py", {"_build_context"}, {
+            "__builtins__": dict(vars(builtins), __import__=controlled_import),
+            "math": math, "parse_list": lambda values: values,
+            "DEFAULT_CATS": ["HR"], "DEFAULT_PCATS": ["K"],
+            "_effective_source": lambda value: value, "_active_store": lambda _: object(),
+            "_POINT_STAT_IDS": {"HR"}, "build_config": capture_config,
+        })
+        with self.assertRaises(ConfigCaptured):
+            namespace["_build_context"](Args(w_HR="-1", w_R="0", w_SB="2", pt_HR="-2"))
+        self.assertEqual(captured["weights"], {"R": 0.0, "SB": 2.0})
+        self.assertEqual(captured["pt_params"], {"HR": -2.0})
 
     def test_cache_hit_cannot_be_evicted_before_lru_update(self):
         self.cache_race("get")

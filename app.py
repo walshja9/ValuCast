@@ -4940,7 +4940,7 @@ def _build_context(args):
                 w = float(args[key])
             except ValueError:
                 continue
-            if math.isfinite(w):  # inf/nan parse as floats and would poison the board
+            if math.isfinite(w) and w >= 0:
                 weights[key[2:]] = w
 
     # Build config and run engine
