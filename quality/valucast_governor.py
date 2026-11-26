@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from prospects.buy_approval import qualified_approval_receipt
 from prospects.calibration_report import (
     MAX_TOP25_PITCHER_COUNT as MAX_TOP25_PROSPECT_PITCHER_COUNT,
 )
@@ -47,7 +48,7 @@ RECENT_SIGNAL_REPORT_PATH = (
 )
 
 GOVERNOR_NAME = "ValuCast Quality Governor"
-GOVERNOR_VERSION = "0.2.4"
+GOVERNOR_VERSION = "0.2.5"
 SURFACE_DYNASTY = "dynasty"
 SURFACE_PROSPECTS = "prospects"
 SURFACE_BUYS = "buys"
@@ -1692,21 +1693,25 @@ def _buy_promotion_check(
     buy_review: dict | None,
     public_board_ready: bool,
 ) -> dict:
+    buy_review = buy_review if isinstance(buy_review, dict) else {}
     validation = (buy_signals or {}).get("validation") or {}
-    review_status = (buy_review or {}).get("review_status")
+    review_status = buy_review.get("review_status")
     row_count = int(validation.get("row_count") or 0)
     history_limited_count = int(validation.get("history_limited_count") or 0)
     history_limited_rate = (
         round(history_limited_count / max(row_count, 1), 4) if row_count else 0.0
     )
-    review_ready = review_status in {"candidate_ready", "approved"}
+    approval_receipt_qualified = qualified_approval_receipt(buy_review.get("approval_receipt"))
+    review_ready = review_status in {"candidate_ready", "approved"} and approval_receipt_qualified
     buy_validation_ready = bool(validation.get("ready_for_live_consumers"))
     top_board_quality = validation.get("top_board_quality") or {}
     low_confidence_rate = _clean_float(top_board_quality.get("low_confidence_rate")) or 0.0
     pedigree_rate = _clean_float(top_board_quality.get("pedigree_rate")) or 0.0
-    review_policy = (buy_review or {}).get("source_policy") or {}
-    review_decision = (buy_review or {}).get("promotion_decision") or {}
-    history_launch_approved = (
+    review_policy = buy_review.get("source_policy") or {}
+    review_policy = review_policy if isinstance(review_policy, dict) else {}
+    review_decision = buy_review.get("promotion_decision") or {}
+    review_decision = review_decision if isinstance(review_decision, dict) else {}
+    history_launch_approved = review_ready and (
         validation.get("history_launch_approved") is True
         or review_policy.get("history_launch_approved") is True
         or review_decision.get("neutral_momentum_launch_approved") is True
@@ -1736,6 +1741,7 @@ def _buy_promotion_check(
         buy_artifact_present=bool(buy_signals),
         buy_review_present=bool(buy_review),
         buy_validation_ready=buy_validation_ready,
+        approval_receipt_qualified=approval_receipt_qualified,
         review_status=review_status,
         review_ready=review_ready,
         row_count=row_count,

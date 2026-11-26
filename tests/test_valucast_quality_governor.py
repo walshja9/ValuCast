@@ -5,8 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from prospects.buy_approval import APPROVAL_SCHEMA_VERSION, APPROVAL_SCOPE
 from prospects.rank_v1 import _model_lookup, _model_score
 from quality.valucast_governor import (
+    _buy_promotion_check,
     _prospect_transition_continuity,
     load_previous_prospect_rank,
 )
@@ -424,6 +426,71 @@ def _buy_signals(
     }
 
 
+def _qualified_governor_buy_review(history_launch=False):
+    return {
+        "review_status": "candidate_ready",
+        "approval_receipt": {
+            "schema_version": APPROVAL_SCHEMA_VERSION,
+            "origin": "explicit_manual_input",
+            "scope": APPROVAL_SCOPE,
+            "approved_at": "2026-06-12T00:00:00+00:00",
+        },
+        "source_policy": {"history_launch_approved": history_launch},
+        "promotion_decision": {"neutral_momentum_launch_approved": history_launch},
+    }
+
+
+def test_buy_promotion_approval_requires_qualified_receipt_for_ready_artifact():
+    signals = _buy_signals(ready=True)
+    qualified = _qualified_governor_buy_review()
+    assert _buy_promotion_check(signals, qualified, True)["status"] == "passed"
+    for status in ("candidate_ready", "approved"):
+        legacy = {"review_status": status, "source_policy": {"manual_approval_recorded": True}}
+        blocked = _buy_promotion_check(signals, legacy, True)
+        assert blocked["status"] == "blocked"
+        assert blocked["metrics"]["review_ready"] is False
+    for receipt in (None, [], {}, {**qualified["approval_receipt"], "scope": "other_scope"},
+                    {**qualified["approval_receipt"], "approved_at": "invalid"}):
+        blocked = _buy_promotion_check(signals, {**qualified, "approval_receipt": receipt}, True)
+        assert blocked["status"] == "blocked"
+        assert blocked["metrics"]["review_ready"] is False
+
+
+def test_buy_promotion_approval_qualifies_all_neutral_flag_sources():
+    for flag_source in ("validation", "source_policy", "promotion_decision"):
+        signals = _buy_signals(ready=True, history_limited_count=21, row_count=40)
+        review = _qualified_governor_buy_review()
+        if flag_source == "validation":
+            signals["validation"]["history_launch_approved"] = True
+        elif flag_source == "source_policy":
+            review["source_policy"]["history_launch_approved"] = True
+        else:
+            review["promotion_decision"]["neutral_momentum_launch_approved"] = True
+        legacy = {**review, "approval_receipt": None}
+        blocked = _buy_promotion_check(signals, legacy, True)
+        assert blocked["status"] == "blocked"
+        assert blocked["metrics"]["history_launch_approved"] is False
+        qualified = _buy_promotion_check(signals, review, True)
+        assert qualified["status"] == "passed"
+        assert qualified["metrics"]["history_launch_approved"] is True
+        blocked_review = _buy_promotion_check(signals, {**review, "review_status": "blocked"}, True)
+        assert blocked_review["status"] == "blocked"
+        assert blocked_review["metrics"]["history_launch_approved"] is False
+
+
+def test_buy_promotion_approval_keeps_threshold_and_current_board_requirements():
+    review = _qualified_governor_buy_review()
+    at_limit = _buy_signals(ready=True, history_limited_count=20, row_count=40)
+    allowed = _buy_promotion_check(at_limit, review, True)
+    assert allowed["status"] == "passed"
+    assert allowed["metrics"]["history_limited_rate"] == 0.5
+    assert allowed["metrics"]["max_history_limited_rate"] == 0.5
+    above_limit = _buy_signals(ready=True, history_limited_count=21, row_count=40)
+    assert _buy_promotion_check(above_limit, review, True)["status"] == "blocked"
+    assert _buy_promotion_check(at_limit, review, False)["status"] == "blocked"
+    assert _buy_promotion_check(_buy_signals(ready=False), review, True)["status"] == "blocked"
+
+
 def _coverage_audit(elite_fallback_top200=0):
     samples = []
     if elite_fallback_top200:
@@ -582,11 +649,7 @@ def test_quality_governor_allows_reviewed_neutral_momentum_buy_launch():
         prospect_rank=_prospect_rank(prospects),
         prospect_coverage_audit=_coverage_audit(),
         buy_signals=_buy_signals(ready=True, history_limited_count=40, row_count=40),
-        buy_review={
-            "review_status": "candidate_ready",
-            "source_policy": {"history_launch_approved": True},
-            "promotion_decision": {"neutral_momentum_launch_approved": True},
-        },
+        buy_review=_qualified_governor_buy_review(history_launch=True),
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
@@ -621,10 +684,7 @@ def test_quality_governor_blocks_ready_buys_with_bad_top_board_shape():
                 "pedigree_rate": 0.2,
             },
         ),
-        buy_review={
-            "review_status": "candidate_ready",
-            "source_policy": {"history_launch_approved": True},
-        },
+        buy_review=_qualified_governor_buy_review(history_launch=True),
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
@@ -660,7 +720,7 @@ def test_quality_governor_blocks_obvious_public_board_quality_failures():
         prospect_rank=_prospect_rank(prospects),
         prospect_coverage_audit=_coverage_audit(),
         buy_signals=_buy_signals(ready=True),
-        buy_review={"review_status": "candidate_ready"},
+        buy_review=_qualified_governor_buy_review(),
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
@@ -1039,7 +1099,7 @@ def test_buy_gate_ignores_only_prospect_pitcher_shape_failure():
         prospect_rank=_prospect_rank(prospects),
         prospect_coverage_audit=_coverage_audit(),
         buy_signals=_buy_signals(ready=True),
-        buy_review={"review_status": "candidate_ready"},
+        buy_review=_qualified_governor_buy_review(),
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
@@ -1070,7 +1130,7 @@ def test_buy_gate_decoupled_from_prospect_board_freshness_and_shape():
         prospect_rank=_prospect_rank(prospects),
         prospect_coverage_audit=_coverage_audit(),
         buy_signals=_buy_signals(ready=True),
-        buy_review={"review_status": "candidate_ready"},
+        buy_review=_qualified_governor_buy_review(),
         milb_stat_freshness_audit={
             "status": "blocked",
             "generated_at": "2026-06-13T12:00:00+00:00",
@@ -1569,10 +1629,7 @@ def test_quality_governor_blocks_buy_surface_identity_level_and_team_drift():
         prospect_rank=_prospect_rank(prospects),
         prospect_coverage_audit=_coverage_audit(),
         buy_signals=_buy_signals(ready=True, board=buy_board),
-        buy_review={
-            "review_status": "candidate_ready",
-            "source_policy": {"history_launch_approved": True},
-        },
+        buy_review=_qualified_governor_buy_review(history_launch=True),
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
@@ -1623,10 +1680,7 @@ def test_quality_governor_blocks_buy_surface_undisclosed_availability_risk():
         prospect_rank=_prospect_rank(prospects),
         prospect_coverage_audit=_coverage_audit(),
         buy_signals=_buy_signals(ready=True, board=buy_board),
-        buy_review={
-            "review_status": "candidate_ready",
-            "source_policy": {"history_launch_approved": True},
-        },
+        buy_review=_qualified_governor_buy_review(history_launch=True),
         generated_at="2026-06-13T12:00:00+00:00",
     )
 
