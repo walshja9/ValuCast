@@ -479,6 +479,9 @@ def _apply_graduation_transition_floor(
         }
         if floor_value > current:
             row["value"] = floor_value
+            presets = row.get("value_by_preset")
+            if isinstance(presets, dict) and "5x5" in presets:
+                row["value_by_preset"] = {**presets, "5x5": floor_value}
             applied += 1
     return applied
 

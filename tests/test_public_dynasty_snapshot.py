@@ -130,6 +130,46 @@ def test_graduation_floor_is_noop_when_mlb_value_already_exceeds_floor():
     assert mlb_rows[0]["graduation_transition"]["applied"] is False
 
 
+def test_graduation_floor_keeps_default_preset_value_in_sync():
+    presets = {"5x5": 3.0, "points": 7.0}
+    mlb_rows = [{"mlbam_id": "invented", "value": 3.0, "value_by_preset": presets}]
+    graduated = [{"mlbam_id": "invented", "value": 60.0}]
+
+    assert _apply_graduation_transition_floor(mlb_rows, graduated) == 1
+    row = mlb_rows[0]
+    public_row = PublicSnapshotRow(
+        id="invented", name="Synthetic graduate", player_type="mlb",
+        positions=("SS",), team="TST", age=23, rank=1, value=row["value"],
+        value_scale=COMMON_VALUE_SCALE, value_source="synthetic", confidence="low",
+        updated_at="2026-11-26", mlbam_id="invented", value_by_preset=row["value_by_preset"],
+    )
+
+    assert public_row.value == 45.0
+    assert public_row.value_for("5x5") == public_row.value, (
+        f"selected 5x5 value {public_row.value_for('5x5')} != headline {public_row.value}"
+    )
+    assert public_row.value_for("points") == 7.0
+    assert presets == {"5x5": 3.0, "points": 7.0}
+
+
+def test_graduation_floor_does_not_invent_missing_preset_values():
+    graduated = [{"mlbam_id": "invented", "value": 60.0}]
+    for presets in ({}, {"points": 7.0}):
+        mlb_rows = [{"mlbam_id": "invented", "value": 3.0, "value_by_preset": presets}]
+        assert _apply_graduation_transition_floor(mlb_rows, graduated) == 1
+        assert mlb_rows[0]["value"] == 45.0
+        assert mlb_rows[0]["value_by_preset"] == presets
+        assert "5x5" not in mlb_rows[0]["value_by_preset"]
+
+
+def test_graduation_floor_preserves_preset_values_when_not_applied():
+    presets = {"5x5": 60.0, "points": 7.0}
+    mlb_rows = [{"mlbam_id": "invented", "value": 60.0, "value_by_preset": presets}]
+    assert _apply_graduation_transition_floor(mlb_rows, [{"mlbam_id": "invented", "value": 60.0}]) == 0
+    assert mlb_rows[0]["value"] == 60.0
+    assert mlb_rows[0]["value_by_preset"] == {"5x5": 60.0, "points": 7.0}
+
+
 def test_graduation_floor_fades_as_rookie_eligibility_exhausts():
     graduated = [{"mlbam_id": "2", "value": 50.0, "context": {"graduation_context": {"ratio": 1.0}}}]
     mlb_rows = [{"mlbam_id": "2", "value": 3.0}]
