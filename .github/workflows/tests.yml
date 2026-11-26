@@ -495,7 +495,8 @@ jobs:
                   return False
               return any(name == pattern.rstrip("/")
                          or (not PurePosixPath(pattern).suffix and name.startswith(pattern.rstrip("/") + "/"))
-                         or ("*" in pattern and fnmatch.fnmatchcase(name, pattern)) for pattern in ALLOW)
+                         or ("*" in pattern and path.parent == PurePosixPath(pattern).parent
+                             and fnmatch.fnmatchcase(name, pattern)) for pattern in ALLOW)
 
 
           assert permitted("data/projections/current.json")
@@ -507,11 +508,22 @@ jobs:
           assert not permitted("data/private/competition/example.json")
           assert not permitted("projections/data/unapproved.json")
           assert not permitted("data/projections/current.json/unapproved.json")
+          assert permitted("data/milb_observation_archive/2026-11-26.json")
+          assert not permitted("data/milb_observation_archive/nested/2026-11-26.json")
           assert not permitted("../data/projections/current.json")
 
           head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
           subprocess.run(["git", "merge-base", "--is-ancestor", "6dd037c4118f5d4e26b85864b79c051c27f53df3", head], check=True)
-          result = subprocess.check_output(["git", "ls-files", "-m", "-o", "--exclude-standard", "-z", "--", *ALLOW])
+          pathspecs = []
+          for pattern in ALLOW:
+              if "*" in pattern:
+                  parent = ROOT / PurePosixPath(pattern).parent
+                  if parent.is_dir():
+                      pathspecs.extend(path.relative_to(ROOT).as_posix() for path in parent.glob(PurePosixPath(pattern).name)
+                                       if path.is_file() and not path.is_symlink())
+              else:
+                  pathspecs.append(pattern)
+          result = subprocess.check_output(["git", "ls-files", "-m", "-o", "--exclude-standard", "-z", "--", *pathspecs])
           names = sorted({name.decode() for name in result.split(b"\0") if name and permitted(name.decode())})
           for name in names:
               path = ROOT / name
@@ -519,7 +531,7 @@ jobs:
               assert path.resolve().is_relative_to(ROOT)
           if names:
               subprocess.run(["git", "add", "--", *names], check=True)
-          patch = subprocess.check_output(["git", "diff", "--cached", "--binary", "--", *ALLOW])
+          patch = subprocess.check_output(["git", "diff", "--cached", "--binary", "--", *pathspecs])
           OUT.mkdir(exist_ok=True)
           with gzip.open(OUT / "rebuild-generated.patch.gz", "wb") as stream:
               stream.write(patch)
