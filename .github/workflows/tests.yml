@@ -1,57 +1,3093 @@
-name: Tests
+name: Isolated PR97 normal rebuild
 
-# Runs the full pytest suite on every push (including data-only commits --
-# data changes have broken data-dependent tests before, so data-only pushes
-# are not exempt) and on every pull request.
 on:
-  push:
-  pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
-  # Keyed on ref so stacked pushes to the same branch cancel the older run
-  # instead of queueing multiple ~8-min suite runs. Prefixed distinctly from
-  # the daily-public-data workflow's "daily-public-data-refresh" group (and
-  # its roster-pulse/prospect-shadow shares of that same group) so this
-  # never collides with or cancels that publish pipeline.
-  group: tests-${{ github.ref }}
-  cancel-in-progress: true
+  group: isolated-pr97-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  pytest:
+  isolated:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    # Validation plus the full suite now exceeds 20 minutes on hosted runners.
-    timeout-minutes: 45
+    timeout-minutes: 120
+    env:
+      VALUCAST_MLB_LIVE_PROJECTION_SOURCE: current
+      VALUCAST_BUYS_REVIEW_APPROVED: "0"
+      ANTHROPIC_API_KEY: ""
+      VALUCAST_SCOUTING_LLM: "1"
+      VALUCAST_SCOUTING_LLM_MAX_GENERATE: "0"
+      VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"
+      GIT_OPTIONAL_LOCKS: "0"
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
+          ref: 88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea
           fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
-          # Matches the version pinned by the repo's other workflows
-          # (daily-public-data.yml, prospect-shadow.yml, roster-pulse.yml).
-          # Local dev runs 3.14; pyproject only requires >=3.10.
           python-version: "3.11"
-          cache: pip
 
-      - name: Install dependencies
+      - name: Materialize reviewed helpers outside source checkout
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt -e . pytest
+          mkdir -p "$RUNNER_TEMP/pr97-harness"
+          cat > "$RUNNER_TEMP/pr97-harness/run_phase.py" <<'PR97_1E1DA938DD201D46D6A99EF8B95AC9E413C5C86C6EDE228249EDF5CE218FC0CB'
+          """Run one declared isolated phase; retain raw logs only in runner temp."""
+          import argparse
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+          import time
 
-      - name: Validate committed artifacts
+          PIN = "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea"
+          SUMMARY = re.compile(r"^(?:\d+ (?:failed|passed|skipped|deselected|subtests passed)(?:, )?)+ in ([0-9.]+)s(?: \([0-9:]+\))?$")
+
+
+          def summarize(text, root):
+              result = {"pytest": [], "failed_tests": [], "exception_types": [], "source_frames": []}
+              for line in text.splitlines():
+                  cleaned = line.strip().strip("= ")
+                  match = SUMMARY.fullmatch(cleaned)
+                  if match:
+                      counts = {name: int(count) for count, name in re.findall(r"(\d+) (failed|passed|skipped|deselected|subtests passed)", cleaned)}
+                      result["pytest"].append({**counts, "seconds": float(match.group(1))})
+                  failed = re.match(r"FAILED (tests/[A-Za-z0-9_/]+\.py::[A-Za-z0-9_]+)", cleaned)
+                  if failed:
+                      result["failed_tests"].append(failed.group(1))
+                  error = re.match(r"([A-Za-z_.]+(?:Error|Exception)):", cleaned)
+                  if error:
+                      result["exception_types"].append(error.group(1))
+                  frame = re.match(r'File "([^"]+\.py)", line (\d+), in ([A-Za-z0-9_<>]+)', cleaned)
+                  if frame:
+                      path = Path(frame.group(1)).resolve()
+                      if path.is_relative_to(root):
+                          result["source_frames"].append({"path": path.relative_to(root).as_posix(), "line": int(frame.group(2)), "function": frame.group(3)})
+              return result
+
+
+          def run(phase, command, root, evidence, logs):
+              assert re.fullmatch(r"[a-z_]+", phase)
+              started = time.monotonic()
+              env = {**os.environ, "VALUCAST_REBUILD_PHASE": phase, "GIT_OPTIONAL_LOCKS": "0"}
+              log_path = logs / (phase + ".log")
+              with log_path.open("wb") as stream:
+                  completed = subprocess.run(command, cwd=root, env=env, stdout=stream, stderr=subprocess.STDOUT)
+              raw = log_path.read_bytes()
+              receipt = {"phase": phase, "program": Path(command[0]).name, "argv_count": len(command),
+                         "command_sha256": hashlib.sha256(json.dumps(command).encode()).hexdigest(), "source_checkout": PIN,
+                         "run_id": os.environ.get("GITHUB_RUN_ID"), "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+                         "pinned_date": os.environ.get("VALUCAST_REFRESH_DATE"),
+                         "exit_code": completed.returncode, "seconds": round(time.monotonic() - started, 3),
+                         "log_bytes": len(raw), "log_sha256": hashlib.sha256(raw).hexdigest(),
+                         **summarize(raw.decode("utf-8", errors="replace"), root)}
+              (evidence / (phase + ".json")).write_text(json.dumps(receipt, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+              print(json.dumps(receipt, sort_keys=True, allow_nan=False), flush=True)
+              return completed.returncode
+
+
+          def main():
+              parser = argparse.ArgumentParser(description=__doc__)
+              parser.add_argument("phase")
+              parser.add_argument("command", nargs=argparse.REMAINDER)
+              args = parser.parse_args()
+              assert args.command and args.command[0] in {"python", sys.executable}
+              root = Path.cwd().resolve()
+              checkout = subprocess.check_output(["git", "--no-replace-objects", "rev-parse", "HEAD"], text=True).strip()
+              assert checkout == PIN, "Source checkout does not match approved PR head"
+              temp = Path(os.environ["RUNNER_TEMP"]).resolve()
+              evidence, logs = temp / "pr97-evidence", temp / "pr97-raw-logs"
+              assert not evidence.is_relative_to(root) and not logs.is_relative_to(root)
+              evidence.mkdir(exist_ok=True)
+              logs.mkdir(exist_ok=True)
+              return run(args.phase, args.command, root, evidence, logs)
+
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+          PR97_1E1DA938DD201D46D6A99EF8B95AC9E413C5C86C6EDE228249EDF5CE218FC0CB
+          cat > "$RUNNER_TEMP/pr97-harness/sitecustomize.py" <<'PR97_042E259E40795B19AFF1B3E0B110EAAAC8A136D30F5B11B5FB9B163D7D4AF59A'
+          """Apply only the nonpaid normal scouting process boundary."""
+          import atexit
+          import json
+          import os
+          from pathlib import Path
+          import sys
+
+          if os.environ.get("VALUCAST_REBUILD_PHASE") == "build" and Path(sys.argv[0]).name == "build_scouting_repository.py":
+              valid = (not os.environ.get("ANTHROPIC_API_KEY")
+                       and os.environ.get("VALUCAST_SCOUTING_LLM") == "1"
+                       and os.environ.get("VALUCAST_SCOUTING_LLM_MAX_GENERATE") == "0")
+              if not valid:
+                  sys.stderr.write("Nonpaid scouting policy missing.\n")
+                  os._exit(78)
+              attempts = []
+
+              def audit(event, args):
+                  if event in {"socket.connect", "socket.getaddrinfo", "socket.sendto"}:
+                      attempts.append(event)
+                      raise PermissionError("Network prohibited in cache-only scouting")
+
+              sys.addaudithook(audit)
+
+              def receipt():
+                  directory = Path(os.environ["RUNNER_TEMP"]) / "pr97-evidence"
+                  directory.mkdir(exist_ok=True)
+                  output = directory / ("scout_guard_" + str(os.getpid()) + ".json")
+                  output.write_text(json.dumps({"phase": "build", "api_key_present": False,
+                                               "generation_budget": 0, "llm_enabled": True,
+                                               "network_attempts": len(attempts)}, indent=2) + "\n", encoding="utf-8")
+                  if attempts:
+                      os._exit(79)
+
+              atexit.register(receipt)
+          PR97_042E259E40795B19AFF1B3E0B110EAAAC8A136D30F5B11B5FB9B163D7D4AF59A
+          cat > "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" <<'PR97_BDD5C1F2E70FF847A8429ABFC26FC59326328FE4A2723325FF7AFBA0A1BA2500'
+          """Bind an isolated normal build to its frozen source and scalar receipts.
+
+          Default execution is a synthetic self-test. Runtime modes require GitHub Actions.
+          No candidate container is decoded; the admitted eleven paths are byte-hashed only.
+          """
+          import argparse
+          from datetime import datetime, timezone
+          import hashlib
+          import json
+          import os
+          from pathlib import Path, PurePosixPath
+          import re
+          import stat
+          import subprocess
+          import sys
+          import tempfile
+
+          PIN = "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea"
+          PRIOR_PIN = "0f52fea68ea7e6587ce50249feb83d9d4cb00243"
+          PRIOR_PATH = "data/public/public_dynasty_snapshot.json"
+          NORMAL_PHASES = (
+              "install", "refresh_projections", "refresh_statcast", "refresh_milb_season",
+              "refresh_milb_recent", "refresh_orgs", "refresh_contract", "build",
+              "rank_history", "validate_strict", "validate_ci", "full_suite",
+          )
+          ALL_PHASES = (*NORMAL_PHASES, "diagnostic")
+          DIAGNOSTIC_NAME = "prospect-diagnostic-summary.json"
+          SCOUT_PATHS = {"reports": "data/models/valucast_scouting_reports.json",
+                         "cache": "data/models/valucast_scouting_llm_cache.json"}
+          METADATA_NAMES = {"bootstrap.json", "pre_inputs.json", "candidate_bind.json", "final.json", DIAGNOSTIC_NAME}
+
+
+          def digest(raw):
+              return hashlib.sha256(raw).hexdigest()
+
+
+          def load_json(path):
+              return json.loads(path.read_text(encoding="utf-8"))
+
+
+          def write_json(path, payload):
+              with path.open("x", encoding="utf-8") as stream:
+                  json.dump(payload, stream, indent=2, sort_keys=True, allow_nan=False)
+                  stream.write("\n")
+
+
+          def child_path(root, relative):
+              if not isinstance(relative, str):
+                  raise ValueError("Invalid admitted relative path")
+              pure = PurePosixPath(relative)
+              if pure.is_absolute() or ".." in pure.parts or "\\" in relative:
+                  raise ValueError("Invalid admitted relative path")
+              resolved = (root / relative).resolve()
+              if not resolved.is_relative_to(root) or resolved == root:
+                  raise ValueError("Admitted path escapes checkout")
+              return resolved
+
+
+          def hash_containers(root, paths):
+              if not isinstance(paths, dict) or len(paths) != 11 or len(set(paths.values())) != 11:
+                  raise ValueError("Expected exactly eleven distinct admitted containers")
+              result = {}
+              for label, relative in paths.items():
+                  path = child_path(root, relative)
+                  try:
+                      raw = path.read_bytes()
+                  except FileNotFoundError:
+                      result[label] = {"path": relative, "state": "missing", "bytes": None, "sha256": None}
+                  else:
+                      result[label] = {"path": relative, "state": "present", "bytes": len(raw), "sha256": digest(raw)}
+              return result
+
+
+          def scouting_hashes(root):
+              result = {}
+              for label, relative in SCOUT_PATHS.items():
+                  path = child_path(root, relative)
+                  try:
+                      raw = path.read_bytes()
+                  except FileNotFoundError:
+                      result[label] = {"path": relative, "state": "missing", "bytes": None, "sha256": None}
+                  else:
+                      result[label] = {"path": relative, "state": "present", "bytes": len(raw), "sha256": digest(raw)}
+              return result
+
+
+          def scouting_summary(raw):
+              from prospect_diagnostics import project, VALUE
+              counts = ("report_count", "llm_published_report_count", "deterministic_published_report_count")
+              shadow_counts = ("generation_limit", "generated", "reused", "reused_stale", "errored")
+              selected = project(raw, {
+                  "validation": {"ready_for_repository": VALUE},
+                  "source_policy": {"feeds_live_rank": VALUE, "feeds_live_value": VALUE},
+                  "summary": {**{key: VALUE for key in counts},
+                              "llm_shadow": {**{key: VALUE for key in shadow_counts}, "enabled": VALUE, "available": VALUE}},
+              })
+              result = {"state": "available", "validation": {}, "source_policy": {}, "summary": {"llm_shadow": {}}}
+              invalid = 0
+              def retain(source, destination, key, boolean=False):
+                  nonlocal invalid
+                  source = source if isinstance(source, dict) else {}
+                  value = source.get(key)
+                  valid = type(value) is bool if boolean else type(value) is int and value >= 0
+                  destination[key] = value if valid else None
+                  invalid += not valid
+              for key in ("ready_for_repository",):
+                  retain(selected.get("validation", {}), result["validation"], key, True)
+              for key in ("feeds_live_rank", "feeds_live_value"):
+                  retain(selected.get("source_policy", {}), result["source_policy"], key, True)
+              summary = selected.get("summary", {})
+              summary = summary if isinstance(summary, dict) else {}
+              for key in counts:
+                  retain(summary, result["summary"], key)
+              shadow = summary.get("llm_shadow", {})
+              for key in shadow_counts:
+                  retain(shadow, result["summary"]["llm_shadow"], key)
+              for key in ("enabled", "available"):
+                  retain(shadow, result["summary"]["llm_shadow"], key, True)
+              result["missing_or_invalid_scalar_count"] = invalid
+              return result
+
+
+          def nonpaid_summary_qualified(summary):
+              expected = {"enabled": True, "available": False, "generation_limit": 0, "generated": 0, "errored": 0}
+              return bool(summary.get("state") == "available" and
+                          all(summary["summary"]["llm_shadow"].get(key) == value for key, value in expected.items()))
+
+
+          def git(root, *args):
+              return subprocess.check_output(
+                  ["git", "--no-lazy-fetch", "--no-replace-objects", *args], cwd=root,
+                  env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"}, stderr=subprocess.PIPE,
+              )
+
+
+          def source_clean(root, pathspecs):
+              if not isinstance(pathspecs, list) or not pathspecs or any(not isinstance(item, str) for item in pathspecs):
+                  raise ValueError("Explicit source cleanliness pathspecs required")
+              completed = subprocess.run(
+                  ["git", "--no-lazy-fetch", "--no-replace-objects", "diff", "--quiet", "HEAD", "--", *pathspecs],
+                  cwd=root, env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
+                  stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+              )
+              if completed.returncode not in (0, 1):
+                  raise RuntimeError("Unable to qualify tracked source cleanliness")
+              return completed.returncode == 0
+
+
+          def runtime_context(manifest_path):
+              if os.environ.get("GITHUB_ACTIONS") != "true":
+                  raise RuntimeError("Runtime mode is restricted to the reviewed GitHub runner")
+              root = Path.cwd().resolve()
+              temp = Path(os.environ["RUNNER_TEMP"]).resolve()
+              helper_root = Path(__file__).resolve().parent
+              manifest_path = manifest_path.resolve()
+              if helper_root.is_relative_to(root) or not helper_root.is_relative_to(temp):
+                  raise ValueError("Helpers must live in runner temp outside checkout")
+              if manifest_path.parent != helper_root:
+                  raise ValueError("Manifest must share the external helper directory")
+              manifest_bytes = manifest_path.read_bytes()
+              manifest = json.loads(manifest_bytes)
+              if manifest["source_checkout"] != PIN or manifest["prior_checkout"] != PRIOR_PIN:
+                  raise ValueError("Frozen source identity mismatch")
+              if tuple(manifest["normal_phases"]) != NORMAL_PHASES:
+                  raise ValueError("Normal phase contract changed")
+              for name, expected_hash in manifest["helper_sha256"].items():
+                  if Path(name).name != name or digest((helper_root / name).read_bytes()) != expected_hash:
+                      raise ValueError("External helper binding mismatch")
+              if load_json(helper_root / "prospect_diagnostics_spec.json")["inputs"] != manifest["input_paths"]:
+                  raise ValueError("Diagnostic container scope differs from frozen spec")
+              actual_head = git(root, "rev-parse", "HEAD").decode().strip()
+              if actual_head != PIN:
+                  raise ValueError("Runtime checkout is not the approved candidate")
+              evidence = temp / "pr97-evidence"
+              if evidence.is_relative_to(root):
+                  raise ValueError("Evidence must remain outside checkout")
+              evidence.mkdir(exist_ok=True)
+              return root, temp, evidence, manifest, digest(manifest_bytes)
+
+
+          def bootstrap(manifest_path):
+              root, temp, evidence, manifest, manifest_hash = runtime_context(manifest_path)
+              prior = temp / "valucast-previous-public-dynasty-snapshot.json"
+              raw = git(root, "show", PRIOR_PIN + ":" + PRIOR_PATH)
+              if not raw:
+                  raise ValueError("Accepted prior canonical snapshot is empty")
+              with prior.open("xb") as stream:
+                  stream.write(raw)
+              prior.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+              evaluation_date = datetime.now(timezone.utc).date().isoformat()
+              payload = {
+                  "schema_version": "1.0.0", "kind": "isolated_normal_build_bootstrap",
+                  "source_checkout": PIN, "orchestration_checkout": os.environ["GITHUB_SHA"],
+                  "workflow_ref": os.environ.get("GITHUB_WORKFLOW_REF"),
+                  "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                  "evaluation_as_of": evaluation_date, "source_manifest_sha256": manifest_hash,
+                  "helper_sha256": manifest["helper_sha256"],
+                  "tracked_source_clean": source_clean(root, manifest["source_clean_pathspecs"]),
+                  "source_clean_pathspecs": manifest["source_clean_pathspecs"],
+                  "prior_canonical": {"source_checkout": PRIOR_PIN, "source_path": PRIOR_PATH,
+                                      "sha256": digest(raw), "bytes": len(raw), "captured_before_refresh_or_cache_writes": True,
+                                      "independently_verified_live_served": False},
+                  "containers_before": hash_containers(root, manifest["input_paths"]),
+                  "scouting_before": scouting_hashes(root),
+              }
+              if not payload["tracked_source_clean"]:
+                  raise ValueError("Tracked source modified before isolated build")
+              write_json(evidence / "bootstrap.json", payload)
+              with Path(os.environ["GITHUB_ENV"]).open("a", encoding="utf-8") as stream:
+                  stream.write("VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT=" + str(prior) + "\n")
+                  stream.write("VALUCAST_REFRESH_DATE=" + evaluation_date + "\n")
+              print(json.dumps({"bootstrap": "bound", "source_checkout": PIN, "evaluation_as_of": evaluation_date}))
+
+
+          def capture_inputs(manifest_path, candidate=False):
+              root, temp, evidence, manifest, manifest_hash = runtime_context(manifest_path)
+              verified_export_members(evidence)
+              boot = load_json(evidence / "bootstrap.json")
+              if candidate:
+                  for phase in ("build", "rank_history"):
+                      receipt = load_json(evidence / (phase + ".json"))
+                      if receipt.get("exit_code") != 0 or receipt.get("source_checkout") != PIN:
+                          raise ValueError("Candidate binding requires successful build and rank history")
+              name = "candidate_bind" if candidate else "pre_inputs"
+              payload = {"schema_version": "1.0.0", "kind": name, "phase": name, "exit_code": 0,
+                         "source_checkout": PIN, "orchestration_checkout": os.environ["GITHUB_SHA"],
+                         "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                         "evaluation_as_of": boot["evaluation_as_of"], "pinned_date": boot["evaluation_as_of"],
+                         "source_manifest_sha256": manifest_hash,
+                         "containers": hash_containers(root, manifest["input_paths"]),
+                         "scouting": scouting_hashes(root)}
+              write_json(evidence / (name + ".json"), payload)
+              print(json.dumps({name: "bound", "source_checkout": PIN}))
+
+
+          def eligible_metadata(evidence, name, manifest_hash):
+              path = evidence / (name + ".json")
+              if not path.is_file():
+                  return None
+              row = load_json(path)
+              if (row.get("source_checkout") != PIN or row.get("source_manifest_sha256") != manifest_hash or
+                      row.get("phase") != name or row.get("exit_code") != 0 or
+                      row.get("run_id") != os.environ["GITHUB_RUN_ID"] or
+                      row.get("run_attempt") != os.environ["GITHUB_RUN_ATTEMPT"]):
+                  raise ValueError("Metadata binding identity mismatch")
+              return row
+
+
+          def candidate_changes(candidate, current):
+              if not candidate:
+                  return None
+              return [label for label, row in current.items()
+                      if row["sha256"] != candidate["containers"][label]["sha256"] or row["state"] != candidate["containers"][label]["state"]]
+
+
+          def phase_summary(evidence, outcomes, identity=None):
+              phases = {}
+              for phase in ALL_PHASES:
+                  path = evidence / (phase + ".json")
+                  outcome = outcomes.get(phase, {}).get("outcome", "unavailable")
+                  if not path.is_file():
+                      phases[phase] = {"github_outcome": outcome, "receipt_state": "unavailable", "exit_code": None}
+                      continue
+                  value = load_json(path)
+                  if value.get("phase") != phase or value.get("source_checkout") != PIN:
+                      raise ValueError("Phase receipt identity mismatch")
+                  if identity and any(value.get(key) != expected for key, expected in identity.items()):
+                      raise ValueError("Phase receipt does not belong to this run/date")
+                  code = value.get("exit_code")
+                  if isinstance(code, bool) or not isinstance(code, int):
+                      raise ValueError("Phase receipt lacks a numeric exit code")
+                  phases[phase] = {"github_outcome": outcome, "receipt_state": "present", "exit_code": code,
+                                   "receipt_sha256": digest(path.read_bytes())}
+              return phases
+
+
+          def diagnostic_manifest(manifest_path):
+              root, temp, evidence, manifest, manifest_hash = runtime_context(manifest_path)
+              verified_export_members(evidence)
+              boot_path = evidence / "bootstrap.json"
+              boot = load_json(boot_path) if boot_path.is_file() else None
+              before = eligible_metadata(evidence, "pre_inputs", manifest_hash)
+              candidate = eligible_metadata(evidence, "candidate_bind", manifest_hash)
+              post = hash_containers(root, manifest["input_paths"])
+              payload = {
+                  "schema_version": "1.0.0", "source_commit": PIN,
+                  "orchestrator_commit": os.environ["GITHUB_SHA"],
+                  "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                  "pinned_date": boot.get("evaluation_as_of") if boot else None,
+                  "source_manifest_sha256": manifest_hash,
+                  "helper_sha256": manifest["helper_sha256"]["prospect_diagnostics.py"],
+                  "spec_sha256": manifest["helper_sha256"]["prospect_diagnostics_spec.json"],
+                  "input_root": str(root), "input_paths": manifest["input_paths"],
+                  "phase_evidence_dir": str(evidence), "output_path": str(evidence / DIAGNOSTIC_NAME),
+                  "pre_sha256": {label: row["sha256"] for label, row in before["containers"].items()} if before else {},
+                  "post_sha256": {label: row["sha256"] for label, row in post.items()},
+                  "candidate_sha256": {label: row["sha256"] for label, row in candidate["containers"].items()} if candidate else {},
+                  "candidate_changed_labels": candidate_changes(candidate, post),
+              }
+              write_json(manifest_path.parent / "diagnostic-runtime-manifest.json", payload)
+              print(json.dumps({"diagnostic_manifest": "written", "bootstrap_available": bool(boot)}))
+
+
+          def verified_export_members(evidence):
+              allowed = METADATA_NAMES | {phase + ".json" for phase in ALL_PHASES}
+              members = sorted(evidence.iterdir())
+              for path in members:
+                  if (path.is_symlink() or not path.is_file() or
+                          not (path.name in allowed or re.fullmatch(r"scout_guard_[0-9]+\.json", path.name))):
+                      raise ValueError("Unexpected or symlink evidence member; export prohibited")
+              return members
+
+
+          def stage_export(evidence, destination):
+              members = verified_export_members(evidence)
+              destination.mkdir(exist_ok=False)
+              for path in members:
+                  with (destination / path.name).open("xb") as stream:
+                      stream.write(path.read_bytes())
+
+
+          def announce_export(subdirectory):
+              if subdirectory not in {"pr97-export", "pr97-failure-export"}:
+                  raise ValueError("Unknown export staging directory")
+              with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as stream:
+                  stream.write("export_subdir=" + subdirectory + "\nexport_ready=true\n")
+
+
+          def finalize(manifest_path):
+              root, temp, evidence, manifest, manifest_hash = runtime_context(manifest_path)
+              verified_export_members(evidence)
+              bootstrap_path = evidence / "bootstrap.json"
+              boot = load_json(bootstrap_path) if bootstrap_path.is_file() else None
+              before = eligible_metadata(evidence, "pre_inputs", manifest_hash)
+              candidate = eligible_metadata(evidence, "candidate_bind", manifest_hash)
+              phases = phase_summary(evidence, json.loads(os.environ.get("PR97_STEP_OUTCOMES", "{}")),
+                                     {"run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                                      "pinned_date": os.environ.get("VALUCAST_REFRESH_DATE")})
+              prior = temp / "valucast-previous-public-dynasty-snapshot.json"
+              prior_unchanged = bool(boot and prior.is_file() and digest(prior.read_bytes()) == boot["prior_canonical"]["sha256"])
+              guards = []
+              for path in sorted(evidence.glob("scout_guard_*.json")):
+                  row = load_json(path)
+                  guards.append({key: row.get(key) for key in ("phase", "api_key_present", "generation_budget", "llm_enabled", "network_attempts")})
+              guard_ok = bool(guards) and all(row == {"phase": "build", "api_key_present": False, "generation_budget": 0,
+                                                     "llm_enabled": True, "network_attempts": 0} for row in guards)
+              diagnostic = evidence / DIAGNOSTIC_NAME
+              diagnostic_receipt = {"state": "present", "sha256": digest(diagnostic.read_bytes())} if diagnostic.is_file() else {
+                  "state": "unavailable", "sha256": None, "reason": "Diagnostic did not emit its aggregate sidecar"}
+              scout_after = scouting_hashes(root)
+              report = child_path(root, SCOUT_PATHS["reports"])
+              try:
+                  scout_summary = scouting_summary(report.read_bytes()) if report.is_file() else {"state": "unavailable", "reason": "Scouting report missing"}
+              except (ValueError, TypeError):
+                  scout_summary = {"state": "unavailable", "reason": "Scouting scalar projection rejected malformed content"}
+              nonpaid_summary_ok = nonpaid_summary_qualified(scout_summary)
+              clean = source_clean(root, manifest["source_clean_pathspecs"])
+              current = hash_containers(root, manifest["input_paths"])
+              changed = candidate_changes(candidate, current)
+              required_ok = all(phases[p]["exit_code"] == 0 and phases[p]["github_outcome"] == "success" for p in ALL_PHASES)
+              eligible = bool(boot and before and candidate and not changed and required_ok and prior_unchanged and clean and
+                              guard_ok and nonpaid_summary_ok and diagnostic.is_file())
+              verified_export_members(evidence)
+              payload = {
+                  "schema_version": "1.0.0", "kind": "isolated_normal_build_final",
+                  "source_checkout": PIN, "orchestration_checkout": os.environ["GITHUB_SHA"],
+                  "run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                  "evaluation_as_of": boot.get("evaluation_as_of") if boot else None,
+                  "source_manifest_sha256": manifest_hash, "helper_sha256": manifest["helper_sha256"],
+                  "bootstrap_state": "present" if boot else "unavailable", "phases": phases,
+                  "committed_containers_before_restore": boot.get("containers_before") if boot else None,
+                  "actual_containers_before_ingestion": before.get("containers") if before else None,
+                  "candidate_containers_after_build": candidate.get("containers") if candidate else None,
+                  "containers_after": current, "candidate_changed_labels": changed,
+                  "prior_canonical_unchanged": prior_unchanged, "tracked_source_clean": clean,
+                  "source_clean_pathspecs": manifest["source_clean_pathspecs"],
+                  "scouting_process_guards": guards, "scouting_nonpaid_network_guard_qualified": guard_ok,
+                  "scouting_committed_before_restore": boot.get("scouting_before") if boot else None,
+                  "scouting_actual_before_ingestion": before.get("scouting") if before else None,
+                  "scouting_after": scout_after, "scouting_generation_summary": scout_summary,
+                  "scouting_text_identity_verified": False,
+                  "diagnostic": diagnostic_receipt, "isolated_checks_eligible": eligible,
+                  "publication_authorized": False, "predictive_validation_claim": False,
+                  "normal_input_scope": manifest["normal_input_scope"],
+              }
+              write_json(evidence / "final.json", payload)
+              stage_export(evidence, temp / "pr97-export")
+              announce_export("pr97-export")
+              print(json.dumps({"final_receipt": "written", "isolated_checks_eligible": eligible}))
+              return 0 if eligible else 1
+
+
+          def self_test():
+              with tempfile.TemporaryDirectory(prefix="pr97-helper-") as directory:
+                  root = Path(directory).resolve()
+                  paths = {"container_" + str(index): "synthetic/container_" + str(index) + ".json" for index in range(11)}
+                  for relative in paths.values():
+                      path = child_path(root, relative)
+                      path.parent.mkdir(exist_ok=True)
+                      path.write_bytes(b'{"excluded":"DO_NOT_DECODE"}')
+                  hashed = hash_containers(root, paths)
+                  assert len(hashed) == 11 and all(row["state"] == "present" for row in hashed.values())
+                  # A committed-before hash must not masquerade as the restored input hash.
+                  (root / paths["container_0"]).write_bytes(b'{"synthetic":"restored"}')
+                  restored = hash_containers(root, paths)
+                  assert hashed["container_0"]["sha256"] != restored["container_0"]["sha256"]
+                  candidate = {"containers": restored}
+                  assert candidate_changes(candidate, restored) == []
+                  (root / paths["container_0"]).write_bytes(b'{"synthetic":"test mutation"}')
+                  assert candidate_changes(candidate, hash_containers(root, paths)) == ["container_0"]
+                  (root / paths["container_0"]).unlink()
+                  assert hash_containers(root, paths)["container_0"]["state"] == "missing"
+                  for bad in ("../outside", "/outside", "bad\\path"):
+                      try:
+                          child_path(root, bad)
+                      except ValueError:
+                          pass
+                      else:
+                          raise AssertionError("Escaping path accepted")
+                  evidence = root / "evidence"
+                  evidence.mkdir()
+                  value = {"phase": "build", "source_checkout": PIN, "exit_code": 7}
+                  write_json(evidence / "build.json", value)
+                  phases = phase_summary(evidence, {"build": {"outcome": "failure"}, "full_suite": {"outcome": "skipped"}})
+                  assert phases["build"]["exit_code"] == 7
+                  assert phases["full_suite"]["receipt_state"] == "unavailable"
+                  assert phases["full_suite"]["github_outcome"] == "skipped"
+                  assert not all(phases[p]["exit_code"] == 0 for p in ALL_PHASES)
+                  try:
+                      phase_summary(evidence, {}, {"run_id": "different-run"})
+                  except ValueError:
+                      pass
+                  else:
+                      raise AssertionError("Wrong-run phase receipt accepted")
+                  destination = root / "safe-export"
+                  stage_export(evidence, destination)
+                  assert [path.name for path in destination.iterdir()] == ["build.json"]
+                  (evidence / "unexpected-private.json").write_bytes(b'{"private":"EXCLUDED_PRIVATE_SENTINEL"}')
+                  rejected = root / "rejected-export"
+                  try:
+                      stage_export(evidence, rejected)
+                  except ValueError:
+                      pass
+                  else:
+                      raise AssertionError("Unexpected evidence export accepted")
+                  assert not rejected.exists()
+                  (evidence / "unexpected-private.json").unlink()
+                  class SyntheticLink:
+                      name = "bootstrap.json"
+                      def is_symlink(self):
+                          return True
+                  class SyntheticEvidence:
+                      def iterdir(self):
+                          return iter([SyntheticLink()])
+                  try:
+                      verified_export_members(SyntheticEvidence())
+                  except ValueError:
+                      pass
+                  else:
+                      raise AssertionError("Synthetic symlink flag accepted")
+                  link = evidence / "bootstrap.json"
+                  try:
+                      link.symlink_to(evidence / "build.json")
+                  except OSError:
+                      print("Synthetic symlink creation unavailable on this host; rejection branch requires runner qualification.")
+                  else:
+                      try:
+                          verified_export_members(evidence)
+                      except ValueError:
+                          pass
+                      else:
+                          raise AssertionError("Symlink evidence export accepted")
+                      link.unlink()
+                  try:
+                      write_json(evidence / "build.json", {})
+                  except FileExistsError:
+                      pass
+                  else:
+                      raise AssertionError("Evidence overwrite accepted")
+                  from prospect_diagnostics import project
+                  scout = {"validation": {"ready_for_repository": True},
+                           "source_policy": {"feeds_live_rank": False, "feeds_live_value": False},
+                           "summary": {"report_count": 10, "llm_published_report_count": 8,
+                                       "deterministic_published_report_count": 2,
+                                       "llm_shadow": {"enabled": True, "available": False,
+                                                      "generation_limit": 0, "generated": 0,
+                                                      "reused": 8, "reused_stale": 3, "errored": 0}},
+                           "reports": [{"name": "EXCLUDED_PRIVATE_SENTINEL", "prose": "EXCLUDED_PRIVATE_SENTINEL", "private": 987654321}]}
+                  raw = json.dumps(scout).encode()
+                  original_loads = json.loads
+                  def scalar_only(fragment):
+                      assert not fragment.lstrip().startswith(("{", "["))
+                      assert "EXCLUDED_PRIVATE_SENTINEL" not in fragment and "987654321" not in fragment
+                      return original_loads(fragment)
+                  json.loads = scalar_only
+                  try:
+                      projected = scouting_summary(raw)
+                  finally:
+                      json.loads = original_loads
+                  assert projected["summary"]["llm_shadow"]["generated"] == 0
+                  assert projected["summary"]["llm_shadow"]["reused"] == 8
+                  assert "EXCLUDED_PRIVATE_SENTINEL" not in json.dumps(projected)
+                  assert nonpaid_summary_qualified(projected)
+                  for key, wrong in (("enabled", False), ("available", True), ("generation_limit", 1), ("generated", 1), ("errored", 1)):
+                      changed = json.loads(json.dumps(projected))
+                      changed["summary"]["llm_shadow"][key] = wrong
+                      assert not nonpaid_summary_qualified(changed)
+                  invalid = scouting_summary(b'{"summary":{"report_count":"DO_NOT_EXPORT"}}')
+                  assert invalid["summary"]["report_count"] is None and "DO_NOT_EXPORT" not in json.dumps(invalid)
+                  # Force the actual main fallback without Git, containers or model calls.
+                  fallback_temp = root / "fallback_temp"
+                  fallback_temp.mkdir()
+                  contaminated = fallback_temp / "pr97-export"
+                  contaminated.mkdir()
+                  (contaminated / "private.json").write_bytes(b'{"private":"EXCLUDED_PRIVATE_SENTINEL"}')
+                  saved_env = os.environ.copy()
+                  saved_argv = sys.argv
+                  saved_finalize = globals()["finalize"]
+                  def synthetic_failure(_manifest):
+                      raise ValueError("Synthetic failure before export")
+                  globals()["finalize"] = synthetic_failure
+                  os.environ.update({"GITHUB_ACTIONS": "true", "RUNNER_TEMP": str(fallback_temp),
+                                     "GITHUB_OUTPUT": str(root / "outputs.txt"), "GITHUB_SHA": "synthetic-orchestrator",
+                                     "GITHUB_RUN_ID": "synthetic-run", "GITHUB_RUN_ATTEMPT": "1"})
+                  sys.argv = ["synthetic", "finalize", "--manifest", str(root / "never-read.json")]
+                  try:
+                      assert main() == 1
+                  finally:
+                      globals()["finalize"] = saved_finalize
+                      sys.argv = saved_argv
+                      os.environ.clear()
+                      os.environ.update(saved_env)
+                  fallback = fallback_temp / "pr97-failure-export"
+                  assert [path.name for path in fallback.iterdir()] == ["final.json"]
+                  assert load_json(fallback / "final.json")["isolated_checks_eligible"] is False
+                  assert "export_subdir=pr97-failure-export" in (root / "outputs.txt").read_text()
+                  assert "EXCLUDED_PRIVATE_SENTINEL" not in (fallback / "final.json").read_text()
+              print("Synthetic bootstrap/finalize self-test passed; no candidate data read.")
+
+
+          def main():
+              parser = argparse.ArgumentParser(description=__doc__)
+              parser.add_argument("mode", nargs="?", choices=("self-test", "bootstrap", "pre-inputs", "candidate-bind", "diagnostic-manifest", "finalize"), default="self-test")
+              parser.add_argument("--manifest", type=Path)
+              args = parser.parse_args()
+              if args.mode == "self-test":
+                  self_test()
+                  return 0
+              if args.manifest is None:
+                  parser.error("Runtime modes require the frozen external manifest")
+              if args.mode == "bootstrap":
+                  bootstrap(args.manifest)
+                  return 0
+              if args.mode == "diagnostic-manifest":
+                  diagnostic_manifest(args.manifest)
+                  return 0
+              if args.mode in {"pre-inputs", "candidate-bind"}:
+                  capture_inputs(args.manifest, candidate=args.mode == "candidate-bind")
+                  return 0
+              try:
+                  return finalize(args.manifest)
+              except Exception as error:
+                  if os.environ.get("GITHUB_ACTIONS") != "true":
+                      raise
+                  temp = Path(os.environ["RUNNER_TEMP"]).resolve()
+                  if temp.is_relative_to(Path.cwd().resolve()):
+                      raise
+                  failure = {"schema_version": "1.0.0", "kind": "isolated_normal_build_final",
+                             "state": "unavailable", "exception_type": type(error).__name__,
+                             "source_checkout": PIN, "orchestration_checkout": os.environ.get("GITHUB_SHA"),
+                             "run_id": os.environ.get("GITHUB_RUN_ID"), "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+                             "isolated_checks_eligible": False, "publication_authorized": False}
+                  # A fresh fixed fallback exports only our constructed minimal receipt,
+                  # never the evidence directory that failed verification or a partial stage.
+                  fallback = temp / "pr97-failure-export"
+                  fallback.mkdir(exist_ok=False)
+                  write_json(fallback / "final.json", failure)
+                  announce_export("pr97-failure-export")
+                  print(json.dumps({"final_receipt": "unavailable", "exception_type": type(error).__name__}))
+                  return 1
+
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+          PR97_BDD5C1F2E70FF847A8429ABFC26FC59326328FE4A2723325FF7AFBA0A1BA2500
+          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics.py" <<'PR97_64B34D802E81E263D5D959490E62547E525A04D78CDFA43DD98E767F0E320C9D'
+          """Prepare-only aggregate diagnostics for the ordinary, uninstrumented PR97 build."""
+          from __future__ import annotations
+
+          import hashlib
+          import json
+          import math
+          import os
+          from pathlib import Path
+          import re
+          import socket
+          import sys
+          from collections import Counter, defaultdict
+          from datetime import date
+
+
+          def self_check():
+              for fragment, expected in (("0", "valid_zero"), ("-0.0", "valid_zero"),
+                                         ('"0"', "valid_zero"), ('"1.5"', "valid_nonzero"),
+                                         ('"\\u0030"', "valid_zero"), ("null", "null"),
+                                         ("true", "invalid"), ('"NaN"', "invalid"),
+                                         ('"1e309"', "invalid"), ('"private text"', "invalid"), ("-5", "valid_nonzero")):
+                  assert measurement_state(fragment) == expected, "Numeric-state projection failed"
+              contract = {"schema_version": "1.2", "generated_at": "2026-11-26T12:00:00Z",
+                          "current": {"season": 2026, "fetched_date": "2026-11-26",
+                                      "hitters": [{"mlbam_id": 101, "role": "hitter", "level": "AA",
+                                                   "plate_appearances": 200, "source_kind": "current_season",
+                                                   "sample_season": 2026, "babip": 0}],
+                                      "pitchers": [{"mlbam_id": 202, "role": "pitcher", "level": "AA",
+                                                    "innings_pitched": 60, "source_kind": "latest_milb_history",
+                                                    "sample_season": 2025, "home_runs": None, "is_starter": True, "k_bb_pct": -5}]},
+                          "historical": {"rows": [{"name": "SENTINEL_NAME", "target": 987654321}]},
+                          "historical_mlb_seasons": {"SENTINEL_NAME": [{"ops": 987654321}]}}
+              rows = [{"mlbam_id": key, "name": "SENTINEL_NAME", "role": role, "rank": rank,
+                       "score": score, "score_source": "prospect_model_v0_6",
+                       "components": {"model_score": score, "universal_outcome_index": score,
+                                      "factual_investment_context": score, "sample_reliability": score,
+                                      "score_before_bucket_calibration": score,
+                                      "bucket_calibration": {"adjustment": 0}}}
+                      for key, role, rank, score in ((101, "hitter", 1, 10), (202, "pitcher", 26, 20))]
+              fixtures = {
+                  "milb_current": {"season": 2026, "fetched_date": "2026-11-26", "hitters": [
+                      {"mlbam_id": 101, "role": "hitter", "level": "AA", "plate_appearances": 200,
+                       "babip": 0, "name": "SENTINEL_NAME", "feature_vector": [987654321]}], "pitchers": []},
+                  "milb_history": {"players": {"SENTINEL_NAME": [{"mlbam_id": 202, "role": "pitcher",
+                                   "season": 2025, "innings_pitched": 60, "home_runs": None}]}},
+                  "contract": contract, "main_model": {"model_version": "0.6.1", "ranked": [{"mlbam_id": 202, "role": "pitcher"}],
+                                                       "roles": {"weights": [987654321]}},
+                  "universal": {"model_version": "0.4.1", "profiles": [{"mlbam_id": 202, "role": "pitcher",
+                                 "outcome_distribution": {"bust_probability": 0.2, "role_probability": 0.7, "star_probability": 0.1}}]},
+                  "layer": {"profiles": [{"mlbam_id": 202, "role": "pitcher"}]},
+                  "rank": {"rank_version": "0.2.9", "board": rows},
+                  "calibration": {"status": "needs_review", "metrics": {"bands": {"25": {"evaluated_count": 25,
+                                   "role_counts": {"pitcher": 12}}}}, "criteria": {"max_top25_pitcher_count": 7}},
+                  "governor": {"surface_readiness": {"prospects": False}, "checks": [
+                      {"id": "prospect_top_board_role_shape", "status": "blocked", "metrics": {
+                          "top25_evaluated_count": 25, "top50_evaluated_count": 50,
+                          "top25_pitcher_count": 12, "top50_pitcher_count": 20, "top50_pitcher_rate": 0.4,
+                          "max_top25_pitcher_count": 7, "max_top50_pitcher_rate": 0.3,
+                          "pitcher_samples": [{"name": "SENTINEL_NAME", "mlbam_id": 987654321}]}}]},
+                  "snapshot": {"players": [{"mlbam_id": 202, "role": "pitcher", "player_type": "prospect", "value": 20}]},
+                  "projection_metadata": {"as_of": "2026-11-26", "target_season": 2027},
+              }
+              contents = {label: json.dumps(value).encode() for label, value in fixtures.items()}
+              manifest = synthetic_manifest(contents)
+              original_loads = json.loads
+              decoded = []
+              def checked_loads(fragment):
+                  assert not fragment.lstrip().startswith(("{", "[")), "Container reached JSON decoder"
+                  assert "SENTINEL_NAME" not in fragment and "987654321" not in fragment, "Excluded leaf decoded"
+                  decoded.append(fragment)
+                  return original_loads(fragment)
+              json.loads = checked_loads
+              try:
+                  result = summarize(contents, manifest)
+                  assert result["transport"]["source_to_contract"]["missing_signatures"] == 0
+                  assert result["transport"]["source_to_contract"]["extra_signatures"] == 0
+                  assert result["history_to_output"]["affected_unique_pairs"] == 1
+                  assert result["history_to_output"]["cells"][0]["rank_band"] == "26-50"
+                  assert result["selection_observation"]["status"] == "unavailable"
+                  assert result["board_shape"]["governor"]["metrics"]["top25_pitcher_count"] == 12
+                  assert result["board_shape"]["governor"]["status"] == "blocked"
+                  passed_contents = dict(contents)
+                  passed_contents["governor"] = passed_contents["governor"].replace(b'"blocked"', b'"passed"')
+                  assert summarize(passed_contents, synthetic_manifest(passed_contents))["board_shape"]["governor"]["status"] == "passed"
+                  assert result["emitted_score_components"]["bucket_residual"]["checked"] == 2
+                  assert result["emitted_score_components"]["bucket_residual"]["mismatch_count"] == 0
+                  rendered = json.dumps(result, allow_nan=False)
+                  assert all(token not in rendered for token in ("SENTINEL_NAME", "987654321", '"mlbam_id"', '"plate_appearances": 200'))
+                  states = project(b'{"babip":0,"hits":null,"home_runs":"NaN","walks":{},"name":"SENTINEL_NAME"}',
+                                   {field: STATE for field in ("babip", "hits", "home_runs", "walks", "games_played")})
+                  assert states == {"babip": "valid_zero", "hits": "null", "home_runs": "invalid", "walks": "invalid"}
+                  mapped = project(b'{"players":{"SENTINEL_NAME":[{"babip":"\\u0030"}]}}',
+                                   {"players": {MAP_VALUES: [{"babip": STATE}]}})
+                  assert mapped == {"players": [[{"babip": "valid_zero"}]]}
+                  for fragment in ("{}", "[]", " {}", " []"):
+                      before = len(decoded)
+                      try:
+                          scalar(fragment)
+                      except ValueError:
+                          pass
+                      else:
+                          raise AssertionError("Scalar decoder accepted a container")
+                      assert len(decoded) == before
+                  for malformed in (b'', b'{} trailing', b'{"babip":0,"\\u0062abip":1}', b'{"babip":"\\x"}'):
+                      try:
+                          project(malformed, {"babip": STATE})
+                      except ValueError:
+                          pass
+                      else:
+                          raise AssertionError("Malformed projection accepted")
+                  missing = summarize({label: value for label, value in contents.items() if label != "main_model"}, manifest)
+                  assert missing["files"]["main_model"]["status"] == "unavailable"
+                  assert missing["history_to_output"]["status"] == "unavailable"
+                  failed_phase = synthetic_manifest(contents)
+                  failed_phase["_phase_evidence"]["build"]["exit_code"] = 1
+                  failed = summarize(contents, failed_phase)
+                  assert failed["files"]["rank"]["status"] == "unavailable"
+                  assert failed["history_to_output"]["status"] == "unavailable"
+                  assert failed["board_shape"]["governor"]["status"] == "unavailable"
+                  no_phase = synthetic_manifest(contents)
+                  no_phase["_phase_evidence"] = {}
+                  assert summarize(contents, no_phase)["transport"]["source_to_contract"]["status"] == "unavailable"
+                  swapped_phase = synthetic_manifest(contents)
+                  swapped_phase["_phase_evidence"]["build"]["phase"] = "refresh_contract"
+                  assert summarize(contents, swapped_phase)["files"]["rank"]["status"] == "unavailable"
+                  for phase, label in (("build", "rank"), ("refresh_contract", "contract")):
+                      for identity in ("run_id", "run_attempt", "pinned_date"):
+                          stale_phase = synthetic_manifest(contents)
+                          stale_phase["_phase_evidence"][phase][identity] = "stale"
+                          stale = summarize(contents, stale_phase)
+                          assert stale["phase_outcomes"][phase]["status"] == "unavailable"
+                          assert stale["files"][label]["status"] == "unavailable"
+                  no_candidate = synthetic_manifest(contents)
+                  no_candidate["_phase_evidence"].pop("candidate_bind")
+                  assert summarize(contents, no_candidate)["files"]["rank"]["status"] == "unavailable"
+                  changed_candidate = synthetic_manifest(contents)
+                  changed_candidate["candidate_sha256"]["rank"] = "0" * 64
+                  assert summarize(contents, changed_candidate)["files"]["rank"]["status"] == "unavailable"
+                  wrong_run = synthetic_manifest(contents)
+                  wrong_run["_phase_evidence"]["candidate_bind"]["run_id"] = "2"
+                  assert summarize(contents, wrong_run)["history_to_output"]["status"] == "unavailable"
+                  before = len(decoded)
+                  bad_manifest = synthetic_manifest(contents)
+                  bad_manifest["post_sha256"]["milb_current"] = "0" * 64
+                  assert summarize(contents, bad_manifest)["failure_stage"] == "input_hash_verification"
+                  assert len(decoded) == before, "Projection preceded hash verification"
+                  poisoned = dict(contents)
+                  poisoned["rank"] = json.dumps({"board": [{"mlbam_id": 202, "role": "SENTINEL_NAME", "rank": 1,
+                                                              "score_source": "SENTINEL_NAME", "score": "NaN"}]}).encode()
+                  # Metadata may decode privately; it must never pass through as an output label.
+                  json.loads = original_loads
+                  clean = json.dumps(summarize(poisoned, synthetic_manifest(poisoned)), allow_nan=False)
+                  assert "SENTINEL_NAME" not in clean and '"NaN"' not in clean
+              finally:
+                  json.loads = original_loads
+
+
+          VALUE = "value"
+          STATE = "numeric_state"
+          MAP_VALUES = "<MAP_VALUES>"
+          NUMBER = re.compile(r'-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?')
+
+
+          class ClosedKeys(dict):
+              """Manifest path/hash maps must reject unadmitted keys without decoding them."""
+
+
+          def scalar(fragment):
+              # Permanent: excluded containers can never enter a JSON deserializer.
+              if not fragment or not fragment.lstrip() or fragment.lstrip()[0] in "[{":
+                  raise ValueError("Container decoding prohibited")
+              value = json.loads(fragment)
+              if type(value) not in (str, int, float, bool, type(None)):
+                  raise ValueError("Container decoding prohibited")
+              if isinstance(value, float) and not math.isfinite(value):
+                  raise ValueError("Non-finite JSON number")
+              return value
+
+
+          def matches_key(token, admitted):
+              pos = 1
+              for char in admitted:
+                  if token[pos:pos + 1] == char:
+                      pos += 1
+                  elif token[pos:pos + 2] == "\\u" and int(token[pos + 2:pos + 6], 16) == ord(char):
+                      pos += 6
+                  else:
+                      return False
+              return pos == len(token) - 1
+
+
+          class Projection:
+              """Existing lexical projection pattern; only admitted scalar leaves decode."""
+
+              def __init__(self, text):
+                  self.text, self.pos = text, 0
+
+              def space(self):
+                  while self.pos < len(self.text) and self.text[self.pos] in " \r\n\t":
+                      self.pos += 1
+
+              def take(self, token):
+                  self.space()
+                  if not self.text.startswith(token, self.pos):
+                      raise ValueError("Invalid JSON structure")
+                  self.pos += len(token)
+
+              def string(self, decode=False):
+                  self.space()
+                  start = self.pos
+                  self.take('"')
+                  while self.pos < len(self.text):
+                      char = self.text[self.pos]
+                      self.pos += 1
+                      if char == '"':
+                          return scalar(self.text[start:self.pos]) if decode else None
+                      if ord(char) < 32:
+                          raise ValueError("Invalid JSON string")
+                      if char == "\\":
+                          if self.pos >= len(self.text):
+                              break
+                          escape = self.text[self.pos]
+                          self.pos += 1
+                          if escape == "u":
+                              digits = self.text[self.pos:self.pos + 4]
+                              if len(digits) != 4 or any(c not in "0123456789abcdefABCDEF" for c in digits):
+                                  raise ValueError("Invalid JSON escape")
+                              self.pos += 4
+                          elif escape not in '\\"/bfnrt':
+                              raise ValueError("Invalid JSON escape")
+                  raise ValueError("Unterminated JSON string")
+
+              def value(self, spec=None):
+                  self.space()
+                  if self.pos >= len(self.text):
+                      raise ValueError("Truncated JSON")
+                  char = self.text[self.pos]
+                  if spec == STATE and char in "[{":
+                      self.value(None)
+                      return "invalid"
+                  if char == "{":
+                      if spec == VALUE or isinstance(spec, list):
+                          raise ValueError("Invalid scalar/object projection")
+                      self.take("{")
+                      map_values = isinstance(spec, dict) and set(spec) == {MAP_VALUES}
+                      result = [] if map_values else {} if isinstance(spec, dict) else None
+                      self.space()
+                      if self.text[self.pos:self.pos + 1] != "}":
+                          while True:
+                              self.space()
+                              start = self.pos
+                              self.string()
+                              token = self.text[start:self.pos]
+                              key = next((key for key in spec if matches_key(token, key)), None) if isinstance(spec, dict) and not map_values else None
+                              if key is None and isinstance(spec, ClosedKeys):
+                                  raise ValueError("Unadmitted manifest key")
+                              self.take(":")
+                              child = self.value(spec[MAP_VALUES] if map_values else spec[key] if key is not None else None)
+                              if map_values:
+                                  result.append(child)
+                              elif key is not None:
+                                  if key in result:
+                                      raise ValueError("Duplicate admitted key")
+                                  result[key] = child
+                              self.space()
+                              if self.text[self.pos:self.pos + 1] == "}":
+                                  break
+                              self.take(",")
+                      self.take("}")
+                      return result
+                  if char == "[":
+                      if spec is not None and not isinstance(spec, list):
+                          raise ValueError("Invalid array projection")
+                      self.take("[")
+                      result = [] if spec is not None else None
+                      self.space()
+                      if self.text[self.pos:self.pos + 1] != "]":
+                          while True:
+                              child = self.value(spec[0] if spec is not None else None)
+                              if spec is not None:
+                                  result.append(child)
+                              self.space()
+                              if self.text[self.pos:self.pos + 1] == "]":
+                                  break
+                              self.take(",")
+                      self.take("]")
+                      return result
+                  if isinstance(spec, (dict, list)) and self.text.startswith("null", self.pos):
+                      self.pos += 4
+                      return None
+                  if isinstance(spec, (dict, list)):
+                      raise ValueError("Invalid projected container")
+                  start = self.pos
+                  if char == '"':
+                      result = self.string(decode=spec == VALUE)
+                      return measurement_state(self.text[start:self.pos]) if spec == STATE else result
+                  for literal in ("true", "false", "null"):
+                      if self.text.startswith(literal, self.pos):
+                          self.pos += len(literal)
+                          return measurement_state(literal) if spec == STATE else scalar(literal) if spec == VALUE else None
+                  match = NUMBER.match(self.text, self.pos)
+                  if match is None:
+                      raise ValueError("Invalid JSON primitive")
+                  self.pos = match.end()
+                  return measurement_state(self.text[start:self.pos]) if spec == STATE else scalar(self.text[start:self.pos]) if spec == VALUE else None
+
+
+          def project(content, spec):
+              if not content or not content.strip():
+                  raise ValueError("Empty JSON")
+              content = content[3:] if content.startswith(b"\xef\xbb\xbf") else content
+              parser = Projection(content.decode("utf-8"))
+              result = parser.value(spec)
+              parser.space()
+              if parser.pos != len(parser.text):
+                  raise ValueError("Trailing JSON")
+              return result
+
+
+          PIN = "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea"
+          INPUTS = {
+              "milb_current": "data/prospects/raw/milb_season_stats.json",
+              "milb_history": "data/prospects/raw/milb_card_history.json",
+              "contract": "data/prospects/prospect_model_inputs.json",
+              "main_model": "data/models/valucast_prospect_model.json",
+              "universal": "data/models/valucast_universal_prospect_model.json",
+              "layer": "data/models/valucast_prospect_dynasty_layer.json",
+              "rank": "data/models/valucast_prospect_rank_v1.json",
+              "calibration": "data/models/valucast_prospect_calibration_report.json",
+              "governor": "data/models/valucast_quality_governor.json",
+              "snapshot": "data/public/public_dynasty_snapshot.json",
+              "projection_metadata": "data/projections/metadata.json",
+          }
+          REPAIRED = {"hitter": ("babip",), "pitcher": ("batters_faced", "games_played", "hits", "home_runs", "walks")}
+          REQUIRED_NUMERIC = {"hitter": ("iso", "k_pct", "bb_pct", "ops", "avg", "obp", "slg", "babip", "home_runs", "stolen_bases"),
+                              "pitcher": ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip", "home_runs", "hits", "walks", "batters_faced", "games_started", "games_played")}
+          MEASUREMENTS = ("iso", "k_pct", "bb_pct", "ops", "avg", "obp", "slg", "babip", "home_runs", "stolen_bases",
+                          "k_per_9", "bb_per_9", "k_bb_pct", "era", "whip", "hits", "walks", "batters_faced", "games_started", "games_played")
+          STATES = ("absent", "null", "invalid", "valid_zero", "valid_nonzero")
+          COMPONENT_FIELDS = ("model_score", "universal_outcome_index", "factual_investment_context",
+                              "factual_investment_missing_score", "sample_reliability",
+                              "score_before_availability_adjustment", "availability_risk_discount", "score_before_bucket_calibration")
+          AXES = {field: {leaf: VALUE for leaf in ("raw", "normalized", "role_percentile")}
+                  for field in ("expected_outcome_score", "expected_category_impact_score")}
+          COMPONENTS = {**{field: VALUE for field in COMPONENT_FIELDS},
+                        "bucket_calibration": {"adjustment": VALUE},
+                        "model_score_normalization": {"version": VALUE, "fields": AXES},
+                        "factual_current_context": {field: VALUE for field in ("source_kind", "sample_season", "level", "sample", "sample_unit")}}
+          DISTRIBUTION = {field: VALUE for field in ("bust_probability", "role_probability", "star_probability")}
+          ROW = {**{field: VALUE for field in ("mlbam_id", "role", "level", "season", "sample_season", "source_kind",
+                                              "source_artifact", "sample_fetched_date", "plate_appearances", "innings_pitched",
+                                              "sample", "sample_unit", "rank", "prospect_rank", "score", "value", "score_source",
+                                              "player_type", "expected_outcome_score", "expected_category_impact_score", "sample_reliability")},
+                 **{field: STATE for field in MEASUREMENTS}, "components": COMPONENTS, "outcome_distribution": DISTRIBUTION}
+          HEADER = {field: VALUE for field in ("schema_version", "generated_at", "model_version", "layer_version", "universal_model_version",
+                                               "rank_version", "report_version", "governor_version", "status", "candidate_count")}
+          MODEL_SPEC = {**HEADER, "input_contract": {"generated_at": VALUE}, "ranked": [ROW]}
+          PROFILE_SPEC = {**HEADER, "input_contract": {"generated_at": VALUE}, "profiles": [ROW]}
+          ROLE_METRICS = {field: VALUE for field in ("top25_n", "top50_n", "top25_evaluated_count", "top50_evaluated_count",
+                                                  "top25_pitcher_count", "max_top25_pitcher_count", "top50_pitcher_count", "top50_pitcher_rate",
+                                                  "max_top50_pitcher_rate", "top25_sample_ready", "top50_sample_ready")}
+          BAND_SPEC = {**{field: VALUE for field in ("top_n", "evaluated_count", "pitcher_rate", "score_min", "score_max", "score_average")},
+                       "role_counts": {field: VALUE for field in ("hitter", "pitcher", "unknown")}}
+          SPECS = {
+              "milb_current": {"season": VALUE, "fetched_date": VALUE, "hitters": [ROW], "pitchers": [ROW]},
+              "milb_history": {"players": {MAP_VALUES: [ROW]}},
+              "contract": {"schema_version": VALUE, "generated_at": VALUE, "producer": {"contract_version": VALUE},
+                           "current": {"season": VALUE, "fetched_date": VALUE, "hitters": [ROW], "pitchers": [ROW]}},
+              "main_model": MODEL_SPEC, "universal": PROFILE_SPEC, "layer": PROFILE_SPEC,
+              "rank": {**HEADER, "board": [ROW], "input_artifacts": {field: VALUE for field in ("prospect_model_version", "dynasty_layer_version", "universal_model_version")}},
+              "calibration": {**HEADER, "criteria": {"max_top25_pitcher_count": VALUE, "max_top50_pitcher_rate": VALUE},
+                              "metrics": {"row_count": VALUE, "bands": {str(n): BAND_SPEC for n in (25, 50, 100, 200)}}},
+              "governor": {**HEADER, "surface_readiness": {"prospects": VALUE},
+                           "checks": [{"id": VALUE, "status": VALUE, "metrics": ROLE_METRICS}]},
+              "snapshot": {**HEADER, "players": [ROW], "validation": {"surface_readiness": {"prospects": VALUE}}},
+              "projection_metadata": {field: VALUE for field in ("as_of", "season", "target_season", "projection_phase", "ros_status")},
+          }
+          MANIFEST_SPEC = {**{field: VALUE for field in ("schema_version", "input_root", "source_commit", "orchestrator_commit", "run_id",
+                                                       "run_attempt", "pinned_date", "helper_sha256", "spec_sha256", "output_path", "phase_evidence_dir")},
+                           "input_paths": ClosedKeys({label: VALUE for label in INPUTS}),
+                           "pre_sha256": ClosedKeys({label: VALUE for label in INPUTS}), "post_sha256": ClosedKeys({label: VALUE for label in INPUTS}),
+                           "candidate_sha256": ClosedKeys({label: VALUE for label in INPUTS})}
+          PHASE_SPEC = {field: VALUE for field in ("phase", "source_checkout", "exit_code", "kind", "orchestration_checkout", "run_id", "run_attempt", "pinned_date")}
+          PHASE_SPEC["containers"] = ClosedKeys({label: {"path": VALUE, "sha256": VALUE} for label in INPUTS})
+
+
+          def measurement_state(fragment):
+              if fragment == "null":
+                  return "null"
+              if fragment in {"true", "false"}:
+                  return "invalid"
+              if fragment.startswith('"'):
+                  text, pos = "", 1
+                  while pos < len(fragment) - 1:
+                      char = fragment[pos]
+                      pos += 1
+                      if char == "\\":
+                          escape = fragment[pos]
+                          pos += 1
+                          if escape == "u":
+                              char = chr(int(fragment[pos:pos + 4], 16))
+                              pos += 4
+                          elif escape in {"t", "r", "n", "f", "b"}:
+                              char = {"t": "\t", "r": "\r", "n": "\n", "f": "\f", "b": "\b"}[escape]
+                          else:
+                              return "invalid"
+                      if not (char.isdecimal() or char.isspace() or char in "+-.eE_nNaAiIfFtTyY"):
+                          return "invalid"
+                      text += char
+                  fragment = text
+              try:
+                  numeric = float(fragment)
+              except (TypeError, ValueError, OverflowError):
+                  return "invalid"
+              return "invalid" if not math.isfinite(numeric) else "valid_zero" if numeric == 0 else "valid_nonzero"
+
+
+          def sha(content):
+              return hashlib.sha256(content).hexdigest()
+
+
+          def finite(value):
+              if isinstance(value, bool):
+                  return None
+              try:
+                  value = float(value)
+              except (TypeError, ValueError, OverflowError):
+                  return None
+              return value if math.isfinite(value) else None
+
+
+          def integer(value):
+              number = finite(value)
+              return int(number) if number is not None and number.is_integer() and number > 0 else None
+
+
+          def enum(value, allowed):
+              return value if isinstance(value, str) and value in allowed else "unknown"
+
+
+          def role(row, default="unknown"):
+              return enum(row.get("role", default), {"hitter", "pitcher"})
+
+
+          def source_kind(row):
+              return enum(row.get("source_kind"), {"current_season", "latest_milb_history"})
+
+
+          def score_source(row):
+              return enum(row.get("score_source"), {"prospect_model_v0_6", "prospect_model_v0_8", "prospect_model_v0_9",
+                                                   "universal_fallback", "identity_only_fallback", "prospect_pedigree_v0_7"})
+
+
+          def key(row, default="unknown"):
+              identity = integer(row.get("mlbam_id"))
+              side = role(row, default)
+              return (identity, side) if identity is not None and side != "unknown" else None
+
+
+          def band(row):
+              rank = integer(row.get("rank"))
+              return "unknown_rank" if rank is None else "1-25" if rank <= 25 else "26-50" if rank <= 50 else "51-100" if rank <= 100 else "101+"
+
+
+          def groups(payload):
+              if not isinstance(payload, dict) or any(not isinstance(payload.get(group), list) for group in ("hitters", "pitchers")):
+                  return None
+              if any(not isinstance(row, dict) for group in ("hitters", "pitchers") for row in payload[group]):
+                  return None
+              return [(row, side) for side, group in (("hitter", "hitters"), ("pitcher", "pitchers"))
+                      for row in payload[group] if isinstance(row, dict)]
+
+
+          def signature(row, side, season):
+              identity = key(row, side)
+              sample = finite(row.get("plate_appearances" if side == "hitter" else "innings_pitched"))
+              return (identity, row.get("level"), sample, integer(season)) if identity and sample is not None else None
+
+
+          def state_counts(rows, stage):
+              counts = Counter()
+              for row, side in rows:
+                  fields = REQUIRED_NUMERIC.get(side, ())
+                  for field in fields:
+                      state = row.get(field, "absent")
+                      counts[(side, source_kind(row), field, state if state in STATES else "invalid")] += 1
+              return [{"stage": stage, "role": side, "source_kind": source,
+                       "field": field, "state": state, "count": count}
+                      for (side, source, field, state), count in sorted(counts.items(), key=lambda entry: str(entry[0]))]
+
+
+          def rows_at(projected, label, container):
+              payload = projected.get(label)
+              rows = payload.get(container) if isinstance(payload, dict) else None
+              return rows if isinstance(rows, list) and all(isinstance(row, dict) for row in rows) else None
+
+
+          def history_join(contract_rows, model_rows, board_rows):
+              if contract_rows is None or model_rows is None or board_rows is None:
+                  return {"status": "unavailable", "reason": "required_stage_or_container_unavailable"}
+              affected = set()
+              invalid_identity = 0
+              affected_rows = 0
+              for row, side in contract_rows:
+                  if source_kind(row) != "latest_milb_history" or not any(row.get(field, "absent") in {"absent", "null"} for field in REPAIRED.get(side, ())):
+                      continue
+                  affected_rows += 1
+                  identity = key(row, side)
+                  if identity:
+                      affected.add(identity)
+                  else:
+                      invalid_identity += 1
+              model = Counter(identity for row in model_rows if (identity := key(row)))
+              board = defaultdict(list)
+              for row in board_rows:
+                  identity = key(row)
+                  if identity:
+                      board[identity].append(row)
+              cells = Counter()
+              for identity in affected:
+                  matched = board[identity]
+                  profile = "absent" if model[identity] == 0 else "present" if model[identity] == 1 else "ambiguous"
+                  state = "absent" if not matched else "present" if len(matched) == 1 else "ambiguous"
+                  source = score_source(matched[0]) if len(matched) == 1 else "no_board" if not matched else "ambiguous"
+                  rank_band = band(matched[0]) if len(matched) == 1 else "no_board" if not matched else "ambiguous"
+                  cells[(identity[1], profile, state, source, rank_band)] += 1
+              return {"status": "available", "definition": "contract history rows with an absent/null repaired field; not selected rows or proven skips",
+                      "affected_history_rows": affected_rows, "affected_unique_pairs": len(affected), "invalid_identity_rows": invalid_identity,
+                      "cells": [{"role": side, "model_profile": profile, "board_presence": presence,
+                                 "score_source": source, "rank_band": rank_band, "count": count}
+                                for (side, profile, presence, source, rank_band), count in sorted(cells.items())]}
+
+
+          def means_and_residuals(rows, rank_version):
+              if rows is None:
+                  return {"status": "unavailable", "reason": "rank_board_unavailable"}
+              values = defaultdict(list)
+              states = Counter()
+              residuals = []
+              for row in rows:
+                  side, rank_band = role(row), band(row)
+                  components = row.get("components") if isinstance(row.get("components"), dict) else {}
+                  fields = {"final_score": row.get("score"), **{field: components.get(field) for field in COMPONENT_FIELDS}}
+                  fields["bucket_adjustment"] = (components.get("bucket_calibration") or {}).get("adjustment")
+                  for field, raw in fields.items():
+                      number = finite(raw)
+                      state = "missing" if raw is None else "finite" if number is not None else "invalid"
+                      for scope in (rank_band, "all"):
+                          states[(side, scope, field, state)] += 1
+                          if number is not None:
+                              values[(side, scope, field)].append(number)
+                  before = finite(components.get("score_before_bucket_calibration"))
+                  adjustment = finite(fields["bucket_adjustment"])
+                  final = finite(row.get("score"))
+                  if rank_version == "0.2.9" and score_source(row) != "unknown" and before is not None and adjustment is not None and final is not None:
+                      expected = round(max(0.0, before + adjustment), 2)
+                      if math.isfinite(expected):
+                          residual = abs(final - expected)
+                          if math.isfinite(residual):
+                              residuals.append(residual)
+              aggregates = []
+              for side, scope, field in sorted({entry[:3] for entry in states}):
+                  observed = values[(side, scope, field)]
+                  average = math.fsum(value / len(observed) for value in observed) if observed else None
+                  aggregates.append({"role": side, "rank_band": scope, "field": field,
+                                     "finite_count": len(observed), "missing_count": states[(side, scope, field, "missing")],
+                                     "invalid_count": states[(side, scope, field, "invalid")],
+                                     "mean": average if average is None or math.isfinite(average) else None})
+              return {"status": "available", "cells": aggregates,
+                      "bucket_residual": {"status": "available" if residuals else "unavailable",
+                                          "schema": "rank_v0.2.9_explicit_pre_bucket_and_adjustment_only", "checked": len(residuals), "unavailable_rows": len(rows) - len(residuals),
+                                          "mismatch_count": sum(value > 0.005 for value in residuals), "max_absolute_residual": max(residuals, default=None)},
+                      "main_base_residual": {"status": "unavailable", "reason": "pre_availability_producer_not_qualified_by_this_helper"},
+                      "selection_effects": {"status": "unavailable", "reason": "no_counterfactual_or_selector_execution"}}
+
+
+          def safe_metrics(metrics):
+              result = {}
+              for field in ROLE_METRICS:
+                  value = metrics.get(field)
+                  if field.endswith("_ready"):
+                      result[field] = value if type(value) is bool else None
+                  else:
+                      result[field] = finite(value)
+              return result
+
+
+          def board_shape(projected):
+              governor = projected.get("governor")
+              checks = governor.get("checks") if isinstance(governor, dict) else None
+              matched = [check for check in checks if isinstance(check, dict) and check.get("id") == "prospect_top_board_role_shape"] if isinstance(checks, list) else []
+              authoritative = {"status": "unavailable", "reason": "missing_or_ambiguous_authoritative_check"}
+              if len(matched) == 1 and isinstance(matched[0].get("metrics"), dict):
+                  authoritative = {"id": "prospect_top_board_role_shape", "status": enum(matched[0].get("status"), {"passed", "blocked"}),
+                                   "metrics": safe_metrics(matched[0]["metrics"])}
+              report = projected.get("calibration")
+              composition = {"status": "unavailable"}
+              if isinstance(report, dict) and isinstance((report.get("metrics") or {}).get("bands"), dict):
+                  composition = {"status": enum(report.get("status"), {"needs_review", "review_ready"}), "bands": {}}
+                  for scope in ("25", "50", "100", "200"):
+                      data = report["metrics"]["bands"].get(scope)
+                      if isinstance(data, dict):
+                          composition["bands"][scope] = {field: finite(data.get(field)) for field in ("evaluated_count", "pitcher_rate", "score_average")}
+                          composition["bands"][scope]["role_counts"] = {side: finite((data.get("role_counts") or {}).get(side)) for side in ("hitter", "pitcher", "unknown")}
+              return {"governor": authoritative, "composition_report": composition}
+
+
+          def synthetic_manifest(contents):
+              manifest = {"source_commit": PIN, "orchestrator_commit": "synthetic", "run_id": "1", "run_attempt": "1", "pinned_date": "2026-11-26",
+                      "input_paths": dict(INPUTS), "pre_sha256": {label: None for label in INPUTS},
+                      "post_sha256": {label: sha(contents[label]) if label in contents else None for label in INPUTS},
+                      "candidate_sha256": {label: sha(contents[label]) if label in contents else None for label in INPUTS},
+                      "_phase_evidence": {phase: {"phase": phase, "source_checkout": PIN, "exit_code": 0,
+                                                  "run_id": "1", "run_attempt": "1", "pinned_date": "2026-11-26"}
+                                          for phase in ("refresh_contract", "build", "candidate_bind")}}
+              manifest["_phase_evidence"]["candidate_bind"].update(kind="candidate_bind", orchestration_checkout="synthetic",
+                  containers={label: {"path": path, "sha256": manifest["candidate_sha256"][label]} for label, path in INPUTS.items()})
+              return manifest
+
+
+          def summarize(contents, manifest):
+              result = {"schema_version": "1.0.0", "diagnostic_kind": "normal_candidate_lineage",
+                        "source_commit": PIN, "orchestrator_commit": manifest.get("orchestrator_commit"),
+                        "run_id": manifest.get("run_id"), "run_attempt": manifest.get("run_attempt"), "pinned_date": manifest.get("pinned_date"),
+                        "additional_diagnostic_model_calls": 0, "files": {}, "phase_outcomes": {},
+                        "selection_observation": {"status": "unavailable", "reason": "ordinary_artifacts_do_not_emit_actual_selected_row_provenance; no observer or selector replay"},
+                        "eligibility_observation": {"status": "unavailable", "reason": "actual_eligibility_or_skip_decisions_not_emitted; no_selector_replay"},
+                        "normalization_pool_effects": {"status": "unavailable", "reason": "actual_pass_membership_not_emitted; indirect_effects_not_excluded"}}
+              for phase in ("refresh_contract", "build", "candidate_bind"):
+                  evidence = (manifest.get("_phase_evidence") or {}).get(phase) or {}
+                  code = evidence.get("exit_code")
+                  same_run = all(evidence.get(field) == manifest.get(field) for field in ("run_id", "run_attempt", "pinned_date"))
+                  state = "unavailable" if evidence.get("phase") != phase or evidence.get("source_checkout") != PIN or not same_run or type(code) is not int else "success" if code == 0 else "failure"
+                  result["phase_outcomes"][phase] = {"status": state, "exit_code": code if type(code) is int else None,
+                                                     "evidence_sha256": evidence.get("_sha256")}
+              candidate = (manifest.get("_phase_evidence") or {}).get("candidate_bind") or {}
+              bound = (result["phase_outcomes"]["candidate_bind"]["status"] == "success"
+                       and candidate.get("kind") == "candidate_bind"
+                       and candidate.get("orchestration_checkout") == manifest.get("orchestrator_commit")
+                       and all(candidate.get(field) == manifest.get(field) for field in ("run_id", "run_attempt", "pinned_date"))
+                       and isinstance(candidate.get("containers"), dict)
+                       and set(candidate["containers"]) == set(INPUTS)
+                       and all(candidate["containers"][label].get("path") == path
+                               and candidate["containers"][label].get("sha256") == manifest["candidate_sha256"].get(label)
+                               for label, path in INPUTS.items()))
+              result["candidate_binding"] = {"status": "verified" if bound else "unavailable",
+                                             "meaning": "same-run postbuild container hashes; not selected-row provenance or source-fetch proof"}
+              mismatched = False
+              for label, path in INPUTS.items():
+                  content = contents.get(label)
+                  actual = sha(content) if content is not None else None
+                  expected = manifest["post_sha256"].get(label)
+                  state = "unavailable" if content is None or expected is None else "verified" if actual == expected else "hash_mismatch"
+                  mismatched |= state == "hash_mismatch"
+                  result["files"][label] = {"status": state, "pre_sha256": manifest["pre_sha256"].get(label), "post_sha256": actual,
+                                            "expected_post_sha256": expected,
+                                            "candidate_sha256": manifest["candidate_sha256"].get(label),
+                                            "candidate_bytes_match": bool(bound and actual is not None and actual == manifest["candidate_sha256"].get(label)),
+                                            "freshness_qualification": "unavailable_from_bytes_or_date_alone"}
+              if mismatched:
+                  return {**result, "status": "unavailable", "failure_stage": "input_hash_verification"}
+              projected = {}
+              for label, content in contents.items():
+                  if label not in INPUTS:
+                      raise ValueError("Unadmitted input label")
+                  if result["files"][label]["status"] != "verified":
+                      continue
+                  if not result["files"][label]["candidate_bytes_match"]:
+                      result["files"][label].update(status="unavailable", reason="candidate_binding_missing_or_current_bytes_changed")
+                      continue
+                  phase = "refresh_contract" if label in {"milb_current", "milb_history", "contract"} else "build" if label != "projection_metadata" else None
+                  if phase and result["phase_outcomes"][phase]["status"] != "success":
+                      result["files"][label].update(status="unavailable", reason="normal_producer_phase_not_successful; retained_bytes_possible")
+                      continue
+                  try:
+                      value = project(content, SPECS[label])
+                      if not isinstance(value, dict):
+                          raise ValueError("Invalid top-level container")
+                      projected[label] = value
+                  except (ValueError, TypeError, KeyError, IndexError, RecursionError, OverflowError):
+                      result["files"][label]["status"] = "unavailable"
+                      result["files"][label]["reason"] = "lexical_projection_failed"
+              current = projected.get("milb_current")
+              contract = projected.get("contract")
+              source_rows = groups(current)
+              contract_rows = groups(contract.get("current")) if isinstance(contract, dict) else None
+              transfer = {"status": "unavailable", "reason": "source_or_contract_current_unavailable"}
+              if source_rows is not None and contract_rows is not None:
+                  observed_source = Counter(signature(row, side, current.get("season")) for row, side in source_rows)
+                  observed_contract = Counter(signature(row, side, row.get("sample_season")) for row, side in contract_rows if source_kind(row) == "current_season")
+                  invalid_source, invalid_contract = observed_source.pop(None, 0), observed_contract.pop(None, 0)
+                  transfer = {"status": "available", "source_rows": len(source_rows),
+                              "contract_current_rows": sum(source_kind(row) == "current_season" for row, _ in contract_rows),
+                              "source_invalid_signatures": invalid_source, "contract_invalid_signatures": invalid_contract,
+                              "source_duplicate_signatures": sum(count - 1 for count in observed_source.values()),
+                              "contract_duplicate_signatures": sum(count - 1 for count in observed_contract.values()),
+                              "missing_signatures": sum((observed_source - observed_contract).values()),
+                              "extra_signatures": sum((observed_contract - observed_source).values()),
+                              "meaning": "metadata signatures only; not exact stat values or selected-row provenance"}
+              fields = state_counts(source_rows or [], "milb_current") if source_rows is not None else []
+              if contract_rows is not None:
+                  fields += state_counts(contract_rows, "contract_current")
+              history = projected.get("milb_history")
+              history_values = history.get("players") if isinstance(history, dict) else None
+              if isinstance(history_values, list) and all(isinstance(rows, list) for rows in history_values):
+                  fields += state_counts([(row, role(row)) for rows in history_values for row in rows if isinstance(row, dict)], "milb_history")
+              result["transport"] = {"source_to_contract": transfer, "required_numeric_field_states": fields,
+                                     "repaired_field_states": [entry for entry in fields if entry["field"] in REPAIRED.get(entry["role"], ())],
+                                     "is_starter": "boolean_flag_skipped; no_numeric_bool_rejection_applied",
+                                     "meaning": "state transport does not prove equality of distinct valid-nonzero measurements"}
+              board = rows_at(projected, "rank", "board")
+              result["history_to_output"] = history_join(contract_rows, rows_at(projected, "main_model", "ranked"), board)
+              result["board_shape"] = board_shape(projected)
+              result["emitted_score_components"] = means_and_residuals(board, (projected.get("rank") or {}).get("rank_version"))
+              result["status"] = "complete" if all(entry["status"] == "verified" for entry in result["files"].values()) else "partial"
+              result["limits"] = ["Aggregate first pass only; no predictive, causal or publication qualification.",
+                                  "History field recovery and the prior12/20 composition failure are separate questions.",
+                                  "Missing selected source/season stays unavailable; lower-board history entries may affect shared pools.",
+                                  "No input refresh, selector replay, fitting, source substitution or threshold change was performed by this helper."]
+              return result
+
+
+          def norm(path):
+              return os.path.normcase(os.path.realpath(os.fspath(path)))
+
+
+          def install_guard(reads, output=None):
+              def guard(event, args):
+                  if event == "open":
+                      path, _, flags = args
+                      if isinstance(path, int):
+                          raise PermissionError("Descriptor opens prohibited")
+                      target = norm(path)
+                      writing = flags & (os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_TRUNC | os.O_APPEND)
+                      if writing:
+                          if output and target == norm(output) and flags & os.O_EXCL and not flags & os.O_TRUNC:
+                              return
+                          raise PermissionError("Only exclusive aggregate output is allowed")
+                      if target not in reads:
+                          raise PermissionError("Unadmitted read")
+                  elif event in {"os.listdir", "os.scandir", "os.mkdir", "os.remove", "os.rmdir", "os.rename", "os.link", "os.symlink", "os.chmod", "os.truncate", "os.utime", "os.chdir"}:
+                      raise PermissionError("Enumeration/mutation prohibited")
+                  elif event.startswith("socket."):
+                      raise PermissionError("Network prohibited")
+                  elif event.startswith("subprocess.") or event in {"os.system", "os.spawn", "os.posix_spawn", "os.exec", "os.fork", "_winapi.CreateProcess"}:
+                      raise PermissionError("Process creation prohibited")
+                  elif event == "import" and args[0].split(".")[0] in {"app", "web", "prospects", "scraper", "scripts", "mlb", "league_values", "projections", "quality"}:
+                      raise PermissionError("Project imports prohibited")
+              sys.addaudithook(guard)
+
+
+          def validate_manifest(manifest, helper_hash, spec_hash, runner_temp):
+              if manifest.get("schema_version") != "1.0.0" or manifest.get("source_commit") != PIN or manifest.get("input_paths") != INPUTS:
+                  raise ValueError("Manifest scope mismatch")
+              if manifest.get("helper_sha256") != helper_hash or manifest.get("spec_sha256") != spec_hash:
+                  raise ValueError("Frozen helper/spec mismatch")
+              if not isinstance(manifest.get("orchestrator_commit"), str) or not re.fullmatch(r"[0-9a-f]{40}", manifest["orchestrator_commit"]) or not all(re.fullmatch(r"[0-9]+", str(manifest.get(field))) for field in ("run_id", "run_attempt")):
+                  raise ValueError("Invalid run binding")
+              if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", str(manifest.get("pinned_date"))):
+                  raise ValueError("Invalid pinned date")
+              date.fromisoformat(manifest["pinned_date"])
+              for group in ("pre_sha256", "post_sha256", "candidate_sha256"):
+                  values = manifest.get(group)
+                  if not isinstance(values, dict) or set(values) != set(INPUTS) or any(value is not None and (not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value)) for value in values.values()):
+                      raise ValueError("Invalid container hash binding")
+              evidence = Path(runner_temp) / "pr97-evidence"
+              if norm(manifest.get("phase_evidence_dir")) != norm(evidence) or norm(manifest.get("output_path")) != norm(evidence / "prospect-diagnostic-summary.json"):
+                  raise ValueError("Invalid aggregate output binding")
+              if not evidence.resolve().is_relative_to(Path(runner_temp).resolve()):
+                  raise ValueError("Phase evidence escapes runner temp")
+              declared_root = Path(manifest["input_root"])
+              if not declared_root.is_absolute():
+                  raise ValueError("Input root must be absolute")
+              root = declared_root.resolve()
+              paths = {label: (root / relative).resolve() for label, relative in INPUTS.items()}
+              if any(not path.is_relative_to(root) for path in paths.values()):
+                  raise ValueError("Input path escapes isolated checkout")
+              return paths, evidence, Path(manifest["output_path"])
+
+
+          def guard_probes():
+              for operation in (lambda: open("__unadmitted_diagnostic_read__", "rb"),
+                                lambda: open("__unadmitted_diagnostic_write__", "wb"),
+                                lambda: os.listdir("."), lambda: socket.socket(),
+                                lambda: sys.audit("subprocess.Popen", "synthetic", ("synthetic",), None, None)):
+                  try:
+                      operation()
+                  except PermissionError:
+                      pass
+                  else:
+                      raise AssertionError("I/O guard failed")
+
+
+          def main():
+              self_path = Path(__file__).resolve()
+              spec_path = self_path.with_name("prospect_diagnostics_spec.json")
+              args = sys.argv[1:]
+              execute = len(args) == 3 and args[:2] == ["--execute", "--manifest"]
+              if args not in ([], ["--self-test"]) and not execute:
+                  sys.stderr.write("Use --self-test or --execute --manifest <root-owned manifest>.\n")
+                  return 1
+              reads = {norm(self_path), norm(spec_path)}
+              if execute:
+                  manifest_path = Path(args[2]).resolve()
+                  runner_temp = os.environ.get("RUNNER_TEMP")
+                  if not runner_temp or not manifest_path.is_relative_to(Path(runner_temp).resolve()):
+                      sys.stderr.write("Runtime manifest must be under RUNNER_TEMP.\n")
+                      return 1
+                  reads.add(norm(manifest_path))
+              output = None
+              if execute:
+                  # Fixed runner-temp destination is known before any actual input is admitted.
+                  output = Path(runner_temp) / "pr97-evidence" / "prospect-diagnostic-summary.json"
+              sys.dont_write_bytecode = True
+              install_guard(reads, output)
+              try:
+                  helper_hash, spec_content = sha(self_path.read_bytes()), spec_path.read_bytes()
+                  spec_hash = sha(spec_content)
+                  spec = project(spec_content, {"schema_version": VALUE, "source_commit": VALUE, "inputs": {label: VALUE for label in INPUTS}})
+                  if spec != {"schema_version": "1.0.0", "source_commit": PIN, "inputs": INPUTS}:
+                      raise ValueError("Frozen spec scope mismatch")
+                  self_check()
+                  guard_probes()
+                  if not execute:
+                      print(json.dumps({"self_test": "passed", "actual_inputs_read": False, "additional_model_calls": 0,
+                                        "helper_sha256": helper_hash, "spec_sha256": spec_hash}, sort_keys=True))
+                      return 0
+                  manifest = project(manifest_path.read_bytes(), MANIFEST_SPEC)
+                  paths, evidence, output = validate_manifest(manifest, helper_hash, spec_hash, runner_temp)
+                  reads.update(norm(path) for path in paths.values())
+                  phase_paths = {phase: evidence / (phase + ".json") for phase in ("build", "refresh_contract", "candidate_bind")}
+                  reads.update(norm(path) for path in phase_paths.values())
+                  manifest["_phase_evidence"] = {}
+                  for phase, path in phase_paths.items():
+                      try:
+                          content = path.read_bytes()
+                          parsed = project(content, PHASE_SPEC)
+                          if isinstance(parsed, dict):
+                              parsed["_sha256"] = sha(content)
+                              manifest["_phase_evidence"][phase] = parsed
+                      except (OSError, ValueError, TypeError, RecursionError):
+                          pass
+                  contents = {}
+                  for label, path in paths.items():
+                      if manifest["post_sha256"][label] is not None:
+                          try:
+                              contents[label] = path.read_bytes()
+                          except OSError:
+                              pass
+                  result = summarize(contents, manifest)
+                  result["code_sha256"] = {"helper": helper_hash, "spec": spec_hash, "manifest": sha(manifest_path.read_bytes())}
+                  with output.open("x", encoding="utf-8") as stream:
+                      stream.write(json.dumps(result, indent=2, sort_keys=True, allow_nan=False) + "\n")
+                  print("Wrote aggregate prospect diagnostics; selected-row provenance remains unavailable.")
+                  return 1 if result.get("failure_stage") else 0
+              except Exception:
+                  sys.stderr.write("Prospect diagnostics failed; no private input content emitted.\n")
+                  return 1
+
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+          PR97_64B34D802E81E263D5D959490E62547E525A04D78CDFA43DD98E767F0E320C9D
+          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics_spec.json" <<'PR97_B1076918EF0D4EC9504976BA8ACA76223F83D102A6024944C4DB2057F54B8810'
+          {
+            "candidate_binding": {
+              "containers": "Exact fixed11 paths and candidate_sha256 hashes; current bytes must match candidate bytes.",
+              "identity_fields": [
+                "source_checkout",
+                "orchestration_checkout",
+                "run_id",
+                "run_attempt",
+                "pinned_date"
+              ],
+              "kind": "candidate_bind",
+              "phase": "candidate_bind",
+              "required_exit_code": 0
+            },
+            "fixed_output_relative_to_runner_temp": "pr97-evidence/prospect-diagnostic-summary.json",
+            "input_projection": {
+              "calibration": {
+                "candidate_count": "value",
+                "criteria": {
+                  "max_top25_pitcher_count": "value",
+                  "max_top50_pitcher_rate": "value"
+                },
+                "generated_at": "value",
+                "governor_version": "value",
+                "layer_version": "value",
+                "metrics": {
+                  "bands": {
+                    "100": {
+                      "evaluated_count": "value",
+                      "pitcher_rate": "value",
+                      "role_counts": {
+                        "hitter": "value",
+                        "pitcher": "value",
+                        "unknown": "value"
+                      },
+                      "score_average": "value",
+                      "score_max": "value",
+                      "score_min": "value",
+                      "top_n": "value"
+                    },
+                    "200": {
+                      "evaluated_count": "value",
+                      "pitcher_rate": "value",
+                      "role_counts": {
+                        "hitter": "value",
+                        "pitcher": "value",
+                        "unknown": "value"
+                      },
+                      "score_average": "value",
+                      "score_max": "value",
+                      "score_min": "value",
+                      "top_n": "value"
+                    },
+                    "25": {
+                      "evaluated_count": "value",
+                      "pitcher_rate": "value",
+                      "role_counts": {
+                        "hitter": "value",
+                        "pitcher": "value",
+                        "unknown": "value"
+                      },
+                      "score_average": "value",
+                      "score_max": "value",
+                      "score_min": "value",
+                      "top_n": "value"
+                    },
+                    "50": {
+                      "evaluated_count": "value",
+                      "pitcher_rate": "value",
+                      "role_counts": {
+                        "hitter": "value",
+                        "pitcher": "value",
+                        "unknown": "value"
+                      },
+                      "score_average": "value",
+                      "score_max": "value",
+                      "score_min": "value",
+                      "top_n": "value"
+                    }
+                  },
+                  "row_count": "value"
+                },
+                "model_version": "value",
+                "rank_version": "value",
+                "report_version": "value",
+                "schema_version": "value",
+                "status": "value",
+                "universal_model_version": "value"
+              },
+              "contract": {
+                "current": {
+                  "fetched_date": "value",
+                  "hitters": [
+                    {
+                      "avg": "numeric_state",
+                      "babip": "numeric_state",
+                      "batters_faced": "numeric_state",
+                      "bb_pct": "numeric_state",
+                      "bb_per_9": "numeric_state",
+                      "components": {
+                        "availability_risk_discount": "value",
+                        "bucket_calibration": {
+                          "adjustment": "value"
+                        },
+                        "factual_current_context": {
+                          "level": "value",
+                          "sample": "value",
+                          "sample_season": "value",
+                          "sample_unit": "value",
+                          "source_kind": "value"
+                        },
+                        "factual_investment_context": "value",
+                        "factual_investment_missing_score": "value",
+                        "model_score": "value",
+                        "model_score_normalization": {
+                          "fields": {
+                            "expected_category_impact_score": {
+                              "normalized": "value",
+                              "raw": "value",
+                              "role_percentile": "value"
+                            },
+                            "expected_outcome_score": {
+                              "normalized": "value",
+                              "raw": "value",
+                              "role_percentile": "value"
+                            }
+                          },
+                          "version": "value"
+                        },
+                        "sample_reliability": "value",
+                        "score_before_availability_adjustment": "value",
+                        "score_before_bucket_calibration": "value",
+                        "universal_outcome_index": "value"
+                      },
+                      "era": "numeric_state",
+                      "expected_category_impact_score": "value",
+                      "expected_outcome_score": "value",
+                      "games_played": "numeric_state",
+                      "games_started": "numeric_state",
+                      "hits": "numeric_state",
+                      "home_runs": "numeric_state",
+                      "innings_pitched": "value",
+                      "iso": "numeric_state",
+                      "k_bb_pct": "numeric_state",
+                      "k_pct": "numeric_state",
+                      "k_per_9": "numeric_state",
+                      "level": "value",
+                      "mlbam_id": "value",
+                      "obp": "numeric_state",
+                      "ops": "numeric_state",
+                      "outcome_distribution": {
+                        "bust_probability": "value",
+                        "role_probability": "value",
+                        "star_probability": "value"
+                      },
+                      "plate_appearances": "value",
+                      "player_type": "value",
+                      "prospect_rank": "value",
+                      "rank": "value",
+                      "role": "value",
+                      "sample": "value",
+                      "sample_fetched_date": "value",
+                      "sample_reliability": "value",
+                      "sample_season": "value",
+                      "sample_unit": "value",
+                      "score": "value",
+                      "score_source": "value",
+                      "season": "value",
+                      "slg": "numeric_state",
+                      "source_artifact": "value",
+                      "source_kind": "value",
+                      "stolen_bases": "numeric_state",
+                      "value": "value",
+                      "walks": "numeric_state",
+                      "whip": "numeric_state"
+                    }
+                  ],
+                  "pitchers": [
+                    {
+                      "avg": "numeric_state",
+                      "babip": "numeric_state",
+                      "batters_faced": "numeric_state",
+                      "bb_pct": "numeric_state",
+                      "bb_per_9": "numeric_state",
+                      "components": {
+                        "availability_risk_discount": "value",
+                        "bucket_calibration": {
+                          "adjustment": "value"
+                        },
+                        "factual_current_context": {
+                          "level": "value",
+                          "sample": "value",
+                          "sample_season": "value",
+                          "sample_unit": "value",
+                          "source_kind": "value"
+                        },
+                        "factual_investment_context": "value",
+                        "factual_investment_missing_score": "value",
+                        "model_score": "value",
+                        "model_score_normalization": {
+                          "fields": {
+                            "expected_category_impact_score": {
+                              "normalized": "value",
+                              "raw": "value",
+                              "role_percentile": "value"
+                            },
+                            "expected_outcome_score": {
+                              "normalized": "value",
+                              "raw": "value",
+                              "role_percentile": "value"
+                            }
+                          },
+                          "version": "value"
+                        },
+                        "sample_reliability": "value",
+                        "score_before_availability_adjustment": "value",
+                        "score_before_bucket_calibration": "value",
+                        "universal_outcome_index": "value"
+                      },
+                      "era": "numeric_state",
+                      "expected_category_impact_score": "value",
+                      "expected_outcome_score": "value",
+                      "games_played": "numeric_state",
+                      "games_started": "numeric_state",
+                      "hits": "numeric_state",
+                      "home_runs": "numeric_state",
+                      "innings_pitched": "value",
+                      "iso": "numeric_state",
+                      "k_bb_pct": "numeric_state",
+                      "k_pct": "numeric_state",
+                      "k_per_9": "numeric_state",
+                      "level": "value",
+                      "mlbam_id": "value",
+                      "obp": "numeric_state",
+                      "ops": "numeric_state",
+                      "outcome_distribution": {
+                        "bust_probability": "value",
+                        "role_probability": "value",
+                        "star_probability": "value"
+                      },
+                      "plate_appearances": "value",
+                      "player_type": "value",
+                      "prospect_rank": "value",
+                      "rank": "value",
+                      "role": "value",
+                      "sample": "value",
+                      "sample_fetched_date": "value",
+                      "sample_reliability": "value",
+                      "sample_season": "value",
+                      "sample_unit": "value",
+                      "score": "value",
+                      "score_source": "value",
+                      "season": "value",
+                      "slg": "numeric_state",
+                      "source_artifact": "value",
+                      "source_kind": "value",
+                      "stolen_bases": "numeric_state",
+                      "value": "value",
+                      "walks": "numeric_state",
+                      "whip": "numeric_state"
+                    }
+                  ],
+                  "season": "value"
+                },
+                "generated_at": "value",
+                "producer": {
+                  "contract_version": "value"
+                },
+                "schema_version": "value"
+              },
+              "governor": {
+                "candidate_count": "value",
+                "checks": [
+                  {
+                    "id": "value",
+                    "metrics": {
+                      "max_top25_pitcher_count": "value",
+                      "max_top50_pitcher_rate": "value",
+                      "top25_evaluated_count": "value",
+                      "top25_n": "value",
+                      "top25_pitcher_count": "value",
+                      "top25_sample_ready": "value",
+                      "top50_evaluated_count": "value",
+                      "top50_n": "value",
+                      "top50_pitcher_count": "value",
+                      "top50_pitcher_rate": "value",
+                      "top50_sample_ready": "value"
+                    },
+                    "status": "value"
+                  }
+                ],
+                "generated_at": "value",
+                "governor_version": "value",
+                "layer_version": "value",
+                "model_version": "value",
+                "rank_version": "value",
+                "report_version": "value",
+                "schema_version": "value",
+                "status": "value",
+                "surface_readiness": {
+                  "prospects": "value"
+                },
+                "universal_model_version": "value"
+              },
+              "layer": {
+                "candidate_count": "value",
+                "generated_at": "value",
+                "governor_version": "value",
+                "input_contract": {
+                  "generated_at": "value"
+                },
+                "layer_version": "value",
+                "model_version": "value",
+                "profiles": [
+                  {
+                    "avg": "numeric_state",
+                    "babip": "numeric_state",
+                    "batters_faced": "numeric_state",
+                    "bb_pct": "numeric_state",
+                    "bb_per_9": "numeric_state",
+                    "components": {
+                      "availability_risk_discount": "value",
+                      "bucket_calibration": {
+                        "adjustment": "value"
+                      },
+                      "factual_current_context": {
+                        "level": "value",
+                        "sample": "value",
+                        "sample_season": "value",
+                        "sample_unit": "value",
+                        "source_kind": "value"
+                      },
+                      "factual_investment_context": "value",
+                      "factual_investment_missing_score": "value",
+                      "model_score": "value",
+                      "model_score_normalization": {
+                        "fields": {
+                          "expected_category_impact_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          },
+                          "expected_outcome_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          }
+                        },
+                        "version": "value"
+                      },
+                      "sample_reliability": "value",
+                      "score_before_availability_adjustment": "value",
+                      "score_before_bucket_calibration": "value",
+                      "universal_outcome_index": "value"
+                    },
+                    "era": "numeric_state",
+                    "expected_category_impact_score": "value",
+                    "expected_outcome_score": "value",
+                    "games_played": "numeric_state",
+                    "games_started": "numeric_state",
+                    "hits": "numeric_state",
+                    "home_runs": "numeric_state",
+                    "innings_pitched": "value",
+                    "iso": "numeric_state",
+                    "k_bb_pct": "numeric_state",
+                    "k_pct": "numeric_state",
+                    "k_per_9": "numeric_state",
+                    "level": "value",
+                    "mlbam_id": "value",
+                    "obp": "numeric_state",
+                    "ops": "numeric_state",
+                    "outcome_distribution": {
+                      "bust_probability": "value",
+                      "role_probability": "value",
+                      "star_probability": "value"
+                    },
+                    "plate_appearances": "value",
+                    "player_type": "value",
+                    "prospect_rank": "value",
+                    "rank": "value",
+                    "role": "value",
+                    "sample": "value",
+                    "sample_fetched_date": "value",
+                    "sample_reliability": "value",
+                    "sample_season": "value",
+                    "sample_unit": "value",
+                    "score": "value",
+                    "score_source": "value",
+                    "season": "value",
+                    "slg": "numeric_state",
+                    "source_artifact": "value",
+                    "source_kind": "value",
+                    "stolen_bases": "numeric_state",
+                    "value": "value",
+                    "walks": "numeric_state",
+                    "whip": "numeric_state"
+                  }
+                ],
+                "rank_version": "value",
+                "report_version": "value",
+                "schema_version": "value",
+                "status": "value",
+                "universal_model_version": "value"
+              },
+              "main_model": {
+                "candidate_count": "value",
+                "generated_at": "value",
+                "governor_version": "value",
+                "input_contract": {
+                  "generated_at": "value"
+                },
+                "layer_version": "value",
+                "model_version": "value",
+                "rank_version": "value",
+                "ranked": [
+                  {
+                    "avg": "numeric_state",
+                    "babip": "numeric_state",
+                    "batters_faced": "numeric_state",
+                    "bb_pct": "numeric_state",
+                    "bb_per_9": "numeric_state",
+                    "components": {
+                      "availability_risk_discount": "value",
+                      "bucket_calibration": {
+                        "adjustment": "value"
+                      },
+                      "factual_current_context": {
+                        "level": "value",
+                        "sample": "value",
+                        "sample_season": "value",
+                        "sample_unit": "value",
+                        "source_kind": "value"
+                      },
+                      "factual_investment_context": "value",
+                      "factual_investment_missing_score": "value",
+                      "model_score": "value",
+                      "model_score_normalization": {
+                        "fields": {
+                          "expected_category_impact_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          },
+                          "expected_outcome_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          }
+                        },
+                        "version": "value"
+                      },
+                      "sample_reliability": "value",
+                      "score_before_availability_adjustment": "value",
+                      "score_before_bucket_calibration": "value",
+                      "universal_outcome_index": "value"
+                    },
+                    "era": "numeric_state",
+                    "expected_category_impact_score": "value",
+                    "expected_outcome_score": "value",
+                    "games_played": "numeric_state",
+                    "games_started": "numeric_state",
+                    "hits": "numeric_state",
+                    "home_runs": "numeric_state",
+                    "innings_pitched": "value",
+                    "iso": "numeric_state",
+                    "k_bb_pct": "numeric_state",
+                    "k_pct": "numeric_state",
+                    "k_per_9": "numeric_state",
+                    "level": "value",
+                    "mlbam_id": "value",
+                    "obp": "numeric_state",
+                    "ops": "numeric_state",
+                    "outcome_distribution": {
+                      "bust_probability": "value",
+                      "role_probability": "value",
+                      "star_probability": "value"
+                    },
+                    "plate_appearances": "value",
+                    "player_type": "value",
+                    "prospect_rank": "value",
+                    "rank": "value",
+                    "role": "value",
+                    "sample": "value",
+                    "sample_fetched_date": "value",
+                    "sample_reliability": "value",
+                    "sample_season": "value",
+                    "sample_unit": "value",
+                    "score": "value",
+                    "score_source": "value",
+                    "season": "value",
+                    "slg": "numeric_state",
+                    "source_artifact": "value",
+                    "source_kind": "value",
+                    "stolen_bases": "numeric_state",
+                    "value": "value",
+                    "walks": "numeric_state",
+                    "whip": "numeric_state"
+                  }
+                ],
+                "report_version": "value",
+                "schema_version": "value",
+                "status": "value",
+                "universal_model_version": "value"
+              },
+              "milb_current": {
+                "fetched_date": "value",
+                "hitters": [
+                  {
+                    "avg": "numeric_state",
+                    "babip": "numeric_state",
+                    "batters_faced": "numeric_state",
+                    "bb_pct": "numeric_state",
+                    "bb_per_9": "numeric_state",
+                    "components": {
+                      "availability_risk_discount": "value",
+                      "bucket_calibration": {
+                        "adjustment": "value"
+                      },
+                      "factual_current_context": {
+                        "level": "value",
+                        "sample": "value",
+                        "sample_season": "value",
+                        "sample_unit": "value",
+                        "source_kind": "value"
+                      },
+                      "factual_investment_context": "value",
+                      "factual_investment_missing_score": "value",
+                      "model_score": "value",
+                      "model_score_normalization": {
+                        "fields": {
+                          "expected_category_impact_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          },
+                          "expected_outcome_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          }
+                        },
+                        "version": "value"
+                      },
+                      "sample_reliability": "value",
+                      "score_before_availability_adjustment": "value",
+                      "score_before_bucket_calibration": "value",
+                      "universal_outcome_index": "value"
+                    },
+                    "era": "numeric_state",
+                    "expected_category_impact_score": "value",
+                    "expected_outcome_score": "value",
+                    "games_played": "numeric_state",
+                    "games_started": "numeric_state",
+                    "hits": "numeric_state",
+                    "home_runs": "numeric_state",
+                    "innings_pitched": "value",
+                    "iso": "numeric_state",
+                    "k_bb_pct": "numeric_state",
+                    "k_pct": "numeric_state",
+                    "k_per_9": "numeric_state",
+                    "level": "value",
+                    "mlbam_id": "value",
+                    "obp": "numeric_state",
+                    "ops": "numeric_state",
+                    "outcome_distribution": {
+                      "bust_probability": "value",
+                      "role_probability": "value",
+                      "star_probability": "value"
+                    },
+                    "plate_appearances": "value",
+                    "player_type": "value",
+                    "prospect_rank": "value",
+                    "rank": "value",
+                    "role": "value",
+                    "sample": "value",
+                    "sample_fetched_date": "value",
+                    "sample_reliability": "value",
+                    "sample_season": "value",
+                    "sample_unit": "value",
+                    "score": "value",
+                    "score_source": "value",
+                    "season": "value",
+                    "slg": "numeric_state",
+                    "source_artifact": "value",
+                    "source_kind": "value",
+                    "stolen_bases": "numeric_state",
+                    "value": "value",
+                    "walks": "numeric_state",
+                    "whip": "numeric_state"
+                  }
+                ],
+                "pitchers": [
+                  {
+                    "avg": "numeric_state",
+                    "babip": "numeric_state",
+                    "batters_faced": "numeric_state",
+                    "bb_pct": "numeric_state",
+                    "bb_per_9": "numeric_state",
+                    "components": {
+                      "availability_risk_discount": "value",
+                      "bucket_calibration": {
+                        "adjustment": "value"
+                      },
+                      "factual_current_context": {
+                        "level": "value",
+                        "sample": "value",
+                        "sample_season": "value",
+                        "sample_unit": "value",
+                        "source_kind": "value"
+                      },
+                      "factual_investment_context": "value",
+                      "factual_investment_missing_score": "value",
+                      "model_score": "value",
+                      "model_score_normalization": {
+                        "fields": {
+                          "expected_category_impact_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          },
+                          "expected_outcome_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          }
+                        },
+                        "version": "value"
+                      },
+                      "sample_reliability": "value",
+                      "score_before_availability_adjustment": "value",
+                      "score_before_bucket_calibration": "value",
+                      "universal_outcome_index": "value"
+                    },
+                    "era": "numeric_state",
+                    "expected_category_impact_score": "value",
+                    "expected_outcome_score": "value",
+                    "games_played": "numeric_state",
+                    "games_started": "numeric_state",
+                    "hits": "numeric_state",
+                    "home_runs": "numeric_state",
+                    "innings_pitched": "value",
+                    "iso": "numeric_state",
+                    "k_bb_pct": "numeric_state",
+                    "k_pct": "numeric_state",
+                    "k_per_9": "numeric_state",
+                    "level": "value",
+                    "mlbam_id": "value",
+                    "obp": "numeric_state",
+                    "ops": "numeric_state",
+                    "outcome_distribution": {
+                      "bust_probability": "value",
+                      "role_probability": "value",
+                      "star_probability": "value"
+                    },
+                    "plate_appearances": "value",
+                    "player_type": "value",
+                    "prospect_rank": "value",
+                    "rank": "value",
+                    "role": "value",
+                    "sample": "value",
+                    "sample_fetched_date": "value",
+                    "sample_reliability": "value",
+                    "sample_season": "value",
+                    "sample_unit": "value",
+                    "score": "value",
+                    "score_source": "value",
+                    "season": "value",
+                    "slg": "numeric_state",
+                    "source_artifact": "value",
+                    "source_kind": "value",
+                    "stolen_bases": "numeric_state",
+                    "value": "value",
+                    "walks": "numeric_state",
+                    "whip": "numeric_state"
+                  }
+                ],
+                "season": "value"
+              },
+              "milb_history": {
+                "players": {
+                  "<MAP_VALUES>": [
+                    {
+                      "avg": "numeric_state",
+                      "babip": "numeric_state",
+                      "batters_faced": "numeric_state",
+                      "bb_pct": "numeric_state",
+                      "bb_per_9": "numeric_state",
+                      "components": {
+                        "availability_risk_discount": "value",
+                        "bucket_calibration": {
+                          "adjustment": "value"
+                        },
+                        "factual_current_context": {
+                          "level": "value",
+                          "sample": "value",
+                          "sample_season": "value",
+                          "sample_unit": "value",
+                          "source_kind": "value"
+                        },
+                        "factual_investment_context": "value",
+                        "factual_investment_missing_score": "value",
+                        "model_score": "value",
+                        "model_score_normalization": {
+                          "fields": {
+                            "expected_category_impact_score": {
+                              "normalized": "value",
+                              "raw": "value",
+                              "role_percentile": "value"
+                            },
+                            "expected_outcome_score": {
+                              "normalized": "value",
+                              "raw": "value",
+                              "role_percentile": "value"
+                            }
+                          },
+                          "version": "value"
+                        },
+                        "sample_reliability": "value",
+                        "score_before_availability_adjustment": "value",
+                        "score_before_bucket_calibration": "value",
+                        "universal_outcome_index": "value"
+                      },
+                      "era": "numeric_state",
+                      "expected_category_impact_score": "value",
+                      "expected_outcome_score": "value",
+                      "games_played": "numeric_state",
+                      "games_started": "numeric_state",
+                      "hits": "numeric_state",
+                      "home_runs": "numeric_state",
+                      "innings_pitched": "value",
+                      "iso": "numeric_state",
+                      "k_bb_pct": "numeric_state",
+                      "k_pct": "numeric_state",
+                      "k_per_9": "numeric_state",
+                      "level": "value",
+                      "mlbam_id": "value",
+                      "obp": "numeric_state",
+                      "ops": "numeric_state",
+                      "outcome_distribution": {
+                        "bust_probability": "value",
+                        "role_probability": "value",
+                        "star_probability": "value"
+                      },
+                      "plate_appearances": "value",
+                      "player_type": "value",
+                      "prospect_rank": "value",
+                      "rank": "value",
+                      "role": "value",
+                      "sample": "value",
+                      "sample_fetched_date": "value",
+                      "sample_reliability": "value",
+                      "sample_season": "value",
+                      "sample_unit": "value",
+                      "score": "value",
+                      "score_source": "value",
+                      "season": "value",
+                      "slg": "numeric_state",
+                      "source_artifact": "value",
+                      "source_kind": "value",
+                      "stolen_bases": "numeric_state",
+                      "value": "value",
+                      "walks": "numeric_state",
+                      "whip": "numeric_state"
+                    }
+                  ]
+                }
+              },
+              "projection_metadata": {
+                "as_of": "value",
+                "projection_phase": "value",
+                "ros_status": "value",
+                "season": "value",
+                "target_season": "value"
+              },
+              "rank": {
+                "board": [
+                  {
+                    "avg": "numeric_state",
+                    "babip": "numeric_state",
+                    "batters_faced": "numeric_state",
+                    "bb_pct": "numeric_state",
+                    "bb_per_9": "numeric_state",
+                    "components": {
+                      "availability_risk_discount": "value",
+                      "bucket_calibration": {
+                        "adjustment": "value"
+                      },
+                      "factual_current_context": {
+                        "level": "value",
+                        "sample": "value",
+                        "sample_season": "value",
+                        "sample_unit": "value",
+                        "source_kind": "value"
+                      },
+                      "factual_investment_context": "value",
+                      "factual_investment_missing_score": "value",
+                      "model_score": "value",
+                      "model_score_normalization": {
+                        "fields": {
+                          "expected_category_impact_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          },
+                          "expected_outcome_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          }
+                        },
+                        "version": "value"
+                      },
+                      "sample_reliability": "value",
+                      "score_before_availability_adjustment": "value",
+                      "score_before_bucket_calibration": "value",
+                      "universal_outcome_index": "value"
+                    },
+                    "era": "numeric_state",
+                    "expected_category_impact_score": "value",
+                    "expected_outcome_score": "value",
+                    "games_played": "numeric_state",
+                    "games_started": "numeric_state",
+                    "hits": "numeric_state",
+                    "home_runs": "numeric_state",
+                    "innings_pitched": "value",
+                    "iso": "numeric_state",
+                    "k_bb_pct": "numeric_state",
+                    "k_pct": "numeric_state",
+                    "k_per_9": "numeric_state",
+                    "level": "value",
+                    "mlbam_id": "value",
+                    "obp": "numeric_state",
+                    "ops": "numeric_state",
+                    "outcome_distribution": {
+                      "bust_probability": "value",
+                      "role_probability": "value",
+                      "star_probability": "value"
+                    },
+                    "plate_appearances": "value",
+                    "player_type": "value",
+                    "prospect_rank": "value",
+                    "rank": "value",
+                    "role": "value",
+                    "sample": "value",
+                    "sample_fetched_date": "value",
+                    "sample_reliability": "value",
+                    "sample_season": "value",
+                    "sample_unit": "value",
+                    "score": "value",
+                    "score_source": "value",
+                    "season": "value",
+                    "slg": "numeric_state",
+                    "source_artifact": "value",
+                    "source_kind": "value",
+                    "stolen_bases": "numeric_state",
+                    "value": "value",
+                    "walks": "numeric_state",
+                    "whip": "numeric_state"
+                  }
+                ],
+                "candidate_count": "value",
+                "generated_at": "value",
+                "governor_version": "value",
+                "input_artifacts": {
+                  "dynasty_layer_version": "value",
+                  "prospect_model_version": "value",
+                  "universal_model_version": "value"
+                },
+                "layer_version": "value",
+                "model_version": "value",
+                "rank_version": "value",
+                "report_version": "value",
+                "schema_version": "value",
+                "status": "value",
+                "universal_model_version": "value"
+              },
+              "snapshot": {
+                "candidate_count": "value",
+                "generated_at": "value",
+                "governor_version": "value",
+                "layer_version": "value",
+                "model_version": "value",
+                "players": [
+                  {
+                    "avg": "numeric_state",
+                    "babip": "numeric_state",
+                    "batters_faced": "numeric_state",
+                    "bb_pct": "numeric_state",
+                    "bb_per_9": "numeric_state",
+                    "components": {
+                      "availability_risk_discount": "value",
+                      "bucket_calibration": {
+                        "adjustment": "value"
+                      },
+                      "factual_current_context": {
+                        "level": "value",
+                        "sample": "value",
+                        "sample_season": "value",
+                        "sample_unit": "value",
+                        "source_kind": "value"
+                      },
+                      "factual_investment_context": "value",
+                      "factual_investment_missing_score": "value",
+                      "model_score": "value",
+                      "model_score_normalization": {
+                        "fields": {
+                          "expected_category_impact_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          },
+                          "expected_outcome_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          }
+                        },
+                        "version": "value"
+                      },
+                      "sample_reliability": "value",
+                      "score_before_availability_adjustment": "value",
+                      "score_before_bucket_calibration": "value",
+                      "universal_outcome_index": "value"
+                    },
+                    "era": "numeric_state",
+                    "expected_category_impact_score": "value",
+                    "expected_outcome_score": "value",
+                    "games_played": "numeric_state",
+                    "games_started": "numeric_state",
+                    "hits": "numeric_state",
+                    "home_runs": "numeric_state",
+                    "innings_pitched": "value",
+                    "iso": "numeric_state",
+                    "k_bb_pct": "numeric_state",
+                    "k_pct": "numeric_state",
+                    "k_per_9": "numeric_state",
+                    "level": "value",
+                    "mlbam_id": "value",
+                    "obp": "numeric_state",
+                    "ops": "numeric_state",
+                    "outcome_distribution": {
+                      "bust_probability": "value",
+                      "role_probability": "value",
+                      "star_probability": "value"
+                    },
+                    "plate_appearances": "value",
+                    "player_type": "value",
+                    "prospect_rank": "value",
+                    "rank": "value",
+                    "role": "value",
+                    "sample": "value",
+                    "sample_fetched_date": "value",
+                    "sample_reliability": "value",
+                    "sample_season": "value",
+                    "sample_unit": "value",
+                    "score": "value",
+                    "score_source": "value",
+                    "season": "value",
+                    "slg": "numeric_state",
+                    "source_artifact": "value",
+                    "source_kind": "value",
+                    "stolen_bases": "numeric_state",
+                    "value": "value",
+                    "walks": "numeric_state",
+                    "whip": "numeric_state"
+                  }
+                ],
+                "rank_version": "value",
+                "report_version": "value",
+                "schema_version": "value",
+                "status": "value",
+                "universal_model_version": "value",
+                "validation": {
+                  "surface_readiness": {
+                    "prospects": "value"
+                  }
+                }
+              },
+              "universal": {
+                "candidate_count": "value",
+                "generated_at": "value",
+                "governor_version": "value",
+                "input_contract": {
+                  "generated_at": "value"
+                },
+                "layer_version": "value",
+                "model_version": "value",
+                "profiles": [
+                  {
+                    "avg": "numeric_state",
+                    "babip": "numeric_state",
+                    "batters_faced": "numeric_state",
+                    "bb_pct": "numeric_state",
+                    "bb_per_9": "numeric_state",
+                    "components": {
+                      "availability_risk_discount": "value",
+                      "bucket_calibration": {
+                        "adjustment": "value"
+                      },
+                      "factual_current_context": {
+                        "level": "value",
+                        "sample": "value",
+                        "sample_season": "value",
+                        "sample_unit": "value",
+                        "source_kind": "value"
+                      },
+                      "factual_investment_context": "value",
+                      "factual_investment_missing_score": "value",
+                      "model_score": "value",
+                      "model_score_normalization": {
+                        "fields": {
+                          "expected_category_impact_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          },
+                          "expected_outcome_score": {
+                            "normalized": "value",
+                            "raw": "value",
+                            "role_percentile": "value"
+                          }
+                        },
+                        "version": "value"
+                      },
+                      "sample_reliability": "value",
+                      "score_before_availability_adjustment": "value",
+                      "score_before_bucket_calibration": "value",
+                      "universal_outcome_index": "value"
+                    },
+                    "era": "numeric_state",
+                    "expected_category_impact_score": "value",
+                    "expected_outcome_score": "value",
+                    "games_played": "numeric_state",
+                    "games_started": "numeric_state",
+                    "hits": "numeric_state",
+                    "home_runs": "numeric_state",
+                    "innings_pitched": "value",
+                    "iso": "numeric_state",
+                    "k_bb_pct": "numeric_state",
+                    "k_pct": "numeric_state",
+                    "k_per_9": "numeric_state",
+                    "level": "value",
+                    "mlbam_id": "value",
+                    "obp": "numeric_state",
+                    "ops": "numeric_state",
+                    "outcome_distribution": {
+                      "bust_probability": "value",
+                      "role_probability": "value",
+                      "star_probability": "value"
+                    },
+                    "plate_appearances": "value",
+                    "player_type": "value",
+                    "prospect_rank": "value",
+                    "rank": "value",
+                    "role": "value",
+                    "sample": "value",
+                    "sample_fetched_date": "value",
+                    "sample_reliability": "value",
+                    "sample_season": "value",
+                    "sample_unit": "value",
+                    "score": "value",
+                    "score_source": "value",
+                    "season": "value",
+                    "slg": "numeric_state",
+                    "source_artifact": "value",
+                    "source_kind": "value",
+                    "stolen_bases": "numeric_state",
+                    "value": "value",
+                    "walks": "numeric_state",
+                    "whip": "numeric_state"
+                  }
+                ],
+                "rank_version": "value",
+                "report_version": "value",
+                "schema_version": "value",
+                "status": "value",
+                "universal_model_version": "value"
+              }
+            },
+            "inputs": {
+              "calibration": "data/models/valucast_prospect_calibration_report.json",
+              "contract": "data/prospects/prospect_model_inputs.json",
+              "governor": "data/models/valucast_quality_governor.json",
+              "layer": "data/models/valucast_prospect_dynasty_layer.json",
+              "main_model": "data/models/valucast_prospect_model.json",
+              "milb_current": "data/prospects/raw/milb_season_stats.json",
+              "milb_history": "data/prospects/raw/milb_card_history.json",
+              "projection_metadata": "data/projections/metadata.json",
+              "rank": "data/models/valucast_prospect_rank_v1.json",
+              "snapshot": "data/public/public_dynasty_snapshot.json",
+              "universal": "data/models/valucast_universal_prospect_model.json"
+            },
+            "limitations": [
+              "No real inputs in default/self-test mode.",
+              "Selected row/source/season, actual eligibility and normalization-pool effects remain unavailable.",
+              "No selector replay, observer, model imports/calls, fitting, source changes, threshold changes or publication.",
+              "Five-state transport does not establish equality of distinct valid-nonzero measurements.",
+              "Exact matching phase/source/run/date and candidate hashes are required; date/byte equality alone does not establish fresh fetching.",
+              "A missing/failed producer phase, missing candidate receipt, wrong run or changed candidate file makes corresponding sections unavailable."
+            ],
+            "manifest_projection": {
+              "candidate_sha256": {
+                "calibration": "value",
+                "contract": "value",
+                "governor": "value",
+                "layer": "value",
+                "main_model": "value",
+                "milb_current": "value",
+                "milb_history": "value",
+                "projection_metadata": "value",
+                "rank": "value",
+                "snapshot": "value",
+                "universal": "value"
+              },
+              "helper_sha256": "value",
+              "input_paths": {
+                "calibration": "value",
+                "contract": "value",
+                "governor": "value",
+                "layer": "value",
+                "main_model": "value",
+                "milb_current": "value",
+                "milb_history": "value",
+                "projection_metadata": "value",
+                "rank": "value",
+                "snapshot": "value",
+                "universal": "value"
+              },
+              "input_root": "value",
+              "orchestrator_commit": "value",
+              "output_path": "value",
+              "phase_evidence_dir": "value",
+              "pinned_date": "value",
+              "post_sha256": {
+                "calibration": "value",
+                "contract": "value",
+                "governor": "value",
+                "layer": "value",
+                "main_model": "value",
+                "milb_current": "value",
+                "milb_history": "value",
+                "projection_metadata": "value",
+                "rank": "value",
+                "snapshot": "value",
+                "universal": "value"
+              },
+              "pre_sha256": {
+                "calibration": "value",
+                "contract": "value",
+                "governor": "value",
+                "layer": "value",
+                "main_model": "value",
+                "milb_current": "value",
+                "milb_history": "value",
+                "projection_metadata": "value",
+                "rank": "value",
+                "snapshot": "value",
+                "universal": "value"
+              },
+              "run_attempt": "value",
+              "run_id": "value",
+              "schema_version": "value",
+              "source_commit": "value",
+              "spec_sha256": "value"
+            },
+            "manifest_required_fields": [
+              "schema_version",
+              "input_root",
+              "source_commit",
+              "orchestrator_commit",
+              "run_id",
+              "run_attempt",
+              "pinned_date",
+              "helper_sha256",
+              "spec_sha256",
+              "output_path",
+              "phase_evidence_dir",
+              "input_paths",
+              "pre_sha256",
+              "post_sha256",
+              "candidate_sha256"
+            ],
+            "output_sections": [
+              "files",
+              "phase_outcomes",
+              "candidate_binding",
+              "transport",
+              "history_to_output",
+              "board_shape",
+              "emitted_score_components",
+              "selection_observation",
+              "eligibility_observation",
+              "normalization_pool_effects"
+            ],
+            "phase_binding": {
+              "files": [
+                "build.json",
+                "refresh_contract.json",
+                "candidate_bind.json"
+              ],
+              "mismatch_status": "unavailable",
+              "required_identity_fields": [
+                "phase",
+                "source_checkout",
+                "run_id",
+                "run_attempt",
+                "pinned_date"
+              ],
+              "success_exit_code": 0
+            },
+            "phase_evidence_files": [
+              "build.json",
+              "refresh_contract.json",
+              "candidate_bind.json"
+            ],
+            "phase_projection": {
+              "containers": {
+                "calibration": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "contract": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "governor": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "layer": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "main_model": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "milb_current": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "milb_history": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "projection_metadata": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "rank": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "snapshot": {
+                  "path": "value",
+                  "sha256": "value"
+                },
+                "universal": {
+                  "path": "value",
+                  "sha256": "value"
+                }
+              },
+              "exit_code": "value",
+              "kind": "value",
+              "orchestration_checkout": "value",
+              "phase": "value",
+              "pinned_date": "value",
+              "run_attempt": "value",
+              "run_id": "value",
+              "source_checkout": "value"
+            },
+            "privacy": {
+              "is_starter": "Valid boolean flag is outside numeric measurement classification; total eligibility remains unverified.",
+              "raw_numeric_measurements": "Five-state flags only; never handed to the JSON scalar decoder or exported.",
+              "row_identity_season_level_sample": "Private RAM only; no row dumps, exact row-season labels, names or name-key decoding.",
+              "signed_finite_measurements": "Finite negative K-BB% remains valid_nonzero; no physical-range thresholds."
+            },
+            "schema_version": "1.0.0",
+            "source_commit": "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea",
+            "states": [
+              "absent",
+              "null",
+              "invalid",
+              "valid_zero",
+              "valid_nonzero"
+            ]
+          }
+          PR97_B1076918EF0D4EC9504976BA8ACA76223F83D102A6024944C4DB2057F54B8810
+          cat > "$RUNNER_TEMP/pr97-harness/source-manifest.json" <<'PR97_9D7ABCC837821B7B062D07B722DFDADEAB3EAC871BC31503F35FD056AE18680C'
+          {
+            "helper_original_sha256": {
+              "bootstrap_finalize.py": "bdd5c1f2e70ff847a8429abfc26fc59326328fe4a2723325ff7afba0a1ba2500",
+              "prospect_diagnostics.py": "64b34d802e81e263d5d959490e62547e525a04d78cdfa43dd98e767f0e320c9d",
+              "prospect_diagnostics_spec.json": "b1076918ef0d4ec9504976ba8aca76223f83d102a6024944c4db2057f54b8810",
+              "run_phase.py": "1e1da938dd201d46d6a99ef8b95ac9e413c5c86c6ede228249edf5ce218fc0cb",
+              "sitecustomize.py": "042e259e40795b19aff1b3e0b110eaaac8a136d30f5b11b5fb9b163d7d4af59a"
+            },
+            "helper_sha256": {
+              "bootstrap_finalize.py": "bdd5c1f2e70ff847a8429abfc26fc59326328fe4a2723325ff7afba0a1ba2500",
+              "prospect_diagnostics.py": "64b34d802e81e263d5d959490e62547e525a04d78cdfa43dd98e767f0e320c9d",
+              "prospect_diagnostics_spec.json": "b1076918ef0d4ec9504976ba8aca76223f83d102a6024944c4db2057f54b8810",
+              "run_phase.py": "1e1da938dd201d46d6a99ef8b95ac9e413c5c86c6ede228249edf5ce218fc0cb",
+              "sitecustomize.py": "042e259e40795b19aff1b3e0b110eaaac8a136d30f5b11b5fb9b163d7d4af59a"
+            },
+            "input_paths": {
+              "calibration": "data/models/valucast_prospect_calibration_report.json",
+              "contract": "data/prospects/prospect_model_inputs.json",
+              "governor": "data/models/valucast_quality_governor.json",
+              "layer": "data/models/valucast_prospect_dynasty_layer.json",
+              "main_model": "data/models/valucast_prospect_model.json",
+              "milb_current": "data/prospects/raw/milb_season_stats.json",
+              "milb_history": "data/prospects/raw/milb_card_history.json",
+              "projection_metadata": "data/projections/metadata.json",
+              "rank": "data/models/valucast_prospect_rank_v1.json",
+              "snapshot": "data/public/public_dynasty_snapshot.json",
+              "universal": "data/models/valucast_universal_prospect_model.json"
+            },
+            "normal_input_scope": {
+              "contract_name": "normal-build-source-contract.md",
+              "contract_sha256": "a4a8e29b12a5dbd2fda39f04c904bed78cc1a9da01cc11d492782b27d5328c34",
+              "diagnostic_scope": "Fixed eleven containers; scalar metadata projection only",
+              "extra_research_replay_fitting": false,
+              "in_house_2027_candidate": "missing_blocked",
+              "normal_live_source": "current",
+              "ordinary_source_derived_input_families_only": true,
+              "program_identity": "Pinned candidate normal ingestion plus run_daily_public_build build/validate graph",
+              "separate_scouting_scope": "Report/cache byte hashes; approved scalar report counters only; no prose or cache decode"
+            },
+            "normal_phases": [
+              "install",
+              "refresh_projections",
+              "refresh_statcast",
+              "refresh_milb_season",
+              "refresh_milb_recent",
+              "refresh_orgs",
+              "refresh_contract",
+              "build",
+              "rank_history",
+              "validate_strict",
+              "validate_ci",
+              "full_suite"
+            ],
+            "prior_checkout": "0f52fea68ea7e6587ce50249feb83d9d4cb00243",
+            "schema_version": "1.0.0",
+            "source_checkout": "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea",
+            "source_clean_pathspecs": [
+              "src/league_values/**/*.py",
+              "mlb/*.py",
+              "prospects/*.py",
+              "scraper/*.py",
+              "quality/*.py",
+              "web/*.py",
+              "scouting/*.py",
+              "scripts/*.py",
+              "tests/test_*.py",
+              "app.py",
+              "templates/*.html",
+              "static/*.js",
+              "static/js/*.js",
+              "static/css/*.css",
+              ".github/workflows/*.yml",
+              "README.md",
+              "pyproject.toml",
+              "requirements.txt",
+              "projections/export/marcel_run.py",
+              "projections/data/historical.py",
+              "projections/data/pitching_historical.py",
+              "projections/data/statcast.py"
+            ]
+          }
+          PR97_9D7ABCC837821B7B062D07B722DFDADEAB3EAC871BC31503F35FD056AE18680C
+
+      - name: Capture accepted prior and bind pre-refresh metadata
+        id: bootstrap
+        run: python "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" bootstrap --manifest "$RUNNER_TEMP/pr97-harness/source-manifest.json"
+
+      - name: Restore plate-discipline cache without saving
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809
+        with:
+          path: |
+            data/prospects/raw/pitch_discipline_pitch_cache.json
+            data/prospects/raw/.pitch_discipline_cache_ready
+          key: plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            plate-discipline-v1-${{ runner.os }}-
+
+      - name: Restore AAA Statcast cache without saving
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            aaa-statcast-v1-${{ runner.os }}-
+
+      - name: Restore scouting cache without saving
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809
+        with:
+          path: data/models/valucast_scouting_llm_cache.json
+          key: scouting-llm-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            scouting-llm-v1-${{ runner.os }}-
+
+      - name: Install normal dependencies
+        id: install
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" install python -m pip install -r requirements.txt -e . pytest
+
+      - name: Enable external nonpaid scouting guard after install
+        run: echo "PYTHONPATH=$RUNNER_TEMP/pr97-harness" >> "$GITHUB_ENV"
+
+      - name: Bind actual restored inputs before ingestion
+        id: pre_inputs
+        run: python "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" pre-inputs --manifest "$RUNNER_TEMP/pr97-harness/source-manifest.json"
+
+      - name: Refresh MLB actuals and Steamer
+        id: refresh_projections
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" refresh_projections python -m scraper.refresh
+
+      - name: Refresh Savant player-card data
+        id: refresh_statcast
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" refresh_statcast python scripts/fetch_statcast_percentiles.py
+
+      - name: Refresh affiliated MiLB season stats
+        id: refresh_milb_season
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" refresh_milb_season python scripts/refresh_milb_season_stats.py
+
+      - name: Refresh recent MiLB stats
+        id: refresh_milb_recent
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" refresh_milb_recent python scripts/refresh_milb_season_stats.py --stats-type byDateRange --window-days 30 --output data/prospects/raw/milb_recent_stats.json
+
+      - name: Refresh prospect current organizations
+        id: refresh_orgs
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" refresh_orgs python scripts/refresh_prospect_orgs.py --write
+
+      - name: Build canonical prospect inputs
+        id: refresh_contract
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" refresh_contract python scripts/build_valucast_prospect_inputs.py --refresh-service-cache
+
+      - name: Run unchanged normal build
+        id: build
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" build python scripts/run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"
+
+      - name: Build prospect rank history
+        id: rank_history
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" rank_history python scripts/build_prospect_rank_history.py
+
+      - name: Bind generated candidate before validation and tests
+        id: candidate_bind
+        run: python "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" candidate-bind --manifest "$RUNNER_TEMP/pr97-harness/source-manifest.json"
+
+      - name: Run strict normal publication checks
+        id: validate_strict
         env:
-          # PR/push CI runs between UTC midnight and the ~13:00 UTC refresh
-          # with yesterday's committed artifacts; without this lag the
-          # freshness step fails deterministically in that window and (under
-          # the master ruleset's required pytest check) a single missed
-          # refresh day would block every merge. 2 days also leaves one
-          # recovery window when a publication defect itself needs a PR;
-          # three-day-old data still fails. The publish workflow does
-          # NOT set this — its gate stays exact same-day.
-          VALUCAST_FRESHNESS_MAX_AGE_DAYS: "2"
-        run: python scripts/run_daily_public_build.py --only validate
+          VALUCAST_FRESHNESS_MAX_AGE_DAYS: "0"
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" validate_strict python scripts/run_daily_public_build.py --only validate
 
-      - name: Run test suite
-        run: python -m pytest -q --deselect=tests/test_prospect_v23_development.py::test_committed_registration_passes_dynamic_verification
+      - name: Run ordinary CI validation
+        id: validate_ci
+        env:
+          VALUCAST_FRESHNESS_MAX_AGE_DAYS: "2"
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" validate_ci python scripts/run_daily_public_build.py --only validate
+
+      - name: Run unchanged full suite with existing single deselection
+        id: full_suite
+        run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" full_suite python -m pytest -q --deselect=tests/test_prospect_v23_development.py::test_committed_registration_passes_dynamic_verification
+
+      - name: Observe admitted aggregate prospect diagnostics
+        id: diagnostic
+        if: always()
+        run: |
+          python "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" diagnostic-manifest --manifest "$RUNNER_TEMP/pr97-harness/source-manifest.json"
+          python "$RUNNER_TEMP/pr97-harness/run_phase.py" diagnostic python "$RUNNER_TEMP/pr97-harness/prospect_diagnostics.py" --execute --manifest "$RUNNER_TEMP/pr97-harness/diagnostic-runtime-manifest.json"
+
+      - name: Finalize aggregate receipts without hiding failed phases
+        id: finalize
+        if: always()
+        env:
+          PR97_STEP_OUTCOMES: ${{ toJSON(steps) }}
+        run: python "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" finalize --manifest "$RUNNER_TEMP/pr97-harness/source-manifest.json"
+
+      - name: Upload aggregate JSON receipts only
+        if: always() && steps.finalize.outputs.export_ready == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr97-isolated-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/${{ steps.finalize.outputs.export_subdir }}/*.json
+          if-no-files-found: error
+          retention-days: 7
