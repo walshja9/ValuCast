@@ -1,4 +1,5 @@
 """Scouting V2: voice guard + LLM writer (no real API calls — fake client only)."""
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -652,6 +653,118 @@ class TestLlmWiring(unittest.TestCase):
         self.assertEqual(res["reused"], 0)
         self.assertEqual(res["generated"], 1)
         self.assertEqual(report["report_llm"]["text"], "A patient AA bat with a .220 ISO.")
+
+
+class TestCacheOnlyLlmWiring(unittest.TestCase):
+    def setUp(self):
+        directory = self.enterContext(tempfile.TemporaryDirectory())
+        self.cache_path = Path(directory) / "synthetic_cache.json"
+        self.entries = {"1_hitter": {
+            "hash": "current", "text": "A synthetic cached scouting read.",
+            "model": "synthetic-model", "prompt": "synthetic-prompt",
+            "valid": True, "hard_ok": True,
+        }}
+        self.enterContext(patch.dict("os.environ", {
+            "ANTHROPIC_API_KEY": "", "VALUCAST_SCOUTING_LLM_MAX_GENERATE": "0",
+        }))
+        self.client = self.enterContext(patch.object(report_generator, "default_client", return_value=None))
+        self.generate = self.enterContext(patch.object(report_generator, "generate_report"))
+        self.enterContext(patch.object(report_generator, "DEFAULT_MODEL", "synthetic-model"))
+        self.enterContext(patch.object(report_generator, "PROMPT_FINGERPRINT", "synthetic-prompt"))
+        self.enterContext(patch.object(report_generator, "grounding_hash", return_value="current"))
+        self.enterContext(patch.object(repository, "LLM_CACHE_PATH", self.cache_path))
+        self.enterContext(patch.object(repository.prospect_percentiles, "build_pool", return_value={}))
+        self.enterContext(patch.object(repository, "_llm_grounding", return_value={"team": "TST"}))
+        self.guard = self.enterContext(patch.object(repository, "validate_report_text", return_value={"ok": True, "hard_ok": True}))
+        self.sample_stale = self.enterContext(patch.object(repository, "sample_context_stale", return_value=False))
+
+    def _attach(self):
+        self.cache_path.write_text(json.dumps({"entries": self.entries}), encoding="utf-8")
+        row = SimpleNamespace(is_prospect=False)
+        report = {"identity_key": "1_hitter", "report": "A synthetic deterministic read."}
+        result = repository._attach_llm_reports([row], [report], SimpleNamespace(get_all=lambda: [row]))
+        return result, report
+
+    def test_reuses_valid_cache_without_client(self):
+        result, report = self._attach()
+        self.assertEqual(result["reused"], 1)
+        self.assertFalse(result["available"])
+        self.assertEqual(report["report_llm"]["text"], self.entries["1_hitter"]["text"])
+        self.guard.assert_called_once_with(self.entries["1_hitter"]["text"], {"team": "TST"})
+        self.generate.assert_not_called()
+
+    def test_reuses_valid_stale_cache_without_client(self):
+        self.entries["1_hitter"]["hash"] = "old"
+        result, report = self._attach()
+        self.assertEqual(result["reused_stale"], 1)
+        self.assertTrue(report["report_llm"]["valid"])
+        self.sample_stale.assert_called_once()
+        self.generate.assert_not_called()
+
+    def test_reuses_valid_cache_with_client(self):
+        self.client.return_value = object()
+        result, report = self._attach()
+        self.assertEqual(result["reused"], 1)
+        self.assertTrue(result["available"])
+        self.assertTrue(report["report_llm"]["valid"])
+        self.generate.assert_not_called()
+
+    def test_rejects_invalid_cache_without_client(self):
+        self.guard.return_value = {"ok": False, "hard_ok": False}
+        result, report = self._attach()
+        self.assertNotIn("report_llm", report)
+        self.assertEqual(result["reused"], 0)
+        self.guard.assert_called_once()
+        saved = json.loads(self.cache_path.read_text(encoding="utf-8"))
+        self.assertFalse(saved["entries"]["1_hitter"]["valid"])
+        self.generate.assert_not_called()
+
+    def test_missing_cache_without_client_never_generates(self):
+        self.entries.clear()
+        with patch.dict("os.environ", {"VALUCAST_SCOUTING_LLM_MAX_GENERATE": "2"}):
+            result, report = self._attach()
+        self.assertNotIn("report_llm", report)
+        self.assertEqual(result["generated"], 0)
+        self.assertEqual(result["errored"], 0)
+        self.assertFalse(result["available"])
+        self.generate.assert_not_called()
+
+    def test_zero_budget_with_client_never_generates(self):
+        self.entries.clear()
+        self.client.return_value = object()
+        result, report = self._attach()
+        self.assertNotIn("report_llm", report)
+        self.assertEqual(result["generation_limit"], 0)
+        self.assertEqual(result["skipped_due_to_budget"], 1)
+        self.generate.assert_not_called()
+
+    def test_client_can_still_generate_with_budget(self):
+        self.entries.clear()
+        self.client.return_value = object()
+        self.generate.return_value = {"text": "A synthetic generated read.",
+            "model": "synthetic-model", "valid": True, "hard_ok": True, "problems": {}}
+        with patch.dict("os.environ", {"VALUCAST_SCOUTING_LLM_MAX_GENERATE": "1"}):
+            result, report = self._attach()
+        self.assertEqual(result["generated"], 1)
+        self.assertTrue(result["available"])
+        self.assertEqual(report["report_llm"]["text"], "A synthetic generated read.")
+        self.generate.assert_called_once_with({"team": "TST"}, client=self.client.return_value)
+
+    def test_cache_only_reuse_keeps_stale_and_version_checks(self):
+        for field, value in (("team", "OLD"), ("model", "old-model"), ("prompt", "old-prompt"), ("valid", False)):
+            with self.subTest(field=field):
+                original = dict(self.entries["1_hitter"])
+                self.entries["1_hitter"].update({"hash": "old", field: value})
+                result, report = self._attach()
+                self.assertNotIn("report_llm", report)
+                self.assertEqual(result["reused_stale"], 0)
+                self.entries["1_hitter"] = original
+        self.entries["1_hitter"]["hash"] = "old"
+        self.sample_stale.return_value = True
+        result, report = self._attach()
+        self.assertNotIn("report_llm", report)
+        self.assertEqual(result["reused_stale"], 0)
+        self.generate.assert_not_called()
 
 
 if __name__ == "__main__":

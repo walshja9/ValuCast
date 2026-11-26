@@ -595,23 +595,11 @@ def _save_llm_cache(entries: dict) -> None:
 def _attach_llm_reports(rows, reports, store) -> dict:
     """Attach `report_llm` to each report when available.
 
-    Grounding-hash cached so only changed reports re-call the API. Offline / no
-    key -> no calls, reports unchanged.
+    Grounding-hash cached so only changed reports re-call the API. Cached reads
+    still pass the current guards without a key; new text requires a client.
     """
     generation_limit = _llm_generation_limit()
     client = report_generator.default_client()
-    if client is None:
-        return {
-            "enabled": True,
-            "available": False,
-            "generated": 0,
-            "reused": 0,
-            "reused_stale": 0,
-            "flagged": 0,
-            "errored": 0,
-            "skipped_due_to_budget": 0,
-            "generation_limit": generation_limit,
-        }
     pool = prospect_percentiles.build_pool(store.get_all())
     cache = _load_optional(LLM_CACHE_PATH)
     entries = cache.get("entries") if isinstance(cache.get("entries"), dict) else {}
@@ -693,6 +681,8 @@ def _attach_llm_reports(rows, reports, store) -> dict:
                 reused_stale += 1
         generated_now = False
         if result is None:
+            if client is None:
+                continue
             # Attempts (success or failure) count against the budget, not just successes —
             # otherwise a run of API errors (rate limit, outage) never trips the cutoff and
             # retries every eligible row instead of stopping at generation_limit calls.
@@ -727,7 +717,7 @@ def _attach_llm_reports(rows, reports, store) -> dict:
         }
     _save_llm_cache(fresh)
     return {
-        "enabled": True, "available": True, "generated": generated,
+        "enabled": True, "available": client is not None, "generated": generated,
         "reused": reused, "reused_stale": reused_stale, "flagged": flagged,
         "errored": errored, "skipped_due_to_budget": skipped_due_to_budget,
         "generation_limit": generation_limit, "report_count": len(fresh),
