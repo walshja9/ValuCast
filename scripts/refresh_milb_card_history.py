@@ -29,6 +29,7 @@ LEVEL_RANK = {"AAA": 4, "AA": 3, "A+": 2, "A": 1}
 HITTER_FIELDS = (
     "age",
     "avg",
+    "babip",
     "bb_pct",
     "home_runs",
     "iso",
@@ -46,9 +47,13 @@ HITTER_FIELDS = (
 
 PITCHER_FIELDS = (
     "age",
+    "batters_faced",
     "bb_per_9",
     "era",
+    "games_played",
     "games_started",
+    "hits",
+    "home_runs",
     "innings_pitched",
     "is_starter",
     "k_bb_pct",
@@ -58,6 +63,7 @@ PITCHER_FIELDS = (
     "role",
     "season",
     "team",
+    "walks",
     "whip",
 )
 
