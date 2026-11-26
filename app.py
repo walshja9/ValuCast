@@ -8623,7 +8623,7 @@ def _trade_share_card_png(
     if verdict["count_mismatch"]:
         notes.append((clay, "The sides have different player counts. Fewer, better players usually win dynasty trades - depth sums to a big number but you still start one lineup."))
     if verdict["crosses_universes"]:
-        notes.append((blue, "Mixes prospects and big-leaguers - their 0-100 values come from two separate normalizations aligned at the top. Comparable in ballpark, not to the decimal."))
+        notes.append((blue, "Mixes prospects and big-leaguers. These scores use different future-value targets; cross-group value gaps are approximate, not calibrated fantasy production."))
     if len(notes) == 1:
         notes.append((muted, "Verdict is the value margin - dynasty context (age, window, roster fit) is yours to weigh."))
 
