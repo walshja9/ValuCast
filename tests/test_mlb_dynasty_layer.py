@@ -593,6 +593,32 @@ def test_mlb_layer_horizon_declines_for_older_player_future_years(monkeypatch, p
     assert years[1]["reliability_factor"] < 1.0
 
 
+def test_dynasty_scale_rejects_nonfinite_values_and_bounds():
+    for invalid in (float("nan"), float("inf"), -float("inf")):
+        for values in ((invalid, 0.0, 100.0), (50.0, invalid, 100.0), (50.0, 0.0, invalid)):
+            with pytest.raises(ValueError, match="finite"):
+                dynasty_module._scale_value(*values)
+
+
+def test_dynasty_scale_keeps_existing_finite_behavior():
+    assert dynasty_module._scale_value(-10.0, 0.0, 100.0) == 0.0
+    assert dynasty_module._scale_value(50.0, 0.0, 100.0) == 50.0
+    assert dynasty_module._scale_value(150.0, 0.0, 100.0) == 100.0
+    assert dynasty_module._scale_value(0.0, 0.0, 0.0) == 50.0
+    assert dynasty_module._scale_value(50.0, 100.0, 0.0) == 50.0
+
+
+def test_dynasty_scale_avoids_overflow_for_large_finite_midpoint():
+    assert dynasty_module._scale_value(5e306, 0.0, 1e307) == 50.0
+    assert dynasty_module._scale_value(-1e308, 0.0, 1e308) == 0.0
+    assert dynasty_module._scale_value(1e308, -1e308, 0.0) == 100.0
+
+
+def test_dynasty_scale_rejects_unrepresentable_intermediate_span():
+    with pytest.raises(ValueError, match="finite"):
+        dynasty_module._scale_value(0.0, -1e308, 1e308)
+
+
 def test_future_reliability_factor_does_not_compound_across_years():
     # Regression (Bug 2): reliability is sample-size uncertainty, not a
     # per-year decay. It must be applied ONCE, so year-2 must NOT be the

@@ -482,9 +482,21 @@ def _percentile(values: list[float], percentile: float) -> float:
 
 
 def _scale_value(value: float, floor: float, ceiling: float) -> float:
+    if not all(math.isfinite(number) for number in (value, floor, ceiling)):
+        raise ValueError("Dynasty scaling requires finite values and bounds.")
     if ceiling <= floor:
         return 50.0
-    return max(0.0, min(100.0, 100.0 * (value - floor) / (ceiling - floor)))
+    if value <= floor:
+        return 0.0
+    if value >= ceiling:
+        return 100.0
+    span = ceiling - floor
+    if not math.isfinite(span):
+        raise ValueError("Dynasty scaling requires a finite span.")
+    fraction = (value - floor) / span
+    if not math.isfinite(fraction):
+        raise ValueError("Dynasty scaling requires a finite result.")
+    return max(0.0, min(100.0, 100.0 * fraction))
 
 
 def _projection_stats(player: PlayerProjection) -> dict[str, float]:
