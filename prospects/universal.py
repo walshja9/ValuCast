@@ -14,6 +14,7 @@ from statistics import mean
 from zoneinfo import ZoneInfo
 
 from prospects.gate import decide_gate
+from prospects.input_contract import validate_numeric_measurements
 from prospects import model as _prospect_model_flags
 from prospects.level_translation_challenger import (
     STRIKE_PCT_FEATURE_NAMES,
@@ -178,6 +179,9 @@ def validate_input_contract(contract: dict) -> None:
     for key in ("historical", "historical_mlb_seasons", "current", "mlb_service"):
         if key not in contract:
             raise ValueError(f"Prospect input contract missing {key}")
+    problems = validate_numeric_measurements(contract)
+    if problems:
+        raise ValueError("Invalid prospect numeric measurements: " + "; ".join(problems))
 
 
 def load_input_contract(path: Path = INPUT_PATH) -> dict:

@@ -18,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
-from prospects.input_contract import VALUCAST_INPUT_PATH
+from prospects.input_contract import VALUCAST_INPUT_PATH, validate_numeric_measurements
 from scraper.season import context_season
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1088,6 +1088,9 @@ def build_contract(
     }
     _backfill_draft_facts(payload, draft_facts)
     payload["source_policy"] = _source_policy_for_payload(payload)
+    problems = validate_numeric_measurements(payload)
+    if problems:
+        raise ValueError("Invalid prospect numeric measurements: " + "; ".join(problems))
     return payload
 
 
