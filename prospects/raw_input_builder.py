@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import unicodedata
@@ -493,6 +494,18 @@ def _statsapi_innings(value, default=0.0):
         return default
 
 
+def _statsapi_service_count(value) -> int | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(numeric) or numeric < 0 or not numeric.is_integer():
+        return None
+    return int(numeric)
+
+
 def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
     """Fetch MLB regular-season service lines by MLBAM id.
 
@@ -511,22 +524,38 @@ def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
     except Exception:
         return None
 
+    # Only explicit empty containers verify no service; malformed responses keep the prior cache.
+    if not isinstance(payload, dict) or not isinstance(payload.get("stats"), list):
+        return None
     seasons: list[dict] = []
-    for stats_group in payload.get("stats") or []:
-        for split in stats_group.get("splits") or []:
-            if str((split.get("sport") or {}).get("id")) != "1":
+    for stats_group in payload["stats"]:
+        if not isinstance(stats_group, dict) or not isinstance(stats_group.get("splits"), list):
+            return None
+        for split in stats_group["splits"]:
+            if not isinstance(split, dict) or not isinstance(split.get("sport"), dict):
+                return None
+            sport_id = str(split["sport"].get("id"))
+            if not sport_id.isdigit():
+                return None
+            if sport_id != "1":
                 continue
             try:
                 year = int(split["season"])
             except (KeyError, TypeError, ValueError):
-                continue
-            stat = split.get("stat") or {}
+                return None
+            stat = split.get("stat")
+            if not isinstance(stat, dict):
+                return None
             if role == "hitter":
+                pa = _statsapi_service_count(stat.get("plateAppearances"))
+                ab = _statsapi_service_count(stat.get("atBats"))
+                if pa is None or ab is None or ab > pa:
+                    return None
                 seasons.append(
                     {
                         "year": year,
-                        "pa": int(_statsapi_number(stat.get("plateAppearances"))),
-                        "ab": int(_statsapi_number(stat.get("atBats"))),
+                        "pa": pa,
+                        "ab": ab,
                         "r": int(_statsapi_number(stat.get("runs"))),
                         "hr": int(_statsapi_number(stat.get("homeRuns"))),
                         "rbi": int(_statsapi_number(stat.get("rbi"))),
@@ -537,10 +566,16 @@ def _statsapi_service_seasons(mlbam_id: int, role: str) -> list[dict] | None:
                     }
                 )
             else:
+                innings = stat.get("inningsPitched")
+                if isinstance(innings, bool) or not re.fullmatch(r"[0-9]+(?:\.[012])?", str(innings).strip()):
+                    return None
+                ip = _statsapi_innings(innings, None)
+                if ip is None or not math.isfinite(ip):
+                    return None
                 seasons.append(
                     {
                         "year": year,
-                        "ip": _statsapi_innings(stat.get("inningsPitched")),
+                        "ip": ip,
                         "era": _statsapi_number(stat.get("era"), 99.0),
                         "whip": _statsapi_number(stat.get("whip"), 99.0),
                         "so": int(_statsapi_number(stat.get("strikeOuts"))),
@@ -613,15 +648,14 @@ def _history_blocking_current_key(row: dict, role: str) -> tuple[int, str] | Non
     return None
 
 
-def _backfill_draft_facts(payload: dict) -> None:
-    """Idempotent guarantee that every current row carries its cache draft facts.
+def _backfill_draft_facts(payload: dict, draft_facts: dict) -> None:
+    """Idempotent guarantee that every current row carries its resolved draft facts.
 
     The primary merge in _sanitize_current_row already does this locally, but a
     CI-only build quirk drops it for some latest_milb_history rows (Miller et al.),
     so this closes the gap regardless of build path. No-op when already merged.
     Draft facts feed only the existing pedigree feature -- independence unaffected.
     """
-    draft_facts = _load_optional_json(DRAFT_FACTS_PATH)
     if not draft_facts:
         return
     current = payload.get("current") or {}
@@ -1052,7 +1086,7 @@ def build_contract(
         },
         "mlb_service": _service_facts(current_rows, mlb_seasons),
     }
-    _backfill_draft_facts(payload)
+    _backfill_draft_facts(payload, draft_facts)
     payload["source_policy"] = _source_policy_for_payload(payload)
     return payload
 

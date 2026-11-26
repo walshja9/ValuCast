@@ -1,10 +1,12 @@
 """Contract tests for ValuCast's native factual prospect-input producer."""
 import inspect
+import io
 import json
 
 import pytest
 
 from prospects import raw_input_builder as exporter
+from scripts import refresh_milb_card_history as history_builder
 
 
 def _historical():
@@ -84,6 +86,67 @@ def _mlb_seasons():
             "projection": {"qs": 22},
         }],
     }
+
+
+def _forbid_input_read(*args, **kwargs):
+    raise AssertionError("Fully supplied contract inputs must not read local files")
+
+
+def test_contract_respects_fully_injected_draft_facts(monkeypatch):
+    for name in ("_load_json", "_load_optional_json", "_fantrax_availability_from_csv"):
+        monkeypatch.setattr(exporter, name, _forbid_input_read)
+    for facts, expected_pick in (({}, None), ({"101": {"draft_pick_number": 42}}, 42)):
+        payload = exporter.build_contract(
+            dataset=_historical(), current=_current(), milb_history={},
+            mlb_seasons=_mlb_seasons(), draft_facts=facts, fantrax_availability={},
+            generated_at="2026-06-12T00:00:00+00:00",
+        )
+        assert payload["current"]["hitters"][0].get("draft_pick_number") == expected_pick
+
+
+def test_draft_backfill_uses_resolved_facts_and_preserves_existing_values(monkeypatch):
+    for name in ("_load_json", "_load_optional_json", "_fantrax_availability_from_csv"):
+        monkeypatch.setattr(exporter, name, _forbid_input_read)
+    current_rows = {
+        "hitters": [{"mlbam_id": 101, "draft_pick_number": 7, "signing_bonus": None}],
+        "pitchers": [{"mlbam_id": 202, "draft_pick_number": None}],
+    }
+    monkeypatch.setattr(exporter, "_current_rows", lambda *args: current_rows)
+    exporter.build_contract(
+        dataset={"rows": []}, current=_current(), milb_history={}, mlb_seasons={},
+        draft_facts={"101": {"draft_pick_number": 42, "signing_bonus": 0},
+                     "202": {"draft_pick_number": 88}},
+        fantrax_availability={}, generated_at="2026-06-12T00:00:00+00:00",
+    )
+    assert current_rows["hitters"][0]["draft_pick_number"] == 7
+    assert current_rows["hitters"][0]["signing_bonus"] == 0
+    assert current_rows["pitchers"][0]["draft_pick_number"] == 88
+
+
+def test_history_producer_fields_survive_fully_injected_contract(monkeypatch):
+    for name in ("_load_json", "_load_optional_json", "_fantrax_availability_from_csv"):
+        monkeypatch.setattr(exporter, name, _forbid_input_read)
+    fields = ("batters_faced", "games_played", "hits", "home_runs", "walks")
+    for values in ((0.321, 237, 23, 48, 7, 19), (0.0, 0, 0, 0, 0, 0), (None,) * 6):
+        hitter = {"mlbam_id": 101, "normalized_name": "synthetic hitter", "role": "hitter",
+                  "level": "AA", "age": 20, "plate_appearances": 200, "babip": values[0]}
+        pitcher = {"mlbam_id": 202, "normalized_name": "synthetic pitcher", "role": "pitcher",
+                   "level": "AAA", "age": 21, "innings_pitched": 60.0, **dict(zip(fields, values[1:]))}
+        history = history_builder.build_card_history(
+            [{"season": 2025, "hitters": [hitter], "pitchers": [pitcher]}],
+            {"players": [{"normalized_name": "synthetic hitter"}, {"normalized_name": "synthetic pitcher"}]},
+        )
+        payload = exporter.build_contract(
+            dataset={"rows": []},
+            current={"season": 2026, "fetched_date": "2026-06-12", "hitters": [], "pitchers": []},
+            milb_history=history, mlb_seasons={"101_hitter": [], "202_pitcher": []},
+            draft_facts={}, fantrax_availability={}, generated_at="2026-06-12T00:00:00+00:00",
+        )
+        hitter_row = payload["current"]["hitters"][0]
+        pitcher_row = payload["current"]["pitchers"][0]
+        assert (hitter_row["babip"], *(pitcher_row[field] for field in fields)) == values
+        assert hitter_row["source_kind"] == pitcher_row["source_kind"] == "latest_milb_history"
+        assert hitter_row["sample_season"] == pitcher_row["sample_season"] == 2025
 
 
 def test_contract_strips_rank_projection_and_value_fields():
@@ -552,6 +615,95 @@ def test_refresh_mlb_service_cache_keeps_prior_entry_on_fetch_failure(monkeypatc
     assert result["written"] is False
     assert prior["101_hitter"][0]["ab"] == 87
     assert not cache_path.exists()
+
+
+def test_malformed_service_json_preserves_prior_cache(monkeypatch, tmp_path):
+    bad_payloads = (
+        {}, None, [], {"stats": None}, {"stats": {}}, {"stats": [None]},
+        {"stats": [{}]}, {"stats": [{"splits": None}]}, {"stats": [{"splits": {}}]},
+        {"stats": [{"splits": [None]}]}, {"stats": [{"splits": [{}]}]},
+        {"stats": [{"splits": [{"sport": {"id": 1}, "season": "bad", "stat": {}}]}]},
+        {"stats": [{"splits": [{"sport": {"id": 1}, "season": "2026", "stat": None}]}]},
+    )
+    for index, bad in enumerate(bad_payloads):
+        monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(bad).encode()))
+        cache_path = tmp_path / f"malformed_{index}.json"
+        prior = {"101_hitter": [{"year": 2026, "pa": 100, "ab": 87}]}
+        result = exporter.refresh_mlb_service_cache(
+            current=_current(), mlb_seasons=prior, cache_path=cache_path, max_workers=1,
+        )
+        assert result["fetched"] == 0 and result["failed"] == 1, "Malformed response counted as a successful fetch"
+        assert result["written"] is False and not cache_path.exists()
+        assert prior == {"101_hitter": [{"year": 2026, "pa": 100, "ab": 87}]}
+
+
+def test_verified_empty_service_json_can_refresh_cache(monkeypatch, tmp_path):
+    for index, empty in enumerate(({"stats": []}, {"stats": [{"splits": []}]})):
+        monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(empty).encode()))
+        cache_path = tmp_path / f"verified_empty_{index}.json"
+        prior = {"101_hitter": [{"year": 2026, "pa": 100, "ab": 87}]}
+        result = exporter.refresh_mlb_service_cache(
+            current=_current(), mlb_seasons=prior, cache_path=cache_path, max_workers=1,
+        )
+        assert result["fetched"] == 1 and result["failed"] == 0
+        assert json.loads(cache_path.read_text(encoding="utf-8")) == {"101_hitter": []}
+
+
+def test_service_json_does_not_require_optional_statistics(monkeypatch):
+    for role, stat in (
+        ("hitter", {"plateAppearances": 0, "atBats": 0}),
+        ("hitter", {"plateAppearances": "10", "atBats": "8"}),
+        ("pitcher", {"inningsPitched": "0.0"}),
+        ("pitcher", {"inningsPitched": "25.1"}),
+        ("pitcher", {"inningsPitched": "25.2"}),
+    ):
+        payload = {"stats": [{"splits": [{"sport": {"id": 1}, "season": "2026", "stat": stat}]}]}
+        monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(payload).encode()))
+        seasons = exporter._statsapi_service_seasons(101, role)
+        assert len(seasons) == 1 and seasons[0]["year"] == 2026
+        if role == "hitter":
+            assert seasons[0]["pa"] == int(stat["plateAppearances"])
+            assert seasons[0]["ab"] == int(stat["atBats"])
+        else:
+            whole, outs = stat["inningsPitched"].split(".")
+            assert abs(seasons[0]["ip"] - (int(whole) + int(outs) / 3)) < 1e-12
+
+
+def _assert_unverified_service_counts_preserve_cache(monkeypatch, tmp_path, role):
+    required = {"plateAppearances": 10, "atBats": 8} if role == "hitter" else {"inningsPitched": "25.1"}
+    invalid = (None, True, False, "not numeric", "1 extra", [], {}, float("nan"), float("inf"), -1, 1.5)
+    cases = [{}]
+    for field in required:
+        cases.append({key: value for key, value in required.items() if key != field})
+        cases.extend({**required, field: value} for value in invalid)
+    if role == "pitcher":
+        cases.extend({"inningsPitched": value} for value in ("25.3", "25.12", "25.1 IP"))
+    else:
+        cases.append({"plateAppearances": 0, "atBats": 1})
+    candidate = {"mlbam_id": 101, "role": role, "level": "AA", "age": 22,
+                 "plate_appearances": 200, "innings_pitched": 60.0}
+    current = {"hitters": [candidate] if role == "hitter" else [],
+               "pitchers": [candidate] if role == "pitcher" else []}
+    prior_seasons = [{"year": 2026, "pa": 100, "ab": 87}] if role == "hitter" else [{"year": 2026, "ip": 25.0}]
+    for index, stat in enumerate(cases):
+        payload = {"stats": [{"splits": [{"sport": {"id": 1}, "season": "2026", "stat": stat}]}]}
+        monkeypatch.setattr(exporter.urllib.request, "urlopen", lambda *args, **kwargs: io.BytesIO(json.dumps(payload).encode()))
+        cache_path = tmp_path / f"unverified_{role}_{index}.json"
+        prior = {f"101_{role}": [dict(season) for season in prior_seasons]}
+        result = exporter.refresh_mlb_service_cache(
+            current=current, mlb_seasons=prior, cache_path=cache_path, max_workers=1,
+        )
+        assert result["fetched"] == 0 and result["failed"] == 1, "Unverified service counts counted as a successful fetch"
+        assert result["written"] is False and not cache_path.exists()
+        assert prior == {f"101_{role}": prior_seasons}
+
+
+def test_unverified_hitter_service_counts_preserve_prior_cache(monkeypatch, tmp_path):
+    _assert_unverified_service_counts_preserve_cache(monkeypatch, tmp_path, "hitter")
+
+
+def test_unverified_pitcher_service_counts_preserve_prior_cache(monkeypatch, tmp_path):
+    _assert_unverified_service_counts_preserve_cache(monkeypatch, tmp_path, "pitcher")
 
 
 def test_write_contract_round_trips(tmp_path):
