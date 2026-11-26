@@ -37,7 +37,7 @@ jobs:
       - name: Materialize reviewed helpers outside source checkout
         run: |
           mkdir -p "$RUNNER_TEMP/pr97-harness"
-          cat > "$RUNNER_TEMP/pr97-harness/run_phase.py" <<'PR97_1E1DA938DD201D46D6A99EF8B95AC9E413C5C86C6EDE228249EDF5CE218FC0CB'
+          cat > "$RUNNER_TEMP/pr97-harness/run_phase.py" <<'PR97_73B620D1F5ECD57C8CAC5F62DBAC0E46D1AFFE88ACE6D61D3F04423CF7EADDB1'
           """Run one declared isolated phase; retain raw logs only in runner temp."""
           import argparse
           import hashlib
@@ -53,10 +53,19 @@ jobs:
           SUMMARY = re.compile(r"^(?:\d+ (?:failed|passed|skipped|deselected|subtests passed)(?:, )?)+ in ([0-9.]+)s(?: \([0-9:]+\))?$")
 
 
-          def summarize(text, root):
-              result = {"pytest": [], "failed_tests": [], "exception_types": [], "source_frames": []}
-              for line in text.splitlines():
+          def summarize(text, root, log_spec):
+              assert log_spec["source_checkout"] == PIN
+              allowed_commands = set(log_spec["normal_commands"])
+              result = {"pytest": [], "failed_tests": [], "exception_types": [], "source_frames": [],
+                        "normal_commands": [], "failed_normal_command": None, "source_error_prefix_matches": []}
+              lines = text.splitlines()
+              last_marker = None
+              for index, line in enumerate(lines):
                   cleaned = line.strip().strip("= ")
+                  marker = re.fullmatch(r"\+ \S+ (scripts/[A-Za-z0-9_]+\.py|-m pytest)(?: .*)?", cleaned)
+                  if marker and marker.group(1) in allowed_commands:
+                      result["normal_commands"].append(marker.group(1))
+                      last_marker = index
                   match = SUMMARY.fullmatch(cleaned)
                   if match:
                       counts = {name: int(count) for count, name in re.findall(r"(\d+) (failed|passed|skipped|deselected|subtests passed)", cleaned)}
@@ -72,6 +81,14 @@ jobs:
                       path = Path(frame.group(1)).resolve()
                       if path.is_relative_to(root):
                           result["source_frames"].append({"path": path.relative_to(root).as_posix(), "line": int(frame.group(2)), "function": frame.group(3)})
+              if last_marker is not None and "subprocess.CalledProcessError" in result["exception_types"]:
+                  result["failed_normal_command"] = result["normal_commands"][-1]
+                  failed_section = "\n".join(lines[last_marker + 1:])
+                  for entry in log_spec["error_prefixes"]:
+                      prefix = entry["literal_prefix"]
+                      occurrences = max(failed_section.count(prefix), failed_section.count(json.dumps(prefix)[1:-1]))
+                      if occurrences:
+                          result["source_error_prefix_matches"].append({**entry, "occurrences": occurrences})
               return result
 
 
@@ -89,7 +106,8 @@ jobs:
                          "pinned_date": os.environ.get("VALUCAST_REFRESH_DATE"),
                          "exit_code": completed.returncode, "seconds": round(time.monotonic() - started, 3),
                          "log_bytes": len(raw), "log_sha256": hashlib.sha256(raw).hexdigest(),
-                         **summarize(raw.decode("utf-8", errors="replace"), root)}
+                         **summarize(raw.decode("utf-8", errors="replace"), root,
+                                     json.loads(Path(__file__).with_name("normal_log_spec.json").read_bytes()))}
               (evidence / (phase + ".json")).write_text(json.dumps(receipt, indent=2, allow_nan=False) + "\n", encoding="utf-8")
               print(json.dumps(receipt, sort_keys=True, allow_nan=False), flush=True)
               return completed.returncode
@@ -114,7 +132,7 @@ jobs:
 
           if __name__ == "__main__":
               raise SystemExit(main())
-          PR97_1E1DA938DD201D46D6A99EF8B95AC9E413C5C86C6EDE228249EDF5CE218FC0CB
+          PR97_73B620D1F5ECD57C8CAC5F62DBAC0E46D1AFFE88ACE6D61D3F04423CF7EADDB1
           cat > "$RUNNER_TEMP/pr97-harness/sitecustomize.py" <<'PR97_042E259E40795B19AFF1B3E0B110EAAAC8A136D30F5B11B5FB9B163D7D4AF59A'
           """Apply only the nonpaid normal scouting process boundary."""
           import atexit
@@ -737,7 +755,7 @@ jobs:
           if __name__ == "__main__":
               raise SystemExit(main())
           PR97_BDD5C1F2E70FF847A8429ABFC26FC59326328FE4A2723325FF7AFBA0A1BA2500
-          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics.py" <<'PR97_64B34D802E81E263D5D959490E62547E525A04D78CDFA43DD98E767F0E320C9D'
+          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics.py" <<'PR97_2D616FF86ACB4E5FCAF83D4EA84E9444377D3BE5F5006767C2DA40ACB50C26B9'
           """Prepare-only aggregate diagnostics for the ordinary, uninstrumented PR97 build."""
           from __future__ import annotations
 
@@ -797,7 +815,8 @@ jobs:
                           "top25_pitcher_count": 12, "top50_pitcher_count": 20, "top50_pitcher_rate": 0.4,
                           "max_top25_pitcher_count": 7, "max_top50_pitcher_rate": 0.3,
                           "pitcher_samples": [{"name": "SENTINEL_NAME", "mlbam_id": 987654321}]}}]},
-                  "snapshot": {"players": [{"mlbam_id": 202, "role": "pitcher", "player_type": "prospect", "value": 20}]},
+                  "snapshot": {"players": [{"mlbam_id": 202, "role": "pitcher", "player_type": "prospect", "value": 20}],
+                               "validation": {"surface_readiness": {"prospects": True}}},
                   "projection_metadata": {"as_of": "2026-11-26", "target_season": 2027},
               }
               contents = {label: json.dumps(value).encode() for label, value in fixtures.items()}
@@ -819,6 +838,39 @@ jobs:
                   assert result["selection_observation"]["status"] == "unavailable"
                   assert result["board_shape"]["governor"]["metrics"]["top25_pitcher_count"] == 12
                   assert result["board_shape"]["governor"]["status"] == "blocked"
+                  gates = result["publication_gates"]
+                  assert gates["governor"]["prospects_ready"] is False
+                  assert gates["snapshot"]["prospects_ready"] is True
+                  assert {row["id"]: row["status"] for row in gates["governor"]["checks"]}["prospect_top_board_role_shape"] == "blocked"
+                  assert set(row["id"] for row in gates["governor"]["checks"]) == set(GOVERNOR_CHECK_IDS)
+                  assert len(GOVERNOR_CHECK_IDS) == 27
+                  assert gates["governor"]["unknown_check_id_count"] == 0
+                  assert gates["governor"]["missing_known_check_count"] == 26
+                  for invalid_flag in (None, 0, 1, "true", "false", {}, []):
+                      invalid_gates = publication_gates({"governor": {"surface_readiness": {"prospects": invalid_flag}},
+                                                        "snapshot": {"validation": {"surface_readiness": {"prospects": invalid_flag}}}})
+                      assert invalid_gates["governor"]["prospects_ready"] is None
+                      assert invalid_gates["snapshot"]["prospects_ready"] is None
+                  missing_gates = summarize({label: raw for label, raw in contents.items() if label not in {"governor", "snapshot"}}, manifest)["publication_gates"]
+                  assert missing_gates["governor"] == {"status": "unavailable", "prospects_ready": None, "checks": [], "unknown_check_id_count": None, "missing_known_check_count": None}
+                  assert missing_gates["snapshot"] == {"status": "unavailable", "prospects_ready": None}
+                  fixed_checks = [{"id": check_id, "status": "passed", "metrics": {"secret": "PRIVATE_METRIC"}} for check_id in GOVERNOR_CHECK_IDS]
+                  fixed_checks += [{"id": "PRIVATE_UNKNOWN_CHECK", "status": "PRIVATE_UNKNOWN_STATUS"}]
+                  public = publication_gates({"governor": {"checks": fixed_checks}})
+                  assert len(public["governor"]["checks"]) == 27
+                  assert public["governor"]["unknown_check_id_count"] == 1
+                  assert public["governor"]["missing_known_check_count"] == 0
+                  assert all(row["status"] == "passed" for row in public["governor"]["checks"])
+                  all_checks_contents = dict(contents)
+                  all_checks_contents["governor"] = json.dumps({"checks": fixed_checks, "unknown_field": "SENTINEL_NAME"}).encode()
+                  assert summarize(all_checks_contents, synthetic_manifest(all_checks_contents))["publication_gates"]["governor"] == public["governor"]
+                  assert all(token not in json.dumps(public) for token in ("PRIVATE_METRIC", "PRIVATE_UNKNOWN_CHECK", "PRIVATE_UNKNOWN_STATUS"))
+                  fixed_checks[0]["status"] = "PRIVATE_UNKNOWN_STATUS"
+                  public = publication_gates({"governor": {"checks": fixed_checks}})
+                  assert public["governor"]["checks"][0]["status"] is None
+                  fixed_checks[0]["status"] = "passed"
+                  fixed_checks.append(dict(fixed_checks[0]))
+                  assert publication_gates({"governor": {"checks": fixed_checks}})["governor"]["checks"][0]["status"] is None
                   passed_contents = dict(contents)
                   passed_contents["governor"] = passed_contents["governor"].replace(b'"blocked"', b'"passed"')
                   assert summarize(passed_contents, synthetic_manifest(passed_contents))["board_shape"]["governor"]["status"] == "passed"
@@ -1071,6 +1123,35 @@ jobs:
               "snapshot": "data/public/public_dynasty_snapshot.json",
               "projection_metadata": "data/projections/metadata.json",
           }
+          GOVERNOR_CHECK_IDS = (
+              'buy_promotion_gate',
+              'buy_top40_public_surface_alignment',
+              'dd_score_source_audit',
+              'milb_stat_freshness_audit',
+              'mlb_projection_stability_outliers',
+              'mlb_top_board_role_shape',
+              'mlb_top_value_gap',
+              'movers_surface_gate',
+              'prospect_card_data_audit',
+              'prospect_elite_factual_raw_fallback_audit',
+              'prospect_rank_surface_suppression',
+              'prospect_top25_neutral_investment_rate',
+              'prospect_top25_pedigree_cap_plateau',
+              'prospect_top50_availability_coverage',
+              'prospect_top50_availability_level_alignment',
+              'prospect_top50_availability_risk_pricing',
+              'prospect_top50_bucket_shape',
+              'prospect_top50_current_stat_context_alignment',
+              'prospect_top50_factual_context_coverage',
+              'prospect_top50_factual_context_shape',
+              'prospect_top50_fallback_rate',
+              'prospect_top50_pedigree_rate',
+              'prospect_top50_team_coverage',
+              'prospect_top_board_role_shape',
+              'prospect_transition_continuity',
+              'recent_signal_report',
+              'two_way_identity_policy',
+          )
           REPAIRED = {"hitter": ("babip",), "pitcher": ("batters_faced", "games_played", "hits", "home_runs", "walks")}
           REQUIRED_NUMERIC = {"hitter": ("iso", "k_pct", "bb_pct", "ops", "avg", "obp", "slg", "babip", "home_runs", "stolen_bases"),
                               "pitcher": ("k_per_9", "bb_per_9", "k_bb_pct", "era", "whip", "home_runs", "hits", "walks", "batters_faced", "games_started", "games_played")}
@@ -1325,6 +1406,35 @@ jobs:
               return result
 
 
+          def publication_gates(projected):
+              governor = projected.get("governor")
+              snapshot = projected.get("snapshot")
+              governor_result = {"status": "unavailable", "prospects_ready": None, "checks": [],
+                                 "unknown_check_id_count": None, "missing_known_check_count": None}
+              snapshot_result = {"status": "unavailable", "prospects_ready": None}
+              if isinstance(governor, dict):
+                  readiness = governor.get("surface_readiness")
+                  flag = readiness.get("prospects") if isinstance(readiness, dict) else None
+                  checks = governor.get("checks")
+                  checks = checks if isinstance(checks, list) else []
+                  rows = []
+                  missing_count = 0
+                  unknown_count = sum(not isinstance(check, dict) or check.get("id") not in GOVERNOR_CHECK_IDS for check in checks)
+                  for check_id in GOVERNOR_CHECK_IDS:
+                      matched = [check for check in checks if isinstance(check, dict) and check.get("id") == check_id]
+                      missing_count += not matched
+                      status = matched[0].get("status") if len(matched) == 1 else None
+                      rows.append({"id": check_id, "status": status if isinstance(status, str) and status in {"passed", "blocked"} else None})
+                  governor_result = {"status": "available", "prospects_ready": flag if type(flag) is bool else None, "checks": rows,
+                                     "unknown_check_id_count": unknown_count, "missing_known_check_count": missing_count}
+              if isinstance(snapshot, dict):
+                  validation = snapshot.get("validation")
+                  readiness = validation.get("surface_readiness") if isinstance(validation, dict) else None
+                  flag = readiness.get("prospects") if isinstance(readiness, dict) else None
+                  snapshot_result = {"status": "available", "prospects_ready": flag if type(flag) is bool else None}
+              return {"governor": governor_result, "snapshot": snapshot_result}
+
+
           def board_shape(projected):
               governor = projected.get("governor")
               checks = governor.get("checks") if isinstance(governor, dict) else None
@@ -1451,6 +1561,7 @@ jobs:
               board = rows_at(projected, "rank", "board")
               result["history_to_output"] = history_join(contract_rows, rows_at(projected, "main_model", "ranked"), board)
               result["board_shape"] = board_shape(projected)
+              result["publication_gates"] = publication_gates(projected)
               result["emitted_score_components"] = means_and_residuals(board, (projected.get("rank") or {}).get("rank_version"))
               result["status"] = "complete" if all(entry["status"] == "verified" for entry in result["files"].values()) else "partial"
               result["limits"] = ["Aggregate first pass only; no predictive, causal or publication qualification.",
@@ -1600,8 +1711,8 @@ jobs:
 
           if __name__ == "__main__":
               raise SystemExit(main())
-          PR97_64B34D802E81E263D5D959490E62547E525A04D78CDFA43DD98E767F0E320C9D
-          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics_spec.json" <<'PR97_B1076918EF0D4EC9504976BA8ACA76223F83D102A6024944C4DB2057F54B8810'
+          PR97_2D616FF86ACB4E5FCAF83D4EA84E9444377D3BE5F5006767C2DA40ACB50C26B9
+          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics_spec.json" <<'PR97_CB451838A399EA9B883018541D3E68BC6A96333C2A7FCE128FE07C13AC60095B'
           {
             "candidate_binding": {
               "containers": "Exact fixed11 paths and candidate_sha256 hashes; current bytes must match candidate bytes.",
@@ -2794,7 +2905,8 @@ jobs:
               "emitted_score_components",
               "selection_observation",
               "eligibility_observation",
-              "normalization_pool_effects"
+              "normalization_pool_effects",
+              "publication_gates"
             ],
             "phase_binding": {
               "files": [
@@ -2879,6 +2991,58 @@ jobs:
               "row_identity_season_level_sample": "Private RAM only; no row dumps, exact row-season labels, names or name-key decoding.",
               "signed_finite_measurements": "Finite negative K-BB% remains valid_nonzero; no physical-range thresholds."
             },
+            "publication_gates": {
+              "check_statuses": [
+                "passed",
+                "blocked"
+              ],
+              "completeness": "No exhaustive qualification from available status or counts alone; every required known status must be present and valid; source changes or unknown IDs remain unqualified",
+              "container_status": "available only after existing phase, candidate and lexical projection gates; otherwise unavailable",
+              "governor_check_ids": [
+                "buy_promotion_gate",
+                "buy_top40_public_surface_alignment",
+                "dd_score_source_audit",
+                "milb_stat_freshness_audit",
+                "mlb_projection_stability_outliers",
+                "mlb_top_board_role_shape",
+                "mlb_top_value_gap",
+                "movers_surface_gate",
+                "prospect_card_data_audit",
+                "prospect_elite_factual_raw_fallback_audit",
+                "prospect_rank_surface_suppression",
+                "prospect_top25_neutral_investment_rate",
+                "prospect_top25_pedigree_cap_plateau",
+                "prospect_top50_availability_coverage",
+                "prospect_top50_availability_level_alignment",
+                "prospect_top50_availability_risk_pricing",
+                "prospect_top50_bucket_shape",
+                "prospect_top50_current_stat_context_alignment",
+                "prospect_top50_factual_context_coverage",
+                "prospect_top50_factual_context_shape",
+                "prospect_top50_fallback_rate",
+                "prospect_top50_pedigree_rate",
+                "prospect_top50_team_coverage",
+                "prospect_top_board_role_shape",
+                "prospect_transition_continuity",
+                "recent_signal_report",
+                "two_way_identity_policy"
+              ],
+              "governor_prospects_ready": "governor.surface_readiness.prospects; exact bool or null",
+              "interpretation": "emitted readiness/check observations only; no reevaluation, promotion or publication qualification",
+              "missing_invalid_or_duplicate_check_status": null,
+              "missing_known_check_count": "Count of fixed public IDs absent from observed checks; invalid/duplicate known statuses remain null separately; null when governor unavailable",
+              "other_metrics_or_messages": "never exported; existing role-shape metrics remain separate",
+              "snapshot_prospects_ready": "snapshot.validation.surface_readiness.prospects; exact bool or null",
+              "source": {
+                "check_factory_lines": "200-205",
+                "commit": "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea",
+                "emission_line": 2118,
+                "path": "quality/valucast_governor.py",
+                "sha256": "28b98b7f016408a59c66c57cd24ec2f35a4653f7fbf0c347f0d90d7688801542"
+              },
+              "unknown_check_id_count": "Count of check records with no recognized fixed public ID, including missing/invalid IDs; unknown strings are not emitted; null when governor unavailable",
+              "unknown_check_ids": "never exported"
+            },
             "schema_version": "1.0.0",
             "source_commit": "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea",
             "states": [
@@ -2889,21 +3053,2235 @@ jobs:
               "valid_nonzero"
             ]
           }
-          PR97_B1076918EF0D4EC9504976BA8ACA76223F83D102A6024944C4DB2057F54B8810
-          cat > "$RUNNER_TEMP/pr97-harness/source-manifest.json" <<'PR97_9D7ABCC837821B7B062D07B722DFDADEAB3EAC871BC31503F35FD056AE18680C'
+          PR97_CB451838A399EA9B883018541D3E68BC6A96333C2A7FCE128FE07C13AC60095B
+          cat > "$RUNNER_TEMP/pr97-harness/normal_log_spec.json" <<'PR97_1E40144E9B98412BECDD4640B6272D4FDFD29BF93351F4BF0C5211ED7D068FB2'
+          {
+            "error_prefixes": [
+              {
+                "append_line": 467,
+                "kind": "constant_string",
+                "literal_prefix": "Duplicate MLBAM profiles exist in the MLB availability artifact.",
+                "source_line": 467,
+                "source_path": "mlb/availability.py"
+              },
+              {
+                "append_line": 1313,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast MLB age coverage is below the promotion threshold.",
+                "source_line": 1314,
+                "source_path": "mlb/dynasty.py"
+              },
+              {
+                "append_line": 173,
+                "kind": "constant_string",
+                "literal_prefix": "remaining_opportunity_clamped",
+                "source_line": 173,
+                "source_path": "mlb/playing_time_role.py"
+              },
+              {
+                "append_line": 191,
+                "kind": "constant_string",
+                "literal_prefix": "starter_probability_out_of_range",
+                "source_line": 191,
+                "source_path": "mlb/playing_time_role.py"
+              },
+              {
+                "append_line": 193,
+                "kind": "constant_string",
+                "literal_prefix": "negative_projected_starts",
+                "source_line": 193,
+                "source_path": "mlb/playing_time_role.py"
+              },
+              {
+                "append_line": 195,
+                "kind": "constant_string",
+                "literal_prefix": "negative_projected_innings",
+                "source_line": 195,
+                "source_path": "mlb/playing_time_role.py"
+              },
+              {
+                "append_line": 197,
+                "kind": "constant_string",
+                "literal_prefix": "projected_starts_without_innings",
+                "source_line": 197,
+                "source_path": "mlb/playing_time_role.py"
+              },
+              {
+                "append_line": 481,
+                "kind": "constant_string",
+                "literal_prefix": "Playing-time tracker has no profiles.",
+                "source_line": 481,
+                "source_path": "mlb/playing_time_role.py"
+              },
+              {
+                "append_line": 483,
+                "kind": "constant_string",
+                "literal_prefix": "Playing-time tracker has duplicate MLBAM identities.",
+                "source_line": 483,
+                "source_path": "mlb/playing_time_role.py"
+              },
+              {
+                "append_line": 193,
+                "kind": "constant_string",
+                "literal_prefix": "Duplicate MLBAM identities exist in the active MLB roster artifact.",
+                "source_line": 193,
+                "source_path": "mlb/roster_status.py"
+              },
+              {
+                "append_line": 195,
+                "kind": "constant_string",
+                "literal_prefix": "Active MLB roster artifact has no player profiles.",
+                "source_line": 195,
+                "source_path": "mlb/roster_status.py"
+              },
+              {
+                "append_line": 702,
+                "kind": "constant_string",
+                "literal_prefix": "Duplicate MLBAM+role profiles exist in the MLB track-record artifact.",
+                "source_line": 702,
+                "source_path": "mlb/track_record.py"
+              },
+              {
+                "append_line": 704,
+                "kind": "constant_string",
+                "literal_prefix": "MLB track-record coverage is below the dynasty-layer consumption threshold.",
+                "source_line": 704,
+                "source_path": "mlb/track_record.py"
+              },
+              {
+                "append_line": 342,
+                "kind": "constant_string",
+                "literal_prefix": "No prospect rank rows are available for ahead-of-consensus reporting.",
+                "source_line": 342,
+                "source_path": "prospects/ahead_of_consensus.py"
+              },
+              {
+                "append_line": 344,
+                "kind": "constant_string",
+                "literal_prefix": "No guarded ahead-of-consensus calls cleared the noise guards.",
+                "source_line": 344,
+                "source_path": "prospects/ahead_of_consensus.py"
+              },
+              {
+                "append_line": 329,
+                "kind": "constant_string",
+                "literal_prefix": "buys_top25_pitcher_rate",
+                "source_line": 329,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 486,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy review has not approved changing the public /buys source.",
+                "source_line": 487,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 493,
+                "kind": "constant_string",
+                "literal_prefix": "Official MLB active-roster status artifact is required before promoting ValuCast Buys.",
+                "source_line": 494,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 497,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy board includes active MLB roster identities.",
+                "source_line": 497,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 499,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy momentum is launch-limited until review approves neutral-momentum launch or more dated history accumulates.",
+                "source_line": 500,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 503,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy top board includes raw fallback-scored players.",
+                "source_line": 504,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 507,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy top board has missing MLB-org display coverage.",
+                "source_line": 507,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 509,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy top board has too many low-confidence profiles.",
+                "source_line": 510,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 513,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy top board leans too heavily on pedigree-only profiles.",
+                "source_line": 514,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 517,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy top-25 is too pitcher-heavy for public promotion.",
+                "source_line": 518,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 521,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buy top board has too few promotion-eligible rows.",
+                "source_line": 522,
+                "source_path": "prospects/buys.py"
+              },
+              {
+                "append_line": 59,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buys monitor requires locked v1 buy signals.",
+                "source_line": 59,
+                "source_path": "prospects/buys_monitor.py"
+              },
+              {
+                "append_line": 61,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buys artifact is not ready for live consumers.",
+                "source_line": 61,
+                "source_path": "prospects/buys_monitor.py"
+              },
+              {
+                "append_line": 63,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buys promotion is not feeding live buys.",
+                "source_line": 63,
+                "source_path": "prospects/buys_monitor.py"
+              },
+              {
+                "append_line": 68,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast Buys top-40 retention is below monitor threshold.",
+                "source_line": 68,
+                "source_path": "prospects/buys_monitor.py"
+              },
+              {
+                "append_line": 1446,
+                "kind": "constant_string",
+                "literal_prefix": "Fewer than two dated Rank v1 archives are available.",
+                "source_line": 1446,
+                "source_path": "prospects/call_up_receipts.py"
+              },
+              {
+                "append_line": 1448,
+                "kind": "constant_string",
+                "literal_prefix": "No active MLB roster lookup rows are available.",
+                "source_line": 1448,
+                "source_path": "prospects/call_up_receipts.py"
+              },
+              {
+                "append_line": 140,
+                "kind": "constant_string",
+                "literal_prefix": "No prospect rows are available in the public snapshot.",
+                "source_line": 140,
+                "source_path": "prospects/card_data_audit.py"
+              },
+              {
+                "append_line": 142,
+                "kind": "constant_string",
+                "literal_prefix": "Duplicate MLBAM+role identities are present in the prospect card pool.",
+                "source_line": 142,
+                "source_path": "prospects/card_data_audit.py"
+              },
+              {
+                "append_line": 149,
+                "kind": "constant_string",
+                "literal_prefix": "Top-50 prospect cards include graduated or MLB-level players.",
+                "source_line": 149,
+                "source_path": "prospects/card_data_audit.py"
+              },
+              {
+                "append_line": 158,
+                "kind": "constant_string",
+                "literal_prefix": "Top-50 prospect cards are missing required identity or stat context.",
+                "source_line": 158,
+                "source_path": "prospects/card_data_audit.py"
+              },
+              {
+                "append_line": 160,
+                "kind": "constant_string",
+                "literal_prefix": "Top-50 cards still rely on MiLB history fallback stat context.",
+                "source_line": 160,
+                "source_path": "prospects/card_data_audit.py"
+              },
+              {
+                "append_line": 162,
+                "kind": "constant_string",
+                "literal_prefix": "Top-50 card stat context does not match the model's factual sample.",
+                "source_line": 162,
+                "source_path": "prospects/card_data_audit.py"
+              },
+              {
+                "append_line": 190,
+                "kind": "constant_string",
+                "literal_prefix": "duplicate_cohort_role_identity",
+                "source_line": 190,
+                "source_path": "prospects/challenger_readiness.py"
+              },
+              {
+                "append_line": 196,
+                "kind": "constant_string",
+                "literal_prefix": "reviewed_implementation_amendment_missing",
+                "source_line": 196,
+                "source_path": "prospects/challenger_readiness.py"
+              },
+              {
+                "append_line": 91,
+                "kind": "constant_string",
+                "literal_prefix": "missing_v0_6_model_profile",
+                "source_line": 91,
+                "source_path": "prospects/coverage_audit.py"
+              },
+              {
+                "append_line": 93,
+                "kind": "constant_string",
+                "literal_prefix": "raw_fallback_score_source",
+                "source_line": 93,
+                "source_path": "prospects/coverage_audit.py"
+              },
+              {
+                "append_line": 95,
+                "kind": "constant_string",
+                "literal_prefix": "elite_factual_draft_signing_context",
+                "source_line": 95,
+                "source_path": "prospects/coverage_audit.py"
+              },
+              {
+                "append_line": 98,
+                "kind": "constant_string",
+                "literal_prefix": "context_dd_top_prospect",
+                "source_line": 98,
+                "source_path": "prospects/coverage_audit.py"
+              },
+              {
+                "append_line": 101,
+                "kind": "constant_string",
+                "literal_prefix": "context_public_source_top_prospect",
+                "source_line": 101,
+                "source_path": "prospects/coverage_audit.py"
+              },
+              {
+                "append_line": 103,
+                "kind": "constant_string",
+                "literal_prefix": "top_200_valucast_board",
+                "source_line": 103,
+                "source_path": "prospects/coverage_audit.py"
+              },
+              {
+                "append_line": 291,
+                "kind": "constant_string",
+                "literal_prefix": "Elite factual draft/signing prospects remain on raw fallback scoring inside the top-200 review band.",
+                "source_line": 292,
+                "source_path": "prospects/coverage_audit.py"
+              },
+              {
+                "append_line": 72,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "availability=",
+                "source_line": 72,
+                "source_path": "prospects/front_office_failures.py"
+              },
+              {
+                "append_line": 76,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "risk_discount=",
+                "source_line": 76,
+                "source_path": "prospects/front_office_failures.py"
+              },
+              {
+                "append_line": 81,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "uncertainty=",
+                "source_line": 81,
+                "source_path": "prospects/front_office_failures.py"
+              },
+              {
+                "append_line": 86,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "score_source=",
+                "source_line": 86,
+                "source_path": "prospects/front_office_failures.py"
+              },
+              {
+                "append_line": 89,
+                "kind": "constant_string",
+                "literal_prefix": "pedigree_score_source",
+                "source_line": 89,
+                "source_path": "prospects/front_office_failures.py"
+              },
+              {
+                "append_line": 357,
+                "kind": "constant_string",
+                "literal_prefix": "Fewer than 2 dated rank archives — cannot build a claim lifecycle.",
+                "source_line": 357,
+                "source_path": "prospects/gaps_claim_ledger.py"
+              },
+              {
+                "append_line": 359,
+                "kind": "constant_string",
+                "literal_prefix": "No transactions cache — call-up resolution is unavailable (claims still enroll and resolve by consensus/model move/expiry).",
+                "source_line": 360,
+                "source_path": "prospects/gaps_claim_ledger.py"
+              },
+              {
+                "append_line": 433,
+                "kind": "constant_string",
+                "literal_prefix": "schema_version_mismatch",
+                "source_line": 433,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 437,
+                "kind": "constant_string",
+                "literal_prefix": "source_file_hash_mismatch",
+                "source_line": 437,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 442,
+                "kind": "constant_string",
+                "literal_prefix": "research_boundary_violation",
+                "source_line": 442,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 453,
+                "kind": "constant_string",
+                "literal_prefix": "duplicate_oof_identity",
+                "source_line": 453,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 469,
+                "kind": "constant_string",
+                "literal_prefix": "row_error_mismatch",
+                "source_line": 469,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 475,
+                "kind": "constant_string",
+                "literal_prefix": "reference_identity_count_mismatch",
+                "source_line": 475,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 477,
+                "kind": "constant_string",
+                "literal_prefix": "fold_reference_leak",
+                "source_line": 477,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 481,
+                "kind": "constant_string",
+                "literal_prefix": "fold_boundary_violation",
+                "source_line": 481,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 485,
+                "kind": "constant_string",
+                "literal_prefix": "fold_identity_mismatch",
+                "source_line": 485,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 489,
+                "kind": "constant_string",
+                "literal_prefix": "invalid_reference_hash",
+                "source_line": 489,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 498,
+                "kind": "constant_string",
+                "literal_prefix": "summary_mismatch",
+                "source_line": 498,
+                "source_path": "prospects/impact_oof.py"
+              },
+              {
+                "append_line": 264,
+                "kind": "constant_string",
+                "literal_prefix": "current-season MiLB rows have stale sample_fetched_date values",
+                "source_line": 264,
+                "source_path": "prospects/milb_stat_freshness.py"
+              },
+              {
+                "append_line": 266,
+                "kind": "constant_string",
+                "literal_prefix": "top-50 prospect card context uses latest_milb_history fallback",
+                "source_line": 266,
+                "source_path": "prospects/milb_stat_freshness.py"
+              },
+              {
+                "append_line": 268,
+                "kind": "constant_string",
+                "literal_prefix": "top-50 prospect stat_line context is stale or mismatched",
+                "source_line": 268,
+                "source_path": "prospects/milb_stat_freshness.py"
+              },
+              {
+                "append_line": 270,
+                "kind": "constant_string",
+                "literal_prefix": "top-200 prospect board has too many MiLB history fallbacks",
+                "source_line": 270,
+                "source_path": "prospects/milb_stat_freshness.py"
+              },
+              {
+                "append_line": 332,
+                "kind": "constant_string",
+                "literal_prefix": "Top-200 factual-current context coverage is below threshold.",
+                "source_line": 332,
+                "source_path": "prospects/model_v07.py"
+              },
+              {
+                "append_line": 334,
+                "kind": "constant_string",
+                "literal_prefix": "Top-200 availability context coverage is below threshold.",
+                "source_line": 334,
+                "source_path": "prospects/model_v07.py"
+              },
+              {
+                "append_line": 339,
+                "kind": "constant_string",
+                "literal_prefix": "Outcome evidence layer is not ready for v0.7 backtesting.",
+                "source_line": 339,
+                "source_path": "prospects/model_v07.py"
+              },
+              {
+                "append_line": 376,
+                "kind": "constant_string",
+                "literal_prefix": "No current Rank v1 rows are available for mover scoring.",
+                "source_line": 376,
+                "source_path": "prospects/movers.py"
+              },
+              {
+                "append_line": 378,
+                "kind": "constant_string",
+                "literal_prefix": "Fewer than two Rank v1 archive days are available; mover board may be sparse.",
+                "source_line": 378,
+                "source_path": "prospects/movers.py"
+              },
+              {
+                "append_line": 217,
+                "kind": "constant_string",
+                "literal_prefix": "Universal dynasty outcome distribution has not passed both roles.",
+                "source_line": 217,
+                "source_path": "prospects/outcome_backtest.py"
+              },
+              {
+                "append_line": 219,
+                "kind": "constant_string",
+                "literal_prefix": "Historical absolute cross-role concordance is below its registered floor.",
+                "source_line": 220,
+                "source_path": "prospects/outcome_backtest.py"
+              },
+              {
+                "append_line": 138,
+                "kind": "constant_string",
+                "literal_prefix": "Peak calibration has no projection rows.",
+                "source_line": 138,
+                "source_path": "prospects/peak_calibration.py"
+              },
+              {
+                "append_line": 140,
+                "kind": "constant_string",
+                "literal_prefix": "Peak calibration has no bucket rows.",
+                "source_line": 140,
+                "source_path": "prospects/peak_calibration.py"
+              },
+              {
+                "append_line": 143,
+                "kind": "constant_string",
+                "literal_prefix": "Some peak projection rows are missing Card V2 context.",
+                "source_line": 143,
+                "source_path": "prospects/peak_calibration.py"
+              },
+              {
+                "append_line": 807,
+                "kind": "constant_string",
+                "literal_prefix": "Peak projection artifact has no rows.",
+                "source_line": 807,
+                "source_path": "prospects/peak_projection.py"
+              },
+              {
+                "append_line": 809,
+                "kind": "constant_string",
+                "literal_prefix": "Top-200 peak projection coverage is below threshold.",
+                "source_line": 809,
+                "source_path": "prospects/peak_projection.py"
+              },
+              {
+                "append_line": 811,
+                "kind": "constant_string",
+                "literal_prefix": "Peak projection artifact has duplicate MLBAM+role identities.",
+                "source_line": 811,
+                "source_path": "prospects/peak_projection.py"
+              },
+              {
+                "append_line": 813,
+                "kind": "constant_string",
+                "literal_prefix": "Some peak projection rows are missing shape grades.",
+                "source_line": 813,
+                "source_path": "prospects/peak_projection.py"
+              },
+              {
+                "append_line": 815,
+                "kind": "constant_string",
+                "literal_prefix": "Some peak projection rows are missing Card V2 context.",
+                "source_line": 815,
+                "source_path": "prospects/peak_projection.py"
+              },
+              {
+                "append_line": 213,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "source_policy.",
+                "source_line": 213,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 225,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "source_hashes.",
+                "source_line": 225,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 241,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "forbidden field ",
+                "source_line": 241,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 243,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "unexpected field ",
+                "source_line": 243,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 277,
+                "kind": "constant_string",
+                "literal_prefix": "schema_version must be prospect_v2_development_contract_v1",
+                "source_line": 277,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 279,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "target must be ",
+                "source_line": 279,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 281,
+                "kind": "constant_string",
+                "literal_prefix": "development cohort boundary must be 2021",
+                "source_line": 281,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 287,
+                "kind": "constant_string",
+                "literal_prefix": "development row count must be 5984",
+                "source_line": 287,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 294,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "development role counts are invalid: ",
+                "source_line": 294,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 303,
+                "kind": "constant_string",
+                "literal_prefix": "development identities must be unique",
+                "source_line": 303,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 305,
+                "kind": "constant_string",
+                "literal_prefix": "historical_mlb_seasons must be an object",
+                "source_line": 305,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 308,
+                "kind": "constant_string",
+                "literal_prefix": "historical_mlb_seasons keys must equal development identities",
+                "source_line": 308,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 312,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "historical_mlb_seasons.",
+                "source_line": 312,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 318,
+                "kind": "constant_string",
+                "literal_prefix": "acquisition_by_cohort_identity must be an object",
+                "source_line": 318,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 320,
+                "kind": "constant_string",
+                "literal_prefix": "acquisition keys must equal development identities",
+                "source_line": 320,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 329,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "acquisition_by_cohort_identity.",
+                "source_line": 329,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 333,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "acquisition_by_cohort_identity.",
+                "source_line": 333,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 371,
+                "kind": "constant_string",
+                "literal_prefix": "schema_version must be prospect_2022_confirmation_manifest_v1",
+                "source_line": 371,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 373,
+                "kind": "constant_string",
+                "literal_prefix": "target_cohort must be 2022",
+                "source_line": 373,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 377,
+                "kind": "constant_string",
+                "literal_prefix": "confirmation row count must be 772",
+                "source_line": 377,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 384,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "confirmation role counts are invalid: ",
+                "source_line": 384,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 390,
+                "kind": "constant_string",
+                "literal_prefix": "confirmation identities must be unique",
+                "source_line": 390,
+                "source_path": "prospects/prospect_v2_target.py"
+              },
+              {
+                "append_line": 2114,
+                "kind": "constant_string",
+                "literal_prefix": "Current ValuCast prospect-model coverage is below the public migration threshold.",
+                "source_line": 2115,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 2118,
+                "kind": "constant_string",
+                "literal_prefix": "Some ValuCast prospect-universe rows still lack MLBAM identity.",
+                "source_line": 2118,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 2120,
+                "kind": "constant_string",
+                "literal_prefix": "Duplicate MLBAM+role identities exist in the prospect universe.",
+                "source_line": 2120,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 2122,
+                "kind": "constant_string",
+                "literal_prefix": "Top-200 score separation is not strong enough for publication.",
+                "source_line": 2122,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 2124,
+                "kind": "constant_string",
+                "literal_prefix": "Input artifacts were not generated on the same date.",
+                "source_line": 2124,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 2126,
+                "kind": "constant_string",
+                "literal_prefix": "Current prospect stat context did not select the newest factual current-season row.",
+                "source_line": 2127,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 2130,
+                "kind": "constant_string",
+                "literal_prefix": "MLB roster status artifact is required for active-roster prospect exclusion.",
+                "source_line": 2131,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 2134,
+                "kind": "constant_string",
+                "literal_prefix": "Graduated active-roster identities remain on the prospect board.",
+                "source_line": 2134,
+                "source_path": "prospects/rank_v1.py"
+              },
+              {
+                "append_line": 52,
+                "kind": "constant_string",
+                "literal_prefix": "Prospect input contract is not factual_only.",
+                "source_line": 52,
+                "source_path": "prospects/raw_data_independence.py"
+              },
+              {
+                "append_line": 55,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "source_policy.",
+                "source_line": 55,
+                "source_path": "prospects/raw_data_independence.py"
+              },
+              {
+                "append_line": 67,
+                "kind": "constant_string",
+                "literal_prefix": "ValuCast canonical prospect-input producer is missing.",
+                "source_line": 67,
+                "source_path": "prospects/raw_data_independence.py"
+              },
+              {
+                "append_line": 203,
+                "kind": "constant_string",
+                "literal_prefix": "missing_historical_cohorts",
+                "source_line": 203,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 205,
+                "kind": "constant_string",
+                "literal_prefix": "impact_target_not_direct_7x7",
+                "source_line": 205,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 207,
+                "kind": "constant_string",
+                "literal_prefix": "exact_prospective_replay_not_reconstructable",
+                "source_line": 207,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 330,
+                "kind": "constant_string",
+                "literal_prefix": "qs_sidecar_schema_invalid",
+                "source_line": 330,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 332,
+                "kind": "constant_string",
+                "literal_prefix": "qs_sidecar_version_unsupported",
+                "source_line": 332,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 334,
+                "kind": "constant_string",
+                "literal_prefix": "qs_sidecar_status_not_ready",
+                "source_line": 334,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 336,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "qs_sidecar_declared_blocker:",
+                "source_line": 336,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 338,
+                "kind": "constant_string",
+                "literal_prefix": "qs_sidecar_input_path_mismatch",
+                "source_line": 338,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 340,
+                "kind": "constant_string",
+                "literal_prefix": "qs_sidecar_input_sha256_mismatch",
+                "source_line": 340,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 342,
+                "kind": "constant_string",
+                "literal_prefix": "qs_sidecar_cutoff_mismatch",
+                "source_line": 342,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 344,
+                "kind": "constant_string",
+                "literal_prefix": "qs_sidecar_content_sha256_mismatch",
+                "source_line": 344,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 353,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "invalid_pitcher_season_key:",
+                "source_line": 353,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 358,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "invalid_pitcher_season:",
+                "source_line": 358,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 365,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "qs_sidecar_invalid_row:",
+                "source_line": 365,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 379,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "qs_sidecar_invalid_row:",
+                "source_line": 379,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 383,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "qs_sidecar_duplicate_identity:",
+                "source_line": 384,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 390,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "qs_sidecar_missing_identity:",
+                "source_line": 390,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 392,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "qs_sidecar_extra_identity:",
+                "source_line": 392,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 434,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "qs_source_conflict:",
+                "source_line": 434,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 460,
+                "kind": "constant_string",
+                "literal_prefix": "impact_target_not_direct_7x7",
+                "source_line": 460,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 462,
+                "kind": "constant_string",
+                "literal_prefix": "exact_prospective_replay_not_reconstructable",
+                "source_line": 462,
+                "source_path": "prospects/realized_value_readiness.py"
+              },
+              {
+                "append_line": 236,
+                "kind": "constant_string",
+                "literal_prefix": "No prospect rank rows are available for recent-signal reporting.",
+                "source_line": 236,
+                "source_path": "prospects/recent_signal.py"
+              },
+              {
+                "append_line": 238,
+                "kind": "constant_string",
+                "literal_prefix": "Recent-signal reporting needs at least two ValuCast rank archives.",
+                "source_line": 238,
+                "source_path": "prospects/recent_signal.py"
+              },
+              {
+                "append_line": 857,
+                "kind": "constant_string",
+                "literal_prefix": "low_confidence_rate",
+                "source_line": 857,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 859,
+                "kind": "constant_string",
+                "literal_prefix": "lower_minors_pedigree_count",
+                "source_line": 859,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 861,
+                "kind": "constant_string",
+                "literal_prefix": "thin_upper_level_pitcher_count",
+                "source_line": 861,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 1648,
+                "kind": "constant_string",
+                "literal_prefix": "missing_public_prospect",
+                "source_line": 1648,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 1650,
+                "kind": "constant_string",
+                "literal_prefix": "graduated_or_mlb",
+                "source_line": 1650,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 1652,
+                "kind": "constant_string",
+                "literal_prefix": "level_mismatch",
+                "source_line": 1652,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 1654,
+                "kind": "constant_string",
+                "literal_prefix": "team_mismatch",
+                "source_line": 1654,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 1656,
+                "kind": "constant_string",
+                "literal_prefix": "undisclosed_availability_risk",
+                "source_line": 1656,
+                "source_path": "quality/valucast_governor.py"
+              },
+              {
+                "append_line": 824,
+                "kind": "constant_string",
+                "literal_prefix": "Scouting repository has no reports.",
+                "source_line": 824,
+                "source_path": "scouting/repository.py"
+              },
+              {
+                "append_line": 826,
+                "kind": "constant_string",
+                "literal_prefix": "Scouting repository has duplicate MLBAM+role reports.",
+                "source_line": 826,
+                "source_path": "scouting/repository.py"
+              },
+              {
+                "append_line": 828,
+                "kind": "constant_string",
+                "literal_prefix": "Scouting repository does not cover the visible top 100 prospects.",
+                "source_line": 828,
+                "source_path": "scouting/repository.py"
+              },
+              {
+                "append_line": 833,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "Scouting repository emits the no-sample read for ",
+                "source_line": 834,
+                "source_path": "scouting/repository.py"
+              },
+              {
+                "append_line": 730,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "he's old for ",
+                "source_line": 730,
+                "source_path": "web/prospect_percentiles.py"
+              },
+              {
+                "append_line": 747,
+                "kind": "initial_fstring_literal",
+                "literal_prefix": "the sample is still thin (",
+                "source_line": 747,
+                "source_path": "web/prospect_percentiles.py"
+              },
+              {
+                "append_line": 749,
+                "kind": "constant_string",
+                "literal_prefix": "the sample is still thin",
+                "source_line": 749,
+                "source_path": "web/prospect_percentiles.py"
+              },
+              {
+                "append_line": 765,
+                "kind": "constant_string",
+                "literal_prefix": "the profile projects as a depth/relief arm rather than a rotation piece",
+                "source_line": 765,
+                "source_path": "web/prospect_percentiles.py"
+              },
+              {
+                "append_line": 767,
+                "kind": "constant_string",
+                "literal_prefix": "the projection caps at a bench/depth role",
+                "source_line": 767,
+                "source_path": "web/prospect_percentiles.py"
+              },
+              {
+                "append_line": 773,
+                "kind": "constant_string",
+                "literal_prefix": "the draft pedigree is modest",
+                "source_line": 773,
+                "source_path": "web/prospect_percentiles.py"
+              }
+            ],
+            "excluded_append_counts": {
+              "dynamic_or_unsupported": 18,
+              "short_or_not_alphabetic_or_newline": 4
+            },
+            "interpretation": "Public source literal occurrences only; runtime match is not an actual-reason or unique-source-line claim",
+            "limits": "No raw logs, runtime messages, actual data rows, project imports or source execution; dynamic/short/newline/leading-whitespace/unsupported messages excluded",
+            "normal_command_summary": {
+              "build_command_count": 64,
+              "module_markers": [
+                "-m pytest"
+              ],
+              "script_paths": [
+                "scripts/archive_aaa_statcast_features.py",
+                "scripts/archive_milb_observations.py",
+                "scripts/archive_projection_sources.py",
+                "scripts/archive_valucast_actuals_snapshot.py",
+                "scripts/backfill_projection_identities.py",
+                "scripts/build_aaa_statcast_features.py",
+                "scripts/build_ahead_of_consensus.py",
+                "scripts/build_ahead_of_consensus_scorecard.py",
+                "scripts/build_call_up_pulse.py",
+                "scripts/build_combined_level_shadow.py",
+                "scripts/build_consensus_gap_board.py",
+                "scripts/build_fangraphs_fv_snapshot.py",
+                "scripts/build_forward_scoreboard.py",
+                "scripts/build_front_office_failures.py",
+                "scripts/build_front_office_report.py",
+                "scripts/build_gaps_claim_ledger.py",
+                "scripts/build_hp_promotion_sanity_report.py",
+                "scripts/build_milb_stat_freshness_audit.py",
+                "scripts/build_mlb_availability.py",
+                "scripts/build_mlb_dynasty_layer.py",
+                "scripts/build_mlb_projection_source_comparison.py",
+                "scripts/build_mlb_roster_status.py",
+                "scripts/build_mlb_track_record.py",
+                "scripts/build_pipeline_observability.py",
+                "scripts/build_pitch_discipline.py",
+                "scripts/build_playing_time_role_tracker.py",
+                "scripts/build_pooled_shadow.py",
+                "scripts/build_prospect_availability.py",
+                "scripts/build_prospect_calibration_report.py",
+                "scripts/build_prospect_card_data_audit.py",
+                "scripts/build_prospect_comps.py",
+                "scripts/build_prospect_coverage_audit.py",
+                "scripts/build_prospect_cross_role_shadow.py",
+                "scripts/build_prospect_forward_validation.py",
+                "scripts/build_prospect_league_adapters.py",
+                "scripts/build_prospect_model.py",
+                "scripts/build_prospect_model_v07.py",
+                "scripts/build_prospect_outcome_backtest.py",
+                "scripts/build_prospect_peak_calibration_report.py",
+                "scripts/build_prospect_peak_projection.py",
+                "scripts/build_prospect_rank_v1.py",
+                "scripts/build_prospect_shadow_promotion.py",
+                "scripts/build_prospect_universe.py",
+                "scripts/build_prospectslive_consensus_snapshot.py",
+                "scripts/build_public_dynasty_snapshot.py",
+                "scripts/build_raw_data_independence_audit.py",
+                "scripts/build_recent_form_signal.py",
+                "scripts/build_recent_signal_report.py",
+                "scripts/build_scouting_repository.py",
+                "scripts/build_sts_consensus_snapshot.py",
+                "scripts/build_validation_scorecard.py",
+                "scripts/build_valucast_buys.py",
+                "scripts/build_valucast_buys_monitor.py",
+                "scripts/build_valucast_call_up_receipts.py",
+                "scripts/build_valucast_hp_run.py",
+                "scripts/build_valucast_movers.py",
+                "scripts/build_valucast_quality_governor.py",
+                "scripts/fetch_hkb_source.py",
+                "scripts/refresh_aaa_statcast.py",
+                "scripts/review_valucast_buys.py",
+                "scripts/run_prospect_shadow_pipeline.py",
+                "scripts/validate_aaa_statcast_features.py",
+                "scripts/validate_ahead_of_consensus.py",
+                "scripts/validate_ahead_of_consensus_scorecard.py",
+                "scripts/validate_call_up_pulse.py",
+                "scripts/validate_combined_level_shadow.py",
+                "scripts/validate_forward_scoreboard.py",
+                "scripts/validate_front_office_failures.py",
+                "scripts/validate_front_office_report.py",
+                "scripts/validate_gaps_claim_ledger.py",
+                "scripts/validate_glossary.py",
+                "scripts/validate_hp_promotion_sanity_report.py",
+                "scripts/validate_label_glossary_coverage.py",
+                "scripts/validate_milb_stat_freshness_audit.py",
+                "scripts/validate_mlb_availability.py",
+                "scripts/validate_mlb_projection_source_comparison.py",
+                "scripts/validate_mlb_roster_status.py",
+                "scripts/validate_mlb_track_record.py",
+                "scripts/validate_model_registry.py",
+                "scripts/validate_outcome_oof_scores.py",
+                "scripts/validate_pipeline_observability.py",
+                "scripts/validate_pitch_discipline.py",
+                "scripts/validate_playing_time_role_tracker.py",
+                "scripts/validate_pooled_shadow.py",
+                "scripts/validate_probability_reliability.py",
+                "scripts/validate_projection_scorecard.py",
+                "scripts/validate_prospect_availability.py",
+                "scripts/validate_prospect_calibration_report.py",
+                "scripts/validate_prospect_card_data_audit.py",
+                "scripts/validate_prospect_coverage_audit.py",
+                "scripts/validate_prospect_cross_role_shadow.py",
+                "scripts/validate_prospect_forward_validation.py",
+                "scripts/validate_prospect_model_v07.py",
+                "scripts/validate_prospect_outcome_backtest.py",
+                "scripts/validate_prospect_peak_calibration_report.py",
+                "scripts/validate_prospect_peak_projection.py",
+                "scripts/validate_prospect_shadow_promotion.py",
+                "scripts/validate_public_data_freshness.py",
+                "scripts/validate_public_dynasty_snapshot.py",
+                "scripts/validate_raw_data_independence_audit.py",
+                "scripts/validate_recent_form_signal.py",
+                "scripts/validate_recent_signal_report.py",
+                "scripts/validate_scouting_repository.py",
+                "scripts/validate_universal_gate_multiplicity.py",
+                "scripts/validate_valucast_buys.py",
+                "scripts/validate_valucast_buys_monitor.py",
+                "scripts/validate_valucast_call_up_receipts.py",
+                "scripts/validate_valucast_movers.py",
+                "scripts/validate_valucast_prospect_inputs.py",
+                "scripts/validate_valucast_quality_governor.py"
+              ],
+              "validate_command_count": 50
+            },
+            "normal_commands": [
+              "-m pytest",
+              "scripts/archive_aaa_statcast_features.py",
+              "scripts/archive_milb_observations.py",
+              "scripts/archive_projection_sources.py",
+              "scripts/archive_valucast_actuals_snapshot.py",
+              "scripts/backfill_projection_identities.py",
+              "scripts/build_aaa_statcast_features.py",
+              "scripts/build_ahead_of_consensus.py",
+              "scripts/build_ahead_of_consensus_scorecard.py",
+              "scripts/build_call_up_pulse.py",
+              "scripts/build_combined_level_shadow.py",
+              "scripts/build_consensus_gap_board.py",
+              "scripts/build_fangraphs_fv_snapshot.py",
+              "scripts/build_forward_scoreboard.py",
+              "scripts/build_front_office_failures.py",
+              "scripts/build_front_office_report.py",
+              "scripts/build_gaps_claim_ledger.py",
+              "scripts/build_hp_promotion_sanity_report.py",
+              "scripts/build_milb_stat_freshness_audit.py",
+              "scripts/build_mlb_availability.py",
+              "scripts/build_mlb_dynasty_layer.py",
+              "scripts/build_mlb_projection_source_comparison.py",
+              "scripts/build_mlb_roster_status.py",
+              "scripts/build_mlb_track_record.py",
+              "scripts/build_pipeline_observability.py",
+              "scripts/build_pitch_discipline.py",
+              "scripts/build_playing_time_role_tracker.py",
+              "scripts/build_pooled_shadow.py",
+              "scripts/build_prospect_availability.py",
+              "scripts/build_prospect_calibration_report.py",
+              "scripts/build_prospect_card_data_audit.py",
+              "scripts/build_prospect_comps.py",
+              "scripts/build_prospect_coverage_audit.py",
+              "scripts/build_prospect_cross_role_shadow.py",
+              "scripts/build_prospect_forward_validation.py",
+              "scripts/build_prospect_league_adapters.py",
+              "scripts/build_prospect_model.py",
+              "scripts/build_prospect_model_v07.py",
+              "scripts/build_prospect_outcome_backtest.py",
+              "scripts/build_prospect_peak_calibration_report.py",
+              "scripts/build_prospect_peak_projection.py",
+              "scripts/build_prospect_rank_v1.py",
+              "scripts/build_prospect_shadow_promotion.py",
+              "scripts/build_prospect_universe.py",
+              "scripts/build_prospectslive_consensus_snapshot.py",
+              "scripts/build_public_dynasty_snapshot.py",
+              "scripts/build_raw_data_independence_audit.py",
+              "scripts/build_recent_form_signal.py",
+              "scripts/build_recent_signal_report.py",
+              "scripts/build_scouting_repository.py",
+              "scripts/build_sts_consensus_snapshot.py",
+              "scripts/build_validation_scorecard.py",
+              "scripts/build_valucast_buys.py",
+              "scripts/build_valucast_buys_monitor.py",
+              "scripts/build_valucast_call_up_receipts.py",
+              "scripts/build_valucast_hp_run.py",
+              "scripts/build_valucast_movers.py",
+              "scripts/build_valucast_quality_governor.py",
+              "scripts/fetch_hkb_source.py",
+              "scripts/refresh_aaa_statcast.py",
+              "scripts/review_valucast_buys.py",
+              "scripts/run_prospect_shadow_pipeline.py",
+              "scripts/validate_aaa_statcast_features.py",
+              "scripts/validate_ahead_of_consensus.py",
+              "scripts/validate_ahead_of_consensus_scorecard.py",
+              "scripts/validate_call_up_pulse.py",
+              "scripts/validate_combined_level_shadow.py",
+              "scripts/validate_forward_scoreboard.py",
+              "scripts/validate_front_office_failures.py",
+              "scripts/validate_front_office_report.py",
+              "scripts/validate_gaps_claim_ledger.py",
+              "scripts/validate_glossary.py",
+              "scripts/validate_hp_promotion_sanity_report.py",
+              "scripts/validate_label_glossary_coverage.py",
+              "scripts/validate_milb_stat_freshness_audit.py",
+              "scripts/validate_mlb_availability.py",
+              "scripts/validate_mlb_projection_source_comparison.py",
+              "scripts/validate_mlb_roster_status.py",
+              "scripts/validate_mlb_track_record.py",
+              "scripts/validate_model_registry.py",
+              "scripts/validate_outcome_oof_scores.py",
+              "scripts/validate_pipeline_observability.py",
+              "scripts/validate_pitch_discipline.py",
+              "scripts/validate_playing_time_role_tracker.py",
+              "scripts/validate_pooled_shadow.py",
+              "scripts/validate_probability_reliability.py",
+              "scripts/validate_projection_scorecard.py",
+              "scripts/validate_prospect_availability.py",
+              "scripts/validate_prospect_calibration_report.py",
+              "scripts/validate_prospect_card_data_audit.py",
+              "scripts/validate_prospect_coverage_audit.py",
+              "scripts/validate_prospect_cross_role_shadow.py",
+              "scripts/validate_prospect_forward_validation.py",
+              "scripts/validate_prospect_model_v07.py",
+              "scripts/validate_prospect_outcome_backtest.py",
+              "scripts/validate_prospect_peak_calibration_report.py",
+              "scripts/validate_prospect_peak_projection.py",
+              "scripts/validate_prospect_shadow_promotion.py",
+              "scripts/validate_public_data_freshness.py",
+              "scripts/validate_public_dynasty_snapshot.py",
+              "scripts/validate_raw_data_independence_audit.py",
+              "scripts/validate_recent_form_signal.py",
+              "scripts/validate_recent_signal_report.py",
+              "scripts/validate_scouting_repository.py",
+              "scripts/validate_universal_gate_multiplicity.py",
+              "scripts/validate_valucast_buys.py",
+              "scripts/validate_valucast_buys_monitor.py",
+              "scripts/validate_valucast_call_up_receipts.py",
+              "scripts/validate_valucast_movers.py",
+              "scripts/validate_valucast_prospect_inputs.py",
+              "scripts/validate_valucast_quality_governor.py"
+            ],
+            "occurrence_count": 158,
+            "scanned_pathspecs": [
+              "scripts/validate_*.py",
+              "prospects/*.py",
+              "mlb/*.py",
+              "quality/*.py",
+              "web/*.py",
+              "scouting/*.py",
+              "src/league_values/**/*.py",
+              "scripts/run_daily_public_build.py"
+            ],
+            "schema_version": "1.0.0",
+            "source_checkout": "88c9d12f901e3dc9a140011ec9ba3b05cd7f34ea",
+            "source_file_count": 169,
+            "sources": [
+              {
+                "path": "mlb/__init__.py",
+                "prefix_occurrences": 0,
+                "sha256": "ea3a37a59929ae4b2b07cc45417e424d6e360f0d94e2a05dc5c03c0291c6a863"
+              },
+              {
+                "path": "mlb/availability.py",
+                "prefix_occurrences": 1,
+                "sha256": "4b1810f6ab8d302b71fbb91913d92db6b0eddd28d3b3e8310933ca691971855e"
+              },
+              {
+                "path": "mlb/dynasty.py",
+                "prefix_occurrences": 1,
+                "sha256": "777a9c69d1ba240b9b013851698280097cbd78f40c8359e772964f17fae46141"
+              },
+              {
+                "path": "mlb/playing_time_role.py",
+                "prefix_occurrences": 7,
+                "sha256": "4eb46a38c96c173006b4725be04abc5ce5959b486d5f5c8c27cdfec47f85d587"
+              },
+              {
+                "path": "mlb/projection_source_comparison.py",
+                "prefix_occurrences": 0,
+                "sha256": "4c25fa9621ea22b3db3499379bde593d4bd4b11ae03ea74b8783a0fdcf102ab8"
+              },
+              {
+                "path": "mlb/roster_display.py",
+                "prefix_occurrences": 0,
+                "sha256": "1ed5eca65a58dfd2c9b4899cdd14d9053dfc9ae29858127e14933831c30ebc99"
+              },
+              {
+                "path": "mlb/roster_status.py",
+                "prefix_occurrences": 2,
+                "sha256": "c48ef59b590e5d1f07007bd626cc8c3575a52c059bd7e9797ba2b770cfbbbf21"
+              },
+              {
+                "path": "mlb/track_record.py",
+                "prefix_occurrences": 2,
+                "sha256": "1ba20cd212d42a55e8c3bf96a60581281d8ec9e27a5f27dd6e29228b3e56bf55"
+              },
+              {
+                "path": "prospects/__init__.py",
+                "prefix_occurrences": 0,
+                "sha256": "b8c5fb6459064582f37159e97d3f93ffcc48151377ac77463513455b79f9e94e"
+              },
+              {
+                "path": "prospects/adapters.py",
+                "prefix_occurrences": 0,
+                "sha256": "736c7fe6dec4727095c389078124547e50fc29c6073a74ec409e06235defdf56"
+              },
+              {
+                "path": "prospects/ahead_of_consensus.py",
+                "prefix_occurrences": 2,
+                "sha256": "bc355d41cf3185b5bbbf0f9012ee910371eb31e99183e414deae34d461cfcabe"
+              },
+              {
+                "path": "prospects/availability.py",
+                "prefix_occurrences": 0,
+                "sha256": "f3980a066f407f115c76a0ada7227a3b2ffd507b53a56dfe7f2076b7a5b19c4a"
+              },
+              {
+                "path": "prospects/buy_approval.py",
+                "prefix_occurrences": 0,
+                "sha256": "2c3d081888c87dcae7be2b89171239c9ab4f3a271a9a994c3fbb3bf57acfde37"
+              },
+              {
+                "path": "prospects/buys.py",
+                "prefix_occurrences": 11,
+                "sha256": "e218dcabd94d28e484a7eb48a99c0b8ce39cf7c39d905c14bb78f4f4d43b0e74"
+              },
+              {
+                "path": "prospects/buys_monitor.py",
+                "prefix_occurrences": 4,
+                "sha256": "f2e3b751f0f6cfd8ee1842ebcb7898034ab5fb9ed6c3bfbfe0e45c60c2c75c3e"
+              },
+              {
+                "path": "prospects/calibration_report.py",
+                "prefix_occurrences": 0,
+                "sha256": "b6e1fa6ef62fe350a97ae5075da9253d7542b2c7bb1afc86ed5622a86ea6c99d"
+              },
+              {
+                "path": "prospects/call_up_receipts.py",
+                "prefix_occurrences": 2,
+                "sha256": "a1ab6fe3324cbc26759ffecaa8ea01669f0b64a11b584911f046f7f51c5a1c40"
+              },
+              {
+                "path": "prospects/card_data_audit.py",
+                "prefix_occurrences": 6,
+                "sha256": "5a1547de415b1b97054a33ec38bd1580d1adce216cf45fecf91dbcd1a6738126"
+              },
+              {
+                "path": "prospects/challenger_eval.py",
+                "prefix_occurrences": 0,
+                "sha256": "b21fe452cee1be980ac0ab091c92e11e94148fd757a21aaaf9dff8283d8b1632"
+              },
+              {
+                "path": "prospects/challenger_readiness.py",
+                "prefix_occurrences": 2,
+                "sha256": "3aedf516f95089822ec506aa03c08abe4a0109e3915aef90ecba194867e58151"
+              },
+              {
+                "path": "prospects/combined_level_shadow.py",
+                "prefix_occurrences": 0,
+                "sha256": "dc294d96e2bfcaa957b680a4ffda2ceac2fd54476322fec6f1ff8bd298a5e45b"
+              },
+              {
+                "path": "prospects/competition_benchmark.py",
+                "prefix_occurrences": 0,
+                "sha256": "d7ca3c715f27d250de84aa23c0ea099e7bcef1c3e7a4f2c9c88498c263ca8656"
+              },
+              {
+                "path": "prospects/comps.py",
+                "prefix_occurrences": 0,
+                "sha256": "894f80cdb8cc05efb961a68e0d45a0d3c7fb2cd33f199d4ef2cd484129aaf5fe"
+              },
+              {
+                "path": "prospects/consensus_gap.py",
+                "prefix_occurrences": 0,
+                "sha256": "11445f0d21b1ece56e4c5ceaa251ee5d6d098b51db0e806b25debc04c77f4bfb"
+              },
+              {
+                "path": "prospects/coverage_audit.py",
+                "prefix_occurrences": 7,
+                "sha256": "ab8fd2c15f5ceb8bbff17b433735ac6208956ca9fa83e344bf9893bc350fe201"
+              },
+              {
+                "path": "prospects/cross_role_calibration.py",
+                "prefix_occurrences": 0,
+                "sha256": "914d87cc33304619471792ba95a32af22140f666b92fd14fab97a0fa7863f73b"
+              },
+              {
+                "path": "prospects/cross_role_shadow.py",
+                "prefix_occurrences": 0,
+                "sha256": "93fc1c54394a84c6017c64fb792a8fb250c5415be8a8a0c1a1ac76abc8e1abbf"
+              },
+              {
+                "path": "prospects/dynasty.py",
+                "prefix_occurrences": 0,
+                "sha256": "e25b8ec848d39006d0a057f4d74288c9b5a65b96781e5c996ad9e0855aa459d9"
+              },
+              {
+                "path": "prospects/dynasty_backtest.py",
+                "prefix_occurrences": 0,
+                "sha256": "4e895c2a78dac030e4ccf537087a54404f47dde94095d1a4ff8bd21d49fe08c9"
+              },
+              {
+                "path": "prospects/forward_cohort.py",
+                "prefix_occurrences": 0,
+                "sha256": "6585558107d5342d32d9b6d9f4b63ca06fd741b9a3e13fd7b59310b7c26a00a9"
+              },
+              {
+                "path": "prospects/forward_scoreboard.py",
+                "prefix_occurrences": 0,
+                "sha256": "93367afe61b286d498cc73e019b076961e0a8d44fb5ea95b311e3d5c09f7d03a"
+              },
+              {
+                "path": "prospects/forward_shadow.py",
+                "prefix_occurrences": 0,
+                "sha256": "2680fdab4e65336b12976be5ccd24b84f0718825deb45e30bb7fa95169dfcce2"
+              },
+              {
+                "path": "prospects/forward_validation.py",
+                "prefix_occurrences": 0,
+                "sha256": "d1c3e4e367ccf7bb3f13afedf31873198f8b135cb9b143311a514abdc84b934d"
+              },
+              {
+                "path": "prospects/front_office_failures.py",
+                "prefix_occurrences": 5,
+                "sha256": "0a9fc82badc79e8b96e7ab5d45995034a65eeab226b31e84f98d116cd272ddac"
+              },
+              {
+                "path": "prospects/front_office_report.py",
+                "prefix_occurrences": 0,
+                "sha256": "8a88aef4d7b2aacfda5c4a564e67cc4bfa9b9c7d82064517183bbeafc0778037"
+              },
+              {
+                "path": "prospects/gaps_claim_ledger.py",
+                "prefix_occurrences": 2,
+                "sha256": "86f664ddd937cc68e5eae209c9aa809ed2438dcc9a6b7f834398f18871718c02"
+              },
+              {
+                "path": "prospects/gate.py",
+                "prefix_occurrences": 0,
+                "sha256": "10bc963ba9aab57f73db512d92089112c2644534772fb6b02fac67085bb2abc9"
+              },
+              {
+                "path": "prospects/impact_oof.py",
+                "prefix_occurrences": 11,
+                "sha256": "24183e9a631bee16ce355bb679a39923e5207b1f746a27dd9fba2e37c1fffc5c"
+              },
+              {
+                "path": "prospects/index.py",
+                "prefix_occurrences": 0,
+                "sha256": "6c825a023bb812e80b99f2d067f831cb2c2d569c840398e81dd3b0989b23e2a0"
+              },
+              {
+                "path": "prospects/index_backtest.py",
+                "prefix_occurrences": 0,
+                "sha256": "432f172fb3e34e6ab2b17862d85c01ce8eb8fdd0bee972b5219fe3fd299b069a"
+              },
+              {
+                "path": "prospects/input_builder.py",
+                "prefix_occurrences": 0,
+                "sha256": "2828b7979a46b845a9a5e20d4a6ee8dbdceb59cced4fbc945cf704c866fc6b3b"
+              },
+              {
+                "path": "prospects/input_contract.py",
+                "prefix_occurrences": 0,
+                "sha256": "51cf77dd758aae222a5d784f3713fd799c924c7faa300bf9bbea1ea53162c5cc"
+              },
+              {
+                "path": "prospects/level_translation_challenger.py",
+                "prefix_occurrences": 0,
+                "sha256": "18cf35ae6495947dce1bfc237c7fa92bdf52b2a235651b1be9b1de0a5cfcfbe9"
+              },
+              {
+                "path": "prospects/milb_stat_freshness.py",
+                "prefix_occurrences": 4,
+                "sha256": "b6050340a2c228843cb5225a95018a5095139aa391b48e220efb00736b82533c"
+              },
+              {
+                "path": "prospects/milb_translation.py",
+                "prefix_occurrences": 0,
+                "sha256": "3b7c78c02b935a2b1a72b06e0a9991392e26e6270153817d9a2c36ceeae49ffe"
+              },
+              {
+                "path": "prospects/model.py",
+                "prefix_occurrences": 0,
+                "sha256": "ca8060591b65fc4b8a0a39c417201c09918630c3cad9c1ec2a3b3e50d52b8ada"
+              },
+              {
+                "path": "prospects/model_v07.py",
+                "prefix_occurrences": 3,
+                "sha256": "b2df204a52ee30a05ec05c6a913fbb2ad552e5e82e56a601146afb1bf47fd3d4"
+              },
+              {
+                "path": "prospects/movers.py",
+                "prefix_occurrences": 2,
+                "sha256": "622f94a3af506ebe7b07bd680abe49d54c7a712288703fbbe03e3b47d1600168"
+              },
+              {
+                "path": "prospects/ordinal_calibration_power.py",
+                "prefix_occurrences": 0,
+                "sha256": "aaa82a377fe837b6bd27fed8aec77cd73daab25f61becbf65e87b5566a4a6ba2"
+              },
+              {
+                "path": "prospects/outcome_backtest.py",
+                "prefix_occurrences": 2,
+                "sha256": "3d84d4b5f3e5ef6c877655cafd079ff0837d48ebee2b10d46cbe50b87e658d5b"
+              },
+              {
+                "path": "prospects/outcome_oof.py",
+                "prefix_occurrences": 0,
+                "sha256": "1f99d9e0a57abe84f4e668e9f83f0d54f0b646ca485c21a648bdd62c2e6aee6e"
+              },
+              {
+                "path": "prospects/peak_calibration.py",
+                "prefix_occurrences": 3,
+                "sha256": "66d89eff7da7d175fd18ce2eab83b1abd738a58e52ed657aa8fba85ece961c9b"
+              },
+              {
+                "path": "prospects/peak_projection.py",
+                "prefix_occurrences": 5,
+                "sha256": "13e1b1f47bfc93a889a6d21ad832c557904e6b88665a5337276d3d838ada67fe"
+              },
+              {
+                "path": "prospects/pitch_discipline.py",
+                "prefix_occurrences": 0,
+                "sha256": "ba8897cfef7707d10c967b91ec2e16f053c57902addb07c436119d86af6a37c1"
+              },
+              {
+                "path": "prospects/pitcher_challenger.py",
+                "prefix_occurrences": 0,
+                "sha256": "e61b36b05994017513d1c7968e8cc91ce3e25a619dcc67bdaaa35e8792fa966d"
+              },
+              {
+                "path": "prospects/pooled_shadow.py",
+                "prefix_occurrences": 0,
+                "sha256": "9571b8058fd2f732c36d150f1b396db9b14206c1ff29b7d2f561dfc8f9d13026"
+              },
+              {
+                "path": "prospects/probability_reliability.py",
+                "prefix_occurrences": 0,
+                "sha256": "86a7d4aaca1df86c0c59b8156f1d24fb53ced1b68fb2fc44c679cc22f3e3e652"
+              },
+              {
+                "path": "prospects/prospect_v09.py",
+                "prefix_occurrences": 0,
+                "sha256": "da56390d9c53c577cdf6ea070f16f106616da44874b8ea32b678210a35450dad"
+              },
+              {
+                "path": "prospects/prospect_v2_candidate.py",
+                "prefix_occurrences": 0,
+                "sha256": "7baa179c66fa6855272b3e0419ccbf1f8990450c87fc5f31990a2983c8fdcacc"
+              },
+              {
+                "path": "prospects/prospect_v2_target.py",
+                "prefix_occurrences": 22,
+                "sha256": "d76b74ca7217fd6577d5149b253990b37690b74f2038e148d5a4ea9fea4ee39b"
+              },
+              {
+                "path": "prospects/rank_backtest.py",
+                "prefix_occurrences": 0,
+                "sha256": "43d24e9fb073bcbca5a59e23abf4d216988e3a2eabdf119aaea1cc36abe246a7"
+              },
+              {
+                "path": "prospects/rank_v1.py",
+                "prefix_occurrences": 8,
+                "sha256": "96ccf6dbf15a8884345ba49d4dd21d785d6cd38243ee028a3ce9cc6b745a9031"
+              },
+              {
+                "path": "prospects/rank_v2.py",
+                "prefix_occurrences": 0,
+                "sha256": "8f8435217fce43e77ae6b64115b04b36413d89cea53daab29a49108eb70261f2"
+              },
+              {
+                "path": "prospects/raw_data_independence.py",
+                "prefix_occurrences": 3,
+                "sha256": "cdee65a99fd711aa10e1ae23625c8cede307b7cec16c8ea3c15201441e4a38c3"
+              },
+              {
+                "path": "prospects/raw_input_builder.py",
+                "prefix_occurrences": 0,
+                "sha256": "dad1d4ed3c553cef52d2874600beac5c4792a6ede7ae7f1cb906a2f4f26bad81"
+              },
+              {
+                "path": "prospects/realized_value_readiness.py",
+                "prefix_occurrences": 21,
+                "sha256": "074a7481539546475e56d8cf4e1258d5e4bbddd99502eb7aea9479d086cd7842"
+              },
+              {
+                "path": "prospects/recent_form.py",
+                "prefix_occurrences": 0,
+                "sha256": "ebc5a7d319c2f1bfb275e5294707198c5df2007f9ab752401ba2e20a81fd5818"
+              },
+              {
+                "path": "prospects/recent_signal.py",
+                "prefix_occurrences": 2,
+                "sha256": "f6a98e52cecb38bb74d9affd88a1c3bd3b02327655db2566af849712fabca7f2"
+              },
+              {
+                "path": "prospects/role_slope_joint_calibration.py",
+                "prefix_occurrences": 0,
+                "sha256": "7f7251c467987429b84e4be7687604b17414f1b3cc07b26c0539aa5b003c7490"
+              },
+              {
+                "path": "prospects/shadow_promotion.py",
+                "prefix_occurrences": 0,
+                "sha256": "2621d60685cf9072da9b92d2fe2534552102386693f41258537083bb5d0c27ae"
+              },
+              {
+                "path": "prospects/stage1_contract.py",
+                "prefix_occurrences": 0,
+                "sha256": "70e8917594b571f0aeca2616d778a54829e9190d5e612a14a3e3627850ab9ce2"
+              },
+              {
+                "path": "prospects/stage1_outcome_proof.py",
+                "prefix_occurrences": 0,
+                "sha256": "c4a12ce5c6daacff312fff6605a053a7d4380e566bab0792544a55c8540c8a57"
+              },
+              {
+                "path": "prospects/universal.py",
+                "prefix_occurrences": 0,
+                "sha256": "74020dc6332ce00c21e5ef436a4af0728aca38eb6e37d1b8cc61c2d539cd54ce"
+              },
+              {
+                "path": "prospects/universal_gate_multiplicity.py",
+                "prefix_occurrences": 0,
+                "sha256": "0f9c43351a45466b8bd6b33cad546084540327ab1c66c712d9280abe91387800"
+              },
+              {
+                "path": "prospects/universe.py",
+                "prefix_occurrences": 0,
+                "sha256": "dffe794fa21c9dfc20e1db78947434d8b0c5e2b5a802c053902538255e30a2b6"
+              },
+              {
+                "path": "quality/__init__.py",
+                "prefix_occurrences": 0,
+                "sha256": "2dd36d104d489c62792ee9f9b0d5591e744204ca2ed4190969bd121d9fca1494"
+              },
+              {
+                "path": "quality/valucast_governor.py",
+                "prefix_occurrences": 8,
+                "sha256": "28b98b7f016408a59c66c57cd24ec2f35a4653f7fbf0c347f0d90d7688801542"
+              },
+              {
+                "path": "scouting/__init__.py",
+                "prefix_occurrences": 0,
+                "sha256": "f2aa0ae04d73e69b8c27062ac321e79685cf5355d36c65dd5d4fb02b8897d60e"
+              },
+              {
+                "path": "scouting/mlb_read.py",
+                "prefix_occurrences": 0,
+                "sha256": "d64d38e52b0dd2f37c5eec5f543831b0785436959092735c99ec9b8135165608"
+              },
+              {
+                "path": "scouting/report_generator.py",
+                "prefix_occurrences": 0,
+                "sha256": "dd6fc5169f92554a3a067ec31db90d692c4628ef37a3f544fd1e15d44e5c0d91"
+              },
+              {
+                "path": "scouting/repository.py",
+                "prefix_occurrences": 4,
+                "sha256": "1eec0e03edf10c3ccb39befea46761a1b80abd103cce47e1c1629e1478f150dd"
+              },
+              {
+                "path": "scouting/voice.py",
+                "prefix_occurrences": 0,
+                "sha256": "c6de6b2fbc2d367eebe077cbbe3145dbdc558b0649cf6d862a684a8756088339"
+              },
+              {
+                "path": "scripts/run_daily_public_build.py",
+                "prefix_occurrences": 0,
+                "sha256": "1b167a782df308f12d6c20ad501f07a3c1b75eff45a13205515dcc843a5a34f0"
+              },
+              {
+                "path": "scripts/validate_aaa_statcast_features.py",
+                "prefix_occurrences": 0,
+                "sha256": "a9ec042c88af65bf4a21ab1c9db6600e402c6ea318abef2f3d7802a361097b9f"
+              },
+              {
+                "path": "scripts/validate_ahead_of_consensus.py",
+                "prefix_occurrences": 0,
+                "sha256": "fd8a112a28ee77ee79bdf040ef0511123675b62b9a018c865b1e3551a855be63"
+              },
+              {
+                "path": "scripts/validate_ahead_of_consensus_scorecard.py",
+                "prefix_occurrences": 0,
+                "sha256": "37bcc3b2332cbccf391bbd2e5c3303f232f3964f9d32343916ab00556ba294c9"
+              },
+              {
+                "path": "scripts/validate_call_up_pulse.py",
+                "prefix_occurrences": 0,
+                "sha256": "17e7ae52c9759103eb5ae96cd2f0a936cea52805304517febf71caa82ee36756"
+              },
+              {
+                "path": "scripts/validate_combined_level_shadow.py",
+                "prefix_occurrences": 0,
+                "sha256": "0f5862d565ac45c54c7270f267b7054c33cc1e1606257b60555437216f14d45a"
+              },
+              {
+                "path": "scripts/validate_dd_independence_ratchet.py",
+                "prefix_occurrences": 0,
+                "sha256": "b56b9388478eb0c5730657b05d7df773a7a28609bd6948a0368f54768e8fd542"
+              },
+              {
+                "path": "scripts/validate_feed.py",
+                "prefix_occurrences": 0,
+                "sha256": "e717e4c89439acead45e7fbe62a13f668320c2470b00a8136b0d893e030a4356"
+              },
+              {
+                "path": "scripts/validate_forward_scoreboard.py",
+                "prefix_occurrences": 0,
+                "sha256": "75e6b6642886ceafd05e29f850c1245ce55b1a14da9e986f2a91d7c94b5348a4"
+              },
+              {
+                "path": "scripts/validate_front_office_failures.py",
+                "prefix_occurrences": 0,
+                "sha256": "bd76516da9de56967d9222c00fe79d095fbff96839eda2f525f158cddd781a3f"
+              },
+              {
+                "path": "scripts/validate_front_office_report.py",
+                "prefix_occurrences": 0,
+                "sha256": "6f7822f55a799362b5b4e1238c7684577412237d299675dc55d6b2d5af870621"
+              },
+              {
+                "path": "scripts/validate_gaps_claim_ledger.py",
+                "prefix_occurrences": 0,
+                "sha256": "1c9b3ae73e38282d0ce5ad09f2de8a0083bbf0d4412370886db4eb4267f60863"
+              },
+              {
+                "path": "scripts/validate_glossary.py",
+                "prefix_occurrences": 0,
+                "sha256": "f77f73e5f64a1f2b9d04c32afca9302b6ed9bd5ad12eaae61d774adbe6843ef8"
+              },
+              {
+                "path": "scripts/validate_hp_promotion_sanity_report.py",
+                "prefix_occurrences": 0,
+                "sha256": "3f16d03ef005f60dae9a5350767aa69028dd065d49a6a6f4f25eed298a246442"
+              },
+              {
+                "path": "scripts/validate_impact_oof_scores.py",
+                "prefix_occurrences": 0,
+                "sha256": "75a16e0bb916dbbbd245a522b4570be54736457ab33f1b4c189c8ab6acde0c46"
+              },
+              {
+                "path": "scripts/validate_label_glossary_coverage.py",
+                "prefix_occurrences": 0,
+                "sha256": "d27ed37792c0053d4c2fdf214824e61dc6b938635f8cc1f5cc0db2c2b3e742aa"
+              },
+              {
+                "path": "scripts/validate_milb_stat_freshness_audit.py",
+                "prefix_occurrences": 0,
+                "sha256": "5ca74551e0a818ac9200f31724f063beb01e6192d25e9602aa15aaf17211b616"
+              },
+              {
+                "path": "scripts/validate_mlb_availability.py",
+                "prefix_occurrences": 0,
+                "sha256": "c5f17bbf33ce6c9d766c4d401c506c37a5f3e2534dc921e1050ef64c25dbf2d6"
+              },
+              {
+                "path": "scripts/validate_mlb_projection_source_comparison.py",
+                "prefix_occurrences": 0,
+                "sha256": "503697ccd38fa18b959d050a274c02e104a2965fff9a099f040d3245bbf3c9c7"
+              },
+              {
+                "path": "scripts/validate_mlb_roster_status.py",
+                "prefix_occurrences": 0,
+                "sha256": "8708c5f332586cfe475a855d588088b2f2956285620614baf86fed55378ba411"
+              },
+              {
+                "path": "scripts/validate_mlb_track_record.py",
+                "prefix_occurrences": 0,
+                "sha256": "10ea400c70e4902dadc1e0a04cee95d16e180fedff27633c7c65ddb905abb8f0"
+              },
+              {
+                "path": "scripts/validate_model_registry.py",
+                "prefix_occurrences": 0,
+                "sha256": "bfc92f52e39dd98a0a0e3e2ab28dd9c44eb55a51161818f56de98e07876adaff"
+              },
+              {
+                "path": "scripts/validate_ordinal_calibration_power.py",
+                "prefix_occurrences": 0,
+                "sha256": "9803552b7db8ac4faa0e707967d0373eb84497632c33e389c208d00ab8301785"
+              },
+              {
+                "path": "scripts/validate_ordinal_effect_anchor.py",
+                "prefix_occurrences": 0,
+                "sha256": "904dc1b44e321cfbd2882f8b01276feb81e43912cc911076d00eb91d8aa3809d"
+              },
+              {
+                "path": "scripts/validate_ordinal_oof_scores.py",
+                "prefix_occurrences": 0,
+                "sha256": "9ba91967741bbb6d8c09fbf8cf23c1c28b6ed7c866de666b02a5485311b49c01"
+              },
+              {
+                "path": "scripts/validate_outcome_oof_scores.py",
+                "prefix_occurrences": 0,
+                "sha256": "b8ab442800070a526a38dfbe45fb97ed7c28f9c6eac584ad0209b9b4b0d17272"
+              },
+              {
+                "path": "scripts/validate_pipeline_observability.py",
+                "prefix_occurrences": 0,
+                "sha256": "ad32121ccffedc4f82b8c87294c1eb0ca4b97f18bfa56e57dd8791397721286a"
+              },
+              {
+                "path": "scripts/validate_pitch_discipline.py",
+                "prefix_occurrences": 0,
+                "sha256": "2681bf809dabf99ec95ca747df19806d9be9b592ad449fe31152e42e859916b0"
+              },
+              {
+                "path": "scripts/validate_playing_time_role_tracker.py",
+                "prefix_occurrences": 0,
+                "sha256": "b5759bcd43474948b0b7eb8ff26136bb85d558a47829c223e0259f6ed69a1308"
+              },
+              {
+                "path": "scripts/validate_pooled_shadow.py",
+                "prefix_occurrences": 0,
+                "sha256": "b5cdacb2ec7654d12ee4d303358cf2ca7fe868a8ce3685c5f96d8c6430dff568"
+              },
+              {
+                "path": "scripts/validate_probability_reliability.py",
+                "prefix_occurrences": 0,
+                "sha256": "4cf3374377b39bd4b6a753c51b031d4efb587e8cd66ca6ec158c079f2aab424e"
+              },
+              {
+                "path": "scripts/validate_projection_scorecard.py",
+                "prefix_occurrences": 0,
+                "sha256": "1d137d4c68e34412a6580053ba289b9a00c02867fbd5a731d500a29ee5ffb8a4"
+              },
+              {
+                "path": "scripts/validate_prospect_availability.py",
+                "prefix_occurrences": 0,
+                "sha256": "4d1733af7d6e7930cb7007ed72cc491fe6e1d727ca73104134e0fb3e648b71b8"
+              },
+              {
+                "path": "scripts/validate_prospect_calibration_report.py",
+                "prefix_occurrences": 0,
+                "sha256": "d60c2a1cbb785688b717da6cd3447892b24cfae4ad4ec420a67c3e5a12e415e0"
+              },
+              {
+                "path": "scripts/validate_prospect_card_data_audit.py",
+                "prefix_occurrences": 0,
+                "sha256": "147dd4399330d2e512bbd7b076df024902c45bbd3f10fcf7d8b8f9ffda212b9a"
+              },
+              {
+                "path": "scripts/validate_prospect_coverage_audit.py",
+                "prefix_occurrences": 0,
+                "sha256": "4d08fc7f1a112bbce056a279f3879a18421fecd958259239fe165a44e4345450"
+              },
+              {
+                "path": "scripts/validate_prospect_cross_role_shadow.py",
+                "prefix_occurrences": 0,
+                "sha256": "5a6ab98589ff2ea2ce1d4a5389e0256162506782c173e7c90faaec9b8e51d5a7"
+              },
+              {
+                "path": "scripts/validate_prospect_forward_validation.py",
+                "prefix_occurrences": 0,
+                "sha256": "5a062498e5a6149762eb2a81b1f6a44a7516379f5ba6b3b1fe85c7ce4cfe4314"
+              },
+              {
+                "path": "scripts/validate_prospect_model_v07.py",
+                "prefix_occurrences": 0,
+                "sha256": "7fe95c3fe7f6016203a110863b3c1af17ea8148946ff6a2d4abb209a51f453ce"
+              },
+              {
+                "path": "scripts/validate_prospect_outcome_backtest.py",
+                "prefix_occurrences": 0,
+                "sha256": "9562d96c525f2b1ee47e936e77bd2ca76990751d04bcd6a71d8de507e961a0e2"
+              },
+              {
+                "path": "scripts/validate_prospect_peak_calibration_report.py",
+                "prefix_occurrences": 0,
+                "sha256": "b9410ce01f8c4990c72dd3664ac99ae2bcc13cc2f1af62cdb63aaee465ddbec9"
+              },
+              {
+                "path": "scripts/validate_prospect_peak_projection.py",
+                "prefix_occurrences": 0,
+                "sha256": "6f96a480261a3739183003083b63c48b07d7e5a089362abccaf5c05cc8ad0e0e"
+              },
+              {
+                "path": "scripts/validate_prospect_shadow_promotion.py",
+                "prefix_occurrences": 0,
+                "sha256": "7f811847a4ae4bfe7a39dbe88b8cd4b9a45892e01a96897cc5adc791e4a3b2e3"
+              },
+              {
+                "path": "scripts/validate_public_data_freshness.py",
+                "prefix_occurrences": 0,
+                "sha256": "c2cbb3a4f0323abf73897a9c48d8c1a5bd51af10300c90fffe84f9fb84c95e07"
+              },
+              {
+                "path": "scripts/validate_public_dynasty_snapshot.py",
+                "prefix_occurrences": 0,
+                "sha256": "69c9e582b98732a3c78e765339764d54d0b571150dafb4f9fa29c601d55617ef"
+              },
+              {
+                "path": "scripts/validate_raw_data_independence_audit.py",
+                "prefix_occurrences": 0,
+                "sha256": "cb25f967356ffb2fddc8c38d925b6e877b9f34cad8e5d47818c8fd4b123d94a7"
+              },
+              {
+                "path": "scripts/validate_recent_form_signal.py",
+                "prefix_occurrences": 0,
+                "sha256": "612ce9f5bf5a2ccfca5c912357aaf4814a07719fd189fbf0d2a2467a1b8ae0ae"
+              },
+              {
+                "path": "scripts/validate_recent_signal_report.py",
+                "prefix_occurrences": 0,
+                "sha256": "b8d1d8490775fa3f471f59810c25e9463687ce60de2d0643b28d31724454e3cb"
+              },
+              {
+                "path": "scripts/validate_scouting_repository.py",
+                "prefix_occurrences": 0,
+                "sha256": "da218ed27732646660ecbc568179e6ac91d33061bdcc33c3271fe92451d132f2"
+              },
+              {
+                "path": "scripts/validate_universal_gate_multiplicity.py",
+                "prefix_occurrences": 0,
+                "sha256": "be844b743d8298fd9399f7de249f6091a5d2012c5da711516284b3dddd453b82"
+              },
+              {
+                "path": "scripts/validate_valucast_buys.py",
+                "prefix_occurrences": 0,
+                "sha256": "ef9d8d720e4001be2e8a2122e17082ecccbaebd73e0c5699db1d6190e48ff900"
+              },
+              {
+                "path": "scripts/validate_valucast_buys_monitor.py",
+                "prefix_occurrences": 0,
+                "sha256": "581c625750672dee3b86fad1e1b3a69aa6b8faf882bc0503b59d91e920f64658"
+              },
+              {
+                "path": "scripts/validate_valucast_call_up_receipts.py",
+                "prefix_occurrences": 0,
+                "sha256": "52755ce7b4bf4edbbde7ebb4d9c3cd3204a138b6b175685d41e738c2fd596c71"
+              },
+              {
+                "path": "scripts/validate_valucast_movers.py",
+                "prefix_occurrences": 0,
+                "sha256": "f29467fce05ba0e8252d83c524104f9ba7f17b980c20643124fd7edc23a22f86"
+              },
+              {
+                "path": "scripts/validate_valucast_prospect_inputs.py",
+                "prefix_occurrences": 0,
+                "sha256": "6ba847e6fa761734b482d7a6e4a585f6f31bcc8cc73ce6d739f115b2bc01d50a"
+              },
+              {
+                "path": "scripts/validate_valucast_quality_governor.py",
+                "prefix_occurrences": 0,
+                "sha256": "dad41acbb1022161e12fa92b2d0e77cab4b45d16d0212c7a7c265069c39c264f"
+              },
+              {
+                "path": "web/__init__.py",
+                "prefix_occurrences": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "path": "web/aaa_statcast_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "43adbeed9451cd9dec4aba09151425f5b2dfc15cfd8ad702872dbd57b501aebc"
+              },
+              {
+                "path": "web/board_time_machine_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "41737db3b03e4493459d1e29e9de42b8457b37a073f556912507645df3433c5a"
+              },
+              {
+                "path": "web/buy_score.py",
+                "prefix_occurrences": 0,
+                "sha256": "9d3c15351204c6c632461e17777140d5ee443da678d680f18b79c2acfc02b2ab"
+              },
+              {
+                "path": "web/category_registry.py",
+                "prefix_occurrences": 0,
+                "sha256": "b20372353b7b2114252cde1c1099da3012b0c6e2775ffedd65311119198410de"
+              },
+              {
+                "path": "web/config_builder.py",
+                "prefix_occurrences": 0,
+                "sha256": "e5e969f8e0cfe6e1558ec851529c053237191b64c65db760963003b07088a0cc"
+              },
+              {
+                "path": "web/dynasty_models.py",
+                "prefix_occurrences": 0,
+                "sha256": "62bd4def1af37402ee90fc97c225cdbe4ac230dc1677ecbb45643fc4f55fb96c"
+              },
+              {
+                "path": "web/feed_validation.py",
+                "prefix_occurrences": 0,
+                "sha256": "cfe081e934563f51d54173b2bc4ac4d012df7cd86de03afba36b87539b78ed2e"
+              },
+              {
+                "path": "web/fg_fv_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "4a38303103c8f581ae4cd242dbd99db453aa44d9792c8d20588d2e8322c259ea"
+              },
+              {
+                "path": "web/league_import.py",
+                "prefix_occurrences": 0,
+                "sha256": "fdc8d3159659cd39d4817bc7cb1598c350717bd53fd63d9016f0ecfba6b730d6"
+              },
+              {
+                "path": "web/league_settings.py",
+                "prefix_occurrences": 0,
+                "sha256": "97a3cf10b2b07d7bb0997226511bf87318fa4787235a5950671e51743e7562f2"
+              },
+              {
+                "path": "web/pitch_discipline_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "dafbbdd207a57b56c190873cadf63b4c2ffd2a01ecfb9f13196fa1e31747fe11"
+              },
+              {
+                "path": "web/player_links.py",
+                "prefix_occurrences": 0,
+                "sha256": "f5abe07f9383838f2998fac7f027fe8a4dec7f1bf0cfd1cc8ac2486b67599a47"
+              },
+              {
+                "path": "web/position_matching.py",
+                "prefix_occurrences": 0,
+                "sha256": "2c1aadd13a735e576635319d5a50c6dbf7607bce8c61f3c009ea35a2b6d99c62"
+              },
+              {
+                "path": "web/projection_catalog.py",
+                "prefix_occurrences": 0,
+                "sha256": "70efb9e7b7250d7fe6f76b0212e69cea16bae3b435d64a46533dd721f32dd089"
+              },
+              {
+                "path": "web/projection_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "e5ec9634a906201779ce03488066cd95f9a6ff751c637ca12fdcb1d7eb9538e7"
+              },
+              {
+                "path": "web/prospect_context.py",
+                "prefix_occurrences": 0,
+                "sha256": "18266932b581939776b5339e27efceb0e750cfef15d8efca577afa2ad2b6a12e"
+              },
+              {
+                "path": "web/prospect_league_ranks.py",
+                "prefix_occurrences": 0,
+                "sha256": "781e9cbf1fb36d6f95c17e7e53afa82b34e010a88dd32e7e6967aed446806782"
+              },
+              {
+                "path": "web/prospect_percentiles.py",
+                "prefix_occurrences": 6,
+                "sha256": "38d386826964f799ac7c74907afdbf7d1623c2dff0766a641a6379c66541546e"
+              },
+              {
+                "path": "web/public_snapshot_models.py",
+                "prefix_occurrences": 0,
+                "sha256": "6ebd15d68962d464149fc49c34536872cbd3937b27a14ddbd768002f5bd3caff"
+              },
+              {
+                "path": "web/public_snapshot_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "a7ffe005966a8eecd3b1cfb5830d7c334c3708f15285eec76da7772d35e7fc9a"
+              },
+              {
+                "path": "web/rank_history_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "7cc8897e0a62cbcfdfb5b2fdd468effb6872606f76953f2315777bb209192858"
+              },
+              {
+                "path": "web/recorded_public_history.py",
+                "prefix_occurrences": 0,
+                "sha256": "d878b16bb3cf2881e4ad8b7b8be8435993b9992fe7a02cd3fb7facc9b0240bc2"
+              },
+              {
+                "path": "web/roster_event_display.py",
+                "prefix_occurrences": 0,
+                "sha256": "142d85ff77ec2503c28cb37649818a226ac3a5555ec0d1de78149fc9564645a7"
+              },
+              {
+                "path": "web/search_fold.py",
+                "prefix_occurrences": 0,
+                "sha256": "e305523e766f2709e3db9c04bd9ac00f3b9f55da9b517b518f651b59683fbba2"
+              },
+              {
+                "path": "web/season_outlook.py",
+                "prefix_occurrences": 0,
+                "sha256": "7f42f5637f47ea99e25f3c7cba6264a112c2cccb2b9dbc82d052c1078b24b7bf"
+              },
+              {
+                "path": "web/share_pages.py",
+                "prefix_occurrences": 0,
+                "sha256": "596c9bda500dd03b02f358b914ccfc49dc25c2c11104378c917a6c53756523fc"
+              },
+              {
+                "path": "web/site_metrics.py",
+                "prefix_occurrences": 0,
+                "sha256": "efd11b008196ba0cee8786f6be986c17511051fbb4203d5c0343a906e108959c"
+              },
+              {
+                "path": "web/statcast_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "2a59565987812524416dd6120fb3f9aec9451d7240c0c7aa54bb88fd302235b5"
+              },
+              {
+                "path": "web/valucast_buy_store.py",
+                "prefix_occurrences": 0,
+                "sha256": "8980ea559e79f62336141f5936409cb184b60c143250b09c9473a98c002db64a"
+              },
+              {
+                "path": "web/value_spark.py",
+                "prefix_occurrences": 0,
+                "sha256": "3abc41405a65617e6a27fb719122fee99bfb4f19de9084b090e4295392a4043b"
+              }
+            ],
+            "unique_prefix_count": 152
+          }
+          PR97_1E40144E9B98412BECDD4640B6272D4FDFD29BF93351F4BF0C5211ED7D068FB2
+          cat > "$RUNNER_TEMP/pr97-harness/source-manifest.json" <<'PR97_6FE99F95F54D6188F308A4D8DD1481B288B46EC76E66A2FAB0C90C4679C16143'
           {
             "helper_original_sha256": {
               "bootstrap_finalize.py": "bdd5c1f2e70ff847a8429abfc26fc59326328fe4a2723325ff7afba0a1ba2500",
-              "prospect_diagnostics.py": "64b34d802e81e263d5d959490e62547e525a04d78cdfa43dd98e767f0e320c9d",
-              "prospect_diagnostics_spec.json": "b1076918ef0d4ec9504976ba8aca76223f83d102a6024944c4db2057f54b8810",
-              "run_phase.py": "1e1da938dd201d46d6a99ef8b95ac9e413c5c86c6ede228249edf5ce218fc0cb",
+              "normal_log_spec.json": "1e40144e9b98412becdd4640b6272d4fdfd29bf93351f4bf0c5211ed7d068fb2",
+              "prospect_diagnostics.py": "2d616ff86acb4e5fcaf83d4ea84e9444377d3be5f5006767c2da40acb50c26b9",
+              "prospect_diagnostics_spec.json": "cb451838a399ea9b883018541d3e68bc6a96333c2a7fce128fe07c13ac60095b",
+              "run_phase.py": "73b620d1f5ecd57c8cac5f62dbac0e46d1affe88ace6d61d3f04423cf7eaddb1",
               "sitecustomize.py": "042e259e40795b19aff1b3e0b110eaaac8a136d30f5b11b5fb9b163d7d4af59a"
             },
             "helper_sha256": {
               "bootstrap_finalize.py": "bdd5c1f2e70ff847a8429abfc26fc59326328fe4a2723325ff7afba0a1ba2500",
-              "prospect_diagnostics.py": "64b34d802e81e263d5d959490e62547e525a04d78cdfa43dd98e767f0e320c9d",
-              "prospect_diagnostics_spec.json": "b1076918ef0d4ec9504976ba8aca76223f83d102a6024944c4db2057f54b8810",
-              "run_phase.py": "1e1da938dd201d46d6a99ef8b95ac9e413c5c86c6ede228249edf5ce218fc0cb",
+              "normal_log_spec.json": "1e40144e9b98412becdd4640b6272d4fdfd29bf93351f4bf0c5211ed7d068fb2",
+              "prospect_diagnostics.py": "2d616ff86acb4e5fcaf83d4ea84e9444377d3be5f5006767c2da40acb50c26b9",
+              "prospect_diagnostics_spec.json": "cb451838a399ea9b883018541d3e68bc6a96333c2a7fce128fe07c13ac60095b",
+              "run_phase.py": "73b620d1f5ecd57c8cac5f62dbac0e46d1affe88ace6d61d3f04423cf7eaddb1",
               "sitecustomize.py": "042e259e40795b19aff1b3e0b110eaaac8a136d30f5b11b5fb9b163d7d4af59a"
             },
             "input_paths": {
@@ -2972,7 +5350,7 @@ jobs:
               "projections/data/statcast.py"
             ]
           }
-          PR97_9D7ABCC837821B7B062D07B722DFDADEAB3EAC871BC31503F35FD056AE18680C
+          PR97_6FE99F95F54D6188F308A4D8DD1481B288B46EC76E66A2FAB0C90C4679C16143
 
       - name: Capture accepted prior and bind pre-refresh metadata
         id: bootstrap
