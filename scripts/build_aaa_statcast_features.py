@@ -30,14 +30,16 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from scraper.season import context_season  # noqa: E402
-from scripts.refresh_aaa_statcast import CACHE_PATH, load_cache  # noqa: E402
+from scripts.refresh_aaa_statcast import (  # noqa: E402
+    CACHE_PATH, READY_MARKER_PATH, _verified_coverage, load_cache,
+)
 
 # --- Paths -----------------------------------------------------------------
 UNIVERSE_PATH = ROOT / "data" / "models" / "valucast_prospect_universe.json"
@@ -331,17 +333,10 @@ def aggregate_hitters(cache: dict, hitter_ids: set[str]) -> dict:
 # ---------------------------------------------------------------------------
 # Artifact assembly + write
 # ---------------------------------------------------------------------------
-def cache_coverage(cache: dict) -> str | None:
-    """Verified coverage date: checked_through, else max cached game_date."""
-    cov = cache.get("checked_through")
-    if isinstance(cov, str) and cov:
-        return cov
-    dates = [
-        g.get("game_date")
-        for g in (cache.get("games") or {}).values()
-        if isinstance(g.get("game_date"), str) and g.get("game_date")
-    ]
-    return max(dates) if dates else None
+def cache_coverage(cache: dict, season: int) -> str | None:
+    """Only an explicit valid checked_through establishes contiguous coverage."""
+    cov = _verified_coverage(cache, season, date.today())
+    return cov.isoformat() if cov is not None else None
 
 
 def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH) -> dict:
@@ -355,10 +350,9 @@ def build_artifact(cache: dict, season: int, universe_path: Path = UNIVERSE_PATH
         # as_of = VERIFIED DATA COVERAGE, never the build date. Stamping
         # date.today() let a rebuild from a stale cache masquerade as fresh and
         # bypass the staleness gate entirely (owner review of PR #34,
-        # 2026-07-30). cache_coverage prefers the refresher's checked_through
-        # (advanced only through fully-fetched days); legacy caches fall back
-        # to the max cached game_date — still data-derived, never today.
-        "as_of": cache_coverage(cache),
+        # 2026-07-30). Only the refresher's checked_through proves contiguous
+        # coverage; the latest cached game cannot establish any intervening days.
+        "as_of": cache_coverage(cache, season),
         # Freshness stamp for the validator's SELF-ARMING staleness gate: any
         # artifact carrying this regime was built AFTER the cache-persistence fix
         # (Actions cache steps + aaa-statcast-bootstrap workflow, 2026-07-30) and
@@ -438,6 +432,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=ARTIFACT_PATH)
     args = parser.parse_args(argv)
 
+    if args.cache_path == CACHE_PATH and not READY_MARKER_PATH.is_file():
+        print("AAA statcast cache not marked ready; keeping prior artifact", flush=True)
+        return 0
     cache = load_cache(args.cache_path)
     if not (cache.get("games") or {}):
         # Cold cache: no data to aggregate. Keep the stale artifact (if any) and
@@ -456,7 +453,10 @@ def main(argv: list[str] | None = None) -> int:
     # artifact WITHOUT the current freshness_regime stamp may rebuild once at
     # equal coverage (schema upgrade — gains the stamp and ev_n fields);
     # afterwards this refusal applies.
-    new_coverage = cache_coverage(cache)
+    new_coverage = cache_coverage(cache, args.season)
+    if new_coverage is None:
+        print("AAA statcast coverage unverified; keeping prior artifact", flush=True)
+        return 0
     if args.out.exists():
         try:
             existing = json.loads(args.out.read_text(encoding="utf-8"))

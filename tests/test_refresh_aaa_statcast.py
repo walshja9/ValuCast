@@ -6,6 +6,8 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import scripts.refresh_aaa_statcast as r
@@ -37,10 +39,10 @@ def _csv(rows):
 # --- AAA filtering vs FSL --------------------------------------------------
 def test_fetch_day_rows_filters_fsl(monkeypatch):
     rows = [
-        _row(game_pk="100", home_team="BUF", pitcher="1", batter="2"),   # AAA
-        _row(game_pk="200", home_team="DUN", pitcher="3", batter="4"),   # FSL A
-        _row(game_pk="300", home_team="JUP", pitcher="5", batter="6"),   # FSL A
-        _row(game_pk="101", home_team="BUF", pitcher="7", batter="8"),   # AAA
+        _row(game_pk="100", home_team="BUF", game_date="2026-07-10", pitcher="1", batter="2"),
+        _row(game_pk="200", home_team="DUN", game_date="2026-07-10", pitcher="3", batter="4"),
+        _row(game_pk="300", home_team="JUP", game_date="2026-07-10", pitcher="5", batter="6"),
+        _row(game_pk="101", home_team="BUF", game_date="2026-07-10", pitcher="7", batter="8"),
     ]
     monkeypatch.setattr(r, "_read_with_retry", lambda url, attempts=3: _csv(rows))
     aaa = {"BUF", "CLT", "GWN"}   # DUN/JUP deliberately absent
@@ -113,13 +115,21 @@ def test_cached_game_pk_not_refetched(monkeypatch):
 
 
 # --- date planning ----------------------------------------------------------
-def test_incremental_dates_after_cache_max():
+def test_incremental_dates_legacy_max_is_not_coverage():
     cache = {"games": {
         "1": {"game_date": "2026-07-09"},
         "2": {"game_date": "2026-07-11"},
     }}
     days = r.incremental_dates(cache, 2026, through=date(2026, 7, 13))
-    assert days == ["2026-07-12", "2026-07-13"]   # strictly after the max (07-11)
+    assert days == []  # The missing intervening dates have not been verified.
+
+
+def test_incremental_dates_cross_calendar_year_with_same_playing_season():
+    cache = {"checked_through": "2026-12-31", "games": {}}
+    assert r.incremental_dates(cache, 2026, through=date(2027, 1, 2)) == [
+        "2027-01-01", "2027-01-02"]
+    cache["checked_through"] = "2027-01-01"
+    assert r.incremental_dates(cache, 2026, through=date(2027, 1, 2)) == ["2027-01-02"]
 
 
 def test_incremental_dates_empty_cache_is_empty():
@@ -184,7 +194,9 @@ def test_incremental_with_ready_marker_proceeds(tmp_path, monkeypatch):
     monkeypatch.setattr(r, "READY_MARKER_PATH", marker)
     yesterday = (date.today() - timedelta(days=1)).isoformat()
     monkeypatch.setattr(
-        r, "load_cache", lambda *a, **k: {"games": {"1": {"game_date": yesterday}}}
+        r, "load_cache", lambda *a, **k: {
+            "games": {"1": {"game_date": yesterday}}, "checked_through": yesterday,
+        }
     )
     monkeypatch.setattr(r, "fetch_aaa_abbreviations", lambda season: {"BUF"})
     monkeypatch.setattr(r, "flush_cache", lambda *a, **k: None)
@@ -328,3 +340,101 @@ def test_incremental_dates_resume_from_checked_through():
     # Resumes from coverage (07-05), not the max cached game date (07-10):
     # a failed day after a cached later game must be re-checked.
     assert days == ["2026-07-06", "2026-07-07", "2026-07-08"]
+
+
+# CSV success is the trust boundary for advancing coverage, including empty days.
+@pytest.mark.parametrize("body", [
+    "", "<html>temporarily unavailable</html>", '{"error":"unavailable"}',
+    "home_team,game_date\nBUF,2026-07-10\n",
+    ",".join(_HEADER + ["game_date"]) + "\n",
+    ",".join(_HEADER) + '\n"unterminated',
+    ",".join(_HEADER) + "\n100,BUF,2026-07-10\n",
+    ",".join(_HEADER) + "\n" + ",".join([""] * (len(_HEADER) + 1)) + "\n",
+])
+def test_fetch_day_rows_rejects_unqualified_csv(monkeypatch, body):
+    monkeypatch.setattr(r, "_read_with_retry", lambda *a, **k: body)
+    with pytest.raises(ValueError):
+        r.fetch_day_rows("2026-07-10", {"BUF"})
+
+
+@pytest.mark.parametrize("changes", [
+    {"game_date": "2026-07-09"}, {"game_date": ""}, {"home_team": ""},
+    {"game_pk": ""}, {"game_pk": "0"}, {"pitcher": "not-an-id"}, {"batter": "-2"},
+    {"home_team": "DUN", "game_date": "2026-07-11"},
+])
+def test_fetch_day_rows_rejects_unqualified_row(monkeypatch, changes):
+    row = _row(game_pk="100", home_team="BUF", game_date="2026-07-10", pitcher="1", batter="2")
+    row.update(changes)
+    monkeypatch.setattr(r, "_read_with_retry", lambda *a, **k: _csv([row]))
+    with pytest.raises(ValueError):
+        r.fetch_day_rows("2026-07-10", {"BUF"})
+
+
+def test_fetch_day_rows_valid_empty_csv_can_have_extra_provider_columns(monkeypatch):
+    monkeypatch.setattr(r, "_read_with_retry", lambda *a, **k: _csv([]).rstrip() + ",new_provider_field\n")
+    assert r.fetch_day_rows("2026-07-10", {"BUF"}) == []
+
+
+def test_fetch_day_rows_rejects_row_cap_before_level_filter(monkeypatch):
+    row = _row(game_pk="100", home_team="DUN", game_date="2026-07-10", pitcher="1", batter="2")
+    body = _csv([row] * 25000)
+    monkeypatch.setattr(r, "_read_with_retry", lambda *a, **k: body)
+    with pytest.raises(ValueError, match="cap"):
+        r.fetch_day_rows("2026-07-10", {"BUF"})
+
+
+@pytest.mark.parametrize("covered", [None, "not-a-date", 20260710, "2025-07-10", "2026-03-19", "2026-07-14"])
+def test_incremental_dates_require_in_season_verified_coverage(covered):
+    cache = {"games": {"1": {"game_date": "2026-07-11"}}, "checked_through": covered}
+    assert r.incremental_dates(cache, 2026, through=date(2026, 7, 13)) == []
+
+
+def test_csv_failure_stops_real_gather_before_advancing_past_gap(monkeypatch):
+    def read(url, attempts=3):
+        return _csv([]) if "gt=2026-07-01" in url else "<html>error</html>"
+
+    monkeypatch.setattr(r, "_read_with_retry", read)
+    monkeypatch.setattr(r.time, "sleep", lambda *_: None)
+    cache = {"games": {}, "checked_through": "2026-06-30"}
+    days = r.incremental_dates(cache, 2026, through=date(2026, 7, 3))
+    with pytest.raises(ValueError):
+        r.gather_days(days, 2026, cache, {"BUF"}, advance_coverage=True)
+    assert cache == {"games": {}, "checked_through": "2026-07-01"}
+
+
+@pytest.mark.parametrize("covered", [None, "bad-date", "2025-07-10", "2026-07-14"])
+def test_incremental_ready_but_unverified_cache_keeps_prior_without_io(tmp_path, monkeypatch, capsys, covered):
+    marker = tmp_path / ".ready"
+    marker.touch()
+    monkeypatch.setattr(r, "READY_MARKER_PATH", marker)
+    cache = {"games": {"1": {"game_date": "2026-07-11"}}, "checked_through": covered}
+    monkeypatch.setattr(r, "load_cache", lambda: cache)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("unverified incremental cache must not fetch or write")
+
+    monkeypatch.setattr(r, "fetch_aaa_abbreviations", forbidden)
+    monkeypatch.setattr(r, "gather_days", forbidden)
+    monkeypatch.setattr(r, "flush_cache", forbidden)
+    assert r.main(["--season", "2026", "--through", "2026-07-13"]) == 0
+    assert "unverified coverage" in capsys.readouterr().out
+    assert cache["checked_through"] == covered
+
+
+def test_backfill_invalid_coverage_restarts_from_anchor(tmp_path, monkeypatch):
+    monkeypatch.setattr(r, "READY_MARKER_PATH", tmp_path / ".missing")
+    cache = {"games": {}, "checked_through": "2027-07-10"}
+    monkeypatch.setattr(r, "load_cache", lambda: cache)
+    monkeypatch.setattr(r, "fetch_aaa_abbreviations", lambda season: {"BUF"})
+    monkeypatch.setattr(r, "flush_cache", lambda *args, **kwargs: None)
+    seen = {}
+
+    def gather(days, season, cache, abbrevs, **kwargs):
+        seen["days"] = days
+        assert "checked_through" not in cache
+        return {"days_fetched": len(days), "days_empty": len(days), "new_games": 0,
+                "skipped_games": 0, "pitches_added": 0, "cached_total": 0}
+
+    monkeypatch.setattr(r, "gather_days", gather)
+    assert r.main(["--backfill", "--season", "2026", "--through", "2026-03-22"]) == 0
+    assert seen["days"] == ["2026-03-20", "2026-03-21", "2026-03-22"]
