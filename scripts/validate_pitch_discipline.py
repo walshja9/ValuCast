@@ -27,9 +27,10 @@ ESTIMATED = {"chase_pct", "z_swing_pct", "z_contact_pct", "zone_pct"}
 # transient failures (cold cache, fetch budget, tiny refresh) and exits 0, so
 # without a bound the artifact can stay stale indefinitely with every gate
 # green — it served as_of 2026-07-10 through 2026-07-27 (17 days) before a
-# manual rebuild. as_of is the last covered game day and legitimately lags one
-# day behind the build; 3 days tolerates a weekend hiccup or one budget-exceeded
-# day while turning multi-day silent staleness into a red build.
+# manual rebuild. The producer sets as_of to its successful rebuild date,
+# not a covered-game date. Retained artifacts must keep their old date;
+# 3 days tolerates a weekend hiccup or one budget-exceeded day while turning
+# multi-day silent staleness into a red build.
 DEFAULT_MAX_AGE_DAYS = 3
 
 

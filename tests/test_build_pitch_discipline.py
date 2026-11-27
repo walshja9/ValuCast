@@ -4,8 +4,12 @@ Covers the cohort-percentile math (orientation + midrank), the hard min-pitch
 gate's pool exclusion, the deterministic calibration train/held split, and the
 per-pitch zone_estimated derivation — all offline (no network, no repo data).
 """
+from datetime import date, datetime
+import json
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -163,6 +167,60 @@ def test_zone_estimated_derived_per_pitch_not_per_game():
     assert out["2"]["AAA"]["zone_estimated"] is False   # all zone calls measured
 
 
+def _incremental_files(tmp_path, monkeypatch, case="warm"):
+    """Keep actual producer functions; redirect every bound default to fake files."""
+    from scripts import build_pitch_discipline as bpd
+
+    universe = tmp_path / "universe.json"
+    cache_path = tmp_path / "pitch_cache.json"
+    artifact = tmp_path / "discipline.json"
+    marker = tmp_path / ".ready"
+    universe.write_text(json.dumps({"players": [{"mlbam_id": 1, "name": "Synthetic", "role": "hitter"}]}))
+    cache = {"games": {"1": {"level": "AA", "season": 2026, "plays": [
+        {"batter": 1, "pitches": [_pitch("Ball") for _ in range(400)]},
+    ]}}}
+    if case == "empty_cache":
+        cache = {"games": {}}
+    cache_path.write_text(json.dumps(cache))
+    marker.write_text("")
+    prior_count = 4 if case == "tiny_refresh" else 1
+    prior = {
+        "artifact": "valucast_pitch_discipline", "generated_at": "2000-01-01T00:00:00Z",
+        "as_of": "2000-01-01", "season": 2026, "schema_version": 1,
+        "source_policy": {"observe_only": True, "feeds_value": False, "feeds_rank": False, "exit_velocity": False},
+        "cohorts": {"min_pitches": 300, "cohort_sizes": {"AA": prior_count}, "zone_metrics_shipped": False},
+        "players": {str(pid): {"AA": {"pitches": 400, "qualifies": True, "zone_estimated": False,
+                                     "rates": {}, "percentiles": {}}} for pid in range(1, prior_count + 1)},
+    }
+    prior_bytes = (json.dumps(prior, sort_keys=True) + "\n").encode()
+    artifact.write_bytes(prior_bytes)
+    observed = {"gamelogs": [], "feeds": []}
+    load_hitters, load_cache = bpd.load_tracked_hitters, bpd.load_cache
+    flush, write = bpd.flush_cache, bpd.write_artifact
+    monkeypatch.setattr(bpd, "load_tracked_hitters", lambda: load_hitters(universe))
+    monkeypatch.setattr(bpd, "load_cache", lambda: load_cache(cache_path))
+    monkeypatch.setattr(bpd, "flush_cache", lambda value: flush(value, cache_path))
+    monkeypatch.setattr(bpd, "write_artifact", lambda payload: write(payload, artifact))
+    monkeypatch.setattr(bpd, "READY_MARKER_PATH", marker)
+    monkeypatch.setattr(bpd.time, "sleep", lambda seconds: None)
+    monkeypatch.delenv("VALUCAST_SKIP_DISCIPLINE_TINY_GUARD", raising=False)
+
+    def game_logs(pid, season, sport_id):
+        observed["gamelogs"].append((pid, season, sport_id))
+        if sport_id != 12:
+            return []
+        if case == "new_game_budget":
+            return list(range(2, 303))  # 301 genuinely new gamePks.
+        return [1]
+
+    def feeds(game_pk):
+        observed["feeds"].append(game_pk)
+        return []  # Any unexpected call remains observable without network.
+    monkeypatch.setattr(bpd, "fetch_game_pks", game_logs)
+    monkeypatch.setattr(bpd, "fetch_compact_feed", feeds)
+    return bpd, artifact, prior_bytes, observed
+
+
 def test_incremental_without_ready_marker_keeps_prior_artifact(tmp_path, monkeypatch, capsys):
     # Readiness guard: a missing marker means the cache is absent or a partial
     # bootstrap checkpoint; an incremental run must preserve the prior artifact
@@ -214,3 +272,48 @@ def test_incremental_with_ready_marker_proceeds(tmp_path, monkeypatch):
     # what matters here is the guard let execution REACH the fetch stage.
     assert bpd.main([]) == 0
     assert calls.get("gather") is True
+
+
+def test_ready_warm_cache_with_zero_new_games_rebuilds_and_validates(tmp_path, monkeypatch):
+    from scripts import validate_pitch_discipline as validator
+
+    bpd, artifact, prior_bytes, observed = _incremental_files(tmp_path, monkeypatch)
+    assert bpd.main(["--season", "2026"]) == 0
+    assert observed["gamelogs"] == [(1, 2026, sport) for sport in (11, 12, 13, 14)]
+    assert observed["feeds"] == []
+    payload = json.loads(artifact.read_bytes())
+    assert artifact.read_bytes() != prior_bytes
+    assert payload["as_of"] == date.today().isoformat()
+    assert datetime.fromisoformat(payload["generated_at"]).tzinfo is not None
+    assert payload["season"] == 2026
+    assert payload["players"]["1"]["AA"]["pitches"] == 400
+    assert payload["players"]["1"]["AA"]["qualifies"] is True
+    assert payload.get("latest_covered_game_date") is None  # No fabricated game coverage date.
+    with monkeypatch.context() as context:
+        context.delenv("VALUCAST_PITCH_DISCIPLINE_MAX_AGE_DAYS", raising=False)
+        context.setattr(sys, "argv", ["validate_pitch_discipline.py", "--path", str(artifact)])
+        assert validator.DEFAULT_MAX_AGE_DAYS == 3
+        assert validator.main() == 0
+
+
+@pytest.mark.parametrize("case, expected_message", [
+    ("empty_cache", "empty pitch cache"),
+    ("new_game_budget", "new-game budget exceeded"),
+    ("tiny_refresh", "tiny-refresh guard tripped"),
+])
+def test_incremental_retention_preserves_prior_bytes_and_date(tmp_path, monkeypatch, capsys, case, expected_message):
+    from scripts import validate_pitch_discipline as validator
+
+    bpd, artifact, prior_bytes, observed = _incremental_files(tmp_path, monkeypatch, case)
+    assert bpd.main(["--season", "2026"]) == 0
+    output = capsys.readouterr().out
+    assert expected_message in output
+    assert artifact.read_bytes() == prior_bytes
+    retained = json.loads(artifact.read_bytes())
+    assert retained["as_of"] == "2000-01-01"
+    assert validator._staleness_problem(retained, date.today().isoformat(), validator.DEFAULT_MAX_AGE_DAYS)
+    if case == "empty_cache":
+        assert observed["gamelogs"] == []
+    elif case == "new_game_budget":
+        assert "new_pks=301" in output
+    assert observed["feeds"] == []
