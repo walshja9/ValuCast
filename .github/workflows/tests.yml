@@ -19,9 +19,6 @@ jobs:
       VALUCAST_MLB_LIVE_PROJECTION_SOURCE: current
       VALUCAST_BUYS_REVIEW_APPROVED: "0"
       ANTHROPIC_API_KEY: ""
-      VALUCAST_SCOUTING_LLM: "1"
-      VALUCAST_SCOUTING_LLM_MAX_GENERATE: "0"
-      VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"
       GIT_OPTIONAL_LOCKS: "0"
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
@@ -5509,6 +5506,35 @@ jobs:
         id: install
         run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" install python -m pip install -r requirements.txt -e . pytest
 
+      - name: Verify scouting test environment isolation
+        run: |
+          python - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+          keys = ('VALUCAST_SCOUTING_LLM', 'VALUCAST_SCOUTING_LLM_MAX_GENERATE', 'VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS')
+          assert not os.environ.get('ANTHROPIC_API_KEY')
+          assert all(key not in os.environ for key in keys)
+          command = ['python', '-m', 'pytest', '-q',
+              'tests/test_scouting_repository.py::test_scouting_repository_publishes_valid_llm_reports',
+              'tests/test_scouting_repository.py::test_scouting_repository_checkpoints_llm_before_later_interruption',
+              'tests/test_scouting_repository.py::test_scouting_repository_publishes_valid_llm_rows_with_row_level_fallback',
+              'tests/test_scouting_v2.py::TestLlmWiring']
+          for mode in ('contaminated', 'isolated'):
+              child_env = dict(os.environ)
+              if mode == 'contaminated':
+                  child_env.update(VALUCAST_SCOUTING_LLM='1', VALUCAST_SCOUTING_LLM_MAX_GENERATE='0', VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS='10')
+              result = subprocess.run(command, env=child_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+              output = result.stdout.decode('utf-8', errors='replace')
+              (Path(os.environ['RUNNER_TEMP']) / ('scouting-environment-' + mode + '.log')).write_bytes(result.stdout)
+              passed = re.findall(r'(\d+) passed', output)
+              failed = re.findall(r'(\d+) failed', output)
+              observed = {'kind': 'scouting_environment_probe', 'mode': mode, 'exit_code': result.returncode,
+                          'passed': int(passed[-1]) if passed else 0, 'failed': int(failed[-1]) if failed else 0}
+              print(json.dumps(observed), flush=True)
+              expected = (1, 0, 5) if mode == 'contaminated' else (0, 5, 0)
+              assert (result.returncode, observed['passed'], observed['failed']) == expected
+          PY
+
       - name: Enable external nonpaid scouting guard after install
         run: echo "PYTHONPATH=$RUNNER_TEMP/pr97-harness" >> "$GITHUB_ENV"
 
@@ -5542,6 +5568,10 @@ jobs:
 
       - name: Run unchanged normal build
         id: build
+        env:
+          VALUCAST_SCOUTING_LLM: "1"
+          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "0"
+          VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"
         run: python "$RUNNER_TEMP/pr97-harness/run_phase.py" build python scripts/run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"
 
       - name: Build prospect rank history
