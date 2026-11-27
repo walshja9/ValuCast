@@ -4,6 +4,7 @@ from __future__ import annotations
 import ast
 import builtins
 from collections import OrderedDict
+from datetime import datetime
 import json
 import math
 from pathlib import Path
@@ -160,6 +161,11 @@ class PublicConsumerSafety(unittest.TestCase):
         if readiness is not None:
             snapshot.surface_readiness = readiness
         buy = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
+        receipt = {"schema_version": "1.0.0", "origin": "explicit_manual_input",
+                   "scope": "valucast_owned_buys_promotion_v1", "approved_at": "2026-01-01T00:00:00Z"}
+        qualifier = definitions("prospects/buy_approval.py", {
+            "APPROVAL_SCHEMA_VERSION", "APPROVAL_SCOPE", "qualified_approval_receipt",
+        }, {"datetime": datetime})["qualified_approval_receipt"]
         return definitions("app.py", {"_select_buy_source", "health_ready"}, {
             "app": SimpleNamespace(route=lambda *args, **kwargs: lambda function: function),
             "os": SimpleNamespace(environ={}), "AHEAD_OF_THE_CURVE_HOLD": False,
@@ -170,6 +176,9 @@ class PublicConsumerSafety(unittest.TestCase):
                 else SimpleNamespace(**vars(snapshot), surface_readiness={})
             ),
             "valucast_buy_store": buy,
+            "VALUCAST_BUYS_REVIEW_PATH": Path("synthetic-review.json"),
+            "_load_artifact": lambda _: {"review_status": "candidate_ready", "approval_receipt": receipt},
+            "qualified_approval_receipt": qualifier,
             "CATALOG": SimpleNamespace(store_for=lambda _: SimpleNamespace(player_count=1)),
             "jsonify": lambda body: body, "_artifact_is_fresh": lambda _: True,
         })

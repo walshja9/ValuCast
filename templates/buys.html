@@ -2,13 +2,13 @@
 
 {% block title %}Ahead of the Curve | ValuCast{% endblock %}
 {% block og_title %}Ahead of the Curve | ValuCast{% endblock %}
-{% block og_description %}The top prospect buys by ValuCast signal, not reputation.{% endblock %}
+{% block og_description %}{% if dd_available %}The top prospect buys by ValuCast signal, not reputation.{% else %}Buy signals require approval and validation before publication.{% endif %}{% endblock %}
 {% block og_url %}https://valucast.app/buys{% endblock %}
 {% block og_image %}https://valucast.app/buys/share-card.png{% endblock %}
 {% block og_image_width %}1080{% endblock %}
 {% block og_image_height %}1350{% endblock %}
 {% block twitter_title %}Ahead of the Curve | ValuCast{% endblock %}
-{% block twitter_description %}The top prospect buys by ValuCast signal, not reputation.{% endblock %}
+{% block twitter_description %}{% if dd_available %}The top prospect buys by ValuCast signal, not reputation.{% else %}Buy signals require approval and validation before publication.{% endif %}{% endblock %}
 {% block twitter_image %}https://valucast.app/buys/share-card.png{% endblock %}
 
 {% block content %}
@@ -32,7 +32,10 @@
         <h1>AHEAD OF THE CURVE</h1>
         {% if aotc_hold %}
         <p class="buys-heading-sub">{{ aotc_hold_message }}</p>
-        <p class="buys-fineprint">The public buy-signal board is scheduled for release later this week.</p>
+        <p class="buys-fineprint">Buy signals require approval and validation before publication.</p>
+        {% elif not dd_available %}
+        <p class="buys-heading-sub">Buy signals unavailable</p>
+        <p class="buys-fineprint">Buy signals require approval and validation before publication.</p>
         {% else %}
         <p class="buys-heading-sub">The {{ list_rows | length }} best prospect buys by signal, not reputation{% if dd_generated_at %} &middot; {{ editorial_date(dd_generated_at) }}{% endif %}</p>
         <p class="buys-fineprint"><strong>Source:</strong> {{ buy_source_label }}. {{ buy_source_note }}</p>
@@ -64,9 +67,9 @@
 <section class="map-heading glass">
     {% if aotc_hold %}
     <h2>{{ aotc_hold_message }}</h2>
-    <p>The board stays dark until the scheduled release.</p>
+    <p>Buy signals require approval and validation before publication.</p>
     {% else %}
-    <p>Dynasty feed unavailable — the buys board will return when the data refreshes.</p>
+    <p>Buy signals require approval and validation before publication.</p>
     {% endif %}
 </section>
 {% else %}

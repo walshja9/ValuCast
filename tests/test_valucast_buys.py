@@ -538,6 +538,12 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     monkeypatch.delenv("VALUCAST_USE_VALUCAST_BUYS", raising=False)
     monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", False)
     monkeypatch.setattr(app_module, "dd_store", SimpleNamespace(surface_readiness={"buys": True}))
+    # Synthetic standing approval for this selector test only; no approval file.
+    receipt = {"schema_version": "1.0.0", "origin": "explicit_manual_input",
+               "scope": "valucast_owned_buys_promotion_v1",
+               "approved_at": "2026-07-31T12:00:00+00:00"}
+    review = {"review_status": "candidate_ready", "approval_receipt": receipt}
+    monkeypatch.setattr(app_module, "_load_artifact", lambda path: review if path == app_module.VALUCAST_BUYS_REVIEW_PATH else None)
     _select_buy_source = app_module._select_buy_source
 
     # Buys not ready -> unavailable, never DD.
@@ -553,7 +559,7 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     )
     assert source == "unavailable"
 
-    # Ready + snapshot active -> ValuCast buys.
+    # Ready + snapshot active + qualified review -> ValuCast buys.
     selected, source = _select_buy_source(
         ready, use_valucast_buys=True, public_snapshot_active=True
     )
@@ -564,6 +570,15 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     selected, source = _select_buy_source(ready, public_snapshot_active=True)
     assert selected is ready
     assert source == "valucast_buys"
+
+    # Ready flags cannot substitute for a qualified approval receipt.
+    review["approval_receipt"] = None
+    selected, source = _select_buy_source(
+        ready, use_valucast_buys=True, public_snapshot_active=True
+    )
+    assert source == "unavailable"
+    assert selected.is_available is False
+    review["approval_receipt"] = receipt
 
     # Rollout disabled -> unavailable, never DD.
     monkeypatch.setenv("VALUCAST_USE_VALUCAST_BUYS", "0")

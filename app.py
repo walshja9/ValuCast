@@ -20,7 +20,7 @@ from types import SimpleNamespace
 import secrets
 from urllib.parse import quote, urlencode, urlparse
 
-from flask import Flask, abort, render_template, request, make_response, jsonify, redirect
+from flask import Flask, abort, render_template, request, make_response, jsonify, redirect, g
 
 from dataclasses import replace as dc_replace
 
@@ -78,6 +78,7 @@ from web import buy_score
 from web import prospect_percentiles
 from web.share_pages import build_share_preview_html
 from prospects.availability import LEVEL_ORDER
+from prospects.buy_approval import qualified_approval_receipt
 from prospects.availability import eta_window as prospect_eta_window
 from prospects.availability import eta_window_label
 from prospects.forward_scoreboard import scoreboard_verdict_label
@@ -191,6 +192,7 @@ def _png_cache_generation():
         obj = globals().get(name)
         parts.append(str(getattr(obj, attr, "") or ""))
     parts.append(_prospect_publication_status())
+    parts.append(_select_buy_source(valucast_buy_store)[1])
     return "|".join(parts)
 
 
@@ -277,6 +279,7 @@ def _serve_cached_png():
     if app.config.get("TESTING"):
         return None
     key = _png_cache_key()
+    g.png_cache_key = key
     if key is None:
         return None
     with _PNG_CACHE_LOCK:
@@ -292,6 +295,10 @@ def _serve_cached_png():
 
 
 def _maybe_cache_png(response):
+    if request.path == "/buys/share-card.png" or (
+        request.path.startswith("/backfields/team/") and request.path.endswith(".png")
+    ):
+        response.headers["Cache-Control"] = "no-store"
     if response.status_code != 200 or response.mimetype != "image/png":
         return response
     # 10 min, not 6h (7/2): a 6h edge/browser cache served day-old share cards
@@ -299,8 +306,9 @@ def _maybe_cache_png(response):
     response.headers.setdefault("Cache-Control", "public, max-age=600")
     if app.config.get("TESTING"):
         return response
-    key = _png_cache_key()
-    if key is None or response.direct_passthrough:
+    key = getattr(g, "png_cache_key", None)
+    # A render begun while approved must not enter a newly blocked cache generation.
+    if key is None or key != _png_cache_key() or response.direct_passthrough:
         return response
     body = response.get_data()
     headers = {
@@ -512,6 +520,7 @@ def _snapshot_staleness():
 def _aotc_hold_context():
     return {
         "aotc_hold": AHEAD_OF_THE_CURVE_HOLD,
+        "buys_live": _select_buy_source(valucast_buy_store)[1] == "valucast_buys",
         "receipts_hold": RECEIPTS_HOLD,
         "scoreboard_hold": SCOREBOARD_HOLD,
     }
@@ -859,6 +868,7 @@ VALUCAST_BUYS_PATH = Path(os.environ.get(
     "VALUCAST_BUYS_PATH",
     str(Path(__file__).parent / "data" / "models" / "valucast_prospect_buys.json"),
 ))
+VALUCAST_BUYS_REVIEW_PATH = VALUCAST_BUYS_PATH.with_name("valucast_prospect_buys_review.json")
 VALUCAST_MOVERS_PATH = Path(os.environ.get(
     "VALUCAST_MOVERS_PATH",
     str(Path(__file__).parent / "data" / "models" / "valucast_prospect_movers.json"),
@@ -1013,7 +1023,12 @@ def _select_buy_source(
         and buy_candidate.is_available
         and buy_candidate.ready_for_live_consumers
     ):
-        return buy_candidate, "valucast_buys"
+        review = _load_artifact(VALUCAST_BUYS_REVIEW_PATH) or {}
+        if (
+            review.get("review_status") == "candidate_ready"
+            and qualified_approval_receipt(review.get("approval_receipt"))
+        ):
+            return buy_candidate, "valucast_buys"
     # Never fall back to DD-derived buys — unavailable instead.
     return _UNAVAILABLE_DYNASTY_STORE, "unavailable"
 
@@ -1026,9 +1041,9 @@ def _buy_source_copy(source: str) -> dict[str, str]:
             "formula": "buy score = model strength + momentum + buy window + runway",
         }
     return {
-        "label": "Prospect buy signal",
-        "note": "Ranks prospects by signal strength, recent movement, and runway.",
-        "formula": "buy score = momentum + breakout + market gap + runway",
+        "label": "Buy signals unavailable",
+        "note": "Buy signals require approval and validation before publication.",
+        "formula": "",
     }
 
 
@@ -5272,10 +5287,8 @@ def _front_door_digest():
         digest["callup_count"] = len(call_ups)
         digest["callup_top"] = min(
             call_ups, key=lambda c: c.get("prospect_rank") or 10 ** 6)
-    buys = _load_artifact(
-        Path(__file__).parent / "data" / "models" / "valucast_prospect_buys.json"
-    ) or {}
-    board = buys.get("board") or []
+    buy_store, buy_source = _select_buy_source(valucast_buy_store)
+    board = buy_store.get_all() if buy_source == "valucast_buys" else []
     if board and isinstance(board[0], dict) and board[0].get("name"):
         digest["top_buy"] = board[0]
     scorecard = _load_artifact(
@@ -6293,6 +6306,10 @@ def _artifact_context_for_row(row) -> dict:
     recent_signal = _indexed_artifact_rows(
         _load_artifact(root / "valucast_recent_signal_report.json"), "signals"
     ).get(key)
+    if recent_signal and _select_buy_source(valucast_buy_store)[1] != "valucast_buys":
+        recent_signal = dict(recent_signal)
+        recent_signal.pop("buy_rank", None)
+        recent_signal.pop("buy_reason", None)
     recent_form = (
         (_load_artifact(root / "valucast_recent_form_signal.json") or {}).get("by_identity") or {}
     ).get(key)
@@ -6395,6 +6412,7 @@ def scouting_reports():
             row for row in reports
             if str(row.get("report_status") or "").lower() == filters["status"]
         ]
+    buys_live = _select_buy_source(valucast_buy_store)[1] == "valucast_buys"
     report_rows = []
     for row in reports[:60]:
         item = _scouting_display_report(row) or {}
@@ -6422,7 +6440,7 @@ def scouting_reports():
             item["movement_label"] = recent_context.get("movement_label")
             item["buy_rank_label"] = (
                 f"B#{recent_context.get('buy_rank')}"
-                if recent_context.get("buy_rank") not in (None, "")
+                if buys_live and recent_context.get("buy_rank") not in (None, "")
                 else None
             )
         card_context = item.get("card_data_status")
@@ -6973,10 +6991,11 @@ def _team_board_system_summary(org_rows, movements):
 
 
 def _team_board_buys(org, *, payload=None, limit=3):
-    if AHEAD_OF_THE_CURVE_HOLD:
+    buy_store, buy_source = _select_buy_source(valucast_buy_store)
+    if buy_source != "valucast_buys":
         return []
     if payload is None:
-        payload = _load_artifact(VALUCAST_BUYS_PATH) or {}
+        payload = {"board": buy_store.get_all()}
     rows = [
         row for row in (payload or {}).get("board") or []
         if isinstance(row, dict) and _canonical_team_board_org(row.get("team")) == org
@@ -10516,7 +10535,7 @@ def cards_gallery():
             "board_url": "/scoreboard",
             "generated_at": forward_scoreboard.get("generated_at") or forward_scoreboard.get("as_of"),
         })
-    if not AHEAD_OF_THE_CURVE_HOLD:
+    if _select_buy_source(valucast_buy_store)[1] == "valucast_buys":
         entries.insert(2, {
             "title": "Ahead of the Curve",
             "caption": "The 40 best prospect buys by signal, not reputation.",
@@ -10639,7 +10658,7 @@ def _build_buys_page_context(raw_n=None, spark_window=None):
             if buy_qualified and buy_pool else None
         ),
         "aotc_hold": AHEAD_OF_THE_CURVE_HOLD,
-        "aotc_hold_message": "Ahead of the Curve returns later this week",
+        "aotc_hold_message": "Buy signals unavailable",
         "as_of": data_generated_at or store.as_of,
     }
 
@@ -10853,7 +10872,7 @@ def _buys_hold_share_card_png():
         img,
         draw,
         headline="AHEAD OF THE CURVE",
-        subtitle="Prospect buy signals return later this week",
+        subtitle="Buy signals unavailable",
         extra_line="ValuCast prospect board",
         tagline="Ahead of the Curve",
     )
@@ -10869,10 +10888,10 @@ def _buys_hold_share_card_png():
         draw.text(((width - _graphic_text_width(draw, label, font)) / 2, y), label, fill=fill, font=font)
 
     centered("AHEAD OF THE CURVE", 585, title_font, text)
-    centered("returns later this week", 670, sub_font, green)
+    centered("Buy signals unavailable", 670, sub_font, green)
     centered("The public buys surface is intentionally held.", 740, small_font, muted)
 
-    _graphic_footer(draw, right_note="Returns later this week")
+    _graphic_footer(draw, right_note="Buy signals unavailable")
 
     out = _io.BytesIO()
     img.save(out, format="PNG", optimize=True)
@@ -10904,16 +10923,16 @@ def buys_share_card_png():
 
 @app.route("/buys/share-card")
 def buys_share_card():
-    held = AHEAD_OF_THE_CURVE_HOLD
+    held = _select_buy_source(valucast_buy_store)[1] != "valucast_buys"
     html = build_share_preview_html(
         title="Ahead of the Curve",
-        subtitle=("Returns later this week" if held
+        subtitle=("Buy signals unavailable" if held
                   else "Top prospect buys by signal, not reputation"),
         png_url="/buys/share-card.png",
         filename=("valucast-aotc-hold.png" if held else "valucast-buys.png"),
         public_png_url=_public_url("/buys/share-card.png"),
         public_page_url=_public_url("/buys/share-card"),
-        description=("Ahead of the Curve returns later this week."
+        description=("Buy signals require approval and validation before publication."
                      if held else "The top prospect buys by ValuCast signal, not reputation."),
         image_alt=("ValuCast Ahead of the Curve hold card" if held
                    else "ValuCast top prospect buys"),
