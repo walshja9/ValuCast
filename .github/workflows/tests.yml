@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
-          ref: cbea98182c01dd1992b14854855611b9a4208172
+          ref: 5b66079968a1b55647ed53501cf69a4785616711
           fetch-depth: 0
           persist-credentials: false
 
@@ -37,7 +37,7 @@ jobs:
       - name: Materialize reviewed helpers outside source checkout
         run: |
           mkdir -p "$RUNNER_TEMP/pr97-harness"
-          cat > "$RUNNER_TEMP/pr97-harness/run_phase.py" <<'PR97_C000C38D84D677FF4C78EAF275DDC93A721FDF5DB55E3037730B78FBCCED63B6'
+          cat > "$RUNNER_TEMP/pr97-harness/run_phase.py" <<'PR97_A59EBF6DE9E93F4A5F863B52081F498DD81F742698F2F4E65FB66718DDB0B563'
           """Run one declared isolated phase; retain raw logs only in runner temp."""
           import argparse
           import hashlib
@@ -49,7 +49,7 @@ jobs:
           import sys
           import time
           
-          PIN = "cbea98182c01dd1992b14854855611b9a4208172"
+          PIN = "5b66079968a1b55647ed53501cf69a4785616711"
           SUMMARY = re.compile(r"^(?:\d+ (?:failed|passed|skipped|deselected|subtests passed)(?:, )?)+ in ([0-9.]+)s(?: \([0-9:]+\))?$")
           
           
@@ -138,7 +138,7 @@ jobs:
           
           if __name__ == "__main__":
               raise SystemExit(main())
-          PR97_C000C38D84D677FF4C78EAF275DDC93A721FDF5DB55E3037730B78FBCCED63B6
+          PR97_A59EBF6DE9E93F4A5F863B52081F498DD81F742698F2F4E65FB66718DDB0B563
           cat > "$RUNNER_TEMP/pr97-harness/sitecustomize.py" <<'PR97_042E259E40795B19AFF1B3E0B110EAAAC8A136D30F5B11B5FB9B163D7D4AF59A'
           """Apply only the nonpaid normal scouting process boundary."""
           import atexit
@@ -175,7 +175,7 @@ jobs:
           
               atexit.register(receipt)
           PR97_042E259E40795B19AFF1B3E0B110EAAAC8A136D30F5B11B5FB9B163D7D4AF59A
-          cat > "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" <<'PR97_07DECF8511C7361EAF80D166CA866C7B0113FC76DB6D19189E474ACC0BB571A4'
+          cat > "$RUNNER_TEMP/pr97-harness/bootstrap_finalize.py" <<'PR97_4648841687429D8ED081B795700B6271CD2FD4D0E1F614AD3D61447C4009D996'
           """Bind an isolated normal build to its frozen source and scalar receipts.
           
           Default execution is a synthetic self-test. Runtime modes require GitHub Actions.
@@ -193,7 +193,7 @@ jobs:
           import sys
           import tempfile
           
-          PIN = "cbea98182c01dd1992b14854855611b9a4208172"
+          PIN = "5b66079968a1b55647ed53501cf69a4785616711"
           PRIOR_PIN = "f9ee256671b7bfc84c705e437501ecb998fad175"
           PRIOR_PATH = "data/public/public_dynasty_snapshot.json"
           NORMAL_PHASES = (
@@ -767,8 +767,8 @@ jobs:
           
           if __name__ == "__main__":
               raise SystemExit(main())
-          PR97_07DECF8511C7361EAF80D166CA866C7B0113FC76DB6D19189E474ACC0BB571A4
-          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics.py" <<'PR97_F3D071C875C6A96FF775EE4A0F404ABB1000CC48AA42BB432028B676B9C64A8D'
+          PR97_4648841687429D8ED081B795700B6271CD2FD4D0E1F614AD3D61447C4009D996
+          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics.py" <<'PR97_AAB76A49C0FD781CCDB645C44149B26AB53A6081A509AC367365AF0D88FC330C'
           """Prepare-only aggregate diagnostics for the ordinary, uninstrumented PR97 build."""
           from __future__ import annotations
           
@@ -1122,7 +1122,7 @@ jobs:
               return result
           
           
-          PIN = "cbea98182c01dd1992b14854855611b9a4208172"
+          PIN = "5b66079968a1b55647ed53501cf69a4785616711"
           INPUTS = {
               "milb_current": "data/prospects/raw/milb_season_stats.json",
               "milb_history": "data/prospects/raw/milb_card_history.json",
@@ -1724,8 +1724,8 @@ jobs:
           
           if __name__ == "__main__":
               raise SystemExit(main())
-          PR97_F3D071C875C6A96FF775EE4A0F404ABB1000CC48AA42BB432028B676B9C64A8D
-          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics_spec.json" <<'PR97_B995AA330ACC6518ADA3D3F55158A96269A2A3C402DBC809014FF143005BD4A1'
+          PR97_AAB76A49C0FD781CCDB645C44149B26AB53A6081A509AC367365AF0D88FC330C
+          cat > "$RUNNER_TEMP/pr97-harness/prospect_diagnostics_spec.json" <<'PR97_0E2EEF6CA7FDEA36B45FA233F68B3C3431B6168EC28228D1CA61F65ED52A16B9'
           {
             "candidate_binding": {
               "containers": "Exact fixed11 paths and candidate_sha256 hashes; current bytes must match candidate bytes.",
@@ -3048,7 +3048,7 @@ jobs:
               "snapshot_prospects_ready": "snapshot.validation.surface_readiness.prospects; exact bool or null",
               "source": {
                 "check_factory_lines": "200-205",
-                "commit": "cbea98182c01dd1992b14854855611b9a4208172",
+                "commit": "5b66079968a1b55647ed53501cf69a4785616711",
                 "emission_line": 2118,
                 "path": "quality/valucast_governor.py",
                 "sha256": "28b98b7f016408a59c66c57cd24ec2f35a4653f7fbf0c347f0d90d7688801542"
@@ -3057,7 +3057,7 @@ jobs:
               "unknown_check_ids": "never exported"
             },
             "schema_version": "1.0.0",
-            "source_commit": "cbea98182c01dd1992b14854855611b9a4208172",
+            "source_commit": "5b66079968a1b55647ed53501cf69a4785616711",
             "states": [
               "absent",
               "null",
@@ -3066,8 +3066,8 @@ jobs:
               "valid_nonzero"
             ]
           }
-          PR97_B995AA330ACC6518ADA3D3F55158A96269A2A3C402DBC809014FF143005BD4A1
-          cat > "$RUNNER_TEMP/pr97-harness/normal_log_spec.json" <<'PR97_156A81119CF0BAA4C045E707CF2E51DDCB97778859E5CA5A7C35BC8FE2E0A7B2'
+          PR97_0E2EEF6CA7FDEA36B45FA233F68B3C3431B6168EC28228D1CA61F65ED52A16B9
+          cat > "$RUNNER_TEMP/pr97-harness/normal_log_spec.json" <<'PR97_E0E752615091B4EFFA3B852B760745EC7123AC5DC544D538C36A7EE7D932519A'
           {
             "error_prefixes": [
               {
@@ -4427,7 +4427,7 @@ jobs:
               "scripts/run_daily_public_build.py"
             ],
             "schema_version": "1.0.0",
-            "source_checkout": "cbea98182c01dd1992b14854855611b9a4208172",
+            "source_checkout": "5b66079968a1b55647ed53501cf69a4785616711",
             "source_file_count": 169,
             "sources": [
               {
@@ -5278,8 +5278,8 @@ jobs:
             ],
             "unique_prefix_count": 152
           }
-          PR97_156A81119CF0BAA4C045E707CF2E51DDCB97778859E5CA5A7C35BC8FE2E0A7B2
-          cat > "$RUNNER_TEMP/pr97-harness/projection_ingress.py" <<'PR97_3FCA71204559803EAE364977D7993C77D64C5ED0D9B650CB1738C621D0155DD1'
+          PR97_E0E752615091B4EFFA3B852B760745EC7123AC5DC544D538C36A7EE7D932519A
+          cat > "$RUNNER_TEMP/pr97-harness/projection_ingress.py" <<'PR97_9E9140D8ABA486E1D3925BAB7A19D108762BFEFB319938525D882082FF4C898F'
           """Bounded canonical ID/role and source-status observation; never emit rows."""
           from collections import Counter, defaultdict
           from datetime import date, datetime, timezone
@@ -5289,7 +5289,7 @@ jobs:
           from pathlib import Path
           import subprocess
           
-          PIN = "cbea98182c01dd1992b14854855611b9a4208172"
+          PIN = "5b66079968a1b55647ed53501cf69a4785616711"
           
           def summarize(rows):
               if type(rows) is not list:
@@ -5372,8 +5372,8 @@ jobs:
                   print("Projection ingress observer self-check passed; no input or network read.")
               else:
                   raise SystemExit(main())
-          PR97_3FCA71204559803EAE364977D7993C77D64C5ED0D9B650CB1738C621D0155DD1
-          cat > "$RUNNER_TEMP/pr97-harness/source-manifest.json" <<'PR97_307A8C0C95E4B0D2BEC0D89CCC3A25ED99EF3CAC3E390BE8542F7F374E31CFE1'
+          PR97_9E9140D8ABA486E1D3925BAB7A19D108762BFEFB319938525D882082FF4C898F
+          cat > "$RUNNER_TEMP/pr97-harness/source-manifest.json" <<'PR97_A22DC7CDB36115ADC92AC3E61AD7F2DC251447C60DFD54B0687B7F6AD22511AD'
           {
             "accepted_prior_blob": "d02968eb249ad30bdce899f39ec33ab30fae253d",
             "accepted_prior_byte_identity_verified_against": "0f52fea68ea7e6587ce50249feb83d9d4cb00243",
@@ -5386,12 +5386,12 @@ jobs:
               "sitecustomize.py": "042e259e40795b19aff1b3e0b110eaaac8a136d30f5b11b5fb9b163d7d4af59a"
             },
             "helper_sha256": {
-              "bootstrap_finalize.py": "07decf8511c7361eaf80d166ca866c7b0113fc76db6d19189e474acc0bb571a4",
-              "normal_log_spec.json": "156a81119cf0baa4c045e707cf2e51ddcb97778859e5ca5a7c35bc8fe2e0a7b2",
-              "projection_ingress.py": "3fca71204559803eae364977d7993c77d64c5ed0d9b650cb1738c621d0155dd1",
-              "prospect_diagnostics.py": "f3d071c875c6a96ff775ee4a0f404abb1000cc48aa42bb432028b676b9c64a8d",
-              "prospect_diagnostics_spec.json": "b995aa330acc6518ada3d3f55158a96269a2a3c402dbc809014ff143005bd4a1",
-              "run_phase.py": "c000c38d84d677ff4c78eaf275ddc93a721fdf5db55e3037730b78fbcced63b6",
+              "bootstrap_finalize.py": "4648841687429d8ed081b795700b6271cd2fd4d0e1f614ad3d61447c4009d996",
+              "normal_log_spec.json": "e0e752615091b4effa3b852b760745ec7123ac5dc544d538c36a7ee7d932519a",
+              "projection_ingress.py": "9e9140d8aba486e1d3925bab7a19d108762bfefb319938525d882082ff4c898f",
+              "prospect_diagnostics.py": "aab76a49c0fd781ccdb645c44149b26ab53a6081a509ac367365af0d88fc330c",
+              "prospect_diagnostics_spec.json": "0e2eef6ca7fdea36b45fa233f68b3c3431b6168ec28228d1ca61f65ed52a16b9",
+              "run_phase.py": "a59ebf6de9e93f4a5f863b52081f498dd81f742698f2f4e65fb66718ddb0b563",
               "sitecustomize.py": "042e259e40795b19aff1b3e0b110eaaac8a136d30f5b11b5fb9b163d7d4af59a"
             },
             "input_paths": {
@@ -5422,7 +5422,7 @@ jobs:
               "extra_research_replay_fitting": false,
               "in_house_2027_candidate": "missing_blocked",
               "normal_live_source": "current",
-              "ordinary_input_bundle_git_commit": "cbea98182c01dd1992b14854855611b9a4208172",
+              "ordinary_input_bundle_git_commit": "5b66079968a1b55647ed53501cf69a4785616711",
               "ordinary_source_derived_input_families_only": true,
               "program_identity": "Pinned candidate normal ingestion plus run_daily_public_build build/validate graph",
               "registered_contract_sha256_verified": "a4a8e29b12a5dbd2fda39f04c904bed78cc1a9da01cc11d492782b27d5328c34",
@@ -5445,7 +5445,7 @@ jobs:
             ],
             "prior_checkout": "f9ee256671b7bfc84c705e437501ecb998fad175",
             "schema_version": "1.0.0",
-            "source_checkout": "cbea98182c01dd1992b14854855611b9a4208172",
+            "source_checkout": "5b66079968a1b55647ed53501cf69a4785616711",
             "source_clean_pathspecs": [
               "src/league_values/**/*.py",
               "mlb/*.py",
@@ -5471,7 +5471,7 @@ jobs:
               "projections/data/statcast.py"
             ]
           }
-          PR97_307A8C0C95E4B0D2BEC0D89CCC3A25ED99EF3CAC3E390BE8542F7F374E31CFE1
+          PR97_A22DC7CDB36115ADC92AC3E61AD7F2DC251447C60DFD54B0687B7F6AD22511AD
 
       - name: Capture accepted prior and bind pre-refresh metadata
         id: bootstrap
