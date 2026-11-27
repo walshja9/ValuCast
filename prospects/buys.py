@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from prospects.buy_approval import qualified_approval_receipt
 from mlb.roster_status import (
     ARTIFACT_PATH as MLB_ROSTER_STATUS_PATH,
     active_roster_lookup,
@@ -286,12 +287,18 @@ def _history_limited_count(rows: list[dict]) -> int:
 
 
 def _review_ready(review: dict | None) -> bool:
-    return (review or {}).get("review_status") in {"candidate_ready", "approved"}
+    return (
+        isinstance(review, dict)
+        and review.get("review_status") in {"candidate_ready", "approved"}
+        and qualified_approval_receipt(review.get("approval_receipt"))
+    )
 
 
 def _history_launch_approved(review: dict | None) -> bool:
-    policy = (review or {}).get("source_policy") or {}
-    return bool(policy.get("history_launch_approved"))
+    if not _review_ready(review):
+        return False
+    policy = review.get("source_policy") or {}
+    return isinstance(policy, dict) and policy.get("history_launch_approved") is True
 
 
 def _promotion_eligible(row: dict) -> bool:

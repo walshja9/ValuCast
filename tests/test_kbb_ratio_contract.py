@@ -54,12 +54,22 @@ def test_invalid_counts_are_neutral_and_do_not_change_valid_players(mode, bad_st
     players = [arm("a"), arm("b", 30, 5), arm("c", 10, 5)]
     config = league(mode=mode)
     before = indexed(players, config)
-    invalid = PlayerProjection("missing", "missing", "reliever", bad_stats)
+    invalid = PlayerProjection("missing", "missing", "reliever", {})
+    # Simulate corruption after construction to exercise the defensive ratio path.
+    invalid.stats.update(bad_stats)
     after = indexed([*players, invalid], config)
     for key in before:
         assert after[key].total_value == pytest.approx(before[key].total_value)
     assert after["missing"].total_value == 0
     assert after["missing"].raw_values["K_BB"] is None
+
+
+@pytest.mark.parametrize("stats", [{"K": float("nan"), "BB": 1},
+                                  {"K": 1, "BB": float("inf")},
+                                  {"K": float("inf"), "BB": 1}])
+def test_projection_constructor_rejects_nonfinite_ratio_counts(stats):
+    with pytest.raises(ValueError, match="must be finite"):
+        PlayerProjection("invalid", "invalid", "pitcher", stats)
 
 
 @pytest.mark.parametrize("mode", ["categories", "roto"])
@@ -131,10 +141,17 @@ def test_zero_min_count_ratio_extension_retains_direction_multiplier_and_weight(
 
 @pytest.mark.parametrize("stats,expected", [({"K": 10, "BB": 0, "K_BB": 0}, None),
                                          ({"K": 12, "BB": 2, "K_BB": 999}, 6),
-                                         ({"K_BB": 999}, None), ({"K": float("inf"), "BB": 1}, None)])
+                                         ({"K_BB": 999}, None)])
 def test_display_ratio_uses_true_counts_without_mutating_numeric_dto(stats, expected):
     player = PlayerProjection("display", "display", "pitcher", stats)
     before = dict(player.stats)
     assert strikeout_walk_ratio(player.stats) == expected
     assert player.stats == before
     assert all(isinstance(value, float) for value in player.stats.values())
+
+
+def test_display_ratio_defends_nonfinite_raw_mapping_without_mutation():
+    stats = {"K": float("inf"), "BB": 1}
+    before = dict(stats)
+    assert strikeout_walk_ratio(stats) is None
+    assert stats == before

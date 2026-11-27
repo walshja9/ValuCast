@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from math import isfinite
 from typing import Any, Mapping
 
 
@@ -42,6 +43,11 @@ def _tuple(value: Any) -> tuple[str, ...]:
     return tuple(value)
 
 
+def _require_finite(value: float, name: str) -> None:
+    if not isfinite(value):
+        raise ValueError(f"{name} must be finite.")
+
+
 @dataclass(frozen=True)
 class CategorySpec:
     """One configurable league category.
@@ -74,6 +80,10 @@ class CategorySpec:
             raise ValueError(f"Category '{self.id}' ratio_multiplier cannot be 0.")
         if self.weight < 0:
             raise ValueError(f"Category '{self.id}' weight cannot be negative.")
+        for name in ("weight", "ratio_multiplier", "min_denominator", "missing_value"):
+            _require_finite(getattr(self, name), f"Category '{self.id}' {name}")
+        if self.baseline is not None:
+            _require_finite(self.baseline, f"Category '{self.id}' baseline")
 
     @property
     def is_ratio(self) -> bool:
@@ -116,6 +126,7 @@ class PointRule:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "pool", _enum_value(PlayerPool, self.pool))
+        _require_finite(self.points, "Point-rule coefficient")
 
     def applies_to(self, player_pool: PlayerPool | str) -> bool:
         player_pool = _enum_value(PlayerPool, player_pool)
@@ -184,6 +195,9 @@ class LeagueConfig:
             raise ValueError("Category leagues need at least one category.")
         if self.scoring_mode is ScoringMode.POINTS and not self.point_rules:
             raise ValueError("Points leagues need at least one point rule.")
+        for category_id, pair in self.league_baselines.items():
+            for value in pair:
+                _require_finite(value, f"League baseline '{category_id}'")
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "LeagueConfig":
@@ -214,7 +228,10 @@ class PlayerProjection:
     def __post_init__(self) -> None:
         object.__setattr__(self, "pool", _enum_value(PlayerPool, self.pool))
         object.__setattr__(self, "positions", _tuple(self.positions))
-        object.__setattr__(self, "stats", {str(k): float(v) for k, v in self.stats.items()})
+        stats = {str(k): float(v) for k, v in self.stats.items()}
+        for name, value in stats.items():
+            _require_finite(value, f"Projection statistic '{name}'")
+        object.__setattr__(self, "stats", stats)
 
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> "PlayerProjection":

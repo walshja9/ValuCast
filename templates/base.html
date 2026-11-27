@@ -42,7 +42,7 @@
         ) %}
         <nav class="site-nav" aria-label="Primary navigation">
             <a href="/movers" class="site-nav-link"{% if request.path == '/movers' %} aria-current="page"{% endif %}>Movers</a>
-            <a href="/buys" class="site-nav-link{% if aotc_hold %} is-held{% endif %}"{% if request.path == '/buys' %} aria-current="page"{% endif %}{% if aotc_hold %} aria-label="Buys, temporarily held"{% endif %}>Buys{% if aotc_hold %}<span class="site-nav-held" aria-hidden="true">Held</span>{% endif %}</a>
+            <a href="/buys" class="site-nav-link{% if not buys_live %} is-held{% endif %}"{% if request.path == '/buys' %} aria-current="page"{% endif %}{% if not buys_live %} aria-label="Buys, temporarily held"{% endif %}>Buys{% if not buys_live %}<span class="site-nav-held" aria-hidden="true">Held</span>{% endif %}</a>
             <a href="/receipts" class="site-nav-link{% if receipts_hold %} is-held{% endif %}"{% if request.path == '/receipts' %} aria-current="page"{% endif %}{% if receipts_hold %} aria-label="Receipts, temporarily held"{% endif %}>Receipts{% if receipts_hold %}<span class="site-nav-held" aria-hidden="true">Held</span>{% endif %}</a>
             <a href="/" class="site-nav-link"{% if request.path == '/' %} aria-current="page"{% endif %}>Rankings</a>
             <a href="/backfields" class="site-nav-link"{% if backfields_page %} aria-current="page"{% endif %}>Farm Systems</a>

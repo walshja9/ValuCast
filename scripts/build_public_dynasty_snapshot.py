@@ -1,6 +1,7 @@
 """Build the shadow ValuCast-owned public dynasty snapshot."""
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import os
@@ -15,6 +16,10 @@ from prospects.buys import PROSPECT_BUYS_EPOCH  # noqa: E402
 from prospects.milb_stat_freshness import build_milb_stat_freshness_audit  # noqa: E402
 from quality.valucast_governor import load_previous_prospect_rank  # noqa: E402
 from web.public_snapshot_store import required_field_problems  # noqa: E402
+from web.recorded_public_history import (  # noqa: E402
+    apply_recorded_public_history,
+    validate_prior_canonical_snapshot,
+)
 
 # Plan 036 R3: the snapshot builder no longer evaluates a governor verdict of
 # its own. It writes with the pending placeholder below; the single
@@ -177,20 +182,22 @@ def _combined_mlb_history_value(values: list[float]) -> float:
 def _mlb_value_histories_from_archives(
     archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
     current_method_id: str | None = None,
-) -> tuple[dict[str, list[tuple[str, float]]], dict[str, list[tuple[str, float]]]]:
+) -> tuple[dict[str, list[tuple[str, float]]], dict[str, list[tuple[str, float]]], dict]:
     full_history: dict[str, list[tuple[str, float]]] = {}
     chart_history: dict[str, list[tuple[str, float]]] = {}
+    policy = {"dates": [], "latest_incompatible_date": None}
     if not archive_dir:
-        return full_history, chart_history
+        return full_history, chart_history, policy
     archive_dir = Path(archive_dir)
     if not archive_dir.exists():
-        return full_history, chart_history
+        return full_history, chart_history, policy
 
     files = sorted(archive_dir.glob("*.json"), key=lambda path: path.stem)[-MLB_VALUE_HISTORY_LIMIT:]
     for path in files:
         date_str = _date_part(path.stem)
         if not date_str:
             continue
+        policy["dates"].append(date_str)
         archive = _load_json(path)
         method_id = archive.get("method_id") if isinstance(archive, dict) else None
         if method_id is None and date_str < MLB_LEGACY_METHOD_BREAK_DATE:
@@ -199,6 +206,7 @@ def _mlb_value_histories_from_archives(
         if not compatible:
             # Even a mismatching archive without valid rows ends the compatible run.
             chart_history.clear()
+            policy["latest_incompatible_date"] = date_str
         by_player: dict[str, list[float]] = {}
         for row in _mlb_archive_rows(archive):
             mlbam_id = _mlbam_id(row)
@@ -211,7 +219,7 @@ def _mlb_value_histories_from_archives(
             full_history.setdefault(mlbam_id, []).append(point)
             if compatible:
                 chart_history.setdefault(mlbam_id, []).append(point)
-    return full_history, chart_history
+    return full_history, chart_history, policy
 
 
 def _attach_mlb_value_history(
@@ -479,6 +487,9 @@ def _apply_graduation_transition_floor(
         }
         if floor_value > current:
             row["value"] = floor_value
+            presets = row.get("value_by_preset")
+            if isinstance(presets, dict) and "5x5" in presets:
+                row["value_by_preset"] = {**presets, "5x5": floor_value}
             applied += 1
     return applied
 
@@ -1276,6 +1287,7 @@ def build_snapshot(
     generated_at: str | None = None,
     mlb_value_history_archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
     prospect_value_history_archive_dir: Path | str | None = PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
+    previous_public_snapshot_bytes: bytes | None = None,
 ) -> dict:
     if generated_at is None:
         build_time = datetime.now(timezone.utc)
@@ -1497,7 +1509,7 @@ def build_snapshot(
     )
     if calibration_report.get("applied"):
         _apply_common_value_scale(combined_rows, calibration_report)
-    full_history, chart_history = _mlb_value_histories_from_archives(
+    full_history, chart_history, legacy_mlb_policy = _mlb_value_histories_from_archives(
         mlb_value_history_archive_dir,
         (mlb_layer or {}).get("method_id"),
     )
@@ -1574,6 +1586,12 @@ def build_snapshot(
                 milb_stat_freshness_audit or {}
             ).get("status"),
             "prospect_rank_v1_version": prospect_rank.get("rank_version"),
+            "prospect_score_source": (prospect_rank.get("input_artifacts") or {}).get(
+                "stage1_score_source"
+            ),
+            "prospect_universal_model_version": (
+                prospect_rank.get("input_artifacts") or {}
+            ).get("universal_model_version"),
             "prospect_rank_v1_status": prospect_rank.get("status"),
             "prospect_universe_source": (prospect_rank.get("rank_contract") or {}).get(
                 "prospect_universe_source"
@@ -1598,7 +1616,10 @@ def build_snapshot(
         active_callup_bridge_sample,
         graduated_prospect_ids=sorted(str(value) for value in graduated_ids),
     )
-    return payload
+    return apply_recorded_public_history(
+        payload, previous_public_snapshot_bytes, legacy_mlb_policy=legacy_mlb_policy,
+        prospect_history_epoch_date=PROSPECT_VALUE_HISTORY_EPOCH_DATE,
+    )
 
 
 def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
@@ -1631,7 +1652,12 @@ def inject_quality_governor(
     return payload
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--previous-public-snapshot", type=Path, required=True)
+    args = parser.parse_args(argv)
+    previous_bytes = args.previous_public_snapshot.read_bytes()
+    validate_prior_canonical_snapshot(previous_bytes)
     rank_payload = _load_json(PROSPECT_RANK_PATH)
     previous_prospect_rank = load_previous_prospect_rank(
         rank_payload,
@@ -1680,6 +1706,7 @@ def main() -> None:
         prospect_inputs=prospect_inputs,
         actuals=actuals,
         identities=identities,
+        previous_public_snapshot_bytes=previous_bytes,
     )
     path = write_snapshot(payload)
     validation = payload["validation"]

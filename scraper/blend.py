@@ -1,6 +1,7 @@
 """Blend Steamer and ZiPS projections into a single player set."""
 from __future__ import annotations
 
+import math
 import os
 
 
@@ -25,6 +26,47 @@ def _safe_float(val, default: float = 0.0) -> float:
         return float(val)
     except (ValueError, TypeError):
         return default
+
+
+def _required_source_number(row: dict, field: str, source: str) -> float:
+    try:
+        raw = row.get(field)
+        if isinstance(raw, bool):
+            raise ValueError
+        value = float(raw)
+        if not math.isfinite(value):
+            raise ValueError
+    except (TypeError, ValueError, OverflowError):
+        raise RuntimeError(f"{source}: missing or invalid numeric field {field}") from None
+    return value
+
+
+def _validate_source_rows(
+    rows: list[dict], source: str, fields: tuple[str, ...], volume: str, optional: str,
+) -> None:
+    if not isinstance(rows, list):
+        raise RuntimeError(f"{source}: expected a projection list")
+    seen = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            raise RuntimeError(f"{source}: expected a projection object")
+        player_id = row.get("playerids")
+        if (
+            isinstance(player_id, bool) or not isinstance(player_id, (str, int, float))
+            or not player_id or not str(player_id).strip()
+            or isinstance(player_id, float) and not math.isfinite(player_id)
+        ):
+            raise RuntimeError(f"{source}: unusable playerids")
+        identity = str(player_id)
+        if identity in seen:
+            raise RuntimeError(f"{source}: duplicate playerids")
+        seen.add(identity)
+        source_volume = _required_source_number(row, volume, source)
+        if source_volume < 0:
+            raise RuntimeError(f"{source}: {volume} must not be negative")
+        for field in fields:
+            if (source_volume > 0 and field != optional) or row.get(field) is not None:
+                _required_source_number(row, field, source)
 
 
 def _avg(a: float, b: float) -> float:
@@ -196,6 +238,14 @@ def _single_pitcher(p: dict, pid: str, source: str) -> dict:
 
 
 def blend_projections(raw: dict[str, list[dict]]) -> list[dict]:
+    # GDP/BS may be omitted; supplied non-null numeric fields must always be finite.
+    hitter_fields = HITTER_COUNTING + HITTER_RATE
+    pitcher_fields = PITCHER_COUNTING + PITCHER_RATE
+    for source, fields, volume, optional in (
+        ("steamer_hitters", hitter_fields, "PA", "GDP"), ("zips_hitters", hitter_fields, "PA", "GDP"),
+        ("steamer_pitchers", pitcher_fields, "IP", "BS"), ("zips_pitchers", pitcher_fields, "IP", "BS"),
+    ):
+        _validate_source_rows(raw.get(source, []), source, fields, volume, optional)
     hitters = blend_hitters(raw.get("steamer_hitters", []), raw.get("zips_hitters", []))
     pitchers = blend_pitchers(raw.get("steamer_pitchers", []), raw.get("zips_pitchers", []))
     _assert_not_all_zero(hitters, pitchers)

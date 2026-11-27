@@ -1,7 +1,18 @@
 import os
 import unittest
 from unittest.mock import patch
-from scraper.blend import blend_projections, blend_hitters, blend_pitchers
+from scraper.blend import (
+    HITTER_COUNTING, HITTER_RATE, PITCHER_COUNTING, PITCHER_RATE,
+    blend_projections, blend_hitters, blend_pitchers,
+)
+
+
+def _complete_hitter(row):
+    return {**dict.fromkeys(HITTER_COUNTING + HITTER_RATE, 0.0), **row}
+
+
+def _complete_pitcher(row):
+    return {**dict.fromkeys(PITCHER_COUNTING + PITCHER_RATE, 0.0), **row}
 
 STEAMER_HITTERS = [
     {"playerids": "1", "PlayerName": "Star Hitter", "Team": "NYY",
@@ -148,8 +159,10 @@ class TestPitcherHAllowed(unittest.TestCase):
 class TestBlendAll(unittest.TestCase):
     @patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"})
     def test_blend_projections_returns_all_players(self):
-        raw = {"steamer_hitters": STEAMER_HITTERS, "steamer_pitchers": STEAMER_PITCHERS,
-               "zips_hitters": ZIPS_HITTERS, "zips_pitchers": ZIPS_PITCHERS}
+        raw = {"steamer_hitters": [_complete_hitter(row) for row in STEAMER_HITTERS],
+               "steamer_pitchers": [_complete_pitcher(row) for row in STEAMER_PITCHERS],
+               "zips_hitters": [_complete_hitter(row) for row in ZIPS_HITTERS],
+               "zips_pitchers": [_complete_pitcher(row) for row in ZIPS_PITCHERS]}
         result = blend_projections(raw)
         names = {p["name"] for p in result}
         self.assertIn("Star Hitter", names)
@@ -159,8 +172,10 @@ class TestBlendAll(unittest.TestCase):
 
     @patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"})
     def test_blend_output_is_list_of_dicts(self):
-        raw = {"steamer_hitters": STEAMER_HITTERS, "steamer_pitchers": STEAMER_PITCHERS,
-               "zips_hitters": ZIPS_HITTERS, "zips_pitchers": ZIPS_PITCHERS}
+        raw = {"steamer_hitters": [_complete_hitter(row) for row in STEAMER_HITTERS],
+               "steamer_pitchers": [_complete_pitcher(row) for row in STEAMER_PITCHERS],
+               "zips_hitters": [_complete_hitter(row) for row in ZIPS_HITTERS],
+               "zips_pitchers": [_complete_pitcher(row) for row in ZIPS_PITCHERS]}
         result = blend_projections(raw)
         self.assertIsInstance(result, list)
         for p in result:
@@ -171,11 +186,161 @@ if __name__ == "__main__":
     unittest.main()
 
 def _fg_hitter(i, hr=20, pa=600):
-    return {"playerids": str(i), "PlayerName": f"H{i}", "HR": hr, "PA": pa, "minpos": "OF"}
+    return _complete_hitter({"playerids": str(i), "PlayerName": f"H{i}", "HR": hr, "PA": pa, "minpos": "OF"})
 
 
 def _fg_pitcher(i, ip=150):
-    return {"playerids": str(i), "PlayerName": f"P{i}", "IP": ip, "GS": 20, "G": 25, "SO": 150}
+    return _complete_pitcher({"playerids": str(i), "PlayerName": f"P{i}", "IP": ip, "GS": 20, "G": 25, "SO": 150})
+
+
+@patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_POOL_FLOOR": "1"})
+class TestProjectionSourceContract(unittest.TestCase):
+    def raw(self):
+        return {"steamer_hitters": [_fg_hitter("shared")],
+                "steamer_pitchers": [_fg_pitcher("shared")]}
+
+    def test_source_lists_and_rows_have_expected_shape(self):
+        for rows in (None, {"unexpected": "object"}, [None], [1]):
+            raw = self.raw()
+            raw["steamer_hitters"] = rows
+            with self.subTest(rows_type=type(rows).__name__), self.assertRaisesRegex(RuntimeError, "steamer_hitters"):
+                blend_projections(raw)
+
+    def test_missing_hitter_hits_fail_before_zero_filling(self):
+        for source in ("steamer_hitters", "zips_hitters"):
+            raw = self.raw()
+            raw[source] = [_fg_hitter("shared")]
+            del raw[source][0]["H"]
+            with self.subTest(source=source), self.assertRaisesRegex(RuntimeError, source + r".*\bH\b"):
+                blend_projections(raw)
+
+    def test_missing_pitcher_earned_runs_fail_before_zero_filling(self):
+        for source in ("steamer_pitchers", "zips_pitchers"):
+            raw = self.raw()
+            raw[source] = [_fg_pitcher("shared")]
+            del raw[source][0]["ER"]
+            with self.subTest(source=source), self.assertRaisesRegex(RuntimeError, source + r".*\bER\b"):
+                blend_projections(raw)
+
+    def test_null_and_invalid_required_components_are_rejected(self):
+        for source, field in (("steamer_hitters", "H"), ("steamer_pitchers", "WHIP")):
+            for value in (None, float("nan"), float("inf"), -float("inf"), "invalid", True):
+                raw = self.raw()
+                raw[source][0][field] = value
+                with self.subTest(source=source, field=field), self.assertRaisesRegex(RuntimeError, source + ".*" + field):
+                    blend_projections(raw)
+
+    def test_volume_is_always_required_and_finite(self):
+        for source, field in (("steamer_hitters", "PA"), ("steamer_pitchers", "IP")):
+            for value in (None, float("nan"), float("inf"), -float("inf"), "invalid", False):
+                raw = self.raw()
+                raw[source][0][field] = value
+                with self.subTest(source=source), self.assertRaisesRegex(RuntimeError, source + ".*" + field):
+                    blend_projections(raw)
+            raw = self.raw()
+            del raw[source][0][field]
+            with self.assertRaisesRegex(RuntimeError, source + ".*" + field):
+                blend_projections(raw)
+
+    def test_negative_plate_appearances_and_innings_are_rejected(self):
+        for source, field in (("steamer_hitters", "PA"), ("steamer_pitchers", "IP")):
+            for value in (-1.0, "-1"):
+                raw = self.raw()
+                raw[source][0][field] = value
+                with self.subTest(source=source), self.assertRaisesRegex(RuntimeError, source + ".*" + field):
+                    blend_projections(raw)
+
+    def test_source_identities_must_be_usable(self):
+        for value in (None, "", " ", False, True, 0, [], {}, float("nan"), float("inf")):
+            raw = self.raw()
+            raw["steamer_hitters"][0]["playerids"] = value
+            with self.subTest(identity_type=type(value).__name__), self.assertRaisesRegex(RuntimeError, "steamer_hitters.*playerids"):
+                blend_projections(raw)
+
+    def test_duplicate_identities_are_rejected_per_source_list(self):
+        for source in ("steamer_hitters", "zips_hitters", "steamer_pitchers", "zips_pitchers"):
+            raw = self.raw()
+            factory = _fg_hitter if source.endswith("hitters") else _fg_pitcher
+            raw[source] = [factory(37), factory(37)]
+            raw[source][0]["playerids"] = 37
+            with self.subTest(source=source), self.assertRaisesRegex(RuntimeError, source + ".*duplicate.*playerids"):
+                blend_projections(raw)
+
+    def test_identity_overlap_across_sources_and_roles_is_allowed(self):
+        raw = self.raw()
+        raw["zips_hitters"] = [_fg_hitter("shared")]
+        raw["zips_pitchers"] = [_fg_pitcher("shared")]
+        self.assertEqual(len(blend_projections(raw)), 2)
+
+    def test_numeric_strings_explicit_zeroes_and_optional_omissions_are_allowed(self):
+        raw = self.raw()
+        for source, volume, optional in (("steamer_hitters", "PA", "GDP"), ("steamer_pitchers", "IP", "BS")):
+            row = raw[source][0]
+            del row[optional]
+            for field, value in list(row.items()):
+                if isinstance(value, (int, float)):
+                    row[field] = str(value)
+            self.assertGreater(float(row[volume]), 0.0)
+        self.assertEqual(len(blend_projections(raw)), 2)
+
+    def test_zero_volume_allows_undefined_nonvolume_components(self):
+        raw = {"steamer_hitters": [{"playerids": "shared", "PA": "0"}],
+               "steamer_pitchers": [{"playerids": "shared", "IP": 0}]}
+        self.assertEqual(len(blend_projections(raw)), 2)
+
+    def test_zero_volume_nonnull_components_are_validated_before_matching(self):
+        for source, volume, fields in (
+            ("zips_hitters", "PA", ("HR", "OBP")),
+            ("zips_pitchers", "IP", ("SO", "WHIP")),
+        ):
+            for field in fields:
+                for value in (float("nan"), float("inf"), -float("inf"), "NaN", "inf", "invalid", True, False):
+                    raw = self.raw()
+                    raw[source] = [{"playerids": "shared", volume: 0, field: value}]
+                    with self.subTest(source=source, field=field, value=repr(value)), self.assertRaisesRegex(RuntimeError, source + ".*" + field):
+                        blend_projections(raw)
+
+    def test_present_optional_components_are_validated_at_any_volume(self):
+        for source, volume, optional, factory in (
+            ("steamer_hitters", "PA", "GDP", _fg_hitter),
+            ("zips_hitters", "PA", "GDP", _fg_hitter),
+            ("steamer_pitchers", "IP", "BS", _fg_pitcher),
+            ("zips_pitchers", "IP", "BS", _fg_pitcher),
+        ):
+            for exposure in (0, 100):
+                for value in (float("nan"), float("inf"), -float("inf"), "NaN", "inf", "invalid", True, False):
+                    raw = self.raw()
+                    raw[source] = [{**factory("shared"), volume: exposure, optional: value}]
+                    with self.subTest(source=source, exposure=exposure, value=repr(value)), self.assertRaisesRegex(RuntimeError, source + ".*" + optional):
+                        blend_projections(raw)
+
+    def test_zero_volume_nulls_and_finite_optional_components_are_allowed(self):
+        for value in (None, 0, "0", 1.5, "1.5"):
+            raw = self.raw()
+            raw["zips_hitters"] = [{"playerids": "shared", "PA": "0", "HR": value, "OBP": value, "GDP": value}]
+            raw["zips_pitchers"] = [{"playerids": "shared", "IP": 0, "SO": value, "WHIP": value, "BS": value}]
+            raw["steamer_hitters"][0]["GDP"] = value
+            raw["steamer_pitchers"][0]["BS"] = value
+            with self.subTest(value=value):
+                self.assertEqual(len(blend_projections(raw)), 2)
+
+    def test_identity_conversion_keeps_existing_string_representation(self):
+        raw = self.raw()
+        raw["steamer_hitters"] = [_fg_hitter("integer"), _fg_hitter("float")]
+        raw["steamer_hitters"][0]["playerids"] = 1
+        raw["steamer_hitters"][1]["playerids"] = 1.0
+        self.assertEqual({row["id"] for row in blend_projections(raw) if row["pool"] == "hitter"}, {"1", "1.0"})
+
+    def test_partial_generic_helpers_keep_existing_behavior(self):
+        self.assertEqual(len(blend_hitters([{"playerids": "partial", "PA": 100}], [])), 1)
+        self.assertEqual(len(blend_pitchers([{"playerids": "partial", "IP": 100}], [])), 1)
+
+    def test_population_escape_flags_do_not_skip_source_validation(self):
+        raw = self.raw()
+        del raw["steamer_hitters"][0]["H"]
+        with patch.dict(os.environ, {"VALUCAST_SKIP_BLEND_ZERO_GUARD": "1"}):
+            with self.assertRaisesRegex(RuntimeError, r"steamer_hitters.*\bH\b"):
+                blend_projections(raw)
 
 
 def test_all_zero_projections_refuse_to_ship():

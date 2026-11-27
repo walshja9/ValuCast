@@ -361,6 +361,57 @@ class TestConfigLoading(unittest.TestCase):
             CategorySpec(id="X", label="X", pool=PlayerPool.HITTER, ratio_multiplier=0)
 
 
+class TestFiniteValuationInputs(unittest.TestCase):
+    def test_projection_statistics_reject_nonfinite_values(self):
+        for value in (float("nan"), float("inf"), -float("inf"), "nan", "inf"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                PlayerProjection(id="synthetic", name="Synthetic", pool="hitter", stats={"HR": value})
+
+    def test_category_configuration_rejects_nonfinite_values(self):
+        for name in ("weight", "ratio_multiplier", "min_denominator", "baseline", "missing_value"):
+            for value in (float("nan"), float("inf"), -float("inf")):
+                with self.subTest(field=name, value=value), self.assertRaises(ValueError):
+                    CategorySpec(id="HR", label="HR", pool="hitter", stat="HR", **{name: value})
+
+    def test_point_rules_reject_nonfinite_values(self):
+        for value in (float("nan"), float("inf"), -float("inf")):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                PointRule(stat="HR", points=value)
+        with self.assertRaises(ValueError):
+            PointRule.from_dict({"stat": "HR", "points": "nan"})
+
+    def test_fixed_baselines_reject_nonfinite_values(self):
+        category = CategorySpec(id="HR", label="HR", pool="hitter", stat="HR")
+        for value in (float("nan"), float("inf"), -float("inf")):
+            for pair in ((value, 1.0), (0.0, value)):
+                with self.subTest(pair=pair), self.assertRaises(ValueError):
+                    LeagueConfig(name="Synthetic", scoring_mode="categories", categories=(category,),
+                                 league_baselines={"HR": pair})
+
+    def test_zero_signed_values_and_numeric_coercion_keep_existing_behavior(self):
+        player = PlayerProjection.from_dict({"id": "synthetic", "name": "Synthetic", "pool": "hitter",
+                                             "stats": {"NSB": "-2", "HR": "0"}})
+        self.assertEqual(player.stats, {"NSB": -2.0, "HR": 0.0})
+        self.assertEqual(PointRule(stat="NSB", points=-0.5).points, -0.5)
+        category = CategorySpec(id="HR", label="HR", pool="hitter", stat="HR", weight=0.0,
+                                ratio_multiplier=-1.0, min_denominator=-1.0, missing_value=-2.0, baseline=0.0)
+        self.assertEqual(category.baseline, 0.0)
+        self.assertIsNone(CategorySpec(id="HR", label="HR", pool="hitter", stat="HR").baseline)
+        config = LeagueConfig(name="Synthetic", scoring_mode="categories", categories=(category,),
+                              league_baselines={"HR": (-2.0, 0.0)})
+        self.assertEqual(config.league_baselines["HR"], (-2.0, 0.0))
+
+    def test_engine_rejects_nonfinite_statistics_before_scoring_any_mode(self):
+        category = CategorySpec(id="HR", label="HR", pool="hitter", stat="HR")
+        players = [{"id": "bad", "name": "Synthetic bad", "pool": "hitter", "stats": {"HR": float("nan")}},
+                   {"id": "good", "name": "Synthetic good", "pool": "hitter", "stats": {"HR": 10.0}}]
+        for mode in ScoringMode:
+            league = LeagueConfig(name="Synthetic", scoring_mode=mode, categories=(category,),
+                                  point_rules=(PointRule(stat="HR", points=1.0),))
+            with self.subTest(mode=mode), self.assertRaises(ValueError):
+                ValuationEngine().value_players(players, league)
+
+
 class TestPresets(unittest.TestCase):
     def test_standard_5x5_loads(self):
         config = standard_5x5()

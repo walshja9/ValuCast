@@ -14,6 +14,22 @@ import app as app_module
 from app import app
 
 
+@pytest.fixture
+def approved_buys(monkeypatch):
+    """Approved synthetic rendering boundary, never a saved approval receipt."""
+    rows = [{"id": "synthetic-buy", "rank": 1, "mlbam_id": 990001,
+             "role": "hitter", "name": "Synthetic Buy", "team": "BOS",
+             "positions": ["SS"], "level": "AA", "age": 20, "score": 60.0,
+             "reason": "Synthetic skill", "terms": {}, "score_history": []}]
+    selected = SimpleNamespace(
+        is_available=True, ready_for_live_consumers=True, generated_at="2026-07-31",
+        get_all=lambda: rows, validation={},
+    )
+    monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", False)
+    monkeypatch.setattr(app_module, "_select_buy_source", lambda *args, **kwargs: (selected, "valucast_buys"))
+    return selected
+
+
 def _html(path):
     response = app.test_client().get(path)
     return response, response.data.decode("utf-8")
@@ -74,7 +90,7 @@ def test_backfields_route_returns_200():
     assert "Prospects, call-ups, risers, and minor-league signal in one place." in html
 
 
-def test_backfields_nav_link_and_active_state():
+def test_backfields_nav_link_and_active_state(approved_buys):
     response, html = _html("/")
     assert response.status_code == 200
     nav = _site_nav(html)
@@ -138,7 +154,7 @@ def test_backfields_hides_held_buys_but_keeps_scouting_deep_link():
     assert 'href="/scouting' in html
 
 
-def test_backfields_section_anchors_present():
+def test_backfields_section_anchors_present(approved_buys):
     response, html = _html("/backfields")
 
     assert response.status_code == 200
@@ -178,7 +194,7 @@ def test_backfields_degrades_when_artifacts_are_missing(monkeypatch):
     assert "No reports yet - first looks land here." in html
 
 
-def test_backfields_ahead_of_curve_uses_live_buys_graphic_source(monkeypatch):
+def test_backfields_ahead_of_curve_uses_live_buys_graphic_source(monkeypatch, approved_buys):
     graphic_rows = [
         {
             "id": "buy-1",
@@ -219,7 +235,7 @@ def test_backfields_ahead_of_curve_uses_live_buys_graphic_source(monkeypatch):
     assert all(row["source"] == "valucast_buys" for row in ctx["risers"])
 
 
-def test_backfields_ahead_of_curve_is_the_buy_signal_entry_point():
+def test_backfields_ahead_of_curve_is_the_buy_signal_entry_point(approved_buys):
     original = app_module.AHEAD_OF_THE_CURVE_HOLD
     app_module.AHEAD_OF_THE_CURVE_HOLD = False
     try:
@@ -846,7 +862,7 @@ def test_team_board_buys_respect_ahead_of_curve_hold(monkeypatch):
     assert app_module._team_board_buys("BOS", payload=payload) == []
 
 
-def test_team_board_buys_are_org_filtered_ranked_and_fail_open():
+def test_team_board_buys_are_org_filtered_and_ranked_when_approved(approved_buys):
     payload = {
         "board": [
             {
@@ -871,6 +887,7 @@ def test_team_board_buys_are_org_filtered_ranked_and_fail_open():
         ]
     }
 
+    approved_buys.get_all = lambda: payload["board"]
     buys = app_module._team_board_buys("BOS", payload=payload)
 
     assert [row["name"] for row in buys] == ["First Buy", "Third Buy"]
@@ -1173,7 +1190,7 @@ def test_team_board_card_offers_top_10_and_top_20_downloads():
     assert f'href="/backfields/team/{org}/share-card.png?n=20">Download Top 20 PNG' in html
 
 
-def test_team_board_page_renders_data_backed_system_snapshot():
+def test_team_board_page_renders_data_backed_system_snapshot(approved_buys):
     org = _team_board_org_from_backfields()
 
     response, html = _html(f"/backfields/team/{org}")

@@ -14,6 +14,37 @@ import app as app_module
 from app import app, _valuation_players, store
 
 
+def _synthetic_approved_buy_store(count=40):
+    """Approved rendering fixture only; no saved receipt or real authorization."""
+    from datetime import date, timedelta
+    from types import SimpleNamespace
+
+    history = [((date(2026, 7, 1) + timedelta(days=day)).isoformat(), 50.0 + day / 10)
+               for day in range(31)]
+    rows = [{"id": f"synthetic-buy-{index}", "player_id": f"synthetic-buy-{index}",
+             "mlbam_id": 990000 + index, "role": "hitter", "rank": index,
+             "name": f"Synthetic Buy {index}", "team": "BOS", "positions": ["SS"],
+             "level": "AA", "age": 20, "score": 60.0 - index / 10,
+             "reason": "Synthetic underlying skill", "score_history": list(history),
+             "terms": {"model_strength": .6, "momentum": .5, "buy_window": .5,
+                       "runway": .5, "conviction": .5}}
+            for index in range(1, count + 1)]
+    return SimpleNamespace(
+        is_available=True, ready_for_live_consumers=True, generated_at="2026-07-31",
+        get_all=lambda: rows,
+        validation={"candidate_count": 100, "row_count": count,
+                    "active_mlb_roster_excluded_count": 0},
+    )
+
+
+@contextmanager
+def approved_buy_rendering(count=40):
+    """Keep rendering positives independent of the committed approval state."""
+    selected = _synthetic_approved_buy_store(count)
+    with patch.object(app_module, "_select_buy_source", return_value=(selected, "valucast_buys")):
+        yield selected
+
+
 @contextmanager
 def published_phase(phase, target):
     """Serve pages as if the projection feed had been published with this phase and target season."""
@@ -887,7 +918,7 @@ class TestDynastyMode(unittest.TestCase):
                 self.assertIn("'text-anchor': 'middle' }, 'Age')", html)
 
     def test_buys_share_card_png_and_preview(self):
-        # Held-path coverage: the "returns later this week" share card + placeholder
+        # Held-path coverage: the unavailable share card + placeholder
         # render when the AOTC hold is ON (the live default is now hold off).
         import app as _app
         original = _app.AHEAD_OF_THE_CURVE_HOLD
@@ -905,13 +936,14 @@ class TestDynastyMode(unittest.TestCase):
             preview = self.client.get("/buys/share-card")
             self.assertEqual(preview.status_code, 200)
             self.assertIn(b"Ahead of the Curve", preview.data)
-            self.assertIn(b"returns later this week", preview.data)
+            self.assertIn(b"Buy signals unavailable", preview.data)
             self.assertIn(b'property="og:image"', preview.data)
             self.assertIn(b"/buys/share-card.png", preview.data)
 
             buys_html = self.client.get("/buys").data
             self.assertIn(b"/buys/share-card.png", buys_html)
-            self.assertIn(b"Ahead of the Curve returns later this week", buys_html)
+            self.assertIn(b"Buy signals unavailable", buys_html)
+            self.assertIn(b"Buy signals require approval and validation before publication.", buys_html)
             self.assertNotIn(b'class="buys-row"', buys_html)
         finally:
             _app.AHEAD_OF_THE_CURVE_HOLD = original
@@ -2243,6 +2275,8 @@ class TestBulletproofing(unittest.TestCase):
             app.config["TESTING"] = False
             app_module._PNG_CACHE.clear()
             with app.test_request_context("/dynasty/share-card.png?limit=20"):
+                # Run the real request hook before the manually called after-hook.
+                self.assertIsNone(app_module._serve_cached_png())
                 resp = app_module.make_response(b"\x89PNG\r\n\x1a\npayload")
                 resp.headers["Content-Type"] = "image/png"
                 # Simulate a concurrent pop having already emptied the dict:
@@ -2995,8 +3029,12 @@ class TestTodayStrip(unittest.TestCase):
     def test_digest_degrades_to_nothing_when_artifacts_missing(self):
         import app as app_module
         from unittest.mock import patch
+        from types import SimpleNamespace
+        denied = SimpleNamespace(is_available=False, ready_for_live_consumers=False,
+                                 generated_at=None, validation={}, get_all=lambda: [])
         with patch.object(app_module, "_load_movers_payload", return_value={}), \
-             patch.object(app_module, "_load_artifact", return_value=None):
+             patch.object(app_module, "_load_artifact", return_value=None), \
+             patch.object(app_module, "valucast_buy_store", denied):
             self.assertEqual(app_module._front_door_digest(), {})
             html = self.client.get("/").data.decode("utf-8")
         self.assertEqual(html.count("today-strip"), 0)
@@ -3052,16 +3090,14 @@ class TestTodayStrip(unittest.TestCase):
         # 7/17 nav audit P1: the today-strip's "Top buy" cell linked /buys
         # unconditionally, while the primary nav + backfields.html both
         # correctly gate the same destination on aotc_hold.
-        html = self.client.get("/").data.decode("utf-8")
-        self.assertIn('href="/buys"', html)
-        self.assertIn("Top buy", html)
+        with approved_buy_rendering(count=1):
+            with patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False):
+                html = self.client.get("/").data.decode("utf-8")
+            self.assertIn('href="/buys"', html)
+            self.assertIn("Top buy", html)
 
-        original = app_module.AHEAD_OF_THE_CURVE_HOLD
-        app_module.AHEAD_OF_THE_CURVE_HOLD = True
-        try:
-            held_html = self.client.get("/").data.decode("utf-8")
-        finally:
-            app_module.AHEAD_OF_THE_CURVE_HOLD = original
+            with patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", True):
+                held_html = self.client.get("/").data.decode("utf-8")
         self.assertNotIn("Top buy", held_html)
         # The rest of the strip (movers/callups) still renders.
         self.assertIn("Latest on ValuCast", held_html)
@@ -3178,7 +3214,8 @@ class TestTrustGrammarAndCards(unittest.TestCase):
             app_module, "_select_buy_source", return_value=(buy_store, "unavailable")
         ):
             unavailable = self.client.get("/buys").data.decode("utf-8")
-        self.assertIn("buys board will return", unavailable)
+        self.assertIn("Buy signals unavailable", unavailable)
+        self.assertIn("Buy signals require approval and validation before publication.", unavailable)
         self.assertNotIn("of the pool by design", unavailable)
         self.assertNotIn('class="buys-row"', unavailable)
 
@@ -3188,14 +3225,17 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         def spans(html):
             return [int(m) for m in _re.findall(r'aria-label="(\d+)-day value trend', html)]
 
-        default_spans = spans(self.client.get("/buys").data.decode("utf-8"))
-        windowed = self.client.get("/buys?window=7")
-        self.assertEqual(windowed.status_code, 200)
-        seven_spans = spans(windowed.data.decode("utf-8"))
-        if seven_spans:
+        with approved_buy_rendering(count=1), patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False):
+            default_spans = spans(self.client.get("/buys").data.decode("utf-8"))
+            windowed = self.client.get("/buys?window=7")
+            self.assertEqual(windowed.status_code, 200)
+            seven_spans = spans(windowed.data.decode("utf-8"))
+            self.assertTrue(default_spans)
+            self.assertTrue(seven_spans)
             self.assertLessEqual(max(seven_spans), 7)
-        # Junk window falls back to the default view, never a 500.
-        junk = self.client.get("/buys?window=999").data.decode("utf-8")
+            self.assertGreater(max(default_spans), max(seven_spans))
+            # Junk window falls back to the default view, never a 500.
+            junk = self.client.get("/buys?window=999").data.decode("utf-8")
         self.assertEqual(spans(junk), default_spans)
 
     def test_movers_shows_qualification_thresholds(self):
@@ -3242,7 +3282,8 @@ class TestTrustGrammarAndCards(unittest.TestCase):
 
     def test_cards_gallery_indexes_share_cards(self):
         import app as app_module
-        html = self.client.get("/cards").data.decode("utf-8")
+        with approved_buy_rendering(), patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False):
+            html = self.client.get("/cards").data.decode("utf-8")
         self.assertIn("THE CARD SHOP", html)
         self.assertIn("The Ledger", html)
         self.assertIn("Prospect Movers", html)
@@ -3250,8 +3291,7 @@ class TestTrustGrammarAndCards(unittest.TestCase):
         # Held boards stay out of the gallery while held.
         if app_module.RECEIPTS_HOLD:
             self.assertNotIn("/receipts/share-card", html)
-        if not app_module.AHEAD_OF_THE_CURVE_HOLD:
-            self.assertIn("/buys/share-card.png", html)
+        self.assertIn("/buys/share-card.png", html)
 
     def test_ledger_share_card_renders_png_counts_only(self):
         r = self.client.get("/ledger/share-card.png")

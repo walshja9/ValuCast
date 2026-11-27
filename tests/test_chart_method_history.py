@@ -48,7 +48,7 @@ def test_full_history_keeps_all_methods_and_chart_keeps_latest_compatible_run(tm
 
     monkeypatch.setattr(snapshot, "_load_json", count_read)
 
-    full, chart = snapshot._mlb_value_histories_from_archives(tmp_path, "a")
+    full, chart, policy = snapshot._mlb_value_histories_from_archives(tmp_path, "a")
 
     assert read_counts == Counter(paths)
     assert full == {
@@ -58,6 +58,7 @@ def test_full_history_keeps_all_methods_and_chart_keeps_latest_compatible_run(tm
     assert chart == {"99": [("2026-12-03", 63.0)]}
     assert chart is not full
     assert chart["99"] is not full["99"]
+    assert policy == {"dates": ["2026-12-01", "2026-12-02", "2026-12-03"], "latest_incompatible_date": "2026-12-02"}
 
 
 def test_empty_mismatching_archive_clears_only_chart(tmp_path):
@@ -67,21 +68,23 @@ def test_empty_mismatching_archive_clears_only_chart(tmp_path):
         {"value": 90},
     ])
 
-    full, chart = snapshot._mlb_value_histories_from_archives(tmp_path, "a")
+    full, chart, policy = snapshot._mlb_value_histories_from_archives(tmp_path, "a")
 
     assert full == {"99": [("2026-12-01", 40.0)]}
     assert chart == {}
+    assert policy["latest_incompatible_date"] == "2026-12-02"
 
 
 def test_missing_current_method_id_keeps_independent_complete_histories(tmp_path):
     _write_archive(tmp_path, "2026-12-01", "a", [{"mlbam_id": 99, "value": 40}])
     _write_archive(tmp_path, "2026-12-02", "b", [{"mlbam_id": 99, "value": 75}])
 
-    full, chart = snapshot._mlb_value_histories_from_archives(tmp_path)
+    full, chart, policy = snapshot._mlb_value_histories_from_archives(tmp_path)
 
     assert full == chart == {"99": [("2026-12-01", 40.0), ("2026-12-02", 75.0)]}
     assert chart is not full
     assert chart["99"] is not full["99"]
+    assert policy["latest_incompatible_date"] is None
 
 
 @pytest.mark.parametrize("chart_has_today", [False, True])
@@ -200,6 +203,22 @@ def test_watchlist_delta_uses_full_history_and_dynasty_png_chip_uses_chart_histo
 
     assert _evaluate(movement, row=row, **functions) == "DOWN -10.0 OVER 4D"
     assert functions["_card_value_fields"]("dynasty", row, {})["momentum_label"] == "UP +10.0 OVER 2D"
+
+
+def test_full_movement_suppresses_only_explicitly_noncomparable_history(app_functions):
+    functions = _run_functions(
+        app_functions["_buy_spark_label"], app_functions["_value_momentum_label"],
+        build_spark=build_spark, chart_value_history=chart_value_history, date=date,
+    )
+    full = tuple((f"2026-12-{day:02}", float(day)) for day in range(1, 31))
+    row = SimpleNamespace(value_history=full, chart_value_history=full[-3:],
+                          context={"value_history_basis": {"movement_comparable": False}})
+    assert functions["_value_momentum_label"](row) == "NOT COMPARABLE"
+    assert functions["_value_momentum_label"](row, for_chart=True) == "UP +2.0 OVER 2D"
+    for context in (None, [], {"value_history_basis": None}, {"value_history_basis": {"movement_comparable": True}}):
+        row.context = context
+        assert functions["_value_momentum_label"](row) == "UP +29.0 OVER 29D"
+    assert row.value_history == full
 
 
 def test_detail_spark_uses_chart_history(app_functions):

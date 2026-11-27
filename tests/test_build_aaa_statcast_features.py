@@ -346,8 +346,61 @@ def _coverage_cache(day="2026-07-20"):
     }
 
 
-def test_artifact_as_of_is_cache_coverage_not_build_date():
+def test_cache_coverage_does_not_infer_continuity_from_latest_game():
+    cache = _coverage_cache()
+    del cache["checked_through"]
+    assert b.cache_coverage(cache, 2026) is None
+    for invalid in ("not-a-date", "2026-02-30", 20260720):
+        cache["checked_through"] = invalid
+        assert b.cache_coverage(cache, 2026) is None
+
+
+def test_builder_keeps_exact_prior_bytes_without_verified_coverage(tmp_path, capsys, monkeypatch):
+    out = tmp_path / "art.json"
+    prior = b'{"as_of":"2026-07-19","hitters":{"kept":{}}}\n'
+    out.write_bytes(prior)
+    cache = _coverage_cache()
+    del cache["checked_through"]
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(json.dumps(cache), encoding="utf-8")
+    def unqualified_build(*args, **kwargs):
+        raise AssertionError("unverified cache must not reach aggregation")
+    monkeypatch.setattr(b, "build_artifact", unqualified_build)
+    assert b.main(["--cache-path", str(cache_path), "--out", str(out)]) == 0
+    assert out.read_bytes() == prior
+    assert "unverified" in capsys.readouterr().out
+
+
+def test_builder_rejects_coverage_rejected_by_refresher(tmp_path, monkeypatch):
+    out = tmp_path / "art.json"
+    prior = b'{"as_of":"2026-07-19","hitters":{"kept":{}}}\n'
+    cache_path = tmp_path / "cache.json"
+    def unqualified_build(*args, **kwargs):
+        raise AssertionError("rejected coverage must not reach aggregation")
+    monkeypatch.setattr(b, "build_artifact", unqualified_build)
+    for day in ("2025-07-20", "9999-07-20", "2026-01-01"):
+        out.write_bytes(prior)
+        cache_path.write_text(json.dumps(_coverage_cache(day)), encoding="utf-8")
+        assert b.main(["--season", "2026", "--cache-path", str(cache_path), "--out", str(out)]) == 0
+        assert out.read_bytes() == prior
+
+
+def test_default_builder_requires_restored_ready_marker(tmp_path, monkeypatch):
+    out = tmp_path / "art.json"
+    prior = b'{"as_of":"2026-07-19","hitters":{"kept":{}}}\n'
+    out.write_bytes(prior)
+    monkeypatch.setattr(b, "READY_MARKER_PATH", tmp_path / ".missing-ready", raising=False)
+    monkeypatch.setattr(b, "load_cache", lambda *args: _coverage_cache())
+    def partial_build(*args, **kwargs):
+        raise AssertionError("partial cache must not reach aggregation")
+    monkeypatch.setattr(b, "build_artifact", partial_build)
+    assert b.main(["--season", "2026", "--out", str(out)]) == 0
+    assert out.read_bytes() == prior
+
+
+def test_artifact_as_of_is_cache_coverage_not_build_date(monkeypatch):
     from scripts.build_aaa_statcast_features import build_artifact
+    monkeypatch.setattr(b, "load_universe_ids", lambda *args: (set(), set()))
 
     payload = build_artifact(_coverage_cache("2026-07-20"), 2026)
     # A rebuild from an old cache must carry the old coverage date, never
@@ -358,6 +411,7 @@ def test_artifact_as_of_is_cache_coverage_not_build_date():
 
 def test_builder_refuses_rebuild_when_coverage_did_not_advance(tmp_path, monkeypatch):
     import scripts.build_aaa_statcast_features as b
+    monkeypatch.setattr(b, "load_universe_ids", lambda *args: (set(), set()))
 
     out = tmp_path / "art.json"
     out.write_text(json.dumps({
@@ -377,8 +431,9 @@ def test_builder_refuses_rebuild_when_coverage_did_not_advance(tmp_path, monkeyp
     assert "generated_at" not in kept or kept.get("hitters") == {"h": {"n_pitches": 1}}
 
 
-def test_builder_allows_equal_coverage_rebuild_when_schema_stamp_missing(tmp_path):
+def test_builder_allows_equal_coverage_rebuild_when_schema_stamp_missing(tmp_path, monkeypatch):
     import scripts.build_aaa_statcast_features as b
+    monkeypatch.setattr(b, "load_universe_ids", lambda *args: (set(), set()))
 
     out = tmp_path / "art.json"
     out.write_text(json.dumps({

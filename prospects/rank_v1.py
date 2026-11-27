@@ -2562,8 +2562,10 @@ def build_prospect_rank_from_stage1(
             "prospect_universe_candidate_count": prospect_universe.get("candidate_count"),
             "prospect_model_version": stage1.get("model_version"),
             "dynasty_layer_version": stage1.get("layer_version"),
+            "universal_model_version": stage1.get("universal_model_version"),
             "stage1_contract_version": stage1["contract_version"],
             "stage1_state": stage1["state"],
+            "stage1_score_source": stage1["score_source"],
             "stage1_profile_count": len(stage1_by_key),
             "prospect_input_schema_version": input_contract.get("schema_version"),
             "prospect_availability_version": (prospect_availability or {}).get(
@@ -2661,6 +2663,9 @@ def archive_rank(
     archive = {
         "date": date_str,
         "rank_version": payload["rank_version"],
+        "universal_model_version": (payload.get("input_artifacts") or {}).get(
+            "universal_model_version"
+        ),
         "generated_at": payload["generated_at"],
         "candidate_count": payload["candidate_count"],
         "ranked_count": payload["ranked_count"],

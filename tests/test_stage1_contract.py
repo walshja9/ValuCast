@@ -80,6 +80,21 @@ def test_contract_binds_served_profiles_without_mutating_inputs():
     assert (model, layer) == before
 
 
+def test_contract_preserves_universal_version_without_changing_profiles():
+    model, layer = _model(), _layer()
+    legacy = _contract(model, layer)
+    assert legacy["universal_model_version"] is None
+    layer["universal_model_version"] = "synthetic-component-version"
+
+    tagged = _contract(model, layer)
+
+    assert tagged["universal_model_version"] == "synthetic-component-version"
+    assert tagged["profiles_by_key"] == legacy["profiles_by_key"]
+    tagged.pop("universal_model_version")
+    legacy.pop("universal_model_version")
+    assert tagged == legacy
+
+
 @pytest.mark.parametrize("state", ["research", "shadow"])
 def test_contract_rejects_non_served_states(state):
     with pytest.raises(ValueError, match="Stage 1 state"):

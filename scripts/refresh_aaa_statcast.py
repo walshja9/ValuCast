@@ -21,7 +21,7 @@ Two modes:
                season opener through today, extract the compact per-pitch slice, flush
                the cache periodically. A cached game_pk is NEVER re-fetched (a final
                game is immutable), so a re-run resumes for free.
-  (default)    incremental: fetch only game_dates AFTER the cache's max date, with a
+  (default)    incremental: fetch only game_dates AFTER verified checked_through, with a
                new-date budget cap, and no-op gracefully (keep the stale artifact +
                cache, exit 0) on any HTTP error so a bad-fetch morning never stalls
                the daily build.
@@ -94,6 +94,9 @@ _FLOAT_FIELDS = frozenset({
 _STR_FIELDS = frozenset({
     "pitcher", "batter", "pitch_type", "description", "type", "events", "bb_type",
 })
+_REQUIRED_CSV_FIELDS = frozenset({"game_pk", "home_team", "game_date"}) | (
+    frozenset(_PITCH_FIELDS) - {"spin_axis", "arm_angle", "type", "events"}
+)
 
 
 # ---------------------------------------------------------------------------
@@ -143,9 +146,27 @@ def fetch_day_rows(day: str, aaa_abbrevs: set[str]) -> list[dict]:
     """
     body = _read_with_retry(_SAVANT_CSV.format(day=day))
     rows = []
-    for row in csv.DictReader(io.StringIO(body)):
-        if (row.get("home_team") or "").strip() in aaa_abbrevs:
-            rows.append(row)
+    try:
+        reader = csv.DictReader(io.StringIO(body), strict=True)
+        headers = reader.fieldnames or []
+        if (not _REQUIRED_CSV_FIELDS.issubset(headers)
+                or len(headers) != len(set(headers)) or any(not h for h in headers)):
+            raise ValueError("AAA CSV missing or duplicate headers")
+        for count, row in enumerate(reader, start=1):
+            if count >= 25000:
+                raise ValueError("AAA CSV reached the 25000-row cap; coverage unverified")
+            if None in row or any(value is None for value in row.values()):
+                raise ValueError("AAA CSV row width does not match headers")
+            if row["game_date"].strip() != day or not row["home_team"].strip():
+                raise ValueError("AAA CSV row has a different date or missing home team")
+            if row["home_team"].strip() in aaa_abbrevs:
+                for field in ("game_pk", "pitcher", "batter"):
+                    value = row[field].strip()
+                    if not value.isascii() or not value.isdigit() or int(value) <= 0:
+                        raise ValueError(f"AAA CSV row has an invalid {field}")
+                rows.append(row)
+    except csv.Error as exc:
+        raise ValueError("AAA CSV is malformed") from exc
     return rows
 
 
@@ -264,25 +285,33 @@ def _advance_checked_through(cache: dict, day: str, advance_coverage: bool) -> N
         cache["checked_through"] = day
 
 
+def _verified_coverage(cache: dict, season: int, end: date) -> date | None:
+    value = cache.get("checked_through")
+    if not isinstance(value, str):
+        return None
+    try:
+        covered = date.fromisoformat(value)
+    except ValueError:
+        return None
+    if (value != covered.isoformat()
+            or not date(season, *_SEASON_START_MONTH_DAY) <= covered <= end):
+        return None
+    return covered
+
+
 def incremental_dates(cache: dict, season: int, *, through: date | None = None) -> list[str]:
     """Game_dates strictly AFTER verified coverage, through today.
 
-    Coverage = checked_through when present (a day after it may have FAILED on
-    a previous pass even though later game_dates are cached, so max-date alone
-    over-skips); legacy caches without the key fall back to the max cached
-    game_date. Cold cache (no dates) returns [] -- an empty cache in
-    incremental mode must not become a full backfill inside the daily job.
+    Only valid checked_through since the season anchor establishes coverage. Cached game dates
+    cannot prove intervening empty dates were checked. Missing/invalid coverage
+    returns [] -- incremental mode must not turn into a backfill in the daily job.
     """
-    max_date = cache.get("checked_through") or cache_max_date(cache)
-    if not max_date:
-        return []
-    try:
-        start = date.fromisoformat(max_date) + timedelta(days=1)
-    except ValueError:
-        return []
     end = through or date.today()
+    covered = _verified_coverage(cache, season, end)
+    if covered is None:
+        return []
     out = []
-    cur = start
+    cur = covered + timedelta(days=1)
     while cur <= end:
         out.append(_iso(cur))
         cur += timedelta(days=1)
@@ -380,6 +409,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
+    covered = _verified_coverage(cache, args.season, through or date.today())
+    if incremental and covered is None:
+        print(
+            "AAA statcast cache has unverified coverage; keeping prior artifact "
+            "(run bootstrap to check the complete season)",
+            flush=True,
+        )
+        return 0
+
     # AAA abbreviations are a StatsAPI fetch; a failure to obtain them means we cannot
     # safely filter, so fail-soft (keep stale cache/artifact) in incremental mode.
     try:
@@ -400,13 +438,15 @@ def main(argv: list[str] | None = None) -> int:
         days = list(dict.fromkeys(args.date))
     elif args.backfill:
         days = season_dates(args.season, through=through)
-        already = cache.get("checked_through")
-        if isinstance(already, str):
+        if covered is not None:
+            already = covered.isoformat()
             before = len(days)
             days = [d for d in days if d > already]
             if before != len(days):
                 print(f"backfill resuming after verified coverage {already} "
                       f"({before - len(days)} day(s) skipped)", flush=True)
+        else:
+            cache.pop("checked_through", None)
     else:
         days = incremental_dates(cache, args.season, through=through)
         if not days and not cache_max_date(cache):

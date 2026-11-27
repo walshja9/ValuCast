@@ -6,8 +6,10 @@ import pytest
 
 from prospects.gate import validate_gate
 from prospects.universal import (
+    FEATURE_NAMES,
     TARGET_SPECS,
     _coherent_outcome_distribution,
+    _feature_vector,
     _raw_target,
     _representative_season,
     _select_current_records,
@@ -274,6 +276,57 @@ def test_outcome_distribution_handles_pitcher_rotation_threshold():
     assert outcomes["established_probability"]["prediction"] == pytest.approx(0.45)
 
 
+def test_hitter_features_preserve_zero_rates():
+    record = _historical("hitter", 2018, 1)
+    fields = ("avg", "obp", "slg", "babip")
+    record.update({field: 0.0 for field in fields})
+    features = dict(zip(FEATURE_NAMES["hitter"], _feature_vector(record, "hitter")))
+    assert {field: features[field] for field in fields} == {field: 0.0 for field in fields}
+
+
+def test_hitter_feature_defaults_and_nonzero_rates_are_unchanged():
+    fields = ("avg", "obp", "slg", "babip")
+    for value, expected in (
+        (None, (0.250, 0.320, 0.720 - 0.320, 0.300)),
+        (0.123, (0.123, 0.123, 0.123, 0.123)),
+    ):
+        record = _historical("hitter", 2018, 1)
+        record.update({field: value for field in fields}, ops=0.720)
+        features = dict(zip(FEATURE_NAMES["hitter"], _feature_vector(record, "hitter")))
+        assert tuple(features[field] for field in fields) == expected
+
+
+def test_missing_slg_fallback_preserves_zero_ops():
+    record = _historical("hitter", 2018, 1)
+    record.update(slg=None, ops=0.0)
+    features = dict(zip(FEATURE_NAMES["hitter"], _feature_vector(record, "hitter")))
+    assert features["slg"] == 0.0
+
+
+def test_star_probability_cannot_exceed_its_volume_probability():
+    for volume_key in ("regular_probability", "rotation_probability"):
+        for established, volume, star, expected_established, expected_star in (
+            (0.80, 0.20, 0.70, 0.80, 0.20),
+            (0.16, 0.36, 0.50, 0.36, 0.36),
+            (0.80, 0.00, 0.70, 0.80, 0.00),
+        ):
+            outcomes = {
+                "established_probability": {"prediction": established},
+                volume_key: {"prediction": volume},
+                "star_probability": {"prediction": star},
+            }
+            distribution = _coherent_outcome_distribution(outcomes)
+            assert distribution == {
+                "bust_probability": round(1.0 - expected_established, 4),
+                "role_probability": round(expected_established - expected_star, 4),
+                "star_probability": expected_star,
+            }
+            assert outcomes["established_probability"]["prediction"] == expected_established
+            assert outcomes["star_probability"]["prediction"] == expected_star
+            assert all(value >= 0.0 for value in distribution.values())
+            assert abs(sum(distribution.values()) - 1.0) < 1e-12
+
+
 def test_probability_gate_uses_brier_while_continuous_targets_use_mae():
     predictions = [0.2, 0.6]
     targets = [0.0, 1.0]
@@ -447,6 +500,26 @@ def test_missing_service_fact_fails_closed():
     contract["mlb_service"] = []
     payload = build_shadow_model(contract, now="2026-06-12T00:00:00+00:00")
     assert payload["profiles"] == []
+
+
+def test_corrected_implementation_version_reaches_artifact_and_archive(tmp_path, monkeypatch):
+    from prospects import universal
+
+    def no_training(*args, **kwargs):
+        raise AssertionError("Version provenance must not fit a model")
+
+    profiles = [{"mlbam_id": 1, "role": "hitter", "probabilities": {"star": 0.0}}]
+    monkeypatch.setattr(universal, "TARGET_SPECS", {"hitter": {}, "pitcher": {}})
+    monkeypatch.setattr(universal, "train_target", no_training)
+    monkeypatch.setattr(universal, "score_current", lambda *_: profiles)
+    payload = build_shadow_model(_contract(), now="2026-06-12T00:00:00+00:00")
+    path, changed = archive_predictions(payload, "2026-06-12", tmp_path)
+    archived = json.loads(path.read_text(encoding="utf-8"))
+
+    assert changed is True
+    assert payload["model_version"] == "0.4.1"
+    assert archived["model_version"] == payload["model_version"]
+    assert payload["profiles"] == profiles == archived["profiles"]
 
 
 def test_archive_is_deterministic(tmp_path):

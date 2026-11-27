@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +49,56 @@ PROHIBITED_MODEL_FIELDS = frozenset(
     }
 )
 
+NUMERIC_MEASUREMENT_FIELDS = frozenset({
+    "age", "iso", "k_pct", "bb_pct", "ops", "k_per_9", "bb_per_9",
+    "k_bb_pct", "era", "whip", "plate_appearances", "at_bats", "hits",
+    "home_runs", "strikeouts", "walks", "doubles", "triples", "stolen_bases",
+    "games_played", "avg", "obp", "slg", "babip", "innings_pitched",
+    "batters_faced", "games_started", "earned_runs", "draft_pick_number",
+    "draft_round", "signing_bonus", "pick_value", "pa", "ab", "r", "hr",
+    "rbi", "sb", "so", "ip", "sv", "hld", "l", "k_bb", "qs", "games",
+})
+DESCRIPTIVE_DRAFT_FIELDS = frozenset({
+    "draft_pick_number", "draft_round", "signing_bonus", "pick_value",
+})
+
+
+def _valid_measurement(value, field: str) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, bool):
+        return False
+    try:
+        return math.isfinite(float(value))
+    except ValueError:
+        # Legacy draft descriptions remain missing to the numeric feature parser.
+        return field in DESCRIPTIVE_DRAFT_FIELDS and isinstance(value, str)
+    except (TypeError, OverflowError):
+        return False
+
+
+def validate_numeric_measurements(payload: dict[str, Any]) -> list[str]:
+    historical = payload.get("historical")
+    current = payload.get("current")
+    groups = [
+        ("historical.rows", historical.get("rows") if isinstance(historical, dict) else None),
+        ("mlb_service", payload.get("mlb_service")),
+    ]
+    groups.extend(
+        (f"current.{role}", current.get(role) if isinstance(current, dict) else None)
+        for role in ("hitters", "pitchers")
+    )
+    seasons = payload.get("historical_mlb_seasons")
+    if isinstance(seasons, dict):
+        groups.extend((f"historical_mlb_seasons.{key}", rows) for key, rows in seasons.items())
+    return [
+        f"{path}[{index}].{field} must be a finite numeric measurement"
+        for path, rows in groups if isinstance(rows, list)
+        for index, row in enumerate(rows) if isinstance(row, dict)
+        for field in sorted(NUMERIC_MEASUREMENT_FIELDS & row.keys())
+        if not _valid_measurement(row[field], field)
+    ]
+
 
 def _prohibited_row_fields(rows: list[dict], label: str) -> list[str]:
     return [
@@ -91,6 +142,7 @@ def validate_factual_contract(payload: dict[str, Any]) -> list[str]:
     service_rows = payload.get("mlb_service")
     if not isinstance(service_rows, list):
         problems.append("mlb_service must be a list")
+    problems.extend(validate_numeric_measurements(payload))
     return problems
 
 

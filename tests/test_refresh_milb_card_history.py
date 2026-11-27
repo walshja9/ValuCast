@@ -6,6 +6,7 @@ from scripts import refresh_milb_card_history as refresh
 HITTER_FIELDS = {
     "age",
     "avg",
+    "babip",
     "bb_pct",
     "home_runs",
     "iso",
@@ -23,9 +24,13 @@ HITTER_FIELDS = {
 
 PITCHER_FIELDS = {
     "age",
+    "batters_faced",
     "bb_per_9",
     "era",
+    "games_played",
     "games_started",
+    "hits",
+    "home_runs",
     "innings_pitched",
     "is_starter",
     "k_bb_pct",
@@ -35,6 +40,7 @@ PITCHER_FIELDS = {
     "role",
     "season",
     "team",
+    "walks",
     "whip",
 }
 
@@ -155,3 +161,21 @@ def test_card_history_bytes_are_minified_and_deterministic():
     assert b"\n" not in first
     assert b": " not in first
     assert json.loads(first)["_meta"]["players"] == 1
+
+
+def test_build_card_history_preserves_model_fields_including_zero_and_none():
+    pitcher_fields = ("batters_faced", "games_played", "hits", "home_runs", "walks")
+    for values in ((0.321, 237, 23, 48, 7, 19), (0.0, 0, 0, 0, 0, 0), (None,) * 6):
+        hitter = _hitter("Keep Hitter", 101, 2025, "AA")
+        pitcher = _pitcher("Keep Pitcher", 202, 2025, "AAA")
+        hitter["babip"] = values[0]
+        pitcher.update(zip(pitcher_fields, values[1:]))
+        artifact = refresh.build_card_history(
+            [_season(2025, hitters=[hitter], pitchers=[pitcher])], _universe(),
+        )
+        hitter_row = artifact["players"]["keep hitter"][0]
+        pitcher_row = artifact["players"]["keep pitcher"][0]
+        observed = (hitter_row.get("babip"), *(pitcher_row.get(field) for field in pitcher_fields))
+        assert observed == values, (observed, values)
+        assert "babip" in hitter_row
+        assert all(field in pitcher_row for field in pitcher_fields)

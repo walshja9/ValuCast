@@ -1,15 +1,16 @@
 """Tests for ValuCast-owned prospect buy signals."""
 import json
 from copy import deepcopy
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from prospects.buys import (
     PROSPECT_BUYS_EPOCH_DATE,
     build_buy_signals,
     buy_window_score,
 )
-from scripts.review_valucast_buys import build_review
+from scripts.review_valucast_buys import _load_prior_approval, build_review
 from web import buy_score
 from web.valucast_buy_store import (
     ValuCastBuyStore,
@@ -114,6 +115,11 @@ def _mlb_roster_status(active_ids=None, ready=True):
     }
 
 
+def _qualified_buy_review(history_launch=False):
+    store = SimpleNamespace(validation={"history_limited_count": 40 if history_launch else 0, "row_count": 40})
+    return build_review([], [], store, manual_approval=True, generated_at=_rank_payload()["generated_at"])
+
+
 def test_buy_window_curve_favors_sweet_spot_not_obvious_elite():
     assert buy_window_score(4) < buy_window_score(80)
     assert buy_window_score(80) == 1.0
@@ -176,10 +182,7 @@ def test_buy_board_requires_three_public_board_ranks_and_reports_count():
 
 
 def test_buy_promotion_blocks_pitcher_heavy_corroborated_top25():
-    review = {
-        "review_status": "candidate_ready",
-        "source_policy": {"history_launch_approved": True},
-    }
+    review = _qualified_buy_review(history_launch=True)
     rows = [
         _row(
             index,
@@ -209,7 +212,7 @@ def test_buy_promotion_blocks_pitcher_heavy_corroborated_top25():
 
 
 def test_build_buy_signals_can_be_candidate_ready_after_review():
-    review = {"review_status": "candidate_ready"}
+    review = _qualified_buy_review()
     rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
     history = [
         {
@@ -369,7 +372,7 @@ def test_validator_rejects_dd_usage_flag():
 
 
 def test_validator_rejects_ready_board_with_active_mlb_roster_overlap():
-    review = {"review_status": "candidate_ready"}
+    review = _qualified_buy_review()
     payload = build_buy_signals(
         _rank_payload([_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]),
         _history(),
@@ -387,7 +390,7 @@ def test_validator_rejects_ready_board_with_active_mlb_roster_overlap():
 
 
 def test_validator_rejects_ready_v1_payload_without_locked_release_contract():
-    review = {"review_status": "candidate_ready"}
+    review = _qualified_buy_review()
     rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
     history = [
         {
@@ -419,7 +422,7 @@ def test_validator_rejects_ready_v1_payload_without_locked_release_contract():
 
 
 def test_validator_rejects_ready_legacy_signal_version_even_with_ready_flags():
-    review = {"review_status": "candidate_ready"}
+    review = _qualified_buy_review()
     rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
     history = [
         {
@@ -534,6 +537,13 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     ready = SimpleNamespace(is_available=True, ready_for_live_consumers=True)
     monkeypatch.delenv("VALUCAST_USE_VALUCAST_BUYS", raising=False)
     monkeypatch.setattr(app_module, "AHEAD_OF_THE_CURVE_HOLD", False)
+    monkeypatch.setattr(app_module, "dd_store", SimpleNamespace(surface_readiness={"buys": True}))
+    # Synthetic standing approval for this selector test only; no approval file.
+    receipt = {"schema_version": "1.0.0", "origin": "explicit_manual_input",
+               "scope": "valucast_owned_buys_promotion_v1",
+               "approved_at": "2026-07-31T12:00:00+00:00"}
+    review = {"review_status": "candidate_ready", "approval_receipt": receipt}
+    monkeypatch.setattr(app_module, "_load_artifact", lambda path: review if path == app_module.VALUCAST_BUYS_REVIEW_PATH else None)
     _select_buy_source = app_module._select_buy_source
 
     # Buys not ready -> unavailable, never DD.
@@ -549,7 +559,7 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     )
     assert source == "unavailable"
 
-    # Ready + snapshot active -> ValuCast buys.
+    # Ready + snapshot active + qualified review -> ValuCast buys.
     selected, source = _select_buy_source(
         ready, use_valucast_buys=True, public_snapshot_active=True
     )
@@ -560,6 +570,15 @@ def test_buy_selector_serves_valucast_buys_or_unavailable_never_dd(monkeypatch):
     selected, source = _select_buy_source(ready, public_snapshot_active=True)
     assert selected is ready
     assert source == "valucast_buys"
+
+    # Ready flags cannot substitute for a qualified approval receipt.
+    review["approval_receipt"] = None
+    selected, source = _select_buy_source(
+        ready, use_valucast_buys=True, public_snapshot_active=True
+    )
+    assert source == "unavailable"
+    assert selected.is_available is False
+    review["approval_receipt"] = receipt
 
     # Rollout disabled -> unavailable, never DD.
     monkeypatch.setenv("VALUCAST_USE_VALUCAST_BUYS", "0")
@@ -641,21 +660,258 @@ def test_review_can_reuse_prior_human_approval_after_buys_are_promoted():
     payload = build_buy_signals(_rank_payload(), _history())
     valucast = buy_score.build_valucast_board(payload["board"])
     store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+    original = build_review([], valucast, store, manual_approval=True)
 
-    review = build_review([], valucast, store, prior_approval=True)
+    review = build_review([], valucast, store, prior_review=original, generated_at="2026-11-27T00:00:00+00:00")
 
     assert review["review_status"] == "candidate_ready"
     assert review["source_policy"]["manual_approval_recorded"] is True
     assert review["source_policy"]["prior_approval_reused"] is True
     assert review["source_policy"]["approval_kind"] == "human_review"
     assert review["blockers"] == []
+    assert review["approval_receipt"] == original["approval_receipt"]
+
+
+def _legacy_buy_approval_review():
+    return {
+        "review_status": "candidate_ready",
+        "generated_at": "2026-11-23T00:00:00+00:00",
+        "source_policy": {"manual_approval_recorded": True, "history_launch_approved": True},
+        "promotion_decision": {"neutral_momentum_launch_approved": True},
+    }
+
+
+def test_review_approval_explicit_input_records_current_scoped_receipt():
+    store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+    review = build_review([], [], store, manual_approval=True, generated_at="2020-01-01T00:00:00+00:00")
+    receipt = review["approval_receipt"]
+
+    assert set(receipt) == {"schema_version", "origin", "scope", "approved_at"}
+    assert receipt["schema_version"] == "1.0.0"
+    assert receipt["origin"] == "explicit_manual_input"
+    assert receipt["scope"] == "valucast_owned_buys_promotion_v1"
+    assert datetime.fromisoformat(receipt["approved_at"]).tzinfo is not None
+    assert receipt["approved_at"] != review["generated_at"]
+
+
+def test_review_approval_absent_or_nonboolean_manual_input_cannot_authorize():
+    store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+    for manual in (False, None, 1, "1"):
+        review = build_review([], [], store, manual_approval=manual)
+        assert review["review_status"] == "blocked"
+        assert review["approval_receipt"] is None
+        assert any("Human review" in blocker for blocker in review["blockers"])
+
+
+def test_review_approval_legacy_origin_stays_unknown_across_retries():
+    store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+    prior = _legacy_buy_approval_review()
+    for _ in range(2):
+        review = build_review([], [], store, prior_review=prior)
+        assert review["review_status"] == "blocked"
+        assert review["approval_receipt"] is None
+        assert review["source_policy"]["legacy_approval_origin_unknown"] is True
+        assert review["source_policy"]["manual_approval_recorded"] is False
+        assert review["source_policy"]["prior_approval_reused"] is False
+        assert review["source_policy"]["history_launch_approved"] is False
+        assert any("origin" in blocker.lower() for blocker in review["blockers"])
+        prior = review
+
+
+def test_review_approval_explicit_continuation_does_not_relabel_legacy_consent():
+    store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+    legacy = _legacy_buy_approval_review()
+    before = deepcopy(legacy)
+    review = build_review([], [], store, prior_review=legacy, manual_approval=True)
+
+    assert review["review_status"] == "candidate_ready"
+    assert review["source_policy"]["legacy_approval_origin_unknown"] is True
+    assert review["source_policy"]["prior_approval_reused"] is False
+    assert review["approval_receipt"]["origin"] == "explicit_manual_input"
+    assert legacy == before
+
+
+def test_review_approval_invalid_receipts_never_qualify():
+    store = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+    original = build_review([], [], store, manual_approval=True)
+    valid = original["approval_receipt"]
+    bad_receipts = [None, [], {}, {**valid, "extra": "unsupported"}]
+    for field, value in (
+        ("schema_version", "2.0.0"), ("origin", "schedule"), ("scope", "different_scope"),
+        ("approved_at", "not-a-date"), ("approved_at", "2026-11-26"), ("approved_at", True),
+    ):
+        bad_receipts.append({**valid, field: value})
+    for receipt in bad_receipts:
+        prior = {**original, "approval_receipt": receipt}
+        review = build_review([], [], store, prior_review=prior)
+        assert review["review_status"] == "blocked"
+        assert review["source_policy"]["prior_approval_reused"] is False
+        assert review["source_policy"]["legacy_approval_origin_unknown"] is True
+
+
+def test_review_approval_survives_quality_failure_without_bypassing_it():
+    ready = SimpleNamespace(validation={"history_limited_count": 0, "row_count": 40})
+    limited = SimpleNamespace(validation={"history_limited_count": 40, "row_count": 40})
+    original = build_review([], [], ready, manual_approval=True)
+    blocked = build_review([], [], limited, prior_review=original)
+
+    assert blocked["review_status"] == "blocked"
+    assert blocked["approval_receipt"] == original["approval_receipt"]
+    assert blocked["source_policy"]["prior_approval_reused"] is True
+    assert any("history-limited" in blocker for blocker in blocked["blockers"])
+    recovered = build_review([], [], ready, prior_review=blocked)
+    assert recovered["review_status"] == "candidate_ready"
+    assert recovered["approval_receipt"] == original["approval_receipt"]
+
+
+def test_review_approval_neutral_launch_keeps_existing_threshold_and_flag_semantics():
+    ready = SimpleNamespace(validation={"history_limited_count": 20, "row_count": 40})
+    limited = SimpleNamespace(validation={"history_limited_count": 21, "row_count": 40})
+    first = build_review([], [], limited, manual_approval=True)
+    reused = build_review([], [], limited, prior_review=first)
+    assert reused["review_status"] == "candidate_ready"
+    assert reused["source_policy"]["history_launch_approved"] is True
+    assert reused["approval_receipt"] == first["approval_receipt"]
+    history_ready = build_review([], [], ready, prior_review=reused)
+    assert history_ready["review_status"] == "candidate_ready"
+    assert history_ready["source_policy"]["history_launch_approved"] is False
+    limited_again = build_review([], [], limited, prior_review=history_ready)
+    assert limited_again["review_status"] == "blocked"
+    assert limited_again["source_policy"]["history_launch_approved"] is False
+    assert limited_again["approval_receipt"] == first["approval_receipt"]
+    legacy = build_review([], [], limited, prior_review=_legacy_buy_approval_review())
+    assert legacy["review_status"] == "blocked"
+    assert legacy["promotion_decision"]["neutral_momentum_launch_approved"] is False
+
+
+def test_review_approval_loader_preserves_context_and_rejects_invalid_json(tmp_path):
+    path = tmp_path / "synthetic-review.json"
+    legacy = _legacy_buy_approval_review()
+    path.write_text(json.dumps(legacy), encoding="utf-8")
+    assert _load_prior_approval(path) == legacy
+    path.write_text("[]", encoding="utf-8")
+    assert _load_prior_approval(path) == {}
+    path.write_text("{", encoding="utf-8")
+    assert _load_prior_approval(path) == {}
+    assert _load_prior_approval(tmp_path / "missing-review.json") == {}
+
+
+def test_review_approval_main_preserves_legacy_retry_and_explicit_continuation(tmp_path):
+    from scripts import review_valucast_buys as reviewer
+
+    path = tmp_path / "synthetic-main-review.json"
+    path.write_text(json.dumps(_legacy_buy_approval_review()), encoding="utf-8")
+    loader = reviewer._load_prior_approval
+    writer = reviewer.write_review
+    store = SimpleNamespace(is_available=True, generated_at="2026-11-26T00:00:00+00:00",
+                            validation={"history_limited_count": 0, "row_count": 40}, get_all=lambda: [])
+    with patch.object(reviewer, "ValuCastBuyStore", return_value=store), \
+         patch.object(reviewer.buy_score, "build_valucast_board", return_value=[]), \
+         patch.object(reviewer, "_load_prior_approval", side_effect=lambda: loader(path)), \
+         patch.object(reviewer, "write_review", side_effect=lambda payload: writer(payload, path)), \
+         patch.object(reviewer.sys, "argv", ["review_valucast_buys.py"]), \
+         patch.dict(reviewer.os.environ, {"VALUCAST_BUYS_REVIEW_APPROVED": "0"}):
+        reviewer.main()
+        reviewer.main()
+        blocked = json.loads(path.read_text(encoding="utf-8"))
+        assert blocked["review_status"] == "blocked"
+        assert blocked["source_policy"]["legacy_approval_origin_unknown"] is True
+        with patch.object(reviewer.sys, "argv", ["review_valucast_buys.py", "--approve-neutral-momentum-launch"]):
+            reviewer.main()
+        continued = json.loads(path.read_text(encoding="utf-8"))
+        assert continued["review_status"] == "candidate_ready"
+        assert continued["approval_receipt"]["origin"] == "explicit_manual_input"
+        assert continued["source_policy"]["legacy_approval_origin_unknown"] is True
+
+
+def test_review_approval_consumer_rejects_legacy_without_changing_numbers():
+    rows = [_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]
+    rank = _rank_payload(rows)
+    history = [{"date": _d(0), "board": [
+        {"mlbam_id": index, "role": "hitter", "score": 53.0} for index in range(1, 45)
+    ]}]
+    kwargs = {"mlb_roster_status": _mlb_roster_status(), "require_mlb_roster_status": True}
+    qualified = build_buy_signals(rank, history, promotion_review=_qualified_buy_review(), **kwargs)
+    assert qualified["validation"]["ready_for_live_consumers"] is True
+    for status in ("candidate_ready", "approved"):
+        legacy = {**_legacy_buy_approval_review(), "generated_at": rank["generated_at"], "review_status": status}
+        blocked = build_buy_signals(rank, history, promotion_review=legacy, **kwargs)
+        assert blocked["validation"]["ready_for_live_consumers"] is False
+        assert blocked["validation"]["buy_review_ready"] is False
+        assert blocked["validation"]["history_launch_approved"] is False
+        assert blocked["board"] == qualified["board"]
+        assert blocked["validation"]["top_board_quality"] == qualified["validation"]["top_board_quality"]
+
+
+def test_review_approval_consumer_rejects_bad_receipts_and_blocked_neutral_flags():
+    rank = _rank_payload([_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)])
+    review = _qualified_buy_review(history_launch=True)
+    kwargs = {"mlb_roster_status": _mlb_roster_status(), "require_mlb_roster_status": True}
+    qualified = build_buy_signals(rank, [], promotion_review=review, **kwargs)
+    assert qualified["validation"]["ready_for_live_consumers"] is True
+    assert qualified["validation"]["history_ready"] is False
+    assert qualified["validation"]["history_launch_approved"] is True
+    for receipt in (None, [], {}, {**review["approval_receipt"], "scope": "other_scope"},
+                    {**review["approval_receipt"], "approved_at": "invalid"}):
+        blocked = build_buy_signals(rank, [], promotion_review={**review, "approval_receipt": receipt}, **kwargs)
+        assert blocked["validation"]["ready_for_live_consumers"] is False
+        assert blocked["validation"]["buy_review_ready"] is False
+        assert blocked["validation"]["history_launch_approved"] is False
+        assert blocked["board"] == qualified["board"]
+    blocked = build_buy_signals(rank, [], promotion_review={**review, "review_status": "blocked"}, **kwargs)
+    assert blocked["validation"]["history_launch_approved"] is False
+
+
+def test_review_approval_build_cli_requires_qualified_same_day_review(tmp_path):
+    from prospects import buys as buys_module
+    from scripts import build_valucast_buys as builder
+
+    rank = _rank_payload([_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)])
+    rank["generated_at"] = "2026-11-26T00:00:00+00:00"
+    rank_path = tmp_path / "synthetic-consumer-rank.json"
+    review_path = tmp_path / "synthetic-consumer-review.json"
+    roster_path = tmp_path / "synthetic-consumer-roster.json"
+    output_path = tmp_path / "synthetic-consumer-output.json"
+    history_dir = tmp_path / "synthetic-empty-history"
+    history_dir.mkdir(exist_ok=True)
+    archive_dir = tmp_path / "synthetic-consumer-archive"
+    rank_path.write_text(json.dumps(rank), encoding="utf-8")
+    roster_path.write_text(json.dumps(_mlb_roster_status()), encoding="utf-8")
+    legacy = {**_legacy_buy_approval_review(), "generated_at": rank["generated_at"]}
+    legacy_bytes = json.dumps(legacy).encode("utf-8")
+    review_path.write_bytes(legacy_bytes)
+    run = buys_module.run_buy_signals
+
+    def run_synthetic(*, promotion_review_path):
+        return run(rank_path=rank_path, rank_archive_dir=history_dir, artifact_path=output_path,
+                   archive_dir=archive_dir, promotion_review_path=promotion_review_path,
+                   mlb_roster_status_path=roster_path)
+
+    with patch.object(builder, "BUY_REVIEW_PATH", review_path), \
+         patch.object(builder, "run_buy_signals", side_effect=run_synthetic), \
+         patch.object(builder.sys, "argv", ["build_valucast_buys.py", "--with-review"]):
+        builder.main()
+        blocked = json.loads(output_path.read_text(encoding="utf-8"))
+        assert blocked["validation"]["ready_for_live_consumers"] is False
+        assert blocked["validation"]["buy_review_ready"] is False
+        assert review_path.read_bytes() == legacy_bytes
+        qualified = _qualified_buy_review(history_launch=True)
+        qualified["generated_at"] = rank["generated_at"]
+        review_path.write_text(json.dumps(qualified), encoding="utf-8")
+        builder.main()
+        ready = json.loads(output_path.read_text(encoding="utf-8"))
+        assert ready["validation"]["ready_for_live_consumers"] is True
+        assert ready["board"] == blocked["board"]
+        qualified["generated_at"] = "2026-11-25T00:00:00+00:00"
+        review_path.write_text(json.dumps(qualified), encoding="utf-8")
+        builder.main()
+        stale = json.loads(output_path.read_text(encoding="utf-8"))
+        assert stale["validation"]["ready_for_live_consumers"] is False
+        assert stale["validation"]["buy_review_ready"] is False
 
 
 def test_ready_buy_payload_can_use_reviewed_neutral_momentum_launch():
-    review = {
-        "review_status": "candidate_ready",
-        "source_policy": {"history_launch_approved": True},
-    }
+    review = _qualified_buy_review(history_launch=True)
     payload = build_buy_signals(
         _rank_payload([_row(index, f"Buy {index}", index + 30, 55.0) for index in range(1, 45)]),
         history_payloads=[],
@@ -671,7 +927,7 @@ def test_ready_buy_payload_can_use_reviewed_neutral_momentum_launch():
 
 
 def test_ready_buy_payload_rejects_top_board_raw_fallback():
-    review = {"review_status": "candidate_ready"}
+    review = _qualified_buy_review()
     payload = build_buy_signals(_rank_payload(), _history(), promotion_review=review)
     payload["validation"]["ready_for_live_consumers"] = True
     payload["validation"]["top_board_quality"]["raw_fallback_count"] = 1
@@ -683,7 +939,7 @@ def test_ready_buy_payload_rejects_top_board_raw_fallback():
 
 
 def test_buy_promotion_blocks_low_confidence_top_board_crowding():
-    review = {"review_status": "candidate_ready"}
+    review = _qualified_buy_review()
     rows = [
         _row(index, f"Buy {index}", index + 30, 55.0, confidence="low")
         for index in range(1, 45)
@@ -716,7 +972,7 @@ def test_buy_promotion_blocks_low_confidence_top_board_crowding():
 
 
 def test_buy_promotion_blocks_pedigree_only_top_board_crowding():
-    review = {"review_status": "candidate_ready"}
+    review = _qualified_buy_review()
     rows = [
         _row(index, f"Buy {index}", index + 30, 55.0, source="prospect_pedigree_v0_7")
         for index in range(1, 45)

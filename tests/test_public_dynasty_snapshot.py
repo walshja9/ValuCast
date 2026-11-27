@@ -130,6 +130,46 @@ def test_graduation_floor_is_noop_when_mlb_value_already_exceeds_floor():
     assert mlb_rows[0]["graduation_transition"]["applied"] is False
 
 
+def test_graduation_floor_keeps_default_preset_value_in_sync():
+    presets = {"5x5": 3.0, "points": 7.0}
+    mlb_rows = [{"mlbam_id": "invented", "value": 3.0, "value_by_preset": presets}]
+    graduated = [{"mlbam_id": "invented", "value": 60.0}]
+
+    assert _apply_graduation_transition_floor(mlb_rows, graduated) == 1
+    row = mlb_rows[0]
+    public_row = PublicSnapshotRow(
+        id="invented", name="Synthetic graduate", player_type="mlb",
+        positions=("SS",), team="TST", age=23, rank=1, value=row["value"],
+        value_scale=COMMON_VALUE_SCALE, value_source="synthetic", confidence="low",
+        updated_at="2026-11-26", mlbam_id="invented", value_by_preset=row["value_by_preset"],
+    )
+
+    assert public_row.value == 45.0
+    assert public_row.value_for("5x5") == public_row.value, (
+        f"selected 5x5 value {public_row.value_for('5x5')} != headline {public_row.value}"
+    )
+    assert public_row.value_for("points") == 7.0
+    assert presets == {"5x5": 3.0, "points": 7.0}
+
+
+def test_graduation_floor_does_not_invent_missing_preset_values():
+    graduated = [{"mlbam_id": "invented", "value": 60.0}]
+    for presets in ({}, {"points": 7.0}):
+        mlb_rows = [{"mlbam_id": "invented", "value": 3.0, "value_by_preset": presets}]
+        assert _apply_graduation_transition_floor(mlb_rows, graduated) == 1
+        assert mlb_rows[0]["value"] == 45.0
+        assert mlb_rows[0]["value_by_preset"] == presets
+        assert "5x5" not in mlb_rows[0]["value_by_preset"]
+
+
+def test_graduation_floor_preserves_preset_values_when_not_applied():
+    presets = {"5x5": 60.0, "points": 7.0}
+    mlb_rows = [{"mlbam_id": "invented", "value": 60.0, "value_by_preset": presets}]
+    assert _apply_graduation_transition_floor(mlb_rows, [{"mlbam_id": "invented", "value": 60.0}]) == 0
+    assert mlb_rows[0]["value"] == 60.0
+    assert mlb_rows[0]["value_by_preset"] == {"5x5": 60.0, "points": 7.0}
+
+
 def test_graduation_floor_fades_as_rookie_eligibility_exhausts():
     graduated = [{"mlbam_id": "2", "value": 50.0, "context": {"graduation_context": {"ratio": 1.0}}}]
     mlb_rows = [{"mlbam_id": "2", "value": 3.0}]
@@ -511,6 +551,55 @@ def test_build_snapshot_is_valid_but_not_live_ready():
     assert payload["validation"]["required_field_problem_count"] == 0
     assert payload["validation"]["surface_readiness"]["buys"] is False
     assert "shadow-only" in payload["validation"]["blockers"][0]
+
+
+def test_snapshot_overlays_accepted_public_values_after_legacy_selection(monkeypatch):
+    previous_layer = {**_mlb_payload(value=45), "method_id": "a"}
+    previous = build_snapshot(
+        _rank_payload(), mlb_layer=previous_layer,
+        generated_at="2026-06-13T12:00:00+00:00",
+        mlb_value_history_archive_dir=None, prospect_value_history_archive_dir=None,
+    )
+    current_rank = {**_rank_payload(), "generated_at": "2026-06-14T12:00:00+00:00"}
+    current_layer = {**previous_layer, "generated_at": "2026-06-14T12:00:00+00:00"}
+    monkeypatch.setattr(snapshot_builder, "_mlb_value_histories_from_archives", lambda *_: (
+        {"99": [("2026-06-13", 3.0)]}, {"99": [("2026-06-13", 3.0)]},
+        {"dates": ["2026-06-13"], "latest_incompatible_date": None},
+    ))
+    kwargs = dict(mlb_layer=current_layer, generated_at=current_rank["generated_at"],
+                  mlb_value_history_archive_dir=None, prospect_value_history_archive_dir=None)
+    baseline = build_snapshot(current_rank, **kwargs)
+    repaired = build_snapshot(current_rank, previous_public_snapshot_bytes=json.dumps(previous).encode(), **kwargs)
+    row = next(row for row in repaired["players"] if row["mlbam_id"] == 99)
+    assert row["context"]["value_history"] == [("2026-06-13", 45.0), ("2026-06-14", 45.0)]
+    assert row["context"]["chart_value_history"] == row["context"]["value_history"]
+    fields = ("id", "rank", "value", "value_by_preset", "confidence")
+    assert [tuple(row.get(field) for field in fields) for row in repaired["players"]] == [
+        tuple(row.get(field) for field in fields) for row in baseline["players"]]
+
+
+def test_snapshot_preserves_universal_version_without_changing_rows_or_history():
+    def build(rank):
+        return build_snapshot(
+            rank, mlb_layer=_mlb_payload(), buy_signals=_buy_payload(),
+            generated_at="2026-06-13T12:00:00+00:00",
+            mlb_value_history_archive_dir=None,
+            prospect_value_history_archive_dir=None,
+        )
+
+    rank = _rank_payload()
+    rank["board"][0]["value_history"] = [54.0, 55.5]
+    legacy = build(rank)
+    assert legacy["input_artifacts"]["prospect_universal_model_version"] is None
+    rank["input_artifacts"] = {"universal_model_version": "synthetic-component-version"}
+
+    tagged = build(rank)
+
+    assert tagged["input_artifacts"]["prospect_universal_model_version"] == "synthetic-component-version"
+    assert tagged["players"] == legacy["players"]
+    tagged["input_artifacts"].pop("prospect_universal_model_version")
+    legacy["input_artifacts"].pop("prospect_universal_model_version")
+    assert tagged == legacy
 
 
 def test_build_snapshot_certifies_compatibility_without_claiming_calibrated_units():
@@ -1096,6 +1185,8 @@ def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
         _rank_payload(),
         mlb_layer=mlb_layer,
         buy_signals=_buy_payload(),
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=None,
     )
 
     ohtani_rows = [
@@ -1186,6 +1277,8 @@ def test_quality_governor_blocks_public_snapshot_promotion():
         _rank_payload(),
         mlb_layer=mlb_layer,
         buy_signals=_buy_payload(),
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=None,
     )
     # Plan 036 R3: evaluate once on the built snapshot, then inject-apply —
     # the same path the pipeline takes.
