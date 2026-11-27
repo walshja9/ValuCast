@@ -7,7 +7,8 @@ import time
 from urllib.request import Request, urlopen
 
 PROJECTION_URL = "https://www.fangraphs.com/api/projections"
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+# FanGraphs client compatibility, as used by baseballr: https://github.com/BillPetti/baseballr/pull/405
+USER_AGENT = "okhttp/4.12.0"
 
 
 def _open_with_retry(req: Request, timeout: int = 30, attempts: int = 3):
@@ -18,6 +19,11 @@ def _open_with_retry(req: Request, timeout: int = 30, attempts: int = 3):
         try:
             return urlopen(req, timeout=timeout)
         except HTTPError as exc:
+            if exc.code == 403 and exc.headers and exc.headers.get("CF-Mitigated") == "challenge":
+                raise RuntimeError(
+                    "FanGraphs denied machine access (Cloudflare challenge, HTTP 403); "
+                    "use a provider-approved feed to restore automated refresh."
+                ) from exc
             if exc.code < 500 and exc.code != 429:
                 raise  # 4xx (except throttling) will not heal on retry
             last = exc
