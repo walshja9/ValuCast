@@ -376,7 +376,7 @@ def test_validate_public_data_requires_same_day_dates(tmp_path, monkeypatch):
     assert any("semantically empty" in p for p in problems)
 
 
-def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed():
+def test_daily_public_workflow_requires_manual_buy_approval_and_omits_retired_dd_feed():
     workflow = Path(".github/workflows/daily-public-data.yml").read_text(
         encoding="utf-8"
     )
@@ -510,11 +510,13 @@ def test_daily_public_workflow_approves_scheduled_buys_and_omits_retired_dd_feed
     assert "projections/runs/valucast_hp_2026_v2/projections.json" in workflow
     assert "projections/runs/valucast_hp_2026_v2/run_manifest.json" in workflow
     assert "projections/runs/valucast_hp_2026_v2/metadata.json" in workflow
-    assert (
+    approval_lines = [line.strip() for line in workflow.splitlines()
+                      if line.strip().startswith("VALUCAST_BUYS_REVIEW_APPROVED:")]
+    assert approval_lines == [
         "VALUCAST_BUYS_REVIEW_APPROVED: "
-        "${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) "
-        "&& '1' || '0' }}"
-    ) in workflow
+        "${{ inputs.approve_valucast_buys && '1' || '0' }}"
+    ]
+    assert not any("schedule" in line or "github.event_name" in line for line in approval_lines)
     assert 'VALUCAST_SCOUTING_LLM_MAX_GENERATE: "300"' in workflow
     assert 'VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"' in workflow
     # 379015c replaced the cross-run rebase-merge recovery (which silently dropped

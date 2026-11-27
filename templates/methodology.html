@@ -54,17 +54,15 @@
 
     <section id="dynasty-value-scale">
         <h3>What the Dynasty Value number means</h3>
-        <p><strong>Dynasty Value is a 0-100 score, not a real-world unit.</strong> 100
-        anchors to the top of the board &mdash; the single most valuable dynasty asset &mdash;
-        and every other player is placed relative to that top. A 95 is a near-elite asset;
-        a 72 is a solid regular; the gap between two numbers is the only thing that carries
-        meaning, not the digits themselves.</p>
+        <p><strong>Dynasty Value is a 0-100 model score.</strong> Higher scores identify
+        stronger dynasty assets under ValuCast's current model. 100 is the top of the
+        display range and can be shared by multiple players. A ten-point gap is not
+        ten dollars or ten projected fantasy points.</p>
         <ul>
-            <li><strong>MLB vs. prospects.</strong> MLB players and prospects are each run
-            through their own 0-100 normalization and then aligned at the top of the board.
-            We do <em>not</em> claim a single unit-reconciled calibration across the two
-            universes &mdash; treat a prospect's number and a big-leaguer's number as
-            comparable in ballpark, not to the decimal.</li>
+            <li><strong>MLB vs. prospects.</strong> The two groups use different models
+            and future-value targets. Their shared display range is not a single
+            calibrated unit of fantasy production. Comparisons between them are
+            approximate, including gaps between their scores.</li>
             <li><strong>Age on the dynasty board.</strong> Age shown is the player's age on the board date. MLB dynasty values use age on April 1, {{ target_season if preseason else served_season }}.</li>
             <li><strong>The $ column.</strong> The dollar figure is a
             replacement-adjusted auction price: total payout equals teams &times; budget,

@@ -2,9 +2,10 @@
 
 Unit tests pin the post-critique resolutions — gap-spanning step detection,
 the momentum denominator floor, the consensus-gap clamp, None-safe
-tie-breaks. Route tests run against the real committed feed (same precedent
-as test_polish_jun12)."""
+tie-breaks. Approved Buy rendering uses synthetic selected stores; legacy valuation cases
+retain their existing committed-store coverage."""
 import unittest
+from contextlib import contextmanager
 from types import SimpleNamespace
 from unittest import mock
 
@@ -27,6 +28,24 @@ def _row(**kw):
 def _daily(values, start_day=1, month=6):
     return tuple((f"2026-{month:02d}-{day:02d}", v)
                  for day, v in enumerate(values, start=start_day))
+
+
+@contextmanager
+def approved_buy_rendering():
+    """Synthetic positive at the selector boundary; never records approval."""
+    rows = [{"id": f"synthetic-buy-{index}", "player_id": f"synthetic-buy-{index}",
+             "mlbam_id": 990000 + index, "role": "hitter", "rank": index,
+             "name": f"Synthetic Buy {index}", "team": "BOS", "positions": ["SS"],
+             "level": "AA", "age": 20, "score": 60.0 - index / 10,
+             "reason": "Synthetic underlying skill", "score_history": [], "terms": {}}
+            for index in range(1, 41)]
+    selected = SimpleNamespace(
+        is_available=True, ready_for_live_consumers=True, generated_at="2026-07-31",
+        get_all=lambda: rows, validation={"candidate_count": 100, "row_count": 40,
+                                        "active_mlb_roster_excluded_count": 0},
+    )
+    with mock.patch.object(app_module, "_select_buy_source", return_value=(selected, "valucast_buys")):
+        yield selected
 
 
 class TestCleanTail(unittest.TestCase):
@@ -338,7 +357,7 @@ class _RealAppCase(unittest.TestCase):
 
 class TestBuysRoute(_RealAppCase):
     def test_page_renders_list_and_graphic(self):
-        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
+        with approved_buy_rendering(), mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
              mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
             r = self.client.get("/buys")
         self.assertEqual(r.status_code, 200)
@@ -367,7 +386,7 @@ class TestBuysRoute(_RealAppCase):
         self.assertEqual(html.count('class="buys-row"'), 40)
 
     def test_n_shrinks_list_but_never_the_graphic(self):
-        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
+        with approved_buy_rendering(), mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
              mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
             html = self.client.get("/buys?n=10").data.decode("utf-8")
         self.assertEqual(html.count('class="buys-row"'), 10)
@@ -421,7 +440,8 @@ class TestBuysRoute(_RealAppCase):
 
         self.assertEqual(r.status_code, 200)
         html = r.data.decode("utf-8")
-        self.assertIn("Ahead of the Curve returns later this week", html)
+        self.assertIn("Buy signals unavailable", html)
+        self.assertIn("Buy signals require approval and validation before publication.", html)
         self.assertIn("Ahead of the Curve | ValuCast", html)
         self.assertNotIn('class="buys-row"', html)
         self.assertNotIn('class="bg-cell"', html)
@@ -448,14 +468,9 @@ class TestBuysRoute(_RealAppCase):
         self.assertNotIn('id="ahead-of-the-curve"', backfields_html)
         self.assertNotIn("Full Ahead of the Curve board", backfields_html)
 
-    def test_aotc_hold_is_reversible_by_single_flag(self):
-        if (
-            not app_module.valucast_buy_store.is_available
-            or not app_module.valucast_buy_store.ready_for_live_consumers
-        ):
-            self.skipTest("ValuCast buys feed not available")
-
-        with mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
+    def test_aotc_hold_can_be_released_for_an_approved_buy_source(self):
+        # Releasing a presentation hold does not itself supply approval.
+        with approved_buy_rendering(), mock.patch.object(app_module, "AHEAD_OF_THE_CURVE_HOLD", False), \
              mock.patch.object(app_module, "dynasty_data_source", "valucast_public_snapshot"):
             buys_html = self.client.get("/buys").data.decode("utf-8")
             map_html = self.client.get("/map").data.decode("utf-8")

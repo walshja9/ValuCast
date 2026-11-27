@@ -98,6 +98,13 @@ jobs:
           git fetch origin
           git checkout -B master origin/master
 
+      - name: Capture immutable prior canonical public snapshot
+        run: |
+          prior="$RUNNER_TEMP/valucast-previous-public-dynasty-snapshot.json"
+          git show HEAD:data/public/public_dynasty_snapshot.json > "$prior"
+          chmod a-w "$prior"
+          echo "VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT=$prior" >> "$GITHUB_ENV"
+
       - name: Pin refresh date
         # Keep one date across a long run so crossing UTC midnight cannot make
         # validation disagree with the artifacts built earlier in this job.
@@ -169,7 +176,7 @@ jobs:
 
       - name: Build ValuCast public snapshot gate
         env:
-          VALUCAST_BUYS_REVIEW_APPROVED: ${{ (github.event_name == 'schedule' || inputs.approve_valucast_buys) && '1' || '0' }}
+          VALUCAST_BUYS_REVIEW_APPROVED: ${{ inputs.approve_valucast_buys && '1' || '0' }}
           # Scouting V2 shadow writer: generates `report_llm` only when the secret is
           # present (offline-safe no-op otherwise). Adding the secret = turning it on.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -185,7 +192,7 @@ jobs:
           # 8->10: small bump so Sonnet's longer reads have a bit more room than the
           # original Haiku-tuned ceiling, without the 6/30 emergency's full jump to 12.
           VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"
-        run: python scripts/run_daily_public_build.py --only build
+        run: python scripts/run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"
 
       - name: Save plate-discipline event cache
         if: always()

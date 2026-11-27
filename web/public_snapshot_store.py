@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 from pathlib import Path
 
 from .public_snapshot_models import PublicSnapshotRow
@@ -63,6 +64,13 @@ def _is_dd_derived_source(value) -> bool:
 
 def _missing_required(value) -> bool:
     return value in (None, "", [], {})
+
+
+def _is_finite_number(value) -> bool:
+    try:
+        return type(value) in (int, float) and math.isfinite(value)
+    except OverflowError:
+        return False
 
 
 def _identity_key(record: dict) -> tuple[str, str] | None:
@@ -132,10 +140,20 @@ def validate_public_snapshot_payload(payload: dict) -> list[str]:
     for index, record in enumerate(players):
         if not isinstance(record, dict):
             continue
-        if not isinstance(record.get("rank"), int):
+        if type(record.get("rank")) is not int:
             problems.append(f"players[{index}].rank must be an integer")
-        if not isinstance(record.get("value"), (int, float)):
-            problems.append(f"players[{index}].value must be numeric")
+        if not _is_finite_number(record.get("value")):
+            problems.append(f"players[{index}].value must be a finite number")
+        presets = record.get("value_by_preset")
+        if presets is not None:
+            if not isinstance(presets, dict):
+                problems.append(f"players[{index}].value_by_preset must be an object")
+            else:
+                for preset, value in presets.items():
+                    if not _is_finite_number(value):
+                        problems.append(
+                            f"players[{index}].value_by_preset[{preset!r}] must be a finite number"
+                        )
         for field in ("value_source", "score_source"):
             src = record.get(field)
             if src and _is_dd_derived_source(src):

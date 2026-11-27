@@ -1,5 +1,5 @@
 flask>=3.0,<4.0
-gunicorn>=23.0,<24.0
+gunicorn==27.0.1
 requests>=2.31,<3.0
 Pillow>=10.0,<13.0
 numpy>=1.26,<3.0  # paired case-bootstrap CIs in the nightly dynasty backtest (provability batch R1/R2); seeded default_rng, reporting-only fields

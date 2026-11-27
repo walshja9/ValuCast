@@ -5,6 +5,7 @@ import unittest
 from datetime import date
 from unittest.mock import patch
 
+from scraper.blend import HITTER_COUNTING, HITTER_RATE
 from scraper.mlb_actuals import regular_season_games_final
 from scraper.refresh import refresh
 from scraper.season import context_season
@@ -39,7 +40,8 @@ _FAKE_OUTLOOK = [
 
 _RAW_RETURN = {
     "steamer_hitters": [
-        {"playerids": "1", "PlayerName": "Test Player", "Team": "NYY",
+        {**dict.fromkeys(HITTER_COUNTING + HITTER_RATE, 0.0),
+         "playerids": "1", "PlayerName": "Test Player", "Team": "NYY",
          "PA": 400, "AB": 360, "H": 108, "HR": 20, "R": 60, "RBI": 55,
          "SB": 8, "SO": 80, "BB": 36, "AVG": 0.300, "OBP": 0.370,
          "SLG": 0.500, "OPS": 0.870},
@@ -590,17 +592,22 @@ class TestPayloadProvenance(unittest.TestCase):
             self._assert_binding_problem(self._problems(paths))
 
     def test_fetched_ros_binds_real_blend_above_pool_floors(self):
-        from scraper.blend import POOL_FLOOR_HITTERS, POOL_FLOOR_PITCHERS
+        from scraper.blend import (
+            HITTER_COUNTING, HITTER_RATE, PITCHER_COUNTING, PITCHER_RATE,
+            POOL_FLOOR_HITTERS, POOL_FLOOR_PITCHERS,
+        )
 
         raw = {
             "steamer_hitters": [
-                {"playerids": f"h{i}", "PlayerName": f"Fabricated Hitter {i}",
+                {**dict.fromkeys(HITTER_COUNTING + HITTER_RATE, 0.0),
+                 "playerids": f"h{i}", "PlayerName": f"Fabricated Hitter {i}",
                  "Team": "TST", "minpos": "SS", "PA": 400, "AB": 360,
                  "H": 108, "HR": 20}
                 for i in range(POOL_FLOOR_HITTERS)
             ],
             "steamer_pitchers": [
-                {"playerids": f"p{i}", "PlayerName": f"Fabricated Pitcher {i}",
+                {**dict.fromkeys(PITCHER_COUNTING + PITCHER_RATE, 0.0),
+                 "playerids": f"p{i}", "PlayerName": f"Fabricated Pitcher {i}",
                  "Team": "TST", "IP": 100, "GS": 20, "SO": 90,
                  "BB": 30, "H": 80, "ER": 40}
                 for i in range(POOL_FLOOR_PITCHERS)
