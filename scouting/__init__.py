@@ -1,1 +1,0 @@
-"""ValuCast scouting report artifacts."""
