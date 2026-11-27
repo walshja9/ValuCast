@@ -1,0 +1,1723 @@
+"""Build the shadow ValuCast-owned public dynasty snapshot."""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from prospects.buys import PROSPECT_BUYS_EPOCH  # noqa: E402
+from prospects.milb_stat_freshness import build_milb_stat_freshness_audit  # noqa: E402
+from quality.valucast_governor import load_previous_prospect_rank  # noqa: E402
+from web.public_snapshot_store import required_field_problems  # noqa: E402
+from web.recorded_public_history import (  # noqa: E402
+    apply_recorded_public_history,
+    validate_prior_canonical_snapshot,
+)
+
+# Plan 036 R3: the snapshot builder no longer evaluates a governor verdict of
+# its own. It writes with the pending placeholder below; the single
+# authoritative evaluation runs later in the pipeline
+# (scripts/build_valucast_quality_governor.py) once every audit input exists,
+# and that exact artifact is injected via inject_quality_governor().
+PENDING_GOVERNOR_MESSAGE = (
+    "Quality governor verdict has not been injected into this snapshot yet."
+)
+PENDING_QUALITY_GOVERNOR = {
+    "artifact": "valucast_quality_governor",
+    "status": "pending_injection",
+    "governor_version": "pending_injection",
+    "ready_for_public_snapshot": False,
+    "ready_for_buys_promotion": False,
+    "ready_for_movers": False,
+    "blockers": [PENDING_GOVERNOR_MESSAGE],
+    "buy_blockers": [PENDING_GOVERNOR_MESSAGE],
+    "mover_blockers": [PENDING_GOVERNOR_MESSAGE],
+    "surface_readiness": {"dynasty": False, "prospects": False, "buys": False},
+    "surface_blockers": {
+        "dynasty": [PENDING_GOVERNOR_MESSAGE],
+        "prospects": [PENDING_GOVERNOR_MESSAGE],
+        "buys": [PENDING_GOVERNOR_MESSAGE],
+    },
+}
+GOVERNOR_ARTIFACT_PATH = ROOT / "data" / "models" / "valucast_quality_governor.json"
+
+PROSPECT_INPUTS_PATH = ROOT / "data" / "prospects" / "prospect_model_inputs.json"
+MLB_LAYER_PATH = ROOT / "data" / "models" / "valucast_mlb_dynasty_layer.json"
+MLB_TRACK_RECORD_PATH = ROOT / "data" / "models" / "valucast_mlb_track_record.json"
+MLB_ROSTER_STATUS_PATH = ROOT / "data" / "models" / "valucast_mlb_roster_status.json"
+PROSPECT_RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
+PROSPECT_COVERAGE_AUDIT_PATH = (
+    ROOT / "data" / "models" / "valucast_prospect_coverage_audit.json"
+)
+PROSPECT_PEAK_PROJECTION_PATH = (
+    ROOT / "data" / "models" / "valucast_prospect_peak_projection_v1.json"
+)
+BUY_SIGNALS_PATH = ROOT / "data" / "models" / "valucast_prospect_buys.json"
+BUY_REVIEW_PATH = ROOT / "data" / "models" / "valucast_prospect_buys_review.json"
+MOVERS_PATH = ROOT / "data" / "models" / "valucast_prospect_movers.json"
+ACTUALS_PATH = ROOT / "data" / "actuals" / "current.json"
+IDENTITY_PATH = ROOT / "projections" / "data" / "identity.json"
+PROSPECT_ORG_PATH = ROOT / "data" / "prospects" / "raw" / "prospect_current_org.json"
+OUTPUT_PATH = ROOT / "data" / "public" / "public_dynasty_snapshot.json"
+MLB_VALUE_HISTORY_ARCHIVE_DIR = (
+    ROOT / "data" / "prediction_archive" / "valucast_mlb_dynasty_layer"
+)
+PROSPECT_VALUE_HISTORY_ARCHIVE_DIR = (
+    ROOT / "data" / "prediction_archive" / "valucast_prospect_rank_v1"
+)
+
+SCHEMA_VERSION = "1.1"
+ARTIFACT_NAME = "valucast_public_dynasty_snapshot"
+COMMON_VALUE_SCALE = "0_100_valucast_dynasty_score"
+MLB_VALUE_HISTORY_LIMIT = 30
+# ponytail: dated layer files written before the method ID existed carry none; the 2027
+# flip landed in the 2026-11-18 file, so unstamped files before it are the old (in-season)
+# method. Delete this once the 30-file window holds only stamped files.
+MLB_LEGACY_METHOD_BREAK_DATE = "2026-11-18"
+MLB_LEGACY_METHOD_ID = "legacy-in-season"
+PROSPECT_VALUE_HISTORY_EPOCH_DATE = "-".join(PROSPECT_BUYS_EPOCH.split("-")[:3])
+CALIBRATION_METHOD = "raw_scale_compatibility_certification_v2"
+TWO_WAY_VALUE_SOURCE = "valucast_mlb_two_way_combined_v0_2"
+TWO_WAY_SECONDARY_VALUE_WEIGHT = 0.65
+MLB_COLLISION_PROMOTION_MAX_RANK = 75
+MLB_COLLISION_PROMOTION_MIN_VALUE = 45.0
+MLB_COLLISION_PROMOTION_MIN_MARGIN = 15.0
+# Graduation-transition floor: a freshly called-up prospect's value should not crater to
+# a 3-PA MLB line. Floor it at this fraction of his retained prospect score, fading as
+# he accrues MLB sample.
+GRAD_FLOOR_DISCOUNT = 0.75
+# Calendar-time decay window: the floor fully releases this many days after MLB debut
+# (~a season of MLB sample, by which point the raw MLB value stands on its own). This is a
+# taste dial like GRAD_FLOOR_DISCOUNT; the accountability harness recalibrates it once
+# graduates' realized outcomes accrue. Falls back to the rookie-eligibility ratio when no
+# debut date is known.
+GRAD_FLOOR_DECAY_DAYS = 180
+
+MIN_PROSPECT_COVERAGE_RATE = 0.98
+MIN_TOP_200_UNIQUE_SCORE_COUNT = 150
+MIN_MLB_ROWS_ABOVE_TOP_PROSPECT = 3
+MAX_MLB_ROWS_ABOVE_TOP_PROSPECT = 50
+MIN_MLB_HORIZON_YEARS = 3
+
+
+def _load_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _date_part(value: str | None) -> str | None:
+    if not value:
+        return None
+    text = str(value)
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).date().isoformat()
+    except ValueError:
+        return text[:10] if len(text) >= 10 else None
+
+
+def _parse_date(value: str | None):
+    iso = _date_part(value)
+    if not iso:
+        return None
+    try:
+        return datetime.fromisoformat(iso).date()
+    except ValueError:
+        return None
+
+
+def _age_on_date(birth_date: str | None, as_of) -> int | None:
+    birth = _parse_date(birth_date)
+    if birth is None or as_of is None:
+        return None
+    return as_of.year - birth.year - (
+        (as_of.month, as_of.day) < (birth.month, birth.day)
+    )
+
+
+def _positions(row: dict) -> list[str]:
+    positions = [str(position) for position in row.get("positions") or [] if position]
+    if positions:
+        return positions
+    return ["P"] if row.get("role") == "pitcher" else ["DH"]
+
+
+def _clean_float(value) -> float | None:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return numeric if numeric == numeric else None
+
+
+def _clean_int(value) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _mlb_archive_rows(payload) -> list[dict]:
+    if isinstance(payload, dict):
+        rows = payload.get("players") or payload.get("rows") or []
+    elif isinstance(payload, list):
+        rows = payload
+    else:
+        rows = []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def _combined_mlb_history_value(values: list[float]) -> float:
+    ordered = sorted(values, reverse=True)
+    if len(ordered) == 1:
+        return ordered[0]
+    return round(min(100.0, ordered[0] + TWO_WAY_SECONDARY_VALUE_WEIGHT * sum(ordered[1:])), 2)
+
+
+def _mlb_value_histories_from_archives(
+    archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
+    current_method_id: str | None = None,
+) -> tuple[dict[str, list[tuple[str, float]]], dict[str, list[tuple[str, float]]], dict]:
+    full_history: dict[str, list[tuple[str, float]]] = {}
+    chart_history: dict[str, list[tuple[str, float]]] = {}
+    policy = {"dates": [], "latest_incompatible_date": None}
+    if not archive_dir:
+        return full_history, chart_history, policy
+    archive_dir = Path(archive_dir)
+    if not archive_dir.exists():
+        return full_history, chart_history, policy
+
+    files = sorted(archive_dir.glob("*.json"), key=lambda path: path.stem)[-MLB_VALUE_HISTORY_LIMIT:]
+    for path in files:
+        date_str = _date_part(path.stem)
+        if not date_str:
+            continue
+        policy["dates"].append(date_str)
+        archive = _load_json(path)
+        method_id = archive.get("method_id") if isinstance(archive, dict) else None
+        if method_id is None and date_str < MLB_LEGACY_METHOD_BREAK_DATE:
+            method_id = MLB_LEGACY_METHOD_ID
+        compatible = not (current_method_id and method_id and method_id != current_method_id)
+        if not compatible:
+            # Even a mismatching archive without valid rows ends the compatible run.
+            chart_history.clear()
+            policy["latest_incompatible_date"] = date_str
+        by_player: dict[str, list[float]] = {}
+        for row in _mlb_archive_rows(archive):
+            mlbam_id = _mlbam_id(row)
+            value = _clean_float(row.get("value"))
+            if not mlbam_id or value is None or not math.isfinite(value):
+                continue
+            by_player.setdefault(mlbam_id, []).append(value)
+        for mlbam_id, values in by_player.items():
+            point = (date_str, _combined_mlb_history_value(values))
+            full_history.setdefault(mlbam_id, []).append(point)
+            if compatible:
+                chart_history.setdefault(mlbam_id, []).append(point)
+    return full_history, chart_history, policy
+
+
+def _attach_mlb_value_history(
+    rows: list[dict],
+    history: dict[str, list[tuple[str, float]]],
+    generated_at: str,
+    *,
+    context_key: str = "value_history",
+) -> None:
+    generated_date = _date_part(generated_at)
+    for row in rows:
+        mlbam_id = _mlbam_id(row)
+        points = list(history.get(mlbam_id, [])) if mlbam_id else []
+        current = _clean_float(row.get("value"))
+        if generated_date and current is not None and math.isfinite(current):
+            points = [(date_str, value) for date_str, value in points if date_str != generated_date]
+            points.append((generated_date, float(current)))
+        context = dict(row.get("context") or {})
+        context[context_key] = points[-MLB_VALUE_HISTORY_LIMIT:]
+        row["context"] = context
+
+
+def _prospect_value_history_from_archives(
+    archive_dir: Path | str | None = PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
+) -> dict[tuple[str, str], list[tuple[str, float]]]:
+    if not archive_dir:
+        return {}
+    archive_dir = Path(archive_dir)
+    if not archive_dir.exists():
+        return {}
+
+    history: dict[tuple[str, str], list[tuple[str, float]]] = {}
+    files = sorted(archive_dir.glob("*.json"), key=lambda path: path.stem)[-MLB_VALUE_HISTORY_LIMIT:]
+    for path in files:
+        date_str = _date_part(path.stem)
+        if not date_str or date_str < PROSPECT_VALUE_HISTORY_EPOCH_DATE:
+            continue
+        payload = _load_json(path)
+        for row in (payload.get("board") if isinstance(payload, dict) else []) or []:
+            if not isinstance(row, dict):
+                continue
+            key = _identity_key(row)
+            score = _clean_float(row.get("score"))
+            if not key or score is None or not math.isfinite(score):
+                continue
+            history.setdefault(key, []).append((date_str, score))
+    return history
+
+
+def _attach_prospect_value_history(
+    rows: list[dict],
+    history: dict[tuple[str, str], list[tuple[str, float]]],
+    generated_at: str,
+) -> None:
+    generated_date = _date_part(generated_at)
+    for row in rows:
+        key = _identity_key(row)
+        points = list(history.get(key, [])) if key else []
+        current = _clean_float(row.get("value"))
+        if (
+            generated_date
+            and generated_date >= PROSPECT_VALUE_HISTORY_EPOCH_DATE
+            and current is not None
+            and math.isfinite(current)
+        ):
+            points = [(date_str, value) for date_str, value in points if date_str != generated_date]
+            points.append((generated_date, float(current)))
+        points = [
+            (date_str, value)
+            for date_str, value in points
+            if date_str >= PROSPECT_VALUE_HISTORY_EPOCH_DATE
+        ]
+        context = dict(row.get("context") or {})
+        if points:
+            context["value_history"] = points[-MLB_VALUE_HISTORY_LIMIT:]
+        else:
+            context.pop("value_history", None)
+        row["context"] = context
+
+
+def _snapshot_id(row: dict) -> str:
+    return f"vc_prospect_{row['mlbam_id']}_{row['role']}"
+
+
+def _identity_key(row: dict) -> tuple[str, str] | None:
+    if row.get("mlbam_id") in (None, "") or row.get("role") not in {"hitter", "pitcher", "two_way"}:
+        return None
+    return str(row["mlbam_id"]), row["role"]
+
+
+def _mlbam_id(row: dict) -> str | None:
+    value = row.get("mlbam_id")
+    if value in (None, ""):
+        return None
+    return str(value)
+
+
+def _is_confirmed_mlb_level_prospect(row: dict) -> bool:
+    return str(row.get("level") or "").strip().upper() == "MLB"
+
+
+def _rookie_graduated(row: dict) -> bool:
+    """True only when the rookie line is actually crossed. rank_v1 attaches a
+    graduation_context (from the MLB service data's AB/IP + graduated flag) only
+    for near/actual graduates — its absence means rookie-eligible. Active-roster
+    membership alone is NOT graduation: a cup-of-coffee call-up keeps rookie
+    status until the AB/IP limits."""
+    context = (row.get("context") or {}).get("graduation_context") or {}
+    return context.get("graduated") is True
+
+
+def _annotate_retained_callup_row(row: dict) -> None:
+    """Mark a rookie-eligible active-roster call-up retained on the prospect board
+    so UI chips can surface the call-up without reclassifying him."""
+    context = dict(row.get("context") or {})
+    context["active_mlb_callup"] = {
+        "status": "active_mlb_callup",
+        "graduated": False,
+        "surface": "prospect_board_rookie_retention",
+        "reason": "active_roster_rookie_eligible",
+    }
+    row["context"] = context
+    drivers = ["Got the call — rookie-eligible", *(row.get("drivers") or [])]
+    row["drivers"] = list(dict.fromkeys(d for d in drivers if d))[:6]
+
+
+def _mlb_collision_should_promote(prospect_row: dict, mlb_rows: list[dict]) -> bool:
+    if _is_confirmed_mlb_level_prospect(prospect_row):
+        return True
+    prospect_value = _clean_float(prospect_row.get("value")) or 0.0
+    for row in mlb_rows:
+        mlb_value = _clean_float(row.get("value")) or 0.0
+        mlb_rank = _clean_int(row.get("rank")) or 999999
+        if (
+            mlb_rank <= MLB_COLLISION_PROMOTION_MAX_RANK
+            and mlb_value >= MLB_COLLISION_PROMOTION_MIN_VALUE
+            and mlb_value - prospect_value >= MLB_COLLISION_PROMOTION_MIN_MARGIN
+        ):
+            return True
+    return False
+
+
+def _active_mlb_roster_ids(roster_status: dict | None) -> set[str]:
+    ids = set()
+    for row in (roster_status or {}).get("profiles") or []:
+        mlbam_id = row.get("mlbam_id")
+        if mlbam_id in (None, "") or row.get("active_mlb_roster") is not True:
+            continue
+        ids.add(str(mlbam_id))
+    return ids
+
+
+def _active_callup_bridge_row(row: dict) -> dict:
+    """Keep a fresh MLB call-up visible while the MLB projection layer catches up.
+
+    The bridged row lands on the MLB/dynasty surface (player_type="mlb"), not the
+    prospect board: a graduated call-up has crossed the rookie line, so showing him as
+    a ranked prospect (with a prospect_rank) is wrong. He stays queryable on the MLB
+    surface instead of being stranded. prospect_rank is stripped so he can never be
+    re-read as a ranked prospect."""
+    bridged = {**row}
+    previous_level = row.get("level")
+    context = dict(row.get("context") or {})
+    context["graduation_context"] = {
+        "status": "active_mlb_callup",
+        "graduated": True,
+        "surface": "active_mlb_roster_bridge",
+        "previous_level": previous_level,
+        "reason": "official_mlb_active_roster_without_mlb_projection_row",
+    }
+    drivers = [
+        driver
+        for driver in ["Active MLB roster call-up", *(row.get("drivers") or [])]
+        if driver
+    ]
+    bridged.update(
+        {
+            "player_type": "mlb",
+            "level": "MLB",
+            "status": "active_mlb_callup",
+            "prospect_rank": None,
+            "drivers": list(dict.fromkeys(drivers))[:6],
+            "active_mlb_callup_bridge": True,
+            "context": context,
+        }
+    )
+    return bridged
+
+
+def _debut_dates_by_id(mlb_track_record: dict | None) -> dict[str, str]:
+    debut_by_id: dict[str, str] = {}
+    for profile in (mlb_track_record or {}).get("profiles") or []:
+        mlbam_id = profile.get("mlbam_id")
+        debut = profile.get("mlb_debut_date")
+        if mlbam_id in (None, "") or not debut:
+            continue
+        debut_by_id[str(mlbam_id)] = debut
+    return debut_by_id
+
+
+def _apply_graduation_transition_floor(
+    mlb_rows: list[dict],
+    graduated_prospect_rows: list[dict],
+    debut_by_id: dict[str, str] | None = None,
+    as_of_date: str | None = None,
+) -> int:
+    """Keep a freshly-graduated prospect's value from cratering to a 3-PA MLB line.
+
+    When a prospect is called up his prospect row is swapped for a thin MLB row whose
+    value can fall near the production floor (a 3-PA debut, with the track-record floor
+    blocked at the experience-band gate). Floor that MLB value at a market-discounted
+    fraction of his retained prospect score, fading as he accrues MLB experience. The
+    recovery signal — prospect score + graduation_context — already lives on the graduated
+    prospect row. Decay rides CALENDAR TIME (days since MLB debut / GRAD_FLOOR_DECAY_DAYS)
+    when a debut date is known, falling back to the rookie-eligibility ratio when it is not
+    (so the floor never depends on the debut feed being present)."""
+    debut_by_id = debut_by_id or {}
+    as_of = _parse_date(as_of_date)
+    floor_by_id: dict[str, dict] = {}
+    for row in graduated_prospect_rows:
+        mlbam_id = _mlbam_id(row)
+        prospect_value = _clean_float(row.get("value"))
+        if not mlbam_id or prospect_value is None or prospect_value <= 0:
+            continue
+        grad_context = ((row.get("context") or {}).get("graduation_context")) or {}
+        ratio = _clean_float(grad_context.get("ratio")) or 0.0
+        floor_by_id[mlbam_id] = {
+            "prospect_value": prospect_value,
+            "ratio": max(0.0, min(1.0, ratio)),
+            "prospect_rank": row.get("prospect_rank"),
+        }
+    applied = 0
+    for row in mlb_rows:
+        mlbam_id = _mlbam_id(row)
+        info = floor_by_id.get(mlbam_id)
+        if not info:
+            continue
+        debut = debut_by_id.get(mlbam_id)
+        debut_date = _parse_date(debut)
+        if debut_date and as_of and GRAD_FLOOR_DECAY_DAYS > 0:
+            days_since_debut = max(0, (as_of - debut_date).days)
+            decay = min(1.0, days_since_debut / GRAD_FLOOR_DECAY_DAYS)
+            decay_basis = "days_since_debut"
+        else:
+            days_since_debut = None
+            decay = info["ratio"]
+            decay_basis = "rookie_eligibility_ratio_fallback"
+        floor_value = round(
+            info["prospect_value"] * GRAD_FLOOR_DISCOUNT * (1.0 - decay), 2
+        )
+        current = _clean_float(row.get("value")) or 0.0
+        row["graduation_transition"] = {
+            "applied": floor_value > current,
+            "prospect_value": round(info["prospect_value"], 2),
+            "prospect_rank": info["prospect_rank"],
+            "discount": GRAD_FLOOR_DISCOUNT,
+            "decay": round(decay, 4),
+            "decay_basis": decay_basis,
+            "days_since_debut": days_since_debut,
+            "mlb_debut_date": debut,
+            "rookie_ratio": info["ratio"],
+            "raw_mlb_value": round(current, 2),
+            "floored_value": floor_value,
+            "basis": "market_discounted_prospect_value_decaying_on_calendar_time",
+        }
+        if floor_value > current:
+            row["value"] = floor_value
+            presets = row.get("value_by_preset")
+            if isinstance(presets, dict) and "5x5" in presets:
+                row["value_by_preset"] = {**presets, "5x5": floor_value}
+            applied += 1
+    return applied
+
+
+def _mlb_rows(
+    mlb_layer: dict | None,
+    generated_at: str,
+    identities: dict | None = None,
+) -> list[dict]:
+    rows = []
+    as_of = _parse_date(generated_at)
+    for row in (mlb_layer or {}).get("players") or []:
+        model_age = row.get("age")
+        identity = (identities or {}).get(str(row.get("mlbam_id"))) or {}
+        public_age = _age_on_date(identity.get("birth_date"), as_of)
+        context = {
+            "kind": "valucast_mlb_projection_context",
+            "source_layer_rank": row.get("rank"),
+            "projection_value": row.get("projection_value"),
+            "components": row.get("components"),
+            "model_age": model_age,
+            "public_age_source": (
+                "identity_birth_date_as_of_snapshot"
+                if public_age is not None
+                else "model_season_age_fallback"
+            ),
+        }
+        rows.append(
+            {
+                "id": row.get("id"),
+                "player_type": "mlb",
+                "name": row.get("name"),
+                "mlbam_id": row.get("mlbam_id"),
+                "role": row.get("role"),
+                "positions": row.get("positions") or [],
+                "team": row.get("team") or row.get("mlb_team") or "",
+                "mlb_team": row.get("mlb_team") or row.get("team") or "",
+                "age": public_age if public_age is not None else model_age,
+                "rank": row.get("rank"),
+                "value": row.get("value"),
+                "value_by_preset": row.get("value_by_preset") or {},
+                "value_scale": row.get("value_scale"),
+                "value_source": row.get("value_source"),
+                "confidence": row.get("confidence"),
+                "updated_at": generated_at,
+                "status": "candidate_shadow",
+                "stat_line": row.get("stat_line"),
+                "drivers": row.get("drivers") or [],
+                "context": context,
+            }
+        )
+    return rows
+
+
+def _combined_confidence(rows: list[dict]) -> str | dict | None:
+    levels = [
+        row.get("confidence")
+        for row in rows
+        if isinstance(row.get("confidence"), str) and row.get("confidence")
+    ]
+    if not levels:
+        return rows[0].get("confidence") if rows else None
+    if "low" in levels:
+        return "low"
+    if "medium" in levels:
+        return "medium"
+    return "high"
+
+
+def _merge_two_way_mlb_rows(rows: list[dict]) -> list[dict]:
+    grouped: dict[str, list[dict]] = {}
+    passthrough = []
+    for row in rows:
+        mlbam_id = row.get("mlbam_id")
+        if mlbam_id in (None, ""):
+            passthrough.append(row)
+            continue
+        grouped.setdefault(str(mlbam_id), []).append(row)
+
+    merged_rows = list(passthrough)
+    for mlbam_id, group in grouped.items():
+        roles = {row.get("role") for row in group if row.get("role")}
+        if len(group) == 1 or len(roles) < 2:
+            merged_rows.extend(group)
+            continue
+
+        ordered = sorted(
+            group,
+            key=lambda row: (
+                -(_clean_float(row.get("value")) or 0.0),
+                row.get("role") != "hitter",
+                str(row.get("name") or ""),
+            ),
+        )
+        primary = ordered[0]
+        secondary_value = sum(
+            (_clean_float(row.get("value")) or 0.0) for row in ordered[1:]
+        )
+        primary_value = _clean_float(primary.get("value")) or 0.0
+        combined_value = min(
+            100.0,
+            primary_value + TWO_WAY_SECONDARY_VALUE_WEIGHT * secondary_value,
+        )
+        primary_vbp = primary.get("value_by_preset") or {}
+        if not isinstance(primary_vbp, dict):
+            primary_vbp = {}
+        combined_vbp = {}
+        for preset_id in primary_vbp:
+            combined_vbp[preset_id] = _combined_mlb_history_value([
+                (_clean_float((row.get("value_by_preset") or {}).get(preset_id)) or 0.0)
+                if isinstance(row.get("value_by_preset") or {}, dict)
+                else 0.0
+                for row in ordered
+            ])
+        positions = []
+        for row in ordered:
+            for position in row.get("positions") or []:
+                if position and position not in positions:
+                    positions.append(position)
+        drivers = []
+        for row in ordered:
+            for driver in row.get("drivers") or []:
+                if driver not in drivers:
+                    drivers.append(driver)
+
+        component_rows = [
+            {
+                "role": row.get("role"),
+                "id": row.get("id"),
+                "rank": row.get("rank"),
+                "value": row.get("value"),
+                "value_source": row.get("value_source"),
+                "stat_line": row.get("stat_line"),
+                "drivers": row.get("drivers") or [],
+                "context": row.get("context") or {},
+            }
+            for row in ordered
+        ]
+        context = {
+            "kind": "valucast_mlb_two_way_context",
+            "primary_role": primary.get("role"),
+            "combined_value_formula": (
+                "primary_value + secondary_value * "
+                f"{TWO_WAY_SECONDARY_VALUE_WEIGHT}"
+            ),
+            "primary_value": round(primary_value, 2),
+            "secondary_value": round(secondary_value, 2),
+            "combined_value": round(combined_value, 2),
+            "role_components": component_rows,
+        }
+        merged = {
+            **primary,
+            "id": f"vc_mlb_{mlbam_id}_two_way",
+            "role": "two_way",
+            "positions": positions or primary.get("positions") or [],
+            "value": round(combined_value, 2),
+            "value_by_preset": combined_vbp,
+            "value_source": TWO_WAY_VALUE_SOURCE,
+            "confidence": _combined_confidence(ordered),
+            "drivers": drivers[:6],
+            "context": context,
+        }
+        merged_rows.append(merged)
+
+    return merged_rows
+
+
+# Current-season MLB line for called-up prospects, from ValuCast-owned actuals
+# (data/actuals/current.json) — replaces the retired DD feed. Template keys are
+# lowercase; actuals carry uppercase stat keys. Actuals pools are
+# hitter / starter / reliever; prospect rows carry role hitter / pitcher, so both
+# pitcher pools normalize to the pitcher keyset and role before lookup.
+_MLB_STAT_LINE_KEYS = {
+    "hitter": {"pa": "PA", "avg": "AVG", "ops": "OPS", "hr": "HR", "rbi": "RBI", "r": "R", "sb": "SB"},
+    "pitcher": {"ip": "IP", "era": "ERA", "whip": "WHIP", "k": "SO", "qs": "QS", "sv": "SV"},
+}
+_POOL_TO_ROLE = {"hitter": "hitter", "starter": "pitcher", "reliever": "pitcher"}
+
+
+def _mlb_stat_line_by_id(actuals: list | None) -> dict[tuple[str, str], dict]:
+    """Current-season MLB line per (mlbam_id, role) from ValuCast-owned actuals."""
+    by_id: dict[tuple[str, str], dict] = {}
+    for row in actuals or []:
+        meta = row.get("metadata") or {}
+        mlbam_id = meta.get("mlbam_id")
+        role = _POOL_TO_ROLE.get(row.get("pool"))
+        keymap = _MLB_STAT_LINE_KEYS.get(role)
+        if mlbam_id in (None, "") or keymap is None:
+            continue
+        stats = row.get("stats") or {}
+        line = {out: stats[src] for out, src in keymap.items() if stats.get(src) is not None}
+        if line:
+            by_id[(str(mlbam_id), role)] = line
+    return by_id
+
+
+def _with_prospect_birth_dates(identities: dict | None, path: Path = PROSPECT_ORG_PATH) -> dict:
+    """The identity store covers MLB players; the org cache supplies prospects' birth dates."""
+    birth_dates = (_load_json(path).get("birth_dates") or {}) if path.exists() else {}
+    merged = dict(identities or {})
+    for mlbam_id, birth_date in birth_dates.items():
+        identity = merged.get(mlbam_id) or {}
+        if not identity.get("birth_date"):
+            merged[mlbam_id] = {**identity, "birth_date": birth_date}
+    return merged
+
+
+def _prospect_rows(
+    rank_payload: dict,
+    generated_at: str,
+    peak_projection: dict | None = None,
+    mlb_stat_line_by_id: dict | None = None,
+    identities: dict | None = None,
+) -> list[dict]:
+    peak_lookup = _prospect_peak_projection_lookup(peak_projection)
+    rows = []
+    as_of = _parse_date(generated_at)
+    for row in rank_payload.get("board") or []:
+        context = row.get("context_only") or {}
+        peak = peak_lookup.get(_identity_key(row))
+        # Same convention as _mlb_rows: the public age is computed from the
+        # identity birth date as of the snapshot date. The rank feed's age is
+        # a season age that never crosses a mid-season birthday (it read a
+        # year low for 8 prospects on 2026-07-27); the model's input age is
+        # preserved as model_age context.
+        model_age = row.get("age")
+        identity = (identities or {}).get(str(row.get("mlbam_id"))) or {}
+        public_age = _age_on_date(identity.get("birth_date"), as_of)
+        rows.append(
+            {
+                "id": _snapshot_id(row),
+                "player_type": "prospect",
+                "name": row.get("name"),
+                "mlbam_id": row.get("mlbam_id"),
+                "role": row.get("role"),
+                "bats": context.get("bats") or row.get("bats"),
+                "throws": context.get("throws") or row.get("throws"),
+                "positions": _positions(row),
+                "team": row.get("mlb_team") or "",
+                "mlb_team": row.get("mlb_team") or "",
+                "age": public_age if public_age is not None else model_age,
+                "rank": row.get("rank"),
+                "value": row.get("score"),
+                "value_scale": "0_100_valucast_prospect_score",
+                "value_source": row.get("score_source"),
+                "confidence": row.get("confidence"),
+                "updated_at": generated_at,
+                "status": "candidate_shadow",
+                "prospect_rank": row.get("rank"),
+                "level": row.get("level"),
+                "eta": row.get("eta"),
+                "eta_window": row.get("eta_window") or (peak or {}).get("eta_window"),
+                "score_source": row.get("score_source"),
+                "components": row.get("components") or {},
+                "drivers": row.get("drivers") or [],
+                # dynasty_signal numerics are deliberately NOT copied: the
+                # universal model's probability heads are gate-failed /
+                # uncalibrated (docs/audit-2026-07-29-dynasty-signal-
+                # probability-honesty.md, owner disposition 2026-07-29). They
+                # stay in the internal dynasty-layer artifact as explicitly
+                # uncalibrated shadow evidence; no numeric probability ships
+                # on the serving plane.
+                "stat_line": context.get("stat_line"),
+                "stat_line_translated": context.get("stat_line_translated"),
+                "best_single_level_stat_line": context.get("best_single_level_stat_line"),
+                "combined_season_stat_line": context.get("combined_season_stat_line"),
+                "mlb_stat_line": (mlb_stat_line_by_id or {}).get((_mlbam_id(row) or "", row.get("role"))),
+                "peak_projection": peak,
+                "context": {
+                    "kind": "optional_display_context",
+                    "usage": "display_only_not_used_for_valucast_score",
+                    "model_age": model_age,
+                    "public_age_source": (
+                        "identity_birth_date_as_of_snapshot"
+                        if public_age is not None
+                        else "model_season_age_fallback"
+                    ),
+                    "valucast_rank_v1": row.get("rank"),
+                    # External-board comparison context (CFR/HKB/Pipeline): kept,
+                    # labeled, never feeds a ValuCast score.
+                    "source_ranks": context.get("source_ranks"),
+                    "bats": context.get("bats") or row.get("bats"),
+                    "throws": context.get("throws") or row.get("throws"),
+                    "stat_line_source": context.get("stat_line_source"),
+                    "stat_line_source_kind": context.get("stat_line_source_kind"),
+                    "stat_line_level": context.get("stat_line_level"),
+                    "stat_line_team": context.get("stat_line_team"),
+                    "stat_line_sample": context.get("stat_line_sample"),
+                    "stat_line_sample_unit": context.get("stat_line_sample_unit"),
+                    "stat_line_sample_season": context.get("stat_line_sample_season"),
+                    "graduation_context": context.get("graduation_context"),
+                },
+            }
+        )
+    return rows
+
+
+def _prospect_peak_projection_lookup(peak_projection: dict | None) -> dict[str, dict]:
+    if not peak_projection:
+        return {}
+    validation = peak_projection.get("validation") or {}
+    if validation.get("ready_for_card_v2") is not True:
+        return {}
+    lookup = {}
+    for row in peak_projection.get("projections") or []:
+        key = _identity_key(row)
+        if key and key not in lookup:
+            lookup[key] = _strip_uncalibrated_probabilities(row)
+    return lookup
+
+
+def _strip_uncalibrated_probabilities(peak_row: dict) -> dict:
+    """Drop numeric probability blocks from the served peak copy.
+
+    peak_v2/card_v2 role_probabilities derive from the universal model's
+    gate-failed probability heads (uncalibrated shadow evidence, owner
+    disposition 2026-07-29). They remain in the internal peak artifact;
+    the serving plane carries no numeric probability.
+    """
+    out = dict(peak_row)
+    for block_key in ("peak_v2", "card_v2"):
+        block = out.get(block_key)
+        if isinstance(block, dict) and "role_probabilities" in block:
+            block = dict(block)
+            block.pop("role_probabilities", None)
+            block.pop("role_probability_source", None)
+            block.pop("role_probability_basis", None)
+            out[block_key] = block
+    return out
+
+
+def _assign_visible_prospect_ranks(rows: list[dict]) -> list[dict]:
+    for rank, row in enumerate(rows, 1):
+        row["prospect_rank"] = rank
+    return rows
+
+
+def _assign_global_ranks(players: list[dict]) -> list[dict]:
+    ranked = sorted(
+        players,
+        key=lambda row: (
+            -float(row.get("value") or 0.0),
+            row.get("player_type") != "mlb",
+            int(row.get("rank") or 999999),
+            str(row.get("name") or ""),
+            str(row.get("id") or ""),
+        ),
+    )
+    for rank, row in enumerate(ranked, 1):
+        row["rank"] = rank
+    return ranked
+
+
+def _numeric_values(rows: list[dict]) -> list[float]:
+    values = []
+    for row in rows:
+        try:
+            value = float(row.get("value"))
+        except (TypeError, ValueError):
+            continue
+        if value == value and 0.0 <= value <= 100.0:
+            values.append(value)
+    return values
+
+
+def _percentile(values: list[float], percentile: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    if len(ordered) == 1:
+        return round(ordered[0], 2)
+    position = (len(ordered) - 1) * percentile
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    fraction = position - lower
+    return round(ordered[lower] * (1.0 - fraction) + ordered[upper] * fraction, 2)
+
+
+def _value_distribution(values: list[float]) -> dict:
+    return {
+        "count": len(values),
+        "max": round(max(values), 2) if values else None,
+        "p95": _percentile(values, 0.95),
+        "p90": _percentile(values, 0.90),
+        "p75": _percentile(values, 0.75),
+        "median": _percentile(values, 0.50),
+    }
+
+
+def _apply_common_value_scale(players: list[dict], report: dict) -> None:
+    for row in players:
+        original_scale = row.get("value_scale")
+        row["value_scale"] = COMMON_VALUE_SCALE
+        row["status"] = "candidate_ready"
+        context = dict(row.get("context") or {})
+        context["cross_universe_calibration"] = {
+            "method": CALIBRATION_METHOD,
+            "contract_kind": "compatibility_certification",
+            "compatibility_certified": bool(report.get("applied")),
+            "unit_mapping_applied": False,
+            "value_units_calibrated": False,
+            "value_mutation": "none",
+            "raw_value": row.get("value"),
+            "raw_value_scale": original_scale,
+            "display_value": row.get("value"),
+            "display_value_scale": COMMON_VALUE_SCALE,
+            "mlb_equivalent_rank_for_top_prospect": report["metrics"].get(
+                "top_prospect_mlb_equivalent_rank"
+            ),
+        }
+        row["context"] = context
+
+
+def _cross_universe_calibration_report(
+    players: list[dict],
+    rank_payload: dict,
+    mlb_layer: dict | None,
+    generated_date: str | None,
+    rank_date: str | None,
+    mlb_date: str | None,
+    duplicate_identity_count: int,
+) -> dict:
+    mlb_rows = [row for row in players if row.get("player_type") == "mlb"]
+    prospect_rows = [row for row in players if row.get("player_type") == "prospect"]
+    mlb_values = _numeric_values(mlb_rows)
+    prospect_values = _numeric_values(prospect_rows)
+    mlb_validation = (mlb_layer or {}).get("validation") or {}
+    value_contract = (mlb_layer or {}).get("value_contract") or {}
+    rank_validation = rank_payload.get("validation") or {}
+
+    top_prospect_value = max(prospect_values) if prospect_values else None
+    mlb_rows_above_top_prospect = (
+        sum(1 for value in mlb_values if value >= top_prospect_value)
+        if top_prospect_value is not None
+        else 0
+    )
+    minimum_mlb_rows_above = min(MIN_MLB_ROWS_ABOVE_TOP_PROSPECT, len(mlb_values))
+    maximum_mlb_rows_above = min(MAX_MLB_ROWS_ABOVE_TOP_PROSPECT, len(mlb_values))
+
+    metrics = {
+        "mlb": _value_distribution(mlb_values),
+        "prospects": _value_distribution(prospect_values),
+        "top_prospect_value": round(top_prospect_value, 2)
+        if top_prospect_value is not None
+        else None,
+        "mlb_rows_at_or_above_top_prospect": mlb_rows_above_top_prospect,
+        "top_prospect_mlb_equivalent_rank": (
+            mlb_rows_above_top_prospect + 1 if prospect_values else None
+        ),
+        "minimum_mlb_rows_at_or_above_top_prospect": minimum_mlb_rows_above,
+        "maximum_mlb_rows_at_or_above_top_prospect": maximum_mlb_rows_above,
+    }
+
+    blockers = []
+    if not mlb_layer:
+        blockers.append("ValuCast MLB dynasty layer is missing.")
+    if not mlb_validation.get("ready_for_live_consumers"):
+        blockers.append("ValuCast MLB dynasty layer is not standalone-ready.")
+    if value_contract.get("value_kind") != "multi_year_dynasty_horizon":
+        blockers.append("ValuCast MLB layer is not a multi-year dynasty horizon.")
+    if int(value_contract.get("horizon_years") or 0) < MIN_MLB_HORIZON_YEARS:
+        blockers.append("ValuCast MLB horizon is shorter than the compatibility gate.")
+    if mlb_validation.get("duplicate_identity_count", 0) != 0:
+        blockers.append("ValuCast MLB layer has duplicate MLBAM+role identities.")
+    # Reviewed, named exceptions are netted out by the layer; an older artifact
+    # without the blocking count falls back to the raw count (fails closed).
+    if mlb_validation.get(
+        "missing_mlbam_blocking_count", mlb_validation.get("missing_mlbam_count", 0)
+    ) != 0:
+        blockers.append("ValuCast MLB layer has rows missing MLBAM identity.")
+    if not mlb_validation.get("ranks_contiguous", False):
+        blockers.append("ValuCast MLB layer ranks are not contiguous.")
+    if not mlb_values:
+        blockers.append("ValuCast MLB layer has no numeric 0-100 values.")
+
+    coverage_rate = float(rank_validation.get("coverage_rate") or 0.0)
+    top_unique_count = int(rank_validation.get("top_200_unique_score_count") or 0)
+    if coverage_rate < MIN_PROSPECT_COVERAGE_RATE:
+        blockers.append("Prospect Rank v1 coverage is below the compatibility gate.")
+    if rank_validation.get("duplicate_identity_count", 0) != 0:
+        blockers.append("Prospect Rank v1 has duplicate MLBAM+role identities.")
+    if rank_validation.get("missing_mlbam_count", 0) != 0:
+        blockers.append("Prospect Rank v1 has rows missing MLBAM identity.")
+    if not rank_validation.get("same_day_freshness", False):
+        blockers.append("Prospect Rank v1 input artifacts are not same-day fresh.")
+    if not rank_validation.get("ranks_contiguous", False):
+        blockers.append("Prospect Rank v1 ranks are not contiguous.")
+    if top_unique_count < MIN_TOP_200_UNIQUE_SCORE_COUNT:
+        blockers.append("Prospect Rank v1 top-200 score separation is below the gate.")
+    if not prospect_values:
+        blockers.append("Prospect Rank v1 has no numeric 0-100 values.")
+
+    date_values = [generated_date, rank_date, mlb_date]
+    if not all(date_values) or len(set(date_values)) != 1:
+        blockers.append("MLB layer, prospect rank, and public snapshot are not same-day fresh.")
+    if duplicate_identity_count:
+        blockers.append("Public snapshot has duplicate MLBAM+role identities.")
+    if len(mlb_values) != len(mlb_rows) or len(prospect_values) != len(prospect_rows):
+        blockers.append("Public snapshot has non-numeric or out-of-range values.")
+    if (
+        top_prospect_value is not None
+        and mlb_values
+        and mlb_rows_above_top_prospect < minimum_mlb_rows_above
+    ):
+        blockers.append(
+            "Top prospect is displayed above too much of the current MLB dynasty board."
+        )
+    if (
+        top_prospect_value is not None
+        and mlb_values
+        and mlb_rows_above_top_prospect > maximum_mlb_rows_above
+    ):
+        blockers.append(
+            "Top prospect is displayed below too much of the current MLB dynasty board."
+        )
+
+    return {
+        "method": CALIBRATION_METHOD,
+        "contract_kind": "compatibility_certification",
+        "display_value_scale": COMMON_VALUE_SCALE,
+        "value_mutation": "none",
+        "unit_mapping_applied": False,
+        "value_units_calibrated": False,
+        "compatibility_certified": not blockers,
+        "applied": not blockers,
+        "metrics": metrics,
+        "criteria": {
+            "mlb_value_kind": "multi_year_dynasty_horizon",
+            "minimum_mlb_horizon_years": MIN_MLB_HORIZON_YEARS,
+            "minimum_prospect_coverage_rate": MIN_PROSPECT_COVERAGE_RATE,
+            "minimum_top_200_unique_score_count": MIN_TOP_200_UNIQUE_SCORE_COUNT,
+            "minimum_mlb_rows_at_or_above_top_prospect": minimum_mlb_rows_above,
+            "maximum_mlb_rows_at_or_above_top_prospect": maximum_mlb_rows_above,
+            "same_day_freshness_required": True,
+            "duplicate_identity_count_required": 0,
+        },
+        "blockers": blockers,
+    }
+
+
+def _validation(
+    payload: dict,
+    rank_payload: dict,
+    mlb_layer: dict | None,
+    buy_signals: dict | None,
+    quality_governor: dict,
+    prospects_excluded_by_mlb_identity_count: int,
+    prospects_excluded_by_mlb_identity_sample: list[dict],
+    mlb_projection_rows_suppressed_by_prospect_count: int,
+    mlb_projection_rows_suppressed_by_prospect_sample: list[dict],
+    calibration_report: dict,
+    graduation_transition_floor_count: int = 0,
+    active_mlb_callup_bridge_count: int = 0,
+    active_mlb_callup_bridge_sample: list[dict] | None = None,
+    graduated_prospect_ids: list[str] | None = None,
+) -> dict:
+    players = payload.get("players") or []
+    identity_keys = [key for row in players if (key := _identity_key(row))]
+    duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
+    prospect_visible_ranks = [
+        row.get("prospect_rank")
+        for row in players
+        if row.get("player_type") == "prospect"
+    ]
+    visible_prospect_ranks_contiguous = prospect_visible_ranks == list(
+        range(1, len(prospect_visible_ranks) + 1)
+    )
+    generated_date = _date_part(payload.get("generated_at"))
+    rank_date = _date_part(rank_payload.get("generated_at"))
+    mlb_date = _date_part((mlb_layer or {}).get("generated_at"))
+    buy_date = _date_part((buy_signals or {}).get("generated_at"))
+    mlb_validation = (mlb_layer or {}).get("validation") or {}
+    buy_validation = (buy_signals or {}).get("validation") or {}
+    local_blockers = []
+    local_surface_blockers = {
+        "dynasty": [],
+        "prospects": [],
+    }
+    buy_blockers = []
+
+    def add_local_blockers(messages, surfaces):
+        for message in messages:
+            local_blockers.append(message)
+            if "dynasty" in surfaces:
+                local_surface_blockers["dynasty"].append(message)
+            if "prospects" in surfaces:
+                local_surface_blockers["prospects"].append(message)
+
+    if not mlb_layer:
+        add_local_blockers(
+            [
+                "ValuCast MLB dynasty value layer artifact is missing; snapshot contains no MLB canonical values."
+            ],
+            {"dynasty"},
+        )
+    elif not mlb_validation.get("ready_for_live_consumers"):
+        add_local_blockers(
+            mlb_validation.get("blockers")
+            or ["ValuCast MLB dynasty value layer is still shadow-only."],
+            {"dynasty"},
+        )
+    add_local_blockers(calibration_report.get("blockers") or [], {"dynasty", "prospects"})
+    if not buy_signals:
+        buy_blockers.append("ValuCast-owned buy signal artifact is missing.")
+    elif not buy_validation.get("ready_for_live_consumers"):
+        buy_blockers.extend(
+            buy_validation.get("blockers")
+            or ["ValuCast buy signals are still shadow-only."]
+        )
+    # (The governor's buy verdict merges in apply_quality_governor_validation.)
+    date_values = [generated_date, rank_date]
+    if mlb_layer:
+        date_values.append(mlb_date)
+    if buy_signals:
+        date_values.append(buy_date)
+    same_day_freshness = all(date_values) and len(set(date_values)) == 1
+    if not same_day_freshness:
+        add_local_blockers(
+            ["Public snapshot input artifacts are not all same-day fresh."],
+            {"dynasty", "prospects"},
+        )
+    if duplicate_identity_count:
+        add_local_blockers(
+            ["Public snapshot has duplicate MLBAM+role identities."],
+            {"dynasty", "prospects"},
+        )
+    if not visible_prospect_ranks_contiguous:
+        add_local_blockers(
+            ["Public snapshot visible prospect ranks are not contiguous."],
+            {"prospects"},
+        )
+    field_problems = required_field_problems(players)
+    if field_problems:
+        add_local_blockers(
+            ["Public snapshot has incomplete required fields."],
+            {"dynasty", "prospects"},
+        )
+
+    local = {
+        "same_day_freshness": same_day_freshness,
+        "generated_dates": {
+            "public_snapshot": generated_date,
+            "mlb_dynasty_layer": mlb_date,
+            "prospect_rank_v1": rank_date,
+            "valucast_prospect_buys": buy_date,
+        },
+        "row_count": len(players),
+        "mlb_count": sum(1 for row in players if row.get("player_type") == "mlb"),
+        "prospect_count": sum(1 for row in players if row.get("player_type") == "prospect"),
+        "duplicate_identity_count": duplicate_identity_count,
+        "required_fields_complete": not field_problems,
+        "required_field_problem_count": len(field_problems),
+        "required_field_problem_sample": field_problems[:12],
+        "mlb_dynasty_value_layer_present": bool(mlb_layer and mlb_validation.get("row_count")),
+        "mlb_dynasty_value_layer_ready": bool(
+            mlb_validation.get("ready_for_live_consumers")
+        ),
+        "prospect_rank_v1_candidate_count": rank_payload.get("candidate_count"),
+        "prospect_rank_v1_ranked_count": rank_payload.get("ranked_count"),
+        "visible_prospect_ranks_contiguous": visible_prospect_ranks_contiguous,
+        "valucast_buy_signal_count": buy_validation.get("row_count"),
+        "valucast_buy_signals_ready": bool(
+            buy_validation.get("ready_for_live_consumers")
+        ),
+        "prospects_excluded_by_mlb_identity_count": prospects_excluded_by_mlb_identity_count,
+        "prospects_excluded_by_mlb_identity_sample": prospects_excluded_by_mlb_identity_sample,
+        "active_mlb_callup_bridge_count": active_mlb_callup_bridge_count,
+        "active_mlb_callup_bridge_sample": active_mlb_callup_bridge_sample or [],
+        "mlb_projection_rows_suppressed_by_prospect_count": mlb_projection_rows_suppressed_by_prospect_count,
+        "mlb_projection_rows_suppressed_by_prospect_sample": mlb_projection_rows_suppressed_by_prospect_sample,
+        "graduation_transition_floor_count": graduation_transition_floor_count,
+        "cross_universe_value_scale_calibrated": False,
+        "cross_universe_value_scale_compatibility_certified": bool(calibration_report.get("applied")),
+        "cross_universe_calibration": calibration_report,
+        # Plan 036 R3: the governor-independent inputs persist so the merged
+        # readiness fields can be recomputed purely from (this dict, verdict)
+        # at injection time — and re-injection stays idempotent.
+        "local_blockers": local_blockers,
+        "local_surface_blockers": {
+            "dynasty": list(local_surface_blockers["dynasty"]),
+            "prospects": list(local_surface_blockers["prospects"]),
+        },
+        "local_buy_blockers": buy_blockers,
+        "graduated_prospect_ids": graduated_prospect_ids or [],
+    }
+    return apply_quality_governor_validation(local, quality_governor)
+
+
+def apply_quality_governor_validation(validation: dict, quality_governor: dict) -> dict:
+    """Merge a governor verdict into a snapshot validation block (pure).
+
+    Plan 036 R3: derives every governor-dependent field from the persisted
+    governor-independent inputs plus the verdict, so the committed governor
+    artifact can be injected after the audits build — and injected again —
+    without a second evaluation or drift.
+    """
+    merged = dict(validation)
+    local_blockers = list(validation.get("local_blockers") or [])
+    local_surface_blockers = validation.get("local_surface_blockers") or {}
+    buy_blockers = list(validation.get("local_buy_blockers") or [])
+    if not quality_governor.get("ready_for_buys_promotion"):
+        buy_blockers.extend(
+            quality_governor.get("buy_blockers")
+            or ["ValuCast quality governor has not approved Buy promotion."]
+        )
+    quality_surface_readiness = quality_governor.get("surface_readiness") or {}
+    quality_blockers = []
+    if not quality_governor.get("ready_for_public_snapshot"):
+        quality_blockers = (
+            quality_governor.get("blockers")
+            or ["ValuCast quality governor has not approved public snapshot promotion."]
+        )
+    governor_surface_blockers = quality_governor.get("surface_blockers")
+    if isinstance(governor_surface_blockers, dict):
+        governor_dynasty_blockers = list(governor_surface_blockers.get("dynasty") or [])
+        governor_prospect_blockers = list(
+            governor_surface_blockers.get("prospects") or []
+        )
+    else:
+        governor_dynasty_blockers = list(quality_blockers)
+        governor_prospect_blockers = list(quality_blockers)
+
+    dynasty_blockers = list(
+        dict.fromkeys(
+            list(local_surface_blockers.get("dynasty") or [])
+            + governor_dynasty_blockers
+        )
+    )
+    prospect_blockers = list(
+        dict.fromkeys(
+            list(local_surface_blockers.get("prospects") or [])
+            + governor_prospect_blockers
+        )
+    )
+    blockers = list(dict.fromkeys(local_blockers + quality_blockers))
+    buy_blockers = list(dict.fromkeys(buy_blockers))
+    calibration_applied = bool(
+        validation.get("cross_universe_value_scale_compatibility_certified")
+    )
+    dynasty_ready = (
+        not dynasty_blockers
+        and calibration_applied
+        and bool(quality_surface_readiness.get("dynasty"))
+    )
+    prospects_ready = (
+        not prospect_blockers
+        and calibration_applied
+        and bool(quality_surface_readiness.get("prospects"))
+    )
+    buys_ready = dynasty_ready and bool(quality_surface_readiness.get("buys"))
+    merged.update(
+        {
+            "ready_for_live_consumers": dynasty_ready and prospects_ready,
+            "ready_for_all_public_surfaces": (
+                dynasty_ready and prospects_ready and buys_ready
+            ),
+            "quality_governor_ready": bool(
+                quality_governor.get("ready_for_public_snapshot")
+            ),
+            "quality_governor_version": quality_governor.get("governor_version"),
+            "quality_governor_blockers": quality_governor.get("blockers") or [],
+            "quality_governor": quality_governor,
+            "surface_readiness": {
+                "dynasty": dynasty_ready,
+                "prospects": prospects_ready,
+                "buys": buys_ready,
+            },
+            "surface_blockers": {
+                "dynasty": dynasty_blockers,
+                "prospects": prospect_blockers,
+                "buys": buy_blockers,
+            },
+            "buy_signal_blockers": buy_blockers,
+            "blockers": blockers,
+        }
+    )
+    return merged
+
+
+def build_snapshot(
+    prospect_rank: dict,
+    previous_prospect_rank: dict | None = None,
+    mlb_layer: dict | None = None,
+    mlb_roster_status: dict | None = None,
+    mlb_track_record: dict | None = None,
+    prospect_coverage_audit: dict | None = None,
+    prospect_peak_projection: dict | None = None,
+    buy_signals: dict | None = None,
+    buy_review: dict | None = None,
+    movers: dict | None = None,
+    prospect_inputs: dict | None = None,
+    milb_stat_freshness_audit: dict | None = None,
+    actuals: list | None = None,
+    identities: dict | None = None,
+    generated_at: str | None = None,
+    mlb_value_history_archive_dir: Path | str | None = MLB_VALUE_HISTORY_ARCHIVE_DIR,
+    prospect_value_history_archive_dir: Path | str | None = PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
+    previous_public_snapshot_bytes: bytes | None = None,
+) -> dict:
+    if generated_at is None:
+        build_time = datetime.now(timezone.utc)
+        inherited = prospect_rank.get("generated_at") or (mlb_layer or {}).get(
+            "generated_at"
+        )
+        inherited_date = _date_part(inherited) if inherited else None
+        if inherited_date and inherited_date == build_time.date().isoformat():
+            generated_at = build_time.isoformat()
+        else:
+            generated_at = inherited or build_time.isoformat()
+    mlb_rows = _merge_two_way_mlb_rows(
+        _mlb_rows(mlb_layer, generated_at, identities)
+    )
+    mlb_identity_ids = {
+        mlbam_id
+        for row in mlb_rows
+        if (mlbam_id := _mlbam_id(row))
+    }
+    mlb_rows_by_id: dict[str, list[dict]] = {}
+    for row in mlb_rows:
+        if mlbam_id := _mlbam_id(row):
+            mlb_rows_by_id.setdefault(mlbam_id, []).append(row)
+    active_mlb_ids = _active_mlb_roster_ids(mlb_roster_status)
+    all_prospect_rows = _prospect_rows(
+        prospect_rank,
+        generated_at,
+        peak_projection=prospect_peak_projection,
+        mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
+        identities=identities,
+    )
+    # Rookie-rule retention (7/2): an active-roster call-up who has NOT crossed the
+    # rookie line stays a ranked prospect (the Hughes case — called up at 0 MLB IP,
+    # the old roster-membership test graduated him overnight and gutted his card).
+    # His thin MLB-layer row is suppressed so the same identity never serves twice;
+    # value continuity stays with the prospect score until real graduation.
+    retained_callup_ids = {
+        mlbam_id
+        for row in all_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and not _rookie_graduated(row)
+    }
+    if retained_callup_ids:
+        mlb_rows = [
+            row for row in mlb_rows if _mlbam_id(row) not in retained_callup_ids
+        ]
+        mlb_identity_ids -= retained_callup_ids
+        mlb_rows_by_id = {
+            mlbam_id: rows
+            for mlbam_id, rows in mlb_rows_by_id.items()
+            if mlbam_id not in retained_callup_ids
+        }
+        for row in all_prospect_rows:
+            if _mlbam_id(row) in retained_callup_ids:
+                _annotate_retained_callup_row(row)
+    active_callup_bridge_ids = {
+        mlbam_id
+        for row in all_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and mlbam_id not in mlb_identity_ids
+        and mlbam_id not in retained_callup_ids
+    }
+    active_callup_bridge_rows = [
+        _active_callup_bridge_row(row)
+        for row in all_prospect_rows
+        if _mlbam_id(row) in active_callup_bridge_ids
+    ]
+    graduated_prospect_rows = [
+        row
+        for row in all_prospect_rows
+        if (
+            (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+            and mlbam_id not in active_callup_bridge_ids
+            and mlbam_id not in retained_callup_ids
+        )
+        or (
+            mlbam_id in mlb_identity_ids
+            and _mlb_collision_should_promote(row, mlb_rows_by_id.get(mlbam_id, []))
+        )
+    ]
+    graduated_ids = {
+        mlbam_id
+        for row in graduated_prospect_rows
+        if (mlbam_id := _mlbam_id(row))
+    }
+    # Graduated call-ups (active MLB roster) leave the prospect board entirely: they are
+    # bridged onto the MLB/dynasty surface (player_type="mlb") below rather than kept as
+    # ranked prospects. Drop their un-bridged prospect rows here so the board never shows
+    # a graduate with a prospect_rank.
+    prospect_rows = [
+        row
+        for row in all_prospect_rows
+        if _mlbam_id(row) not in graduated_ids
+        and _mlbam_id(row) not in active_callup_bridge_ids
+    ]
+    # Known graduates the morning prospect build already evicted (active MLB roster) but
+    # who aren't yet in the MLB dynasty layer (e.g. <40-IP call-ups) never reach the board
+    # above, so the same-day bridge can't see them. Bridge them in from the retained
+    # active_mlb_roster_board so they stay visible on dynasty/backfields instead of vanishing.
+    active_roster_prospect_rows = _prospect_rows(
+        {**prospect_rank, "board": prospect_rank.get("active_mlb_roster_board") or []},
+        generated_at,
+        peak_projection=prospect_peak_projection,
+        mlb_stat_line_by_id=_mlb_stat_line_by_id(actuals),
+        identities=identities,
+    )
+    graduated_callup_bridge_rows = [
+        _active_callup_bridge_row(row)
+        for row in active_roster_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and mlbam_id not in mlb_identity_ids
+        and mlbam_id not in active_callup_bridge_ids
+    ]
+    # Active-roster graduates who DO have an MLB-layer row are evicted from the main
+    # board (so they never enter graduated_prospect_rows) AND skipped by the bridge
+    # above (which excludes mlb_identity_ids), so the transition floor never reaches
+    # them and they serve at a cratered thin-MLB value (e.g. a 53-score prospect at a
+    # 3-PA 2.97). Feed their retained active-roster prospect rows to the floor source.
+    graduated_floor_extra_rows = [
+        row
+        for row in active_roster_prospect_rows
+        if (mlbam_id := _mlbam_id(row)) in active_mlb_ids
+        and mlbam_id in mlb_identity_ids
+        and mlbam_id not in graduated_ids
+    ]
+    callup_bridge_rows = active_callup_bridge_rows + graduated_callup_bridge_rows
+    active_prospect_ids = {
+        mlbam_id
+        for row in prospect_rows
+        if (mlbam_id := _mlbam_id(row))
+    }
+    suppressed_mlb_rows = [
+        row for row in mlb_rows if _mlbam_id(row) in active_prospect_ids
+    ]
+    mlb_rows = [
+        row for row in mlb_rows if _mlbam_id(row) not in active_prospect_ids
+    ]
+    # Bridge graduated call-ups onto the MLB surface so they stay queryable on
+    # dynasty/backfields without ever ranking as prospects.
+    mlb_rows = mlb_rows + callup_bridge_rows
+    graduation_transition_floor_count = _apply_graduation_transition_floor(
+        mlb_rows,
+        graduated_prospect_rows + graduated_floor_extra_rows,
+        debut_by_id=_debut_dates_by_id(mlb_track_record),
+        as_of_date=generated_at,
+    )
+    prospect_rows = _assign_visible_prospect_ranks(prospect_rows)
+    prospects_excluded_by_mlb_identity_count = len(graduated_prospect_rows)
+    graduated_prospect_sample = [
+        {
+            "mlbam_id": row.get("mlbam_id"),
+            "name": row.get("name"),
+            "role": row.get("role"),
+            "level": row.get("level"),
+            "rank": row.get("prospect_rank"),
+            "reason": (
+                "active_mlb_roster"
+                if _mlbam_id(row) in active_mlb_ids
+                else "material_mlb_row"
+            ),
+        }
+        for row in sorted(
+            graduated_prospect_rows,
+            key=lambda row: (
+                int(row.get("prospect_rank") or 999999),
+                str(row.get("name") or ""),
+            ),
+        )[:12]
+    ]
+    active_callup_bridge_sample = [
+        {
+            "mlbam_id": row.get("mlbam_id"),
+            "name": row.get("name"),
+            "role": row.get("role"),
+            "level": row.get("level"),
+            "previous_level": (row.get("context") or {})
+            .get("graduation_context", {})
+            .get("previous_level"),
+            "rank": row.get("prospect_rank"),
+            "reason": "active_mlb_callup_bridge",
+        }
+        for row in sorted(
+            callup_bridge_rows,
+            key=lambda row: (
+                int(row.get("prospect_rank") or 999999),
+                str(row.get("name") or ""),
+            ),
+        )[:12]
+    ]
+    suppressed_mlb_sample = [
+        {
+            "mlbam_id": row.get("mlbam_id"),
+            "name": row.get("name"),
+            "role": row.get("role"),
+            "value": row.get("value"),
+        }
+        for row in sorted(
+            suppressed_mlb_rows,
+            key=lambda row: (
+                int(row.get("rank") or 999999),
+                str(row.get("name") or ""),
+            ),
+        )[:12]
+    ]
+    combined_rows = mlb_rows + prospect_rows
+    identity_keys = [key for row in combined_rows if (key := _identity_key(row))]
+    duplicate_identity_count = len(identity_keys) - len(set(identity_keys))
+    generated_date = _date_part(generated_at)
+    rank_date = _date_part(prospect_rank.get("generated_at"))
+    mlb_date = _date_part((mlb_layer or {}).get("generated_at"))
+    calibration_report = _cross_universe_calibration_report(
+        combined_rows,
+        prospect_rank,
+        mlb_layer,
+        generated_date,
+        rank_date,
+        mlb_date,
+        duplicate_identity_count,
+    )
+    if calibration_report.get("applied"):
+        _apply_common_value_scale(combined_rows, calibration_report)
+    full_history, chart_history, legacy_mlb_policy = _mlb_value_histories_from_archives(
+        mlb_value_history_archive_dir,
+        (mlb_layer or {}).get("method_id"),
+    )
+    _attach_mlb_value_history(mlb_rows, full_history, generated_at)
+    _attach_mlb_value_history(
+        mlb_rows, chart_history, generated_at, context_key="chart_value_history",
+    )
+    _attach_prospect_value_history(
+        prospect_rows,
+        _prospect_value_history_from_archives(prospect_value_history_archive_dir),
+        generated_at,
+    )
+    players = _assign_global_ranks(combined_rows)
+    if milb_stat_freshness_audit is None and prospect_inputs:
+        milb_stat_freshness_audit = build_milb_stat_freshness_audit(
+            prospect_inputs,
+            prospect_rank,
+            public_snapshot={"players": players},
+            generated_at=generated_at,
+        )
+    # Plan 036 R3: no in-build evaluation. The snapshot ships with the pending
+    # placeholder (all surfaces held not-ready); the single authoritative
+    # verdict is evaluated after the audits build and injected via
+    # inject_quality_governor(). previous_prospect_rank / buy_review / movers
+    # remain parameters for compatibility — the governor now consumes them
+    # from disk in run_quality_governor.
+    quality_governor = PENDING_QUALITY_GOVERNOR
+    payload = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact": ARTIFACT_NAME,
+        "generated_at": generated_at,
+        "generated_by": "valucast",
+        "source_policy": {
+            "kind": "valucast_public_snapshot_shadow",
+            "dd_values_used": False,
+            "dd_ranks_used": False,
+            "external_rankings_used_for_score": False,
+            "market_values_used_for_score": False,
+            "dd_context_allowed": True,
+        },
+        "input_artifacts": {
+            "mlb_dynasty_layer_version": (mlb_layer or {}).get("layer_version"),
+            "mlb_dynasty_method_id": (mlb_layer or {}).get("method_id"),
+            "mlb_dynasty_layer_status": (mlb_layer or {}).get("status"),
+            "mlb_roster_status_version": (mlb_roster_status or {}).get("contract_version"),
+            "mlb_roster_status_ready": (
+                ((mlb_roster_status or {}).get("validation") or {}).get(
+                    "ready_for_public_snapshot"
+                )
+            ),
+            "valucast_buy_signal_version": (buy_signals or {}).get("signal_version"),
+            "valucast_buy_signal_status": (buy_signals or {}).get("status"),
+            "prospect_coverage_audit_version": (prospect_coverage_audit or {}).get(
+                "audit_version"
+            ),
+            "prospect_coverage_audit_status": (prospect_coverage_audit or {}).get(
+                "status"
+            ),
+            "prospect_peak_projection_version": (prospect_peak_projection or {}).get(
+                "projection_version"
+            ),
+            "prospect_peak_projection_status": (prospect_peak_projection or {}).get(
+                "status"
+            ),
+            "prospect_peak_projection_ready": (
+                ((prospect_peak_projection or {}).get("validation") or {}).get(
+                    "ready_for_card_v2"
+                )
+            ),
+            "milb_stat_freshness_audit_version": (
+                milb_stat_freshness_audit or {}
+            ).get("audit_version"),
+            "milb_stat_freshness_audit_status": (
+                milb_stat_freshness_audit or {}
+            ).get("status"),
+            "prospect_rank_v1_version": prospect_rank.get("rank_version"),
+            "prospect_score_source": (prospect_rank.get("input_artifacts") or {}).get(
+                "stage1_score_source"
+            ),
+            "prospect_universal_model_version": (
+                prospect_rank.get("input_artifacts") or {}
+            ).get("universal_model_version"),
+            "prospect_rank_v1_status": prospect_rank.get("status"),
+            "prospect_universe_source": (prospect_rank.get("rank_contract") or {}).get(
+                "prospect_universe_source"
+            ),
+        },
+        "quality_governor": quality_governor,
+        "players": players,
+    }
+    payload["validation"] = _validation(
+        payload,
+        prospect_rank,
+        mlb_layer,
+        buy_signals,
+        quality_governor,
+        prospects_excluded_by_mlb_identity_count,
+        graduated_prospect_sample,
+        len(suppressed_mlb_rows),
+        suppressed_mlb_sample,
+        calibration_report,
+        graduation_transition_floor_count,
+        len(callup_bridge_rows),
+        active_callup_bridge_sample,
+        graduated_prospect_ids=sorted(str(value) for value in graduated_ids),
+    )
+    return apply_recorded_public_history(
+        payload, previous_public_snapshot_bytes, legacy_mlb_policy=legacy_mlb_policy,
+        prospect_history_epoch_date=PROSPECT_VALUE_HISTORY_EPOCH_DATE,
+    )
+
+
+def write_snapshot(payload: dict, path: Path = OUTPUT_PATH) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    os.replace(tmp, path)
+    return path
+
+
+def inject_quality_governor(
+    snapshot_path: Path = OUTPUT_PATH,
+    governor_path: Path = GOVERNOR_ARTIFACT_PATH,
+) -> dict:
+    """Inject the committed governor artifact into the committed snapshot.
+
+    Plan 036 R3: the artifact written by the single authoritative evaluation
+    becomes the snapshot's embedded verdict byte-for-byte; the merged
+    validation fields are recomputed purely from the persisted
+    governor-independent inputs. Idempotent — re-injection reproduces the
+    same result.
+    """
+    payload = _load_json(snapshot_path)
+    governor = _load_json(governor_path)
+    payload["quality_governor"] = governor
+    payload["validation"] = apply_quality_governor_validation(
+        payload.get("validation") or {}, governor
+    )
+    write_snapshot(payload, snapshot_path)
+    return payload
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--previous-public-snapshot", type=Path, required=True)
+    args = parser.parse_args(argv)
+    previous_bytes = args.previous_public_snapshot.read_bytes()
+    validate_prior_canonical_snapshot(previous_bytes)
+    rank_payload = _load_json(PROSPECT_RANK_PATH)
+    previous_prospect_rank = load_previous_prospect_rank(
+        rank_payload,
+        PROSPECT_VALUE_HISTORY_ARCHIVE_DIR,
+    )
+    prospect_inputs = (
+        _load_json(PROSPECT_INPUTS_PATH) if PROSPECT_INPUTS_PATH.exists() else None
+    )
+    mlb_layer = _load_json(MLB_LAYER_PATH) if MLB_LAYER_PATH.exists() else None
+    mlb_roster_status = (
+        _load_json(MLB_ROSTER_STATUS_PATH)
+        if MLB_ROSTER_STATUS_PATH.exists()
+        else None
+    )
+    mlb_track_record = (
+        _load_json(MLB_TRACK_RECORD_PATH) if MLB_TRACK_RECORD_PATH.exists() else None
+    )
+    prospect_coverage_audit = (
+        _load_json(PROSPECT_COVERAGE_AUDIT_PATH)
+        if PROSPECT_COVERAGE_AUDIT_PATH.exists()
+        else None
+    )
+    prospect_peak_projection = (
+        _load_json(PROSPECT_PEAK_PROJECTION_PATH)
+        if PROSPECT_PEAK_PROJECTION_PATH.exists()
+        else None
+    )
+    buy_signals = _load_json(BUY_SIGNALS_PATH) if BUY_SIGNALS_PATH.exists() else None
+    buy_review = _load_json(BUY_REVIEW_PATH) if BUY_REVIEW_PATH.exists() else None
+    movers = _load_json(MOVERS_PATH) if MOVERS_PATH.exists() else None
+    actuals = _load_json(ACTUALS_PATH) if ACTUALS_PATH.exists() else None
+    identities = _with_prospect_birth_dates(
+        _load_json(IDENTITY_PATH) if IDENTITY_PATH.exists() else None
+    )
+    payload = build_snapshot(
+        rank_payload,
+        previous_prospect_rank=previous_prospect_rank,
+        mlb_layer=mlb_layer,
+        mlb_roster_status=mlb_roster_status,
+        mlb_track_record=mlb_track_record,
+        prospect_coverage_audit=prospect_coverage_audit,
+        prospect_peak_projection=prospect_peak_projection,
+        buy_signals=buy_signals,
+        buy_review=buy_review,
+        movers=movers,
+        prospect_inputs=prospect_inputs,
+        actuals=actuals,
+        identities=identities,
+        previous_public_snapshot_bytes=previous_bytes,
+    )
+    path = write_snapshot(payload)
+    validation = payload["validation"]
+    print(
+        "ValuCast public dynasty snapshot: "
+        f"rows={validation['row_count']} "
+        f"mlb={validation['mlb_count']} "
+        f"prospects={validation['prospect_count']} "
+        f"ready={validation['ready_for_live_consumers']} -> {path}"
+    )
+
+
+if __name__ == "__main__":
+    main()

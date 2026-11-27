@@ -1,0 +1,66 @@
+{
+  "artifact": "valucast_ordinal_effect_anchor",
+  "derivation": {
+    "after_hitter_count": 18,
+    "after_pitcher_count": 7,
+    "before_hitter_count": 12,
+    "before_pitcher_count": 13,
+    "fallback_relative_reduction": 0.5,
+    "fallback_used": false,
+    "max_pitchers": 7,
+    "metric": "relative_common_support_expected_tier_reduction",
+    "ranking": "adjusted_expected_tier_desc_then_served_rank_asc_then_mlbam_id_asc_then_role_asc",
+    "relative_reduction": 0.120876784279,
+    "top_n": 25
+  },
+  "generated_at": "2026-07-15T18:12:18.799968+00:00",
+  "historical_fit": {
+    "historical_role_coefficients_reported": false,
+    "pitcher_intercept_fitted": false,
+    "pitcher_score_slope_fitted": false
+  },
+  "inputs": {
+    "oof_artifact": {
+      "path": "data/models/valucast_ordinal_oof_scores.json",
+      "row_count": 2218,
+      "sha256": "644f80bc530b9ea934c1e5bc0cfd8327a46991dbd029d0cf0f3ed3ecaa27b343"
+    },
+    "rank_artifact": {
+      "eligible_row_count": 2833,
+      "model_component_field": "components.model_score",
+      "path": "data/models/valucast_prospect_rank_v1.json",
+      "sha256": "657903f1488794c6c7d4bc4d355585d2d57c6452abd00a59590730d182a5dd57"
+    }
+  },
+  "nuisance_fit": {
+    "fold_fixed_effects": [
+      2019,
+      2021
+    ],
+    "fold_weights": {
+      "2018": {
+        "row_count": 697,
+        "weight": 0.314247069
+      },
+      "2019": {
+        "row_count": 770,
+        "weight": 0.347159603
+      },
+      "2021": {
+        "row_count": 751,
+        "weight": 0.338593327
+      }
+    },
+    "model": "role_blind_proportional_odds_logit",
+    "parameter_sha256": "373fa0a88ac9d54a23cb48e674fcbea9b2d0ba213bc009621dbe1231c92e3c39",
+    "role_conditional_outcomes_used": false,
+    "score_transform": "(score - 50) / 10"
+  },
+  "registration": "plans/028-pitcher-lean-model-fix.md#amendment-6",
+  "registration_commit": "eecb96c131ab19608506947d45207ff9899a1091",
+  "schema_version": "1.0.0",
+  "status": "registered_target",
+  "validation": {
+    "problems": []
+  }
+}

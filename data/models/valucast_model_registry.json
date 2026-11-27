@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-14",
+  "verdict_definitions": {
+    "VALIDATED": "Measured or reproducible and proven on evidence we can open. Not a promise of future accuracy — a claim we can show our work on today.",
+    "PROVISIONAL": "Observed but not yet proven. In shadow, below a maturation gate, or awaiting review. We publish it here rather than wait for it to look better.",
+    "DEPRECATED": "Superseded by a better approach and no longer the shipped path. Kept on the record so the history is legible.",
+    "REJECTED": "Tried and turned down — the labels can't train it, or it failed a gate. A published failure, not a hidden one."
+  },
+  "entries": [
+    {
+      "id": "mlb_projection",
+      "name": "MLB Projection (H+P / Marcel)",
+      "subsystem_kind": "projection",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Beats internal baselines on held-out data but has not yet beaten Steamer; the live forward check is running and currently losing, below the maturation gate.",
+      "evidence": "data/models/valucast_mlb_projection_source_comparison.json",
+      "evidence_label": "Forward-gate source comparison",
+      "source_module": "projections/models/marcel_pitcher.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "prospect_rank_v1",
+      "name": "Prospect Rank v1",
+      "subsystem_kind": "model",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Calibration is under review and coverage is still candidate-stage; the board ships, the proof is not yet in.",
+      "evidence": "data/models/valucast_prospect_calibration_report.json",
+      "evidence_label": "Rank v1 calibration report",
+      "source_module": "prospects/rank_v1.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "peak_projection_v1",
+      "name": "Peak Projection v1",
+      "subsystem_kind": "model",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Display-only role and skill-shape context under active calibration review. It does not feed rank or value and is not a validated stat forecast.",
+      "evidence": "data/models/valucast_prospect_peak_projection_calibration.json",
+      "evidence_label": "Peak Projection calibration report",
+      "source_module": "prospects/peak_projection.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "universal_prospect_model_hitters",
+      "name": "Universal Prospect Model — Hitters",
+      "subsystem_kind": "model",
+      "verdict": "VALIDATED",
+      "verdict_reason": "Stage 1 ordering resolved on 3,652 matured 2016–2021 outcomes: beats the level/age prior AND the 25-historical-neighbors baseline on Spearman, Kendall tau-b, and ROC AUC, every delta interval excluding zero (player-clustered bootstrap, n=1,765 hitters, 5 closed cohorts). Support re-confirmed by the registered 2021-maturation re-run (docs/registration-2026-08-14-stage1-maturation-rerun.md, monitoring clean). Retrospective ordering evidence; not a probability calibration and not a public superiority claim.",
+      "evidence": "data/validation/valucast_stage1_outcome_proof.json",
+      "evidence_label": "Stage 1 outcome proof (hitters)",
+      "source_module": "prospects/universal.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "universal_prospect_model_pitchers",
+      "name": "Universal Prospect Model — Pitchers",
+      "subsystem_kind": "model",
+      "verdict": "REJECTED",
+      "verdict_reason": "Beyond-neighbors claim resolved negative by the registered maturation re-run (docs/registration-2026-08-14-stage1-maturation-rerun.md, rule 3, executed 2026-08-14): on 1,887 matured outcomes over five closed cohorts (2016–2019, 2021), all three ordering deltas vs the 25-historical-neighbors baseline straddle zero with negative point estimates (Spearman −0.008 [−0.041, +0.024]; Kendall tau-b −0.010 [−0.038, +0.016]; ROC AUC −0.006 [−0.031, +0.019]). The model DOES beat the level/age prior with every interval excluding zero — that weaker claim stands, and served scores are unchanged. Any future beyond-neighbors claim requires a materially changed pitcher model and a new registration.",
+      "evidence": "data/validation/valucast_stage1_outcome_proof.json",
+      "evidence_label": "Stage 1 outcome proof (pitchers: beats level/age prior; indistinguishable from neighbors — claim rejected)",
+      "source_module": "prospects/universal.py",
+      "feeds_value": true,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "milb_translation",
+      "name": "MiLB Translation",
+      "subsystem_kind": "layer",
+      "verdict": "VALIDATED",
+      "verdict_reason": "A deterministic, reproducible level-translation port — measured, observe-only, and never a value input.",
+      "evidence": "data/models/valucast_raw_data_independence_audit.json",
+      "evidence_label": "Raw-data independence audit",
+      "source_module": "prospects/milb_translation.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "shape_comps",
+      "name": "Shape Comps",
+      "subsystem_kind": "layer",
+      "verdict": "VALIDATED",
+      "verdict_reason": "Deterministic and reproducible — the closest real MLB shapes on three translated rates, measured not modeled.",
+      "evidence": "data/models/valucast_prospect_comps.json",
+      "evidence_label": "Shape comps artifact",
+      "source_module": "prospects/comps.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "pitch_discipline_exact",
+      "name": "Pitch Discipline — exact metrics",
+      "subsystem_kind": "layer",
+      "verdict": "VALIDATED",
+      "verdict_reason": "Swing/Whiff/SwStr counted directly from play-by-play, ProspectSavant-matched — observe-only, never a value input.",
+      "evidence": "data/models/valucast_pitch_discipline.json",
+      "evidence_label": "Pitch-discipline layer artifact",
+      "source_module": "prospects/pitch_discipline.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "pitch_discipline_estimated",
+      "name": "Pitch Discipline — estimated zone metrics",
+      "subsystem_kind": "layer",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "Zone rates from a pixel-coordinate calibration, tagged \"est.\" — held-out agreement clears the bar but they are estimates, not measurements.",
+      "evidence": "data/models/valucast_pitch_discipline.json",
+      "evidence_label": "Pitch-discipline calibration metrics",
+      "source_module": "prospects/pitch_discipline.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    },
+    {
+      "id": "aotc_calls",
+      "name": "Ahead-of-the-Curve divergence calls",
+      "subsystem_kind": "audit",
+      "verdict": "PROVISIONAL",
+      "verdict_reason": "A live, pre-registered call ledger with the sample still maturing toward its published horizon — open the ledger for the current number.",
+      "evidence": "data/models/valucast_ahead_of_consensus_scorecard.json",
+      "evidence_label": "The Ledger (AOTC scorecard)",
+      "source_module": "prospects/rank_v1.py",
+      "feeds_value": false,
+      "public_page": "/ledger"
+    },
+    {
+      "id": "w_target",
+      "name": "Wins (W) target",
+      "subsystem_kind": "model",
+      "verdict": "REJECTED",
+      "verdict_reason": "There is no W in the label seasons, so a W-inclusive preset hits the partial-coverage refusal — ValuCast cannot train a W target and does not fake one.",
+      "evidence": "data/models/valucast_prospect_league_adapters.json",
+      "evidence_label": "League-adapter coverage",
+      "source_module": "prospects/adapters.py",
+      "feeds_value": false,
+      "public_page": "/methodology"
+    }
+  ]
+}

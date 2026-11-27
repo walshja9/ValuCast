@@ -1,0 +1,110 @@
+{
+  "aaa_statcast": {
+    "missing_by_field": {
+      "avg_ev": 15,
+      "avg_la": 15,
+      "chase_pct": 0,
+      "csw_pct": 0,
+      "ev_n": 0,
+      "gb_pct": 0,
+      "hardhit_pct": 15,
+      "max_ev": 15,
+      "n_bip": 0,
+      "n_pitches": 0,
+      "whiff_pct": 0,
+      "zone_pct": 0
+    },
+    "missing_by_role_field": {
+      "hitter": {
+        "avg_ev": 15,
+        "avg_la": 15,
+        "chase_pct": 0,
+        "ev_n": 0,
+        "gb_pct": 0,
+        "hardhit_pct": 15,
+        "max_ev": 15,
+        "n_bip": 0,
+        "n_pitches": 0,
+        "whiff_pct": 0
+      },
+      "pitcher": {
+        "chase_pct": 0,
+        "csw_pct": 0,
+        "gb_pct": 0,
+        "whiff_pct": 0,
+        "zone_pct": 0
+      }
+    },
+    "missing_value_policy": "preserve_null_never_zero_fill",
+    "row_count": 380,
+    "zero_filled_count": 0
+  },
+  "artifact": "valucast_prospect_challenger_readiness",
+  "as_of": "2026-08-03",
+  "blockers": [
+    "not_before:2027-01-01",
+    "2026_mlb_season_completion_not_attested",
+    "2022_four_year_horizon_not_attested",
+    "reviewed_implementation_amendment_missing"
+  ],
+  "identity_audit": {
+    "duplicates": [],
+    "identity_key": "cohort_year:mlbam_id:role",
+    "role_counts": {
+      "hitter": 3307,
+      "pitcher": 3449
+    },
+    "row_count": 6756
+  },
+  "input_contract": {
+    "problems": [],
+    "valid": true
+  },
+  "model_feature_namespace": "fold_local_transformed_features",
+  "outer_scoring_authorized": false,
+  "protocol": "prospect-model-challenger-epoch-v1",
+  "raw_guard_fields": [
+    "age",
+    "games_played",
+    "games_started",
+    "innings_pitched",
+    "level",
+    "plate_appearances",
+    "sample_season"
+  ],
+  "registered_context_challengers": {
+    "confirmatory_scoring_authorized": false,
+    "development_density": {
+      "definition_sha256": "c12ba47c777962f1290e9b81395e571e3ef9334f34225a074a1d8495580afab7",
+      "feature_width": {
+        "hitter": 2,
+        "pitcher": 1
+      },
+      "role_rows": {
+        "hitter": 3307,
+        "pitcher": 3449
+      }
+    },
+    "position_value_x": {
+      "definition_sha256": "837f4bdb9009e03ac2d96f1f967b92f1cb05d232d177fc0dbcf35c1c3c1d4c4c",
+      "feature_width": {
+        "hitter": 3
+      },
+      "role_rows": {
+        "hitter": 3307
+      }
+    },
+    "registered_look_spent": false
+  },
+  "schema_version": "1.0.0",
+  "source_policy": {
+    "authorizes_claim": false,
+    "feeds_pitcher_cap": false,
+    "feeds_publication": false,
+    "feeds_rank_or_value": false,
+    "feeds_role_watch": false,
+    "reads_outcomes": false,
+    "research_only": true
+  },
+  "status": "waiting_for_vintage"
+}

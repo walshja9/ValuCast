@@ -1,0 +1,63 @@
+
+================================================================================
+DD vs League Values Comparison Report
+================================================================================
+Player                 Pool      DD Val  LV Raw DD AvgZ DD Prod  Age
+--------------------------------------------------------------------------------
+Paul Skenes            pitcher    143.7    1.74   2.687   106.5   23
+Bobby Witt Jr.         hitter     139.9    1.07   1.323    73.7   25
+Juan Soto              hitter     120.7    1.24   1.260    72.2   27
+Tarik Skubal           pitcher    114.6    1.93   2.941   112.6   29
+Corbin Carroll         hitter     114.2    0.93   0.946    64.7   25
+James Wood             hitter     104.7    0.56   0.368    50.8   23
+Gunnar Henderson       hitter     103.3    0.22  -0.005    41.9   24
+Aaron Judge            hitter     102.1    1.54   1.425    76.2   34
+Julio Rodriguez        hitter     100.8    0.30   0.177    46.3   25
+Vladimir Guerrero Jr.  hitter     100.2    0.93   0.918    64.0   27
+Garrett Crochet        pitcher    100.0    1.06   1.483    77.6   26
+Bryan Woo              pitcher    100.0    1.04   1.586    80.1   26
+Hunter Brown           pitcher     90.6    0.75   1.153    69.4   27
+Jose Ramirez           hitter      85.3    0.86   0.990    65.8   33
+Kyle Tucker            hitter      84.0    0.66   0.592    56.2   29
+Logan Gilbert          pitcher     79.1    0.72   1.210    69.5   29
+Max Fried              pitcher     72.3    0.74   1.285    72.0   32
+Matt Olson             hitter      67.9    0.81   0.531    54.7   32
+Dylan Cease            pitcher     65.7    0.85   1.341    72.6   30
+Bryce Harper           hitter      62.4    0.90   0.799    61.2   33
+Pete Alonso            hitter      58.4    0.28  -0.101    39.6   31
+Rafael Devers          hitter      56.0   -0.07  -0.421    31.9   29
+Mookie Betts           hitter      55.6    0.61   0.440    52.6   33
+Bo Bichette            hitter      52.0   -0.42  -0.689    24.3   28
+Adley Rutschman        hitter      51.9    0.28   0.062    43.3   28
+Tyler Glasnow          pitcher     51.7    0.59   1.085    60.7   32
+Corey Seager           hitter      51.4    0.09  -0.233    34.4   32
+Trea Turner            hitter      51.3   -0.08  -0.190    37.4   32
+Framber Valdez         pitcher     49.4    0.32   0.478    53.0   32
+Ozzie Albies           hitter      49.3    0.36   0.208    47.0   29
+Josh Hader             pitcher     47.3    2.13   1.791    81.2   32
+Jarren Duran           hitter      47.2   -0.35  -0.582    28.0   29
+Zack Wheeler           pitcher     45.6    0.88   1.556    73.6   35
+Devin Williams         pitcher     43.5    1.73   1.180    68.2   31
+Ryan Helsley           pitcher     42.5    1.73   1.282    70.6   31
+Shane Bieber           pitcher     41.2    0.31   0.717    52.6   30
+Chris Sale             pitcher     41.1    1.16   2.011    83.1   37
+Freddie Freeman        hitter      36.8    0.38   0.241    47.8   36
+Mike Trout             hitter      34.5    0.16  -0.119    32.4   34
+Gerrit Cole            pitcher     32.2    0.25   0.592    51.0   35
+Willy Adames           hitter      29.1   -0.56  -0.918    20.0   30
+Sonny Gray             pitcher     27.6    0.48   0.848    60.0   36
+Tommy Edman            hitter      21.2   -0.20  -0.374    23.3   31
+J.P. Crawford          hitter      19.7   -0.21  -0.522    28.3   31
+Marcus Semien          hitter      18.8   -0.27  -0.536    29.1   35
+Salvador Perez         hitter      13.2   -0.24  -0.624    27.0   36
+Emmanuel Clase         pitcher     12.9    0.05   1.395    63.3   28
+Justin Verlander       pitcher      5.1   -0.38  -0.452    29.1   43
+
+================================================================================
+Notes:
+- DD Val: DD's final dynasty value (0-150 scale, includes market calibration)
+- LV Raw: league_values z-score output (no market calibration, no DD-scale conversion)
+- DD AvgZ: DD's weighted average z-score before scale conversion
+- DD Prod: DD's production_score = 42 + (avg_z * 24) * multipliers
+- LV Raw values are NOT on DD's 0-150 scale — they're raw weighted z-scores
+================================================================================

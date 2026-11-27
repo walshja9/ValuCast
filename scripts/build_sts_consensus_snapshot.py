@@ -1,0 +1,177 @@
+"""Build a network-free Scout-the-Statline Formulated-Consensus snapshot.
+
+Inputs (committed, refreshed by re-exporting from STS; either state of the site's
+"Show low-coverage" toggle is fine -- the COVERAGE_FLOOR filter below enforces the
+source definition in code, so an export with the toggle ON cannot silently pull
+thousands of single-sub-model rows into the consensus universe):
+  data/sts/sts_consensus_hitters.csv
+  data/sts/sts_consensus_pitchers.csv
+
+STS publishes hitters and pitchers as separate lists, each with an "Avg Rank"
+(mean rank across its 8 source systems: BaGS, FScore, PG+, Prospect Larceny,
+OOPSY Peak, PARS, Prospect Tilt, LFX). We combine both, sort by Avg Rank, and
+assign a single COMBINED ordinal so it's comparable to the other combined
+prospect boards (pipeline/hkb/FG). Join is name-based (STS carries no mlbam),
+role-disambiguated against the current prospect board.
+
+Output: data/sts/sts_consensus_snapshot.json keyed by mlbam_id (str).
+
+STS ranks are CONSENSUS REFERENCE only -- they feed the "ahead of consensus"
+divergence + display, never the ValuCast score (independence policy).
+
+ponytail: deterministic, stdlib only, no network. Re-run after re-exporting the
+two CSVs. Self-check in __main__ asserts the known-good shape.
+"""
+from __future__ import annotations
+
+import csv
+import json
+import os
+import re
+import sys
+import unicodedata
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts.consensus_join_util import (  # noqa: E402
+    build_candidate_index,
+    normalize_org,
+    parse_age,
+    resolve_mlbam,
+)
+
+HIT_CSV = ROOT / "data" / "sts" / "sts_consensus_hitters.csv"
+PIT_CSV = ROOT / "data" / "sts" / "sts_consensus_pitchers.csv"
+
+# An STS row's "Coverage" = how many of its 8 sub-models rate the player. Rows
+# below 3 are one or two stat models' opinions, not a mini-consensus -- the
+# 6/24 vintage (exported with "Show low-coverage" OFF) had a floor of 3, and
+# the source definition must not drift with an export toggle (the 7/16 export
+# with the toggle ON carried ~4,000 coverage-1/2 tail rows).
+COVERAGE_FLOOR = 3
+RANK_PATH = ROOT / "data" / "models" / "valucast_prospect_rank_v1.json"
+OUT_PATH = ROOT / "data" / "sts" / "sts_consensus_snapshot.json"
+
+
+def _norm(s: str) -> str:
+    s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode()
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9 ]", "", s.lower())).strip()
+
+
+def _float(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _load_csv(path: Path, role: str) -> list[dict]:
+    with path.open(encoding="utf-8-sig") as fh:
+        rows = list(csv.DictReader(fh))
+    for row in rows:
+        row["_role"] = role
+    return rows
+
+
+def _board_name_index() -> dict:
+    """normalized_name -> [candidate identities] for role/org/age-gated joins."""
+    try:
+        board = json.loads(RANK_PATH.read_text(encoding="utf-8")).get("board", [])
+    except Exception:  # noqa: BLE001
+        return {}
+    return build_candidate_index(board, _norm)
+
+
+def build_snapshot() -> dict:
+    def _qualifies(r: dict) -> bool:
+        return (
+            _float(r.get("Avg Rank")) is not None
+            and (_float(r.get("Coverage")) or 0.0) >= COVERAGE_FLOOR
+        )
+
+    rows = [r for r in _load_csv(HIT_CSV, "hitter") if _qualifies(r)] + [
+        r for r in _load_csv(PIT_CSV, "pitcher") if _qualifies(r)
+    ]
+    # Combined ordinal is assigned AFTER the coverage filter so sts_rank stays
+    # contiguous over the qualifying universe (same ranks a toggle-OFF export
+    # would have produced).
+    rows.sort(key=lambda r: _float(r.get("Avg Rank")))  # combined order, best first
+    name_idx = _board_name_index()
+
+    by_mlbam: dict[str, dict] = {}
+    unmatched: list[dict] = []
+    for combined_rank, r in enumerate(rows, 1):
+        name = (r.get("Name") or "").strip()
+        # STS carries Team + Age + role: keep the role gate, then require org equality
+        # AND age +/-1. A row missing team/age falls back to unique-name resolution.
+        mid = resolve_mlbam(
+            name_idx.get(_norm(name), []),
+            ext_org=normalize_org(r.get("Team")),
+            ext_age=parse_age(r.get("Age")),
+            ext_role=r["_role"],
+            require_org=True,
+            require_age=True,
+            require_role=True,
+        )
+        record = {
+            "name": name,
+            "role": r["_role"],
+            "sts_rank": combined_rank,
+            "avg_rank": _float(r.get("Avg Rank")),
+            "coverage": _float(r.get("Coverage")),
+        }
+        if mid:
+            record["mlbam_id"] = mid
+            by_mlbam[mid] = record  # first (best) wins on dup mlbam
+        else:
+            unmatched.append({"name": name, "role": r["_role"], "sts_rank": combined_rank})
+
+    return {
+        "artifact": "sts_formulated_consensus_snapshot",
+        "snapshot_version": "1.0.0",
+        "source": "scout_the_statline_formulated_consensus",
+        "usage": "consensus_reference_for_divergence_display_only",
+        "source_policy": {
+            "feeds_model_score": False,
+            "feeds_public_rank": False,
+            "feeds_buy_score": False,
+            "external_consensus_used_for_divergence_display_only": True,
+        },
+        "coverage_floor": COVERAGE_FLOOR,
+        "counts": {
+            "total_rows": len(rows),
+            "matched_to_mlbam": len(by_mlbam),
+            "unmatched": len(unmatched),
+        },
+        "players_by_mlbam": by_mlbam,
+        "unmatched": unmatched[:200],
+    }
+
+
+def write_snapshot() -> dict:
+    payload = build_snapshot()
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = OUT_PATH.with_suffix(OUT_PATH.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False),
+                   encoding="utf-8")
+    os.replace(tmp, OUT_PATH)
+    return payload["counts"]
+
+
+if __name__ == "__main__":
+    payload = build_snapshot()
+    c = payload["counts"]
+    print("total_rows    :", c["total_rows"])
+    print("matched_mlbam :", c["matched_to_mlbam"])
+    print("unmatched     :", c["unmatched"])
+    top = sorted(payload["players_by_mlbam"].values(), key=lambda r: r["sts_rank"])[:5]
+    for r in top:
+        print(f"  sts#{r['sts_rank']:<3} {r['name']:<20} {r['role']} avg{r['avg_rank']}")
+    assert 2500 <= c["total_rows"] <= 4000, c
+    assert c["matched_to_mlbam"] >= 1800, c
+    if "--write" in sys.argv:
+        print("wrote", OUT_PATH, write_snapshot())
+    else:
+        print("(dry run; pass --write to emit", OUT_PATH.name, ")")

@@ -1,0 +1,436 @@
+name: Daily public data refresh
+
+on:
+  schedule:
+    # GitHub scheduled workflows are best-effort: runs are routinely delayed
+    # 30-60+ min or dropped entirely during congestion (the 10:45 UTC primary
+    # was silently skipped on 2026-06-21), so the primary gets hourly retries.
+    #
+    # Primary refresh: 7:30 AM ET during daylight time (7/2 request — the old
+    # pre-8-AM-share-window constraint retired with the 8 AM briefing). Data
+    # Later slots recover failed or runner-starved attempts. These UTC slots drift
+    # an hour earlier in ET when daylight time ends.
+    # Hourly recovery window: preflight skips after today's atomic commit exists.
+    - cron: "30 11-19 * * *"
+  workflow_dispatch:
+    inputs:
+      approve_valucast_buys:
+        description: "Record explicit human approval for ValuCast-owned /buys promotion"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-public-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  # Fallback crons fire even when the primary already published (that's their
+  # job), but re-running the full ~55-min pipeline for an already-fresh day is
+  # pure noise — it queues behind the concurrency group, reads as "two
+  # refreshes going", and stretches the daily push-freeze window. Scheduled
+  # runs skip in seconds when today's data commit already exists; manual
+  # dispatches always proceed.
+  preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          proceed=true
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # Any commit today carrying the refresh marker counts — checking only
+            # HEAD meant one feature push after the morning refresh made every
+            # fallback cron re-run the full ~55-min pipeline (7/2 audit).
+            today=$(date -u +%F)
+            marker="data: daily public refresh $today"
+            # `|| echo 0` = fail OPEN: this check only skips redundant work, so a
+            # transient gh/API error must default to running the refresh, not
+            # killing the step under bash -e and skipping the day's publish.
+            hits=$(gh api "repos/${{ github.repository }}/commits?sha=master&since=${today}T00:00:00Z&per_page=100"               --jq "[.[].commit.message | select(. == \"$marker\")] | length" || echo 0)
+            if [ "${hits:-0}" -gt 0 ]; then
+              proceed=false
+              echo "Today's refresh already published ($hits marker commit(s)) — fallback skipping."
+            fi
+          fi
+          echo "proceed=$proceed" >> "$GITHUB_OUTPUT"
+
+  refresh:
+    needs: preflight
+    if: needs.preflight.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    # The LLM scouting build alone can run ~25-30 min on a cold cache. A 30-min
+    # job cap let it get cancelled mid-build (no commit, app stuck a day behind),
+    # so give the whole pipeline real headroom.
+    # Dialed back from the 6/30 emergency setting (180) after that setting itself
+    # caused a same-day pileup: every scheduled trigger ran ~1.5-2hrs, so multiple
+    # cron slots queued up behind each other and collided (see commit history for
+    # the day this was 180/970 -- do not go back to those numbers without a real
+    # reason). 90 min was set when the LLM step ran ~25-30 min; by 2026-07-29 the
+    # daily 300-generation scouting pass alone took ~53 min and the full build
+    # 86+ min, so the 12:13 run was cancelled DURING validate, ~2 min short
+    # (run 30450687341). 120 keeps real headroom over the observed ~85-min
+    # baseline while staying far from the 180-min pileup regime above.
+    timeout-minutes: 120
+    # Hoisted to job level so the deploy step's `if` guard can actually read it.
+    # A step-level env is NOT visible to that same step's `if`, which silently
+    # skipped the old deploy step and left the live app a day behind.
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ssh-key: ${{ secrets.REFRESH_DEPLOY_KEY }}
+          fetch-depth: 0  # MUST stay full: load_steamer_ros_from_git (mlb/projection_source_comparison.py) reads ~20d of data/projections/ros.json history; depth 1 broke the 7/9 build
+
+      - name: Sync to latest origin/master
+        # checkout pins the SHA that triggered this run, but a serialized earlier
+        # run (concurrency only serializes execution, not the checkout ref) may have
+        # pushed since. Build on the absolute latest so the post-build push is a
+        # fast-forward and never has to merge generated artifacts across runs.
+        run: |
+          git fetch origin
+          git checkout -B master origin/master
+
+      - name: Capture immutable prior canonical public snapshot
+        run: |
+          prior="$RUNNER_TEMP/valucast-previous-public-dynasty-snapshot.json"
+          git show HEAD:data/public/public_dynasty_snapshot.json > "$prior"
+          chmod a-w "$prior"
+          echo "VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT=$prior" >> "$GITHUB_ENV"
+
+      - name: Pin refresh date
+        # Keep one date across a long run so crossing UTC midnight cannot make
+        # validation disagree with the artifacts built earlier in this job.
+        run: echo "VALUCAST_REFRESH_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Restore plate-discipline event cache
+        id: plate-discipline-cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/pitch_discipline_pitch_cache.json
+            data/prospects/raw/.pitch_discipline_cache_ready
+          key: plate-discipline-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            plate-discipline-v1-${{ runner.os }}-
+
+      # AAA-Statcast pitch cache: SEPARATE key prefix from plate-discipline so an
+      # eviction/recovery of one layer can never disrupt the other. Without this
+      # restore the runner starts cold every morning, refresh_aaa_statcast.py hits
+      # its cold-cache no-op, and the committed artifact silently stales (F4:
+      # served as_of 2026-07-14 for 16 days).
+      - name: Restore AAA-Statcast pitch cache
+        id: aaa-statcast-cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            aaa-statcast-v1-${{ runner.os }}-
+
+      - name: Restore LLM scouting cache
+        id: scouting-llm-cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: data/models/valucast_scouting_llm_cache.json
+          key: scouting-llm-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            scouting-llm-v1-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -e . pytest
+
+      - name: Refresh MLB actuals and Steamer ROS
+        run: python -m scraper.refresh
+
+      - name: Refresh Baseball Savant player-card data
+        run: python scripts/fetch_statcast_percentiles.py
+
+      - name: Refresh affiliated MiLB season stats
+        run: python scripts/refresh_milb_season_stats.py
+
+      - name: Refresh trailing-window MiLB stats (recent form)
+        run: python scripts/refresh_milb_season_stats.py --stats-type byDateRange --window-days 30 --output data/prospects/raw/milb_recent_stats.json
+
+      - name: Refresh prospect current-org cache (trade-lag fix)
+        run: python scripts/refresh_prospect_orgs.py --write
+
+      - name: Build ValuCast canonical prospect input contract
+        run: python scripts/build_valucast_prospect_inputs.py --refresh-service-cache
+
+      - name: Build ValuCast public snapshot gate
+        env:
+          VALUCAST_BUYS_REVIEW_APPROVED: ${{ inputs.approve_valucast_buys && '1' || '0' }}
+          # Scouting V2 shadow writer: generates `report_llm` only when the secret is
+          # present (offline-safe no-op otherwise). Adding the secret = turning it on.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          VALUCAST_SCOUTING_LLM: "1"
+          # 200->970 (6/30 evening) caused every run that day to take 1.5-2hrs, which
+          # piled up multiple scheduled triggers on top of each other (see run history
+          # around 2026-07-01 10:00-13:00 UTC) -- and every one of those runs still
+          # failed on an unrelated governor-gate bug before it could commit, so the
+          # backlog never actually cleared despite the cost. Dialed to 300: clears the
+          # ~963-entry Haiku->Sonnet backlog over a few days without risking another
+          # multi-hour-run pileup. Raise again only with a real reason, not as a default.
+          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "300"
+          # 8->10: small bump so Sonnet's longer reads have a bit more room than the
+          # original Haiku-tuned ceiling, without the 6/30 emergency's full jump to 12.
+          VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"
+        run: python scripts/run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"
+
+      - name: Save plate-discipline event cache
+        if: always()
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/pitch_discipline_pitch_cache.json
+            data/prospects/raw/.pitch_discipline_cache_ready
+          key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}
+
+      - name: Save AAA-Statcast pitch cache
+        if: always()
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}
+
+      - name: Save LLM scouting cache
+        if: always()
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: data/models/valucast_scouting_llm_cache.json
+          key: ${{ steps.scouting-llm-cache.outputs.cache-primary-key }}
+
+      # Rolls the dated peak-projection rank archive (written by the build step above,
+      # which archives today's rank_v1_rank into
+      # data/prediction_archive/valucast_prospect_peak_projection_v1/) into a compact
+      # per-player rank-history artifact for the prospect cards. DISPLAY-ONLY: never a
+      # model/rank/buy input. Must run AFTER the build step so today's archive file
+      # exists; the committed artifact below MUST be in the git-add list or it is
+      # silently discarded.
+      - name: Build prospect rank-history artifact
+        run: python scripts/build_prospect_rank_history.py
+
+      - name: Validate public artifacts
+        run: python scripts/run_daily_public_build.py --only validate
+
+      - name: Commit and publish refreshed data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/actuals/current.json \
+            data/prospects/prospect_model_inputs.json \
+            data/prospects/raw \
+            data/mlb/mlb_track_record_cache.json \
+            data/mlb/mlb_availability_transactions_cache.json \
+            data/mlb/mlb_roster_status_cache.json \
+            data/models/valucast_mlb_availability.json \
+            data/models/valucast_hp_promotion_sanity_report.json \
+            data/models/valucast_playing_time_role_tracker.json \
+            data/models/valucast_mlb_roster_status.json \
+            data/models/valucast_mlb_dynasty_layer.json \
+            data/models/valucast_mlb_dynasty_layer_marcel_shadow.json \
+            data/models/valucast_mlb_projection_source_comparison.json \
+            data/models/valucast_mlb_track_record.json \
+            data/models/valucast_quality_governor.json \
+            data/models/valucast_prospect_movers.json \
+            data/models/valucast_prospect_comps.json \
+            data/models/valucast_pooled_shadow.json \
+            data/models/valucast_call_up_receipts.json \
+            data/models/valucast_gaps_claim_ledger.json \
+            data/models/valucast_prospect_buys.json \
+            data/models/valucast_prospect_buys_monitor.json \
+            data/models/valucast_prospect_buys_review.json \
+            data/models/valucast_prospect_availability.json \
+            data/models/valucast_prospect_model.json \
+            data/prediction_archive/valucast_prospect_model \
+            data/models/valucast_prospect_coverage_audit.json \
+            data/models/valucast_prospect_calibration_report.json \
+            data/models/valucast_prospect_peak_projection_v1.json \
+            data/models/valucast_prospect_rank_history.json \
+            data/models/valucast_prospect_peak_projection_calibration.json \
+            data/models/valucast_prospect_forward_validation.json \
+            data/models/valucast_prospect_model_v0_7.json \
+            data/models/valucast_prospect_outcome_backtest.json \
+            data/models/valucast_prospect_cross_role_shadow.json \
+            data/models/valucast_prospect_shadow_promotion.json \
+            data/models/valucast_front_office_failures.json \
+            data/models/valucast_raw_data_independence_audit.json \
+            data/models/valucast_milb_stat_freshness_audit.json \
+            data/models/valucast_prospect_card_data_audit.json \
+            data/models/valucast_recent_signal_report.json \
+            data/models/valucast_recent_form_signal.json \
+            data/models/valucast_call_up_pulse.json \
+            data/fangraphs/fg_fv_snapshot.json \
+            data/sts/sts_consensus_snapshot.json \
+            data/prospectslive/prospectslive_consensus_snapshot.json \
+            data/hkb/hkb_source.csv \
+            data/hkb/hkb_consensus_snapshot.json \
+            data/models/valucast_ahead_of_consensus.json \
+            data/models/valucast_ahead_of_consensus_scorecard.json \
+            data/models/valucast_consensus_gap.json \
+            data/models/valucast_pipeline_observability.json \
+            data/models/valucast_front_office_report.json \
+            data/models/valucast_scouting_reports.json \
+            data/models/valucast_prospect_dynasty_backtest.json \
+            data/models/valucast_prospect_dynasty_layer.json \
+            data/models/valucast_prospect_forward_shadow.json \
+            data/models/valucast_prospect_universe.json \
+            data/models/valucast_prospect_rank_v1.json \
+            data/models/valucast_universal_prospect_index.json \
+            data/models/valucast_universal_prospect_index_backtest.json \
+            data/models/valucast_universal_prospect_model.json \
+            data/models/valucast_prospect_league_adapters.json \
+            data/prediction_archive/valucast_prospect_league_adapters \
+            data/prediction_archive/valucast_mlb_dynasty_layer \
+            data/prediction_archive/valucast_mlb_dynasty_layer_marcel_shadow \
+            data/prediction_archive/valucast_mlb_projection_source_freeze \
+            data/prediction_archive/valucast_mlb_projection_source_comparison \
+            data/prediction_archive/valucast_actuals_snapshot \
+            data/prediction_archive/valucast_mlb_availability \
+            data/prediction_archive/valucast_mlb_roster_status \
+            data/prediction_archive/valucast_mlb_track_record \
+            data/prediction_archive/valucast_playing_time_role_tracker \
+            data/prediction_archive/valucast_prospect_movers \
+            data/prediction_archive/valucast_call_up_receipts \
+            data/prediction_archive/valucast_gaps_claim_ledger \
+            data/prediction_archive/valucast_prospect_buys \
+            data/prediction_archive/valucast_prospect_dynasty_layer \
+            data/prediction_archive/valucast_prospect_peak_projection_v1 \
+            data/prediction_archive/valucast_prospect_shadow_promotion \
+            data/prediction_archive/valucast_prospect_forward_shadow \
+            data/prediction_archive/valucast_prospect_rank_v1 \
+            data/prediction_archive/valucast_projection_scorecard/ \
+            data/prediction_archive/valucast_universal_prospect_index \
+            data/prediction_archive/valucast_universal_prospect_model \
+            data/projections/current.json \
+            data/projections/metadata.json \
+            data/projections/ros.json \
+            data/public/public_dynasty_snapshot.json \
+            data/statcast/percentiles.json \
+            data/validation/methodology_scorecard.json \
+            projections/runs/valucast_hp_2026_v2/projections.json \
+            projections/runs/valucast_hp_2026_v2/run_manifest.json \
+            projections/runs/valucast_hp_2026_v2/metadata.json \
+            projections/data/identity.json
+          if [ -f data/models/valucast_scouting_llm_cache.json ]; then
+            git add data/models/valucast_scouting_llm_cache.json
+          fi
+          # Forward-ledger scoreboard (plan 030 S3): guarded add — the artifact is
+          # not yet tracked and a failed build aborts the job before this step, so an
+          # unconditional pathspec would fail the whole publish on any run where the
+          # scoreboard build produced nothing. Guard it like the other new artifacts.
+          if [ -f data/models/valucast_forward_scoreboard.json ]; then
+            git add data/models/valucast_forward_scoreboard.json
+          fi
+          # Plate-discipline artifact: guarded add — absent until the first full
+          # backfill lands (and on any cold-cache/no-op morning at HEAD without
+          # it), and an unconditional pathspec would fail the whole publish step.
+          if [ -f data/models/valucast_pitch_discipline.json ]; then
+            git add data/models/valucast_pitch_discipline.json
+          fi
+          # AAA-Statcast feature artifact: same guarded add — absent until the first
+          # backfill lands (the pitch cache is uncommitted, so a cold-cache CI morning
+          # produces no artifact) and an unconditional pathspec would fail the publish.
+          if [ -f data/models/valucast_aaa_statcast_features.json ]; then
+            git add data/models/valucast_aaa_statcast_features.json
+          fi
+          # Season-stamped AAA-Statcast vintage archive: append-only, hash-skipped, so
+          # most nights add nothing. Guarded add — the directory does not exist until the
+          # first vintage lands (cold-cache CI mornings never build the features artifact
+          # to archive), and an unconditional pathspec would fail the whole publish step.
+          if [ -d data/aaa_statcast_archive ]; then
+            git add data/aaa_statcast_archive/
+          fi
+          if [ -d data/milb_observation_archive ]; then
+            git add data/milb_observation_archive/*.json
+          fi
+          git diff --cached --quiet && exit 0
+          git commit -m "data: daily public refresh $VALUCAST_REFRESH_DATE"
+          # We synced to the latest origin/master right after checkout and built on
+          # it, so this push is normally a fast-forward. If something pushed during
+          # the ~25-min build, FAIL LOUD instead of rebase-merging: the old
+          # `rebase -X theirs origin/master` silently dropped this run's freshly
+          # built artifacts. No conflict ever fired (the generated JSON auto-merged
+          # cleanly), so the -X tiebreaker never engaged and the clean 3-way merge
+          # just kept origin's side of every file the racing run had already
+          # written -- publishing an internally inconsistent board (fresh model,
+          # stale rank_v1). A failed job is recoverable and the next synced run
+          # republishes a complete set; a silently corrupt board is not.
+          git push origin master
+
+      - name: Trigger Render deploy
+        # Render's dashboard auto-deploy toggle keeps disabling itself, leaving
+        # the live app on stale data even after a successful refresh. Fire the
+        # service deploy hook directly so publishing never depends on that
+        # toggle. The guard reads the job-level RENDER_DEPLOY_HOOK_URL env (a
+        # step-level env is NOT visible to its own `if`, which silently skipped
+        # this step before). Dormant until that repo secret is set; -f makes a
+        # non-2xx response fail the job instead of silently no-op'ing, and
+        # --retry-all-errors rides out a transient Render 5xx (e.g. a deploy
+        # already in progress) instead of failing the refresh on a blip.
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS --retry 5 --retry-all-errors --retry-delay 10 -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Post-drafts digest (Telegram)
+        # Scans the freshly built + committed artifacts, renders ready-to-paste
+        # drafts, and relays them to Alex so posting is a 2-minute selection task.
+        # Nothing auto-posts. success() default: runs only after the build steps
+        # above succeeded; missing Telegram secrets are handled inside the script
+        # (prints only, exits 0) so CI never fails on an unset secret.
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/build_post_drafts.py --send
+
+  alert-on-missed-day:
+    # Hourly retries mean one failure isn't an outage, so only the day's last
+    # slot alerts. The refresh was down for two weeks in Oct-Nov 2026 with no
+    # signal. Cancelled counts because a job timeout reports as cancelled. An
+    # open issue gets a comment instead of a duplicate.
+    needs: refresh
+    if: >-
+      always() && github.event_name == 'schedule' &&
+      (needs.refresh.result == 'failure' || needs.refresh.result == 'cancelled')
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      issues: write
+    steps:
+      - name: Open or update the missed-refresh issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          hour=$(gh run view "$GITHUB_RUN_ID" --json createdAt --jq '.createdAt[11:13]')
+          if [ "$hour" -lt 19 ]; then
+            echo "Run created at ${hour}:xx UTC; later slots can still publish."
+            exit 0
+          fi
+          title="Daily public data refresh missed"
+          issue=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --body "Failed again: $RUN_URL"
+          else
+            gh issue create --title "$title" --body "Today's last scheduled refresh failed: $RUN_URL" --assignee "$GITHUB_REPOSITORY_OWNER"
+          fi

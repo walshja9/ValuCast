@@ -1,0 +1,319 @@
+{
+  "artifact": "valucast_probability_reliability",
+  "generated_at": "2026-07-16T14:11:58.913156+00:00",
+  "interpretation": "The served score is rank-good but probability-nonlinear: realized outcome is near-flat in the bottom deciles and resolution is concentrated in the top deciles. Reliability, not ranking, is the gap.",
+  "method": {
+    "binning": "equal_count_deciles_by_predicted_outcome_score",
+    "ece": "count_weighted_mean_abs(predicted_mean - realized_mean)",
+    "predicted": "model_prediction (out-of-fold ordinal outcome score)",
+    "realized": "ordinal outcome tier (bust=0, role=0.5, star=1)",
+    "wilson_success": "reached role-or-better (realized tier > 0)",
+    "wilson_z": 1.959963984540054
+  },
+  "policy": {
+    "consensus_or_third_party_ranks_used": false,
+    "feeds_buy_score": false,
+    "feeds_model_score": false,
+    "feeds_public_rank": false
+  },
+  "roles": {
+    "hitter": {
+      "bins": [
+        {
+          "count": 137,
+          "decile": 1,
+          "predicted_mean": 0.0,
+          "predicted_score_max": 0.0,
+          "predicted_score_min": 0.0,
+          "reached_role_or_better_freq": 0.014599,
+          "reached_role_or_better_wilson95": {
+            "high": 0.051663,
+            "low": 0.004013
+          },
+          "realized_mean": 0.007299
+        },
+        {
+          "count": 138,
+          "decile": 2,
+          "predicted_mean": 0.001403,
+          "predicted_score_max": 0.00784,
+          "predicted_score_min": 0.0,
+          "reached_role_or_better_freq": 0.021739,
+          "reached_role_or_better_wilson95": {
+            "high": 0.061963,
+            "low": 0.00742
+          },
+          "realized_mean": 0.01087
+        },
+        {
+          "count": 138,
+          "decile": 3,
+          "predicted_mean": 0.017762,
+          "predicted_score_max": 0.027826,
+          "predicted_score_min": 0.008039,
+          "reached_role_or_better_freq": 0.007246,
+          "reached_role_or_better_wilson95": {
+            "high": 0.039903,
+            "low": 0.00128
+          },
+          "realized_mean": 0.003623
+        },
+        {
+          "count": 138,
+          "decile": 4,
+          "predicted_mean": 0.040408,
+          "predicted_score_max": 0.052955,
+          "predicted_score_min": 0.028062,
+          "reached_role_or_better_freq": 0.07971,
+          "reached_role_or_better_wilson95": {
+            "high": 0.137096,
+            "low": 0.04509
+          },
+          "realized_mean": 0.039855
+        },
+        {
+          "count": 138,
+          "decile": 5,
+          "predicted_mean": 0.065469,
+          "predicted_score_max": 0.077508,
+          "predicted_score_min": 0.05316,
+          "reached_role_or_better_freq": 0.065217,
+          "reached_role_or_better_wilson95": {
+            "high": 0.119298,
+            "low": 0.034687
+          },
+          "realized_mean": 0.032609
+        },
+        {
+          "count": 138,
+          "decile": 6,
+          "predicted_mean": 0.092386,
+          "predicted_score_max": 0.10676,
+          "predicted_score_min": 0.077564,
+          "reached_role_or_better_freq": 0.086957,
+          "reached_role_or_better_wilson95": {
+            "high": 0.145844,
+            "low": 0.050442
+          },
+          "realized_mean": 0.047101
+        },
+        {
+          "count": 138,
+          "decile": 7,
+          "predicted_mean": 0.122276,
+          "predicted_score_max": 0.139016,
+          "predicted_score_min": 0.106773,
+          "reached_role_or_better_freq": 0.195652,
+          "reached_role_or_better_wilson95": {
+            "high": 0.269698,
+            "low": 0.138092
+          },
+          "realized_mean": 0.108696
+        },
+        {
+          "count": 138,
+          "decile": 8,
+          "predicted_mean": 0.15956,
+          "predicted_score_max": 0.181002,
+          "predicted_score_min": 0.139046,
+          "reached_role_or_better_freq": 0.246377,
+          "reached_role_or_better_wilson95": {
+            "high": 0.32449,
+            "low": 0.182001
+          },
+          "realized_mean": 0.144928
+        },
+        {
+          "count": 138,
+          "decile": 9,
+          "predicted_mean": 0.213235,
+          "predicted_score_max": 0.24795,
+          "predicted_score_min": 0.181264,
+          "reached_role_or_better_freq": 0.384058,
+          "reached_role_or_better_wilson95": {
+            "high": 0.467301,
+            "low": 0.307095
+          },
+          "realized_mean": 0.228261
+        },
+        {
+          "count": 138,
+          "decile": 10,
+          "predicted_mean": 0.385261,
+          "predicted_score_max": 0.955595,
+          "predicted_score_min": 0.248458,
+          "reached_role_or_better_freq": 0.65942,
+          "reached_role_or_better_wilson95": {
+            "high": 0.733212,
+            "low": 0.576994
+          },
+          "realized_mean": 0.402174
+        }
+      ],
+      "expected_calibration_error": 0.016982,
+      "n_deciles": 10,
+      "resolution": {
+        "bottom_deciles": 7,
+        "bottom_max_realized_mean": 0.108696,
+        "resolution_concentrated_in_top_deciles": true,
+        "top_deciles": 3,
+        "top_min_realized_mean": 0.144928
+      },
+      "sample_size": 1379
+    },
+    "pitcher": {
+      "bins": [
+        {
+          "count": 152,
+          "decile": 1,
+          "predicted_mean": 0.0,
+          "predicted_score_max": 0.0,
+          "predicted_score_min": 0.0,
+          "reached_role_or_better_freq": 0.072368,
+          "reached_role_or_better_wilson95": {
+            "high": 0.124932,
+            "low": 0.040887
+          },
+          "realized_mean": 0.046053
+        },
+        {
+          "count": 152,
+          "decile": 2,
+          "predicted_mean": 0.0,
+          "predicted_score_max": 0.0,
+          "predicted_score_min": 0.0,
+          "reached_role_or_better_freq": 0.065789,
+          "reached_role_or_better_wilson95": {
+            "high": 0.116861,
+            "low": 0.036125
+          },
+          "realized_mean": 0.039474
+        },
+        {
+          "count": 152,
+          "decile": 3,
+          "predicted_mean": 0.006983,
+          "predicted_score_max": 0.017456,
+          "predicted_score_min": 0.0,
+          "reached_role_or_better_freq": 0.046053,
+          "reached_role_or_better_wilson95": {
+            "high": 0.092,
+            "low": 0.022484
+          },
+          "realized_mean": 0.023026
+        },
+        {
+          "count": 152,
+          "decile": 4,
+          "predicted_mean": 0.027304,
+          "predicted_score_max": 0.038897,
+          "predicted_score_min": 0.017573,
+          "reached_role_or_better_freq": 0.065789,
+          "reached_role_or_better_wilson95": {
+            "high": 0.116861,
+            "low": 0.036125
+          },
+          "realized_mean": 0.032895
+        },
+        {
+          "count": 153,
+          "decile": 5,
+          "predicted_mean": 0.050323,
+          "predicted_score_max": 0.064019,
+          "predicted_score_min": 0.038913,
+          "reached_role_or_better_freq": 0.117647,
+          "reached_role_or_better_wilson95": {
+            "high": 0.178297,
+            "low": 0.075727
+          },
+          "realized_mean": 0.058824
+        },
+        {
+          "count": 152,
+          "decile": 6,
+          "predicted_mean": 0.079071,
+          "predicted_score_max": 0.095934,
+          "predicted_score_min": 0.064471,
+          "reached_role_or_better_freq": 0.105263,
+          "reached_role_or_better_wilson95": {
+            "high": 0.164149,
+            "low": 0.065838
+          },
+          "realized_mean": 0.059211
+        },
+        {
+          "count": 152,
+          "decile": 7,
+          "predicted_mean": 0.114336,
+          "predicted_score_max": 0.131541,
+          "predicted_score_min": 0.095935,
+          "reached_role_or_better_freq": 0.190789,
+          "reached_role_or_better_wilson95": {
+            "high": 0.26057,
+            "low": 0.136252
+          },
+          "realized_mean": 0.105263
+        },
+        {
+          "count": 152,
+          "decile": 8,
+          "predicted_mean": 0.155348,
+          "predicted_score_max": 0.180408,
+          "predicted_score_min": 0.131594,
+          "reached_role_or_better_freq": 0.256579,
+          "reached_role_or_better_wilson95": {
+            "high": 0.331411,
+            "low": 0.193747
+          },
+          "realized_mean": 0.151316
+        },
+        {
+          "count": 152,
+          "decile": 9,
+          "predicted_mean": 0.208406,
+          "predicted_score_max": 0.248244,
+          "predicted_score_min": 0.180553,
+          "reached_role_or_better_freq": 0.289474,
+          "reached_role_or_better_wilson95": {
+            "high": 0.366055,
+            "low": 0.223271
+          },
+          "realized_mean": 0.184211
+        },
+        {
+          "count": 153,
+          "decile": 10,
+          "predicted_mean": 0.366314,
+          "predicted_score_max": 0.793547,
+          "predicted_score_min": 0.248781,
+          "reached_role_or_better_freq": 0.522876,
+          "reached_role_or_better_wilson95": {
+            "high": 0.600486,
+            "low": 0.444145
+          },
+          "realized_mean": 0.326797
+        }
+      ],
+      "expected_calibration_error": 0.021237,
+      "n_deciles": 10,
+      "resolution": {
+        "bottom_deciles": 7,
+        "bottom_max_realized_mean": 0.105263,
+        "resolution_concentrated_in_top_deciles": true,
+        "top_deciles": 3,
+        "top_min_realized_mean": 0.151316
+      },
+      "sample_size": 1522
+    }
+  },
+  "schema_version": "1.0.0",
+  "source": {
+    "artifact": "valucast_outcome_oof_scores",
+    "path": "data/models/valucast_outcome_oof_scores.json",
+    "sha256": "d00dd9177a2f02bad776c7ddfbda987c982e7fe9aceda97e870497b19eed347d"
+  },
+  "status": "research_only",
+  "validation": {
+    "problems": []
+  }
+}

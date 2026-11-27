@@ -1,0 +1,223 @@
+{
+  "ablations": {
+    "per_group_shrink_only": {
+      "evidence": {
+        "bootstrap_sd": 0.002379,
+        "lower_bound": -0.002444,
+        "n_bootstraps": 10000,
+        "point": 0.002619,
+        "seed": 28017
+      },
+      "model_flags": {
+        "PITCHER_PER_GROUP_SHRINK_ENABLED": true
+      },
+      "per_fold_delta_c_pitcher": [
+        {
+          "delta_c_pitcher": 0.001595,
+          "test_cohort": 2018
+        },
+        {
+          "delta_c_pitcher": -0.005923,
+          "test_cohort": 2019
+        },
+        {
+          "delta_c_pitcher": 0.013203,
+          "test_cohort": 2021
+        }
+      ]
+    },
+    "role_split_only": {
+      "evidence": {
+        "bootstrap_sd": 0.003277,
+        "lower_bound": -0.00096,
+        "n_bootstraps": 10000,
+        "point": 0.006013,
+        "seed": 28017
+      },
+      "model_flags": {
+        "PITCHER_OUTCOME_ROLE_SPLIT_ENABLED": true
+      },
+      "per_fold_delta_c_pitcher": [
+        {
+          "delta_c_pitcher": -0.002733,
+          "test_cohort": 2018
+        },
+        {
+          "delta_c_pitcher": 0.003843,
+          "test_cohort": 2019
+        },
+        {
+          "delta_c_pitcher": 0.016887,
+          "test_cohort": 2021
+        }
+      ]
+    }
+  },
+  "bootstrap_lower_bound_z": 2.128045234184983,
+  "challenger_flags": {
+    "PITCHER_OUTCOME_ROLE_SPLIT_ENABLED": true,
+    "PITCHER_PER_GROUP_SHRINK_ENABLED": true
+  },
+  "delta_c_pitcher": {
+    "bootstrap_sd": 0.004062,
+    "lower_bound": -0.001655,
+    "n_bootstraps": 10000,
+    "point": 0.006988,
+    "seed": 28017
+  },
+  "exploratory_seed": 28017,
+  "fold_diagnostics": [
+    {
+      "board_rows": 697,
+      "hitters": 345,
+      "pitchers": 352,
+      "pseudo_universe": 697,
+      "rank_status": "candidate_ready",
+      "score_source_counts": {
+        "prospect_model_v0_6": 697
+      },
+      "scored_and_labeled": 697,
+      "test_cohort": 2018,
+      "train_cohort_max": 2014
+    },
+    {
+      "board_rows": 770,
+      "hitters": 360,
+      "pitchers": 410,
+      "pseudo_universe": 770,
+      "rank_status": "candidate_ready",
+      "score_source_counts": {
+        "prospect_model_v0_6": 770
+      },
+      "scored_and_labeled": 770,
+      "test_cohort": 2019,
+      "train_cohort_max": 2015
+    },
+    {
+      "board_rows": 751,
+      "hitters": 386,
+      "pitchers": 365,
+      "pseudo_universe": 751,
+      "rank_status": "candidate_ready",
+      "score_source_counts": {
+        "prospect_model_v0_6": 751
+      },
+      "scored_and_labeled": 751,
+      "test_cohort": 2021,
+      "train_cohort_max": 2017
+    }
+  ],
+  "fold_years": [
+    2018,
+    2019,
+    2021
+  ],
+  "gate_look_spent": false,
+  "hitter_non_regression": {
+    "board_note": "nonzero is the rank_v1 cross-role pooled-quantile normalization ripple, not the challenger touching hitters",
+    "board_tolerance": 0.005,
+    "delta_c_hitter_board_point": -0.0004324582,
+    "model_level_freeze": {
+      "fold": 2018,
+      "hitter": {
+        "changed": 0,
+        "total": 345
+      },
+      "pitcher": {
+        "changed": 332,
+        "total": 352
+      }
+    }
+  },
+  "kind": "exploratory_replay",
+  "n_bootstraps": 10000,
+  "note": "EXPLORATORY dry-run of the E1 pitcher challenger. NOT the registered look: exploratory seed 28017, E1 model_flags variant, never seed 28013 on the C1 pedigree lever. The orchestrator decides whether to spend the one registered look based on these numbers.",
+  "per_fold_metrics": {
+    "challenger": [
+      {
+        "c_pitcher": 0.826576,
+        "pitcher_sample": 352,
+        "test_cohort": 2018
+      },
+      {
+        "c_pitcher": 0.777037,
+        "pitcher_sample": 410,
+        "test_cohort": 2019
+      },
+      {
+        "c_pitcher": 0.684706,
+        "pitcher_sample": 365,
+        "test_cohort": 2021
+      }
+    ],
+    "incumbent": [
+      {
+        "c_pitcher": 0.826576,
+        "pitcher_sample": 352,
+        "test_cohort": 2018
+      },
+      {
+        "c_pitcher": 0.77778,
+        "pitcher_sample": 410,
+        "test_cohort": 2019
+      },
+      {
+        "c_pitcher": 0.662294,
+        "pitcher_sample": 365,
+        "test_cohort": 2021
+      }
+    ]
+  },
+  "registered_seed_avoided": 28013,
+  "slices": {
+    "aa_pitcher": {
+      "per_fold": [
+        {
+          "c_challenger": 0.8,
+          "c_incumbent": 0.851429,
+          "delta_c": -0.051429,
+          "n": 26
+        },
+        {
+          "c_challenger": 0.755952,
+          "c_incumbent": 0.735119,
+          "delta_c": 0.020833,
+          "n": 27
+        },
+        {
+          "c_challenger": 0.467213,
+          "c_incumbent": 0.431694,
+          "delta_c": 0.035519,
+          "n": 37
+        }
+      ],
+      "point_delta_c": 0.005995,
+      "pooled_n": 90
+    },
+    "age_le_20_pitcher": {
+      "per_fold": [
+        {
+          "c_challenger": 0.76197,
+          "c_incumbent": 0.772914,
+          "delta_c": -0.010944,
+          "n": 54
+        },
+        {
+          "c_challenger": 0.683181,
+          "c_incumbent": 0.692308,
+          "delta_c": -0.009126,
+          "n": 63
+        },
+        {
+          "c_challenger": 0.648699,
+          "c_incumbent": 0.619888,
+          "delta_c": 0.02881,
+          "n": 59
+        }
+      ],
+      "point_delta_c": 0.003033,
+      "pooled_n": 176
+    }
+  },
+  "status": "research_only"
+}

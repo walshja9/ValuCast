@@ -1,0 +1,71 @@
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from projections.export.valucast_hp_run import write_valucast_hp_run
+
+
+def test_in_house_season_context_follows_existing_season_constants(monkeypatch):
+    import scraper.season as season
+    from projections.export.valucast_hp_run import in_house_season_context
+
+    monkeypatch.setattr(season, "TARGET_SEASON", 2027)
+    assert in_house_season_context() == {
+        "in_house_season": 2026,
+        "target_season": 2027,
+        "season_note": "In-house line: 2026 season; not a 2027 comparison.",
+    }
+    monkeypatch.setattr(season, "TARGET_SEASON", 2026)
+    assert in_house_season_context()["season_note"] == "In-house line: 2026 season."
+
+
+def _h(pid):
+    return {"id": f"mlbam_{pid}_H", "name": pid, "pool": "hitter", "positions": [],
+            "stats": {"PA": 600, "HR": 25, "AVG": 0.280}, "metadata": {"mlbam_id": pid}}
+
+
+def _p(pid):
+    return {"id": f"mlbam_{pid}_P", "name": pid, "pool": "starter", "positions": ["SP"],
+            "stats": {"IP": 180, "K": 200, "ERA": 3.50}, "metadata": {"mlbam_id": pid}}
+
+
+class TestValucastHpRun(unittest.TestCase):
+    def test_writes_combined_run_with_manifest(self):
+        with tempfile.TemporaryDirectory() as d:
+            runs = Path(d) / "runs"
+            run_id = write_valucast_hp_run(
+                [_h("1"), _h("2")], [_p("3")], runs, version=1,
+                hitter_meta={"model": "valucast_marcel_statcast", "alpha_contact": 0.75},
+                pitcher_meta={"model": "valucast_pitching_marcel"},
+            )
+            self.assertEqual(run_id, "valucast_hp_2026_v1")
+            rows = json.loads((runs / run_id / "projections.json").read_text())
+            self.assertEqual(len(rows), 3)                       # 2 hitters + 1 pitcher
+            man = json.loads((runs / run_id / "run_manifest.json").read_text())
+            self.assertEqual(man["source_name"], "valucast")
+            self.assertRegex(man["generated_at"], r"^\d{4}-\d{2}-\d{2}T")
+            self.assertEqual(man["hitter_count"], 2)
+            self.assertEqual(man["pitcher_count"], 1)
+            self.assertEqual(man["components"]["hitters"]["alpha_contact"], 0.75)
+            meta = json.loads((runs / run_id / "metadata.json").read_text())
+            self.assertEqual(meta, {"as_of": man["generated_at"]})
+
+    def test_rejects_single_pool(self):
+        with tempfile.TemporaryDirectory() as d:
+            runs = Path(d) / "runs"
+            with self.assertRaises(ValueError):     # no pitchers -> reject
+                write_valucast_hp_run([_h("1")], [], runs, version=1,
+                                      hitter_meta={}, pitcher_meta={})
+            with self.assertRaises(ValueError):     # no hitters -> reject
+                write_valucast_hp_run([], [_p("3")], runs, version=1,
+                                      hitter_meta={}, pitcher_meta={})
+
+    def test_rejects_wrong_pool_rows(self):
+        # Hitter rows passed in the pitcher slot (same-pool malformed run) -> reject,
+        # even though both lists are nonempty.
+        with tempfile.TemporaryDirectory() as d:
+            runs = Path(d) / "runs"
+            with self.assertRaises(ValueError):
+                write_valucast_hp_run([_h("1")], [_h("2")], runs, version=1,
+                                      hitter_meta={}, pitcher_meta={})

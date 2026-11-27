@@ -1,0 +1,212 @@
+{% if request.endpoint == 'rankings' %}{% include "partials/_prospect_notice.html" %}{% endif %}
+{% set v11 = dd_schema_version == '1.1' %}
+{% set _ap = active_preset|default(None) %}
+{% set _league_custom_preset_active = _ap and _ap != '5x5' %}
+{% if mode == 'prospects' and coverage_notice %}
+<div class="notice coverage-notice" role="status">{{ coverage_notice }}</div>
+{% endif %}
+{% if mode == 'prospects' and prospect_gate_notice %}
+<div class="notice prospect-gate-notice" role="status">{{ prospect_gate_notice }}</div>
+{% endif %}
+{% if mode == 'prospects' and custom_cats_active %}
+<p class="profile-note prospect-rerank-caption">Re-ranked for your league's categories ({{ prospect_preset_label }}) from ValuCast's factual prospect projections — within hitters and pitchers separately. Not a dollar value.</p>
+{% endif %}
+{% if mode == 'prospects' and prospect_movers %}
+<div class="movers-strip" aria-label="Biggest prospect movers">
+    <span class="movers-label">Movers</span>
+    {% for m in prospect_movers %}
+    <button type="button" class="mover-chip {{ 'up' if m.change > 0 else 'down' }}" onclick="moverJump('{{ m.id }}')">
+        {{ '▲' if m.change > 0 else '▼' }} {{ m.name }}{% include "partials/_prospect_tag.html" %} <span class="mover-delta">{{ '%+d' | format(m.change) }}</span>
+    </button>
+    {% endfor %}
+</div>
+{% endif %}
+<div class="results-meta">
+    <span>{{ dd_rows | length }} of {{ total_rows | default(dd_rows | length) }} {% if mode == 'prospects' %}prospects{% else %}players{% endif %}{% if total_rows | default(0) > dd_rows | length %} (showing top {{ dd_rows | length }}){% endif %}</span>
+    {# Preset swaps re-rank silently — say so, or "tuned to your league" reads
+       as an unproven claim (7/3 landscape review, Batch 1). #}
+    {% if mode == 'dd_dynasty' and _ap %}<span class="rerank-note">re-ranked for {{ _ap }}</span>{% endif %}
+    {% if mode == 'dd_dynasty' and v11 %}<span id="fit-status" class="fit-status">Dynasty order</span>{% endif %}
+</div>
+
+{# Category Fit and Confidence render only from a v1.1 feed — with a
+   v1.0 feed they'd be a dead column and an always-empty one. #}
+{% set prospect_rerank = mode == 'prospects' and custom_cats_active %}
+{# Debut-filtered views renumber 1..N — a standalone list with P# holes (7, 9,
+   11...) reads broken, and the share graphics already number sequentially. #}
+{% set callups_rerank = mode == 'prospects' and callups %}
+{# Preset-value and Now-$ views re-sort the dynasty rows, so dynasty_rank is
+   non-monotonic down the page — the cutoff divider must follow the DISPLAYED
+   position there or it fires on dozens of arbitrary rows (7/3 review). #}
+{% set dyn_rerank = mode == 'dd_dynasty' and (_ap or (rank_by | default('dynasty')) == 'now') %}
+{# Projected stat columns follow the active category selection — dd_dynasty only;
+   prospects mostly lack MLB projections and carry their own context strip. #}
+{% set show_stats = mode == 'dd_dynasty' and dyn_stats_map is defined and dyn_stats_map %}
+{% set ncols = (((9 if v11 else 7) + (1 if custom_cats_active else 0)) if mode == 'dd_dynasty' else ((8 if v11 else 7) + (1 if prospect_rerank else 0))) + 1 + (dyn_stat_cats | length if show_stats else 0) %}
+{% if dd_rows %}
+<table class="rankings-table dynasty-rankings{{ ' preset-fit-hidden' if preset_value_enabled|default(false) else '' }}">
+    <thead>
+        <tr>
+            <th class="col-rank sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(0)">{% if mode == 'prospects' %}P#{% else %}Dynasty #{% endif %}</button> <a href="/glossary#valucast-rank" title="Current position on the ValuCast board.">?</a></th>
+            <th class="col-name sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(1)">Player</button></th>
+            <th class="col-pos">Pos</th>
+            <th class="col-team sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(3)">Team</button></th>
+            <th class="col-age sortable" aria-sort="none"><button type="button" class="sort-btn" title="Age on the board date. MLB values use age on April 1, {{ target_season if preseason else served_season }}." onclick="sortTable(4)">Age</button></th>
+            <th class="col-value sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(5)">Dynasty Value</button> <a href="/glossary#dynasty-value" title="The format-specific 0-100 fantasy decision score.">?</a></th>
+            {% if mode == 'prospects' %}<th class="col-eta sortable" aria-sort="none" title="Estimated arrival. A year is a per-player ETA when we have one; otherwise a level-based window (everyone at that level shares it), not a per-player forecast."><button type="button" class="sort-btn" onclick="sortTable(6)">ETA</button> <a href="/glossary#eta" title="How the displayed arrival estimate is chosen.">?</a></th>{% endif %}
+            {% if mode == 'dd_dynasty' %}
+            <th class="col-dollar sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable(6)">$</button> <a href="/glossary#auction-value" title="Replacement-adjusted auction value.">?</a></th>
+            {% if custom_cats_active %}<th class="col-now-dollar sortable" aria-sort="none" title="{% if preseason %}The upcoming {{ target_season }} season only{% else %}This season only{% endif %}, in your categories — Steamer"><button type="button" class="sort-btn" onclick="sortTable(7)">Now $</button> <a href="/glossary#auction-value" title="{% if preseason %}Upcoming-season{% else %}Current-season{% endif %} auction value.">?</a></th>{% endif %}
+            {% if v11 %}<th class="col-fit sortable" aria-sort="none"><button type="button" class="sort-btn" onclick="sortTable({{ 8 if custom_cats_active else 7 }})">Category Fit</button> <a href="/glossary#category-fit" title="How the selected categories reorder the visible pool.">?</a></th>{% endif %}
+            {% endif %}
+            {% if v11 %}
+            <th class="col-confidence">Confidence <a href="/glossary#confidence" title="How stable the read is given sample and coverage.">?</a></th>
+            {% endif %}
+            {% if prospect_rerank %}<th class="col-league-rank" title="Your league re-rank — hitters and pitchers ranked separately (H#/P#), not a value or dollar amount">Your League # <a href="/glossary#valucast-rank">?</a></th>{% endif %}
+            {% if show_stats %}{% for cat in dyn_stat_cats %}{% set _cl = (dyn_stat_labels | default({})).get(cat, cat) %}<th class="col-cat" title="Projected {{ _cl }} — full-season line">{{ _cl }}</th>{% endfor %}{% endif %}
+            <th class="col-compare"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% set tier_colors = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#d97706', '#dc2626', '#6b7280', '#9ca3af'] %}
+        {% for row in dd_rows %}
+        {% set computed_tier = tiers.get(row.id, 0) %}
+        {% set display_tier = row.tier if row.tier is not none else computed_tier %}
+        {% set prev_computed_tier = tiers.get(dd_rows[loop.index0 - 1].id, 0) if loop.index0 > 0 else computed_tier %}
+        {% set confidence = row.confidence or {} %}
+        {% set _pr = (preset_rank_by_id|default({})).get(row.id) if _ap else None %}
+        {# When re-ranked the displayed order is the adapter order, so the cutoff
+           divider must follow the displayed position, not the model P#. #}
+        {% set this_rank = loop.index if (prospect_rerank or callups_rerank or dyn_rerank) else (row.prospect_rank if mode == 'prospects' else row.dynasty_rank) %}
+        {% set prev_rank = loop.index0 if (prospect_rerank or callups_rerank or dyn_rerank) else ((dd_rows[loop.index0 - 1].prospect_rank if mode == 'prospects' else dd_rows[loop.index0 - 1].dynasty_rank) if loop.index0 > 0 else 0) %}
+        {% if cutoff_rank and this_rank and prev_rank and prev_rank <= cutoff_rank < this_rank %}
+        <tr class="cutoff-row"><td colspan="{{ ncols }}">&asymp; replacement level in your league ({{ cutoff_rank }} {% if mode == 'prospects' %}prospect slots{% else %}rostered{% endif %})</td></tr>
+        {% endif %}
+        {# App-side z's (stat-space, matched projections) with feed z_scores
+           as the fallback — the producer has never emitted the field. #}
+        {% set z_row = (dyn_z_map or {}).get(row.id) or row.z_scores %}
+        <tr class="player-row {% if computed_tier %}tier-{{ [computed_tier, 5] | min }} {% endif %}{% if computed_tier != prev_computed_tier %}tier-break{% endif %}"
+            data-player-id="{{ row.id }}"
+            data-dynasty-rank="{{ row.dynasty_rank }}"
+            data-original-index="{{ loop.index0 }}"
+            data-z-scores="{{ z_row | tojson | forceescape if z_row else '{}' }}"
+            onclick="toggleDetail('{{ row.id }}', this)">
+            <td class="col-rank">
+                {% if callups_rerank %}
+                    {{ loop.index }}
+                {% elif mode == 'prospects' and row.prospect_rank %}
+                    {{ row.prospect_rank }}
+                {% else %}
+                    {{ _pr or row.dynasty_rank }}
+                {% endif %}
+            </td>
+            <td class="col-name">
+                {% set watch_key = watch_identity_for_row(row) %}
+                <button type="button" class="detail-toggle" aria-expanded="false" aria-label="Show {{ row.name }} details" onclick="event.stopPropagation(); toggleDetail('{{ row.id }}', this.closest('tr'))">▸</button>
+                <strong>{{ row.name }}</strong>{% if row.is_prospect %}{% include "partials/_prospect_tag.html" %}{% endif %}
+                {% if watch_key %}<button type="button" class="watch-toggle" data-watch-key="{{ watch_key }}" data-watch-name="{{ row.name }}" data-metric="watch_player" aria-pressed="false" aria-label="Follow {{ row.name }} in My Players" hidden>☆</button>{% endif %}
+                {% set hold_note = offseason_hold_note(row) %}
+                {% if hold_note %}<span class="no-ros-badge" title="{{ hold_note }}">Injury hold</span>{% endif %}
+                {% if mode == 'prospects' %}
+                <span class="pos-rank">#{{ row.dynasty_rank }} overall</span>
+                {% elif row.is_prospect and row.prospect_rank %}
+                <span class="prospect-rank-badge">P#{{ row.prospect_rank }}</span>
+                {% endif %}
+                {% if mode == 'prospects' and row.why_rank_chips %}
+                <span class="why-rank-chips" aria-label="Why this prospect ranks here">
+                    {% for chip in row.why_rank_chips %}
+                    <span class="sample-risk-badge rank-context {{ chip.kind }}" title="{{ chip.title }}">{{ chip.label }}</span>
+                    {% endfor %}
+                </span>
+                {% endif %}
+                {% set cu = call_up_by_id.get(row.id) if call_up_by_id else None %}
+                {% if cu %}
+                <span class="callup-chip" title="On an MLB active roster ({{ cu.mlb_team or 'MLB' }}) -- stays ranked until he crosses the rookie limits (130 AB / 50 IP), then graduates off the board">Called up{% if cu.mlb_team %} · {{ cu.mlb_team }}{% endif %}</span>
+                {% elif row.active_mlb_callup %}
+                <span class="callup-chip" title="On an MLB active roster but still rookie-eligible -- he stays ranked until he crosses the rookie limits (130 AB / 50 IP), then graduates off the board">In MLB · rookie-eligible</span>
+                {% elif mode == 'prospects' and mlb_debut_by_id and mlb_debut_by_id.get(row.id) %}
+                <span class="callup-chip" title="Already logged MLB time on a prior call-up, since optioned back down -- still rookie-eligible under MLB's service-time rule">MLB taste · {{ mlb_debut_by_id.get(row.id) }}</span>
+                {% endif %}
+                {% set mo = momentum_by_id.get(row.id) if momentum_by_id else None %}
+                {% if mo and mo.momentum_label in ['Heating Up', 'Cooling Off'] %}
+                <span class="momentum-chip {{ 'heating' if mo.momentum_label == 'Heating Up' else 'cooling' }}" title="Recent {{ mo.window_days or 30 }}-day MiLB form vs season line">{{ '▲' if mo.momentum_label == 'Heating Up' else '▼' }} {{ mo.momentum_label }}</span>
+                {% endif %}
+                {% if mode == 'prospects' and row.graduation_context_label %}
+                <span class="sample-risk-badge rank-context graduation" title="{{ row.graduation_context_note or 'Near MLB rookie-limit graduation.' }}">{{ row.graduation_context_label }}</span>
+                {% endif %}
+                {% if mode == 'prospects' and exceptionally_young_for_level(row.age, row.level) %}
+                <span class="sample-risk-badge rank-context positive" title="{{ row.age }} at {{ row.level }} — a full year inside the young-for-level line. Age vs level is one of the most durable prospect signals.">Young for {{ row.level }}</span>
+                {% endif %}
+                {% set badge_tier = (row.tier | int(0)) if row.tier is not none else computed_tier %}
+                {% set badge_tier = badge_tier if badge_tier and badge_tier > 0 else computed_tier %}
+                {% if badge_tier %}
+                <span class="tier-badge" style="background: {{ tier_colors[(badge_tier - 1) % tier_colors|length] if badge_tier else '#6b7280' }}">T{{ badge_tier }}</span>
+                {% endif %}
+                {% if mode == 'prospects' and row.factual_context_stat_items %}
+                <div class="mobile-stat-strip" aria-label="{{ row.name }} ValuCast model context">
+                    {# Tag the strip with the level of the line it prints (its own
+                       factual_current_context.level), so the OPS/ISO can never sit
+                       unlabeled under the Level badge's combined label (e.g. "A+ & A"). #}
+                    {% if row.factual_context_level %}
+                    <span class="mobile-stat">
+                        <span class="mobile-stat-label">Level</span>
+                        <span class="mobile-stat-value">{{ row.factual_context_level }}</span>
+                    </span>
+                    {% endif %}
+                    {# 7/14 declutter: Level + the single headline stat on the
+                       collapsed row — the full stat context lives in the
+                       expandable detail. #}
+                    {% for item in row.factual_context_stat_items[:1] %}
+                    <span class="mobile-stat">
+                        <span class="mobile-stat-label">{{ item.label }}</span>
+                        <span class="mobile-stat-value">{{ item.value }}</span>
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </td>
+            <td class="col-pos">{{ row.positions | join(', ') if row.positions else '—' }}</td>
+            <td class="col-team">{{ row.team or '—' }}</td>
+            <td class="col-age">{{ row.age if row.age is not none else '—' }}</td>
+            {% set _value = row.value_for(_ap) if row.value_for is defined else row.dynasty_value %}
+            {% set _league_tuned = row.value_is_league_tuned(_ap) if row.value_is_league_tuned is defined else true %}
+            <td class="col-value val-pos">{{ "%.1f" | format(_value) }}{% if _league_custom_preset_active and not _league_tuned %}<sup class="val-untuned-mark" aria-label="baseline value">+</sup>{% endif %}</td>
+            {% if mode == 'prospects' %}<td class="col-eta">{{ row.eta_display or '—' }}</td>{% endif %}
+            {% if mode == 'dd_dynasty' %}
+            <td class="col-dollar">{% set d = dynasty_dollars.get(row.id, 0) %}{% if d and d > 0 %}${{ "%.0f" | format(d) }}{% else %}$0{% endif %}</td>
+            {% if custom_cats_active %}<td class="col-now-dollar">{% set nd = now_dollars.get(row.id) %}{% if nd is not none %}${{ "%.0f" | format(nd) }}{% else %}—{% endif %}</td>{% endif %}
+            {% if v11 %}<td class="col-fit"><span class="fit-score">—</span></td>{% endif %}
+            {% endif %}
+            {% if v11 %}
+            <td class="col-confidence">
+                {% if confidence.get('level') %}
+                <span class="confidence-chip confidence-{{ confidence.get('level') }}">{{ confidence.get('level') | replace('_', ' ') | title }}</span>
+                {% endif %}
+            </td>
+            {% endif %}
+            {# Adapter ranks are within-role (hitters 1..H, pitchers 1..P), so a
+               bare interleaved column read 1,1,2,2 — the H/P prefix says which
+               race each ordinal belongs to (7/3 review). #}
+            {% if prospect_rerank %}<td class="col-league-rank">{% set lr = (league_adapter_ranks or {}).get(row.id) %}{% if lr %}{{ 'P' if row.role == 'pitcher' else 'H' }}#{{ lr }}{% else %}—{% endif %}</td>{% endif %}
+            {% if show_stats %}
+            {% set _stats = dyn_stats_map.get(row.id) or {} %}
+            {% for cat in dyn_stat_cats %}
+            {% set _raw = _stats.get(cat) %}
+            <td class="col-cat{{ ' na' if _raw is none else '' }}">{% if _raw is none %}&mdash;{% else %}{{ _raw | format_stat(cat) }}{% endif %}</td>
+            {% endfor %}
+            {% endif %}
+            <td class="col-compare">
+                <button type="button" class="compare-cb" aria-label="Add {{ row.name }} to compare" onclick="event.stopPropagation(); toggleCompare('{{ row.id }}', this)">+</button>
+            </td>
+        </tr>
+        <tr id="detail-{{ row.id }}" class="detail-row" style="display:none;">
+            <td colspan="{{ ncols }}"></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="no-results">
+    <p>No players found. Try adjusting your filters.</p>
+</div>
+{% endif %}

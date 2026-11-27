@@ -1,0 +1,661 @@
+{
+  "artifact": "valucast_quality_governor",
+  "blockers": [
+    "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate."
+  ],
+  "buy_blockers": [],
+  "checks": [
+    {
+      "id": "mlb_top_value_gap",
+      "message": "Top MLB dynasty value is within the maximum spike threshold.",
+      "metrics": {
+        "gap": 1.88,
+        "max_allowed_gap": 18.0,
+        "second": {
+          "mlbam_id": 694192,
+          "name": "Jackson Chourio",
+          "rank": 2,
+          "value": 93.46
+        },
+        "top": {
+          "mlbam_id": 691406,
+          "name": "Junior Caminero",
+          "rank": 1,
+          "value": 95.34
+        }
+      },
+      "status": "passed",
+      "surface": "dynasty"
+    },
+    {
+      "evaluated": false,
+      "id": "mlb_projection_stability_outliers",
+      "message": "Not evaluated: no top-25 MLB row carries a rest-of-season value, so there was nothing to compare.",
+      "metrics": {
+        "adjusted_over_ros_gap_limit": 5.0,
+        "current_over_ros_gap_limit": 10.0,
+        "eligible_count": 23,
+        "evaluated_count": 0,
+        "outlier_count": 0,
+        "ros_stability_weight_limit": 0.69,
+        "samples": [],
+        "top_n": 25
+      },
+      "status": "passed",
+      "surface": "dynasty"
+    },
+    {
+      "id": "mlb_top_board_role_shape",
+      "message": "Top MLB dynasty board role shape is within publication limits.",
+      "metrics": {
+        "max_pitcher_count": 9,
+        "max_reliever_count": 1,
+        "pitcher_count": 6,
+        "pitcher_samples": [
+          {
+            "name": "Jacob Misiorowski",
+            "positions": [
+              "SP"
+            ],
+            "rank": 3,
+            "value": 91.41
+          },
+          {
+            "name": "Paul Skenes",
+            "positions": [
+              "SP"
+            ],
+            "rank": 11,
+            "value": 76.64
+          },
+          {
+            "name": "Cam Schlittler",
+            "positions": [
+              "SP"
+            ],
+            "rank": 14,
+            "value": 71.97
+          },
+          {
+            "name": "Shohei Ohtani",
+            "positions": [
+              "DH",
+              "SP"
+            ],
+            "rank": 16,
+            "value": 71.54
+          },
+          {
+            "name": "Chase Burns",
+            "positions": [
+              "SP"
+            ],
+            "rank": 20,
+            "value": 68.17
+          },
+          {
+            "name": "Tarik Skubal",
+            "positions": [
+              "SP"
+            ],
+            "rank": 24,
+            "value": 66.5
+          }
+        ],
+        "reliever_count": 0,
+        "reliever_samples": [],
+        "top_n": 25
+      },
+      "status": "passed",
+      "surface": "dynasty"
+    },
+    {
+      "id": "prospect_top_board_role_shape",
+      "message": "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate.",
+      "metrics": {
+        "max_top25_pitcher_count": 7,
+        "max_top50_pitcher_rate": 0.3,
+        "pitcher_samples": [
+          {
+            "mlbam_id": 807739,
+            "name": "Kade Anderson",
+            "rank": 2,
+            "role": "pitcher",
+            "score": 67.85
+          },
+          {
+            "mlbam_id": 803285,
+            "name": "Tyler Bremner",
+            "rank": 4,
+            "role": "pitcher",
+            "score": 61.35
+          },
+          {
+            "mlbam_id": 696146,
+            "name": "Hagen Smith",
+            "rank": 5,
+            "role": "pitcher",
+            "score": 59.75
+          },
+          {
+            "mlbam_id": 824604,
+            "name": "Liam Doyle",
+            "rank": 6,
+            "role": "pitcher",
+            "score": 58.81
+          },
+          {
+            "mlbam_id": 701364,
+            "name": "Jamie Arnold",
+            "rank": 9,
+            "role": "pitcher",
+            "score": 56.18
+          },
+          {
+            "mlbam_id": 805906,
+            "name": "Gage Wood",
+            "rank": 13,
+            "role": "pitcher",
+            "score": 53.68
+          },
+          {
+            "mlbam_id": 815825,
+            "name": "Seth Hernandez",
+            "rank": 15,
+            "role": "pitcher",
+            "score": 51.3
+          },
+          {
+            "mlbam_id": 804817,
+            "name": "Kyson Witherspoon",
+            "rank": 17,
+            "role": "pitcher",
+            "score": 50.68
+          },
+          {
+            "mlbam_id": 815549,
+            "name": "Ryan Sloan",
+            "rank": 20,
+            "role": "pitcher",
+            "score": 48.62
+          },
+          {
+            "mlbam_id": 702566,
+            "name": "Owen Murphy",
+            "rank": 22,
+            "role": "pitcher",
+            "score": 47.57
+          }
+        ],
+        "top25_evaluated_count": 25,
+        "top25_n": 25,
+        "top25_pitcher_count": 12,
+        "top25_sample_ready": true,
+        "top50_evaluated_count": 50,
+        "top50_n": 50,
+        "top50_pitcher_count": 20,
+        "top50_pitcher_rate": 0.4,
+        "top50_sample_ready": true
+      },
+      "status": "blocked",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_transition_continuity",
+      "message": "Prospect transition calibration is continuous across the latest vintages.",
+      "metrics": {
+        "baseline_date": "2026-11-23",
+        "bucket_step_threshold": 6.0,
+        "current_date": "2026-11-26",
+        "evaluated_matched_row_count": 3207,
+        "hitter_count": 0,
+        "incident_count": 0,
+        "model_delta_limit": 1.0,
+        "pitcher_count": 0,
+        "sample_ready": true,
+        "samples": []
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "two_way_identity_policy",
+      "message": "Top public rows do not split two-way identities across hitter/pitcher rows.",
+      "metrics": {
+        "rank_limit": 200,
+        "samples": [],
+        "split_identity_count": 0
+      },
+      "status": "passed",
+      "surface": "both"
+    },
+    {
+      "id": "prospect_rank_surface_suppression",
+      "message": "Top Prospect Rank v1 rows are present on the public prospect surface.",
+      "metrics": {
+        "evaluated_count": 50,
+        "graduated_samples": [],
+        "graduated_to_mlb_count": 0,
+        "max_allowed_suppressed_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "suppressed_count": 0,
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_elite_factual_raw_fallback_audit",
+      "message": "Elite factual lower-minors prospects are not stuck on raw fallback scoring.",
+      "metrics": {
+        "audit_present": true,
+        "audit_status": "candidate_ready",
+        "elite_factual_raw_fallback_top_200_count": 0,
+        "max_allowed_elite_factual_raw_fallback_top_200": 0,
+        "samples": []
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_fallback_rate",
+      "message": "Top prospect board fallback-score usage is within the publication threshold.",
+      "metrics": {
+        "evaluated_count": 50,
+        "fallback_count": 0,
+        "fallback_rate": 0.0,
+        "max_allowed_rate": 0.1,
+        "sample_ready": true,
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_pedigree_rate",
+      "message": "Top prospect board pedigree-only usage is within the publication threshold.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_rate": 0.35,
+        "pedigree_count": 0,
+        "pedigree_rate": 0.0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_bucket_shape",
+      "message": "Top prospect board bucket shape is within publication limits.",
+      "metrics": {
+        "evaluated_count": 50,
+        "failures": [],
+        "low_confidence_count": 0,
+        "low_confidence_rate": 0.0,
+        "lower_minors_pedigree_count": 0,
+        "max_low_confidence_rate": 0.38,
+        "max_lower_minors_pedigree_count": 15,
+        "max_thin_upper_level_pitcher_count": 4,
+        "sample_ready": true,
+        "samples": {
+          "low_confidence": [],
+          "lower_minors_pedigree": [],
+          "thin_upper_level_pitchers": []
+        },
+        "thin_upper_level_pitcher_count": 0,
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top25_neutral_investment_rate",
+      "message": "Top prospect board has enough factual draft/signing context.",
+      "metrics": {
+        "evaluated_count": 25,
+        "max_allowed_rate": 0.35,
+        "neutral_investment_count": 0,
+        "neutral_investment_rate": 0.0,
+        "sample_ready": true,
+        "top_n": 25
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top25_pedigree_cap_plateau",
+      "message": "Top prospect board is not dominated by exact pedigree-cap ties.",
+      "metrics": {
+        "evaluated_count": 25,
+        "exact_pedigree_cap_count": 0,
+        "max_allowed_exact_pedigree_cap_count": 3,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 25
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_team_coverage",
+      "message": "Top prospect board has complete MLB-org display coverage.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_missing_team_count": 0,
+        "missing_team_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_factual_context_coverage",
+      "message": "Top prospect board has factual current-sample context.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_missing_factual_context_count": 0,
+        "missing_factual_context_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_factual_context_shape",
+      "message": "Top prospect board factual context shape is within publication limits.",
+      "metrics": {
+        "band_counts": {
+          "balanced": 6,
+          "impact": 4,
+          "mixed": 22,
+          "starter_volume": 18
+        },
+        "best_single_level_covered_count": 0,
+        "best_single_level_samples": [],
+        "caution_bands": [
+          "limited",
+          "low_impact",
+          "thin"
+        ],
+        "caution_factual_context_count": 0,
+        "evaluated_count": 50,
+        "max_allowed_caution_factual_context_count": 8,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_current_stat_context_alignment",
+      "message": "Top prospect board stat lines align with current factual context.",
+      "metrics": {
+        "current_stat_context_mismatch_count": 0,
+        "evaluated_count": 50,
+        "max_allowed_current_stat_context_mismatch_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "milb_stat_freshness_audit",
+      "message": "MiLB prospect-card stat freshness audit is clean.",
+      "metrics": {
+        "audit_present": true,
+        "audit_status": "candidate_ready",
+        "blocker_count": 0,
+        "blockers": [],
+        "current_row_count": 8398,
+        "current_season_row_count": 8303,
+        "max_allowed_blockers": 0,
+        "targeted_row_refresh_count": 0,
+        "top200_history_fallback_count": 3,
+        "top50_history_fallback_count": 0,
+        "top50_stat_context_mismatch_count": 0
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_card_data_audit",
+      "message": "Prospect card identity, level, stat-context, and graduation audit is clean.",
+      "metrics": {
+        "active_mlb_level_count": 0,
+        "audit_present": true,
+        "audit_status": "candidate_ready",
+        "blockers": [],
+        "missing_stat_line_count": 0,
+        "top200_count": 200,
+        "top200_watch_count": 0
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "recent_signal_report",
+      "message": "Recent movement signal is available for cards and scouting reports.",
+      "metrics": {
+        "archive_day_span": 143,
+        "blockers": [],
+        "report_present": true,
+        "report_status": "candidate_ready",
+        "signal_count": 300,
+        "top_mover_count": 25
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_availability_coverage",
+      "message": "Top prospect board has availability/risk components.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_missing_availability_count": 0,
+        "missing_availability_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_availability_level_alignment",
+      "message": "Top prospect board level labels align with availability-selected current levels.",
+      "metrics": {
+        "evaluated_count": 50,
+        "level_mismatch_count": 0,
+        "max_allowed_level_mismatch_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "prospect_top50_availability_risk_pricing",
+      "message": "Top prospect board prices labeled availability risk.",
+      "metrics": {
+        "evaluated_count": 50,
+        "max_allowed_unpriced_availability_risk_count": 0,
+        "priced_availability_risk_count": 0,
+        "sample_ready": true,
+        "samples": [],
+        "top_n": 50,
+        "unpriced_availability_risk_count": 0
+      },
+      "status": "passed",
+      "surface": "prospects"
+    },
+    {
+      "id": "dd_score_source_audit",
+      "message": "no served score/value originates from DD or an external board",
+      "metrics": {
+        "offender_count": 0,
+        "offenders": []
+      },
+      "status": "passed",
+      "surface": "both"
+    },
+    {
+      "id": "buy_top40_public_surface_alignment",
+      "message": "ValuCast Buy rows align with the public prospect surface.",
+      "metrics": {
+        "evaluated_count": 40,
+        "failures": [],
+        "graduated_or_mlb_count": 0,
+        "level_mismatch_count": 0,
+        "max_graduated_or_mlb_count": 0,
+        "max_level_mismatch_count": 0,
+        "max_missing_public_prospect_count": 0,
+        "max_team_mismatch_count": 0,
+        "max_undisclosed_availability_risk_count": 0,
+        "missing_public_prospect_count": 0,
+        "samples": {
+          "graduated_or_mlb": [],
+          "level_mismatch": [],
+          "missing_public_prospect": [],
+          "team_mismatch": [],
+          "undisclosed_availability_risk": []
+        },
+        "team_mismatch_count": 0,
+        "top_n": 40,
+        "undisclosed_availability_risk_count": 0
+      },
+      "status": "passed"
+    },
+    {
+      "id": "buy_promotion_gate",
+      "message": "ValuCast-owned Buy signals pass promotion checks.",
+      "metrics": {
+        "buy_artifact_present": true,
+        "buy_review_present": true,
+        "buy_validation_ready": true,
+        "history_launch_approved": false,
+        "history_limited_count": 0,
+        "history_limited_rate": 0.0,
+        "history_ready": true,
+        "low_confidence_rate": 0.0,
+        "max_history_limited_rate": 0.5,
+        "max_low_confidence_rate": 0.35,
+        "max_pedigree_rate": 0.35,
+        "pedigree_rate": 0.0,
+        "public_board_ready": true,
+        "review_ready": true,
+        "review_status": "candidate_ready",
+        "row_count": 168
+      },
+      "status": "passed"
+    },
+    {
+      "id": "movers_surface_gate",
+      "message": "ValuCast Prospect Movers artifact is ready for public display.",
+      "metrics": {
+        "cooling_count": 1,
+        "generated_at": "2026-11-26T00:00:00+00:00",
+        "movers_artifact_present": true,
+        "policy_ok": true,
+        "rising_count": 0
+      },
+      "status": "passed"
+    }
+  ],
+  "criteria": {
+    "buy_surface_top_n": 40,
+    "max_buy_history_limited_rate": 0.5,
+    "max_buy_top40_graduated_or_mlb_count": 0,
+    "max_buy_top40_level_mismatch_count": 0,
+    "max_buy_top40_low_confidence_rate": 0.35,
+    "max_buy_top40_missing_public_prospect_count": 0,
+    "max_buy_top40_pedigree_rate": 0.35,
+    "max_buy_top40_team_mismatch_count": 0,
+    "max_buy_top40_undisclosed_availability_risk_count": 0,
+    "max_elite_factual_raw_fallback_top_200": 0,
+    "max_milb_stat_freshness_blockers": 0,
+    "max_top25_exact_pedigree_cap_count": 3,
+    "max_top25_mlb_pitcher_count": 9,
+    "max_top25_mlb_reliever_count": 1,
+    "max_top25_neutral_investment_rate": 0.35,
+    "max_top25_prospect_pitcher_count": 7,
+    "max_top50_availability_level_mismatch_count": 0,
+    "max_top50_caution_factual_context_count": 8,
+    "max_top50_current_stat_context_mismatch_count": 0,
+    "max_top50_fallback_rate": 0.1,
+    "max_top50_low_confidence_rate": 0.38,
+    "max_top50_lower_minors_pedigree_count": 15,
+    "max_top50_missing_availability_count": 0,
+    "max_top50_missing_factual_context_count": 0,
+    "max_top50_missing_team_count": 0,
+    "max_top50_pedigree_rate": 0.35,
+    "max_top50_prospect_pitcher_rate": 0.3,
+    "max_top50_suppressed_rank_rows": 0,
+    "max_top50_thin_upper_level_pitcher_count": 4,
+    "max_top50_unpriced_availability_risk_count": 0,
+    "max_top_mlb_adjusted_over_ros_gap": 5.0,
+    "max_top_mlb_current_over_ros_gap": 10.0,
+    "max_top_mlb_ros_stability_weight": 0.69,
+    "max_top_mlb_value_gap": 18.0,
+    "mlb_role_shape_top_n": 25,
+    "mlb_stability_top_n": 25,
+    "two_way_policy_rank_limit": 200
+  },
+  "generated_at": "2026-11-26T03:48:54.031350+00:00",
+  "governor_name": "ValuCast Quality Governor",
+  "governor_version": "0.2.4",
+  "metrics": {
+    "generated_dates": {
+      "buy_review": "2026-11-26",
+      "buy_signals": "2026-11-26",
+      "milb_stat_freshness_audit": "2026-11-26",
+      "mlb_layer": "2026-11-26",
+      "movers": "2026-11-26",
+      "prospect_card_data_audit": "2026-11-26",
+      "prospect_coverage_audit": "2026-11-26",
+      "prospect_rank": "2026-11-26",
+      "public_snapshot": "2026-11-26",
+      "recent_signal_report": "2026-11-26"
+    },
+    "mlb_count": 1070,
+    "prospect_count": 3207,
+    "public_row_count": 4277
+  },
+  "mover_blockers": [],
+  "next_allowed_step": "repair_model_quality_before_public_promotion",
+  "ready_for_buys_promotion": true,
+  "ready_for_movers": true,
+  "ready_for_public_snapshot": false,
+  "source_policy": {
+    "dd_ranks_used_for_model_score": false,
+    "dd_values_used_for_model_score": false,
+    "external_rankings_used_for_model_score": false,
+    "feeds_model_score": false,
+    "kind": "model_output_quality_gate"
+  },
+  "status": "blocked",
+  "surface_blockers": {
+    "buys": [],
+    "dynasty": [],
+    "movers": [],
+    "prospects": [
+      "Pitcher representation exceeds the publication range. Rankings remain visible, but the current evidence cannot justify either a cross-role score adjustment or relaxing the publication gate."
+    ]
+  },
+  "surface_readiness": {
+    "buys": true,
+    "dynasty": true,
+    "movers": true,
+    "prospects": false
+  }
+}

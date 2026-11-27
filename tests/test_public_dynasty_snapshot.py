@@ -1,0 +1,2463 @@
+"""Tests for the ValuCast public dynasty snapshot gate."""
+import json
+from datetime import date, datetime, timedelta, timezone
+from types import SimpleNamespace
+
+import scripts.build_public_dynasty_snapshot as snapshot_builder
+from prospects.rank_v1 import _confidence
+from scripts.build_public_dynasty_snapshot import (
+    COMMON_VALUE_SCALE,
+    GRAD_FLOOR_DECAY_DAYS,
+    GRAD_FLOOR_DISCOUNT,
+    PROSPECT_VALUE_HISTORY_EPOCH_DATE,
+    TWO_WAY_SECONDARY_VALUE_WEIGHT,
+    _apply_graduation_transition_floor,
+    build_snapshot,
+)
+from web.public_snapshot_store import (
+    PublicSnapshotRow,
+    PublicSnapshotStore,
+    validate_public_snapshot_payload,
+)
+
+
+PRESET_IDS = ("5x5", "obp", "6x6", "sv_hld", "7x7", "7x7_ops", "points")
+
+# Prospect value history is floored at the scoring epoch, so this fixture's
+# archive dates must be epoch-relative or every point gets clamped away.
+# _pd(0) == the epoch floor; _pd(-1) sits just below it (floored on purpose).
+_PVH_EPOCH = date.fromisoformat(PROSPECT_VALUE_HISTORY_EPOCH_DATE)
+
+
+def _pd(offset):
+    return (_PVH_EPOCH + timedelta(days=offset)).isoformat()
+
+
+def test_mlb_public_age_uses_snapshot_date_without_changing_model_age():
+    rows = snapshot_builder._mlb_rows(
+        {
+            "players": [
+                {
+                    "id": "vc_mlb_813349_pitcher",
+                    "name": "Connelly Early",
+                    "mlbam_id": 813349,
+                    "role": "pitcher",
+                    "positions": ["SP"],
+                    "age": 23,
+                    "rank": 1,
+                    "value": 50.0,
+                }
+            ]
+        },
+        "2026-07-26T12:00:00+00:00",
+        identities={"813349": {"birth_date": "2002-04-03"}},
+    )
+
+    assert rows[0]["age"] == 24
+    assert rows[0]["context"]["model_age"] == 23
+    assert rows[0]["context"]["public_age_source"] == "identity_birth_date_as_of_snapshot"
+
+
+def test_prospect_public_age_uses_snapshot_date_without_changing_model_age():
+    # Same convention as the MLB rows: a prospect whose birthday has passed
+    # this season must show the current age (the rank feed's season age read
+    # a year low for 8 prospects on 2026-07-27), with the model input age
+    # preserved as context and a fallback when no identity exists.
+    rows = snapshot_builder._prospect_rows(
+        {
+            "board": [
+                {
+                    "mlbam_id": 682634,
+                    "name": "Kevin Alcantara",
+                    "role": "hitter",
+                    "level": "AAA",
+                    "age": 23,
+                    "rank": 1,
+                    "score": 40.0,
+                },
+                {
+                    "mlbam_id": 999999,
+                    "name": "No Identity",
+                    "role": "hitter",
+                    "level": "A",
+                    "age": 19,
+                    "rank": 2,
+                    "score": 30.0,
+                },
+            ]
+        },
+        "2026-07-27T12:00:00+00:00",
+        identities={"682634": {"birth_date": "2002-07-12"}},
+    )
+
+    assert rows[0]["age"] == 24
+    assert rows[0]["context"]["model_age"] == 23
+    assert rows[0]["context"]["public_age_source"] == "identity_birth_date_as_of_snapshot"
+    assert rows[1]["age"] == 19
+    assert rows[1]["context"]["public_age_source"] == "model_season_age_fallback"
+
+
+def test_graduation_floor_lifts_crashed_value_for_fresh_callup():
+    graduated = [
+        {
+            "mlbam_id": "806198",
+            "name": "Cooper Pratt",
+            "prospect_rank": 8,
+            "value": 50.0,  # retained prospect score
+            "context": {"graduation_context": {"ratio": 0.02}},
+        }
+    ]
+    mlb_rows = [{"mlbam_id": "806198", "name": "Cooper Pratt", "value": 3.0}]
+
+    applied = _apply_graduation_transition_floor(mlb_rows, graduated)
+
+    assert applied == 1
+    assert mlb_rows[0]["value"] == round(50.0 * GRAD_FLOOR_DISCOUNT * (1 - 0.02), 2)
+    transition = mlb_rows[0]["graduation_transition"]
+    assert transition["applied"] is True
+    assert transition["raw_mlb_value"] == 3.0
+    assert transition["prospect_value"] == 50.0
+
+
+def test_graduation_floor_is_noop_when_mlb_value_already_exceeds_floor():
+    graduated = [{"mlbam_id": "1", "value": 40.0, "context": {"graduation_context": {"ratio": 0.0}}}]
+    mlb_rows = [{"mlbam_id": "1", "value": 60.0}]  # collision-promoted, already strong
+
+    applied = _apply_graduation_transition_floor(mlb_rows, graduated)
+
+    assert applied == 0
+    assert mlb_rows[0]["value"] == 60.0
+    assert mlb_rows[0]["graduation_transition"]["applied"] is False
+
+
+def test_graduation_floor_keeps_default_preset_value_in_sync():
+    presets = {"5x5": 3.0, "points": 7.0}
+    mlb_rows = [{"mlbam_id": "invented", "value": 3.0, "value_by_preset": presets}]
+    graduated = [{"mlbam_id": "invented", "value": 60.0}]
+
+    assert _apply_graduation_transition_floor(mlb_rows, graduated) == 1
+    row = mlb_rows[0]
+    public_row = PublicSnapshotRow(
+        id="invented", name="Synthetic graduate", player_type="mlb",
+        positions=("SS",), team="TST", age=23, rank=1, value=row["value"],
+        value_scale=COMMON_VALUE_SCALE, value_source="synthetic", confidence="low",
+        updated_at="2026-11-26", mlbam_id="invented", value_by_preset=row["value_by_preset"],
+    )
+
+    assert public_row.value == 45.0
+    assert public_row.value_for("5x5") == public_row.value, (
+        f"selected 5x5 value {public_row.value_for('5x5')} != headline {public_row.value}"
+    )
+    assert public_row.value_for("points") == 7.0
+    assert presets == {"5x5": 3.0, "points": 7.0}
+
+
+def test_graduation_floor_does_not_invent_missing_preset_values():
+    graduated = [{"mlbam_id": "invented", "value": 60.0}]
+    for presets in ({}, {"points": 7.0}):
+        mlb_rows = [{"mlbam_id": "invented", "value": 3.0, "value_by_preset": presets}]
+        assert _apply_graduation_transition_floor(mlb_rows, graduated) == 1
+        assert mlb_rows[0]["value"] == 45.0
+        assert mlb_rows[0]["value_by_preset"] == presets
+        assert "5x5" not in mlb_rows[0]["value_by_preset"]
+
+
+def test_graduation_floor_preserves_preset_values_when_not_applied():
+    presets = {"5x5": 60.0, "points": 7.0}
+    mlb_rows = [{"mlbam_id": "invented", "value": 60.0, "value_by_preset": presets}]
+    assert _apply_graduation_transition_floor(mlb_rows, [{"mlbam_id": "invented", "value": 60.0}]) == 0
+    assert mlb_rows[0]["value"] == 60.0
+    assert mlb_rows[0]["value_by_preset"] == {"5x5": 60.0, "points": 7.0}
+
+
+def test_graduation_floor_fades_as_rookie_eligibility_exhausts():
+    graduated = [{"mlbam_id": "2", "value": 50.0, "context": {"graduation_context": {"ratio": 1.0}}}]
+    mlb_rows = [{"mlbam_id": "2", "value": 3.0}]
+
+    applied = _apply_graduation_transition_floor(mlb_rows, graduated)
+
+    assert applied == 0  # floor = 50 * 0.7 * (1 - 1.0) = 0, never lifts a real MLB value
+    assert mlb_rows[0]["value"] == 3.0
+
+
+def test_graduation_floor_decays_on_calendar_time_when_debut_known():
+    as_of = "2026-06-13T12:00:00+00:00"
+    days = max(1, GRAD_FLOOR_DECAY_DAYS // 3)  # well inside the window for any dial value
+    debut = (date(2026, 6, 13) - timedelta(days=days)).isoformat()
+    # rookie_ratio=1.0 would zero the floor; the debut date must drive it instead.
+    graduated = [{"mlbam_id": "5", "value": 50.0, "context": {"graduation_context": {"ratio": 1.0}}}]
+    mlb_rows = [{"mlbam_id": "5", "value": 3.0}]
+
+    applied = _apply_graduation_transition_floor(
+        mlb_rows, graduated, debut_by_id={"5": debut}, as_of_date=as_of
+    )
+
+    expected = round(50.0 * GRAD_FLOOR_DISCOUNT * (1 - days / GRAD_FLOOR_DECAY_DAYS), 2)
+    assert applied == 1
+    assert mlb_rows[0]["value"] == expected
+    transition = mlb_rows[0]["graduation_transition"]
+    assert transition["decay_basis"] == "days_since_debut"
+    assert transition["days_since_debut"] == days
+    assert transition["mlb_debut_date"] == debut
+
+
+def _rank_payload():
+    return {
+        "status": "candidate_shadow",
+        "rank_version": "0.1.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "candidate_count": 2,
+        "ranked_count": 2,
+        "rank_contract": {
+            "prospect_universe_source": "valucast_prospect_universe",
+        },
+        "validation": {
+            "coverage_rate": 1.0,
+            "duplicate_identity_count": 0,
+            "missing_mlbam_count": 0,
+            "same_day_freshness": True,
+            "ranks_contiguous": True,
+            "top_200_unique_score_count": 182,
+        },
+        "board": [
+            {
+                "mlbam_id": 1,
+                "name": "Model Strong",
+                "role": "hitter",
+                "bats": "L",
+                "throws": "R",
+                "positions": ["SS"],
+                "mlb_team": "BOS",
+                "age": 20,
+                "rank": 1,
+                "score": 55.5,
+                "score_source": "prospect_model_v0_6",
+                "confidence": "medium",
+                "level": "AA",
+                "eta": 2027,
+                "drivers": ["ops +0.10"],
+                "dynasty_signal": {"role_or_better_probability": 0.55},
+                "context_only": {
+                    "has_dd_context": True,
+                    "dd_dynasty_rank": 40,
+                    "dd_dynasty_value": 60.0,
+                    "dd_prospect_rank": 4,
+                    "source_ranks": {"pipeline": 10},
+                    "breakout_label": "rising",
+                    "breakout_rank_change": 5,
+                    "value_history_points": 3,
+                    "stat_line": {"ops": 0.900, "pa": 200},
+                    "combined_season_stat_line": {
+                        "role": "hitter",
+                        "season": 2026,
+                        "level": "AA",
+                        "levels": ["AA", "A+"],
+                        "level_label": "AA+A+",
+                        "sample": 260,
+                        "sample_unit": "PA",
+                        "pa": 260,
+                        "avg": 0.304,
+                        "obp": 0.390,
+                        "slg": 0.540,
+                        "ops": 0.930,
+                        "iso": 0.236,
+                        "babip": 0.350,
+                        "k_pct": 15.0,
+                        "bb_pct": 10.0,
+                        "home_runs": 9,
+                        "stolen_bases": 4,
+                        "walks": 26,
+                        "hits": 70,
+                        "at_bats": 230,
+                        "plate_appearances": 260,
+                    },
+                    "stat_line_source": "valucast_input_contract",
+                    "stat_line_source_kind": "current_season",
+                    "stat_line_level": "AA",
+                    "stat_line_team": "New Hampshire",
+                    "stat_line_sample": 200,
+                    "stat_line_sample_unit": "PA",
+                    "stat_line_sample_season": 2026,
+                    "graduation_context": {
+                        "status": "near_graduation",
+                        "unit": "AB",
+                        "current": 119.0,
+                        "limit": 131.0,
+                        "remaining": 12.0,
+                        "graduated": False,
+                    },
+                    "stat_line_translated": {
+                        "level_label": "AA+A+",
+                        "sample": 260,
+                        "sample_unit": "PA",
+                        "season": 2026,
+                        "stats": {"OPS": 0.760},
+                    },
+                    "mlb_stat_line": {"pa": 12, "ops": 0.700},
+                },
+            },
+            {
+                "mlbam_id": 2,
+                "name": "Fallback Good",
+                "role": "pitcher",
+                "bats": "L",
+                "throws": "L",
+                "positions": ["SP"],
+                "mlb_team": "MIL",
+                "age": 19,
+                "rank": 2,
+                "score": 45.0,
+                "score_source": "universal_fallback",
+                "confidence": "low",
+                "level": "A+",
+                "eta": 2028,
+                "drivers": [],
+                "dynasty_signal": None,
+                "context_only": {
+                    "stat_line": {"era": 3.20, "ip": 45.0},
+                    "stat_line_source": "valucast_input_contract",
+                    "stat_line_source_kind": "current_season",
+                    "stat_line_sample": 45.0,
+                    "stat_line_sample_unit": "IP",
+                    "stat_line_sample_season": 2026,
+                },
+            },
+        ],
+    }
+
+
+def _mlb_payload(mlbam_id=99, role="hitter", value=90.0, rank=1):
+    return {
+        "status": "shadow_only",
+        "layer_version": "0.1.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "validation": {
+            "row_count": 1,
+            "ready_for_live_consumers": False,
+            "blockers": ["MLB layer still shadow-only."],
+        },
+        "players": [
+            {
+                "id": f"vc_mlb_{mlbam_id}_{role}",
+                "player_type": "mlb",
+                "name": "MLB Star",
+                "mlbam_id": mlbam_id,
+                "role": role,
+                "positions": ["SS"] if role == "hitter" else ["SP"],
+                "team": "BOS",
+                "mlb_team": "BOS",
+                "age": None,
+                "rank": rank,
+                "value": value,
+                "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+                "value_source": "valucast_mlb_projection_index_v0_1",
+                "confidence": "medium",
+                "projection_value": 12.3,
+                "components": {"production_score": 90.0},
+                "drivers": ["HR +1.20"],
+                "stat_line": {"stats": {"PA": 650}},
+            }
+        ],
+    }
+
+
+def _ready_mlb_payload():
+    players = []
+    for rank, (mlbam_id, name, value) in enumerate(
+        [
+            (99, "MLB Star", 90.0),
+            (98, "MLB Anchor", 80.0),
+            (97, "MLB Core", 70.0),
+        ],
+        1,
+    ):
+        players.append(
+            {
+                "id": f"vc_mlb_{mlbam_id}_hitter",
+                "player_type": "mlb",
+                "name": name,
+                "mlbam_id": mlbam_id,
+                "role": "hitter",
+                "positions": ["SS"],
+                "team": "BOS",
+                "mlb_team": "BOS",
+                "age": 24,
+                "rank": rank,
+                "value": value,
+                "value_scale": "0_100_valucast_mlb_shadow_dynasty_score",
+                "value_source": "valucast_mlb_dynasty_horizon_v0_2",
+                "confidence": "high",
+                "projection_value": 12.3,
+                "components": {
+                    "dynasty_horizon_value": 11.0,
+                    "horizon_years": [{"season": 2026}, {"season": 2027}, {"season": 2028}],
+                },
+                "drivers": ["HR +1.20"],
+                "stat_line": {"stats": {"PA": 650}},
+            }
+        )
+    return {
+        "status": "shadow_only",
+        "layer_version": "0.2.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "value_contract": {
+            "score_range": [0.0, 100.0],
+            "value_kind": "multi_year_dynasty_horizon",
+            "horizon_years": 3,
+        },
+        "validation": {
+            "row_count": len(players),
+            "ready_for_live_consumers": True,
+            "blockers": [],
+            "missing_mlbam_count": 0,
+            "duplicate_identity_count": 0,
+            "ranks_contiguous": True,
+            "age_coverage_rate": 1.0,
+            "age_coverage_threshold": 0.95,
+            "horizon_year_count": 3,
+        },
+        "players": players,
+    }
+
+
+def _buy_payload():
+    return {
+        "status": "shadow_only",
+        "signal_version": "0.1.0",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "validation": {
+            "row_count": 2,
+            "ready_for_live_consumers": False,
+            "blockers": ["ValuCast buy signals are shadow-only."],
+        },
+        "board": [],
+    }
+
+
+def _peak_payload():
+    return {
+        "artifact": "valucast_prospect_peak_projection_v1",
+        "projection_version": "1.0.0",
+        "status": "candidate_ready",
+        "generated_at": "2026-06-13T12:00:00+00:00",
+        "validation": {
+            "ready_for_card_v2": True,
+            "projection_count": 2,
+            "top200_projection_coverage": 1.0,
+            "min_top200_projection_coverage": 0.9,
+            "duplicate_identity_count": 0,
+            "missing_shape_count": 0,
+            "blockers": [],
+        },
+        "projections": [
+            {
+                "mlbam_id": 1,
+                "name": "Model Strong",
+                "role": "hitter",
+                "rank_v1_rank": 1,
+                "rank_v1_score": 55.5,
+                "peak_score": 61.2,
+                "peak_role": "everyday_regular",
+                "ceiling_band": "everyday_regular",
+                "floor_band": "reserve_floor",
+                "risk_band": "medium",
+                "confidence": "medium",
+                "eta_window": "2027",
+                "shape": [
+                    {"label": "Hit", "grade": 65, "source": "K% / OPS"},
+                    {"label": "Power", "grade": 60, "source": "ISO / OPS"},
+                    {"label": "Approach", "grade": 55, "source": "BB% / BB-K"},
+                    {"label": "Impact", "grade": 60, "source": "OPS / ISO / score"},
+                ],
+                "card_v2": {
+                    "visual_version": "2.0.0",
+                    "current_score": 55.5,
+                    "peak_score": 61.2,
+                    "score_delta": 5.7,
+                    "trajectory": "more_peak_than_current_value",
+                    "role_probabilities": {"regular_or_better": 0.42},
+                    "card_copy": "Ceiling is everyday regular; floor is reserve.",
+                },
+                "summary": "Peak read: everyday regular with medium risk.",
+                "usage": "card_visual_context_not_live_rank_or_value",
+            },
+            {
+                "mlbam_id": 2,
+                "name": "Fallback Good",
+                "role": "pitcher",
+                "rank_v1_rank": 2,
+                "rank_v1_score": 45.0,
+                "peak_score": 48.2,
+                "peak_role": "multi_inning_or_setup_arm",
+                "ceiling_band": "multi_inning_or_setup_arm",
+                "floor_band": "depth_arm_floor",
+                "risk_band": "medium",
+                "confidence": "medium",
+                "eta_window": "2028",
+                "shape": [
+                    {"label": "Miss", "grade": 50, "source": "K/9"},
+                    {"label": "Command", "grade": 50, "source": "BB/9"},
+                    {"label": "Dominance", "grade": 50, "source": "K-BB%"},
+                    {"label": "Run Prevention", "grade": 50, "source": "ERA / WHIP"},
+                ],
+                "card_v2": {
+                    "visual_version": "2.0.0",
+                    "current_score": 45.0,
+                    "peak_score": 48.2,
+                    "score_delta": 3.2,
+                    "trajectory": "current_and_peak_aligned",
+                    "role_probabilities": {"useful_mlb_arm": 0.5},
+                    "card_copy": "Ceiling is multi inning arm; floor is depth arm.",
+                },
+                "summary": "Peak read: multi inning or setup arm with medium risk.",
+                "usage": "card_visual_context_not_live_rank_or_value",
+            },
+        ],
+    }
+
+
+def _write_snapshot(tmp_path, payload):
+    path = tmp_path / "snapshot.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def test_build_snapshot_is_valid_but_not_live_ready():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    problems = validate_public_snapshot_payload(payload)
+
+    assert problems == []
+    assert payload["schema_version"] == "1.1"
+    assert payload["artifact"] == "valucast_public_dynasty_snapshot"
+    assert payload["source_policy"]["dd_values_used"] is False
+    assert payload["source_policy"]["dd_ranks_used"] is False
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 2
+    assert payload["validation"]["row_count"] == 3
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["mlb_dynasty_value_layer_present"] is True
+    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
+    assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
+    assert payload["validation"]["valucast_buy_signal_count"] == 2
+    assert payload["validation"]["valucast_buy_signals_ready"] is False
+    # Plan 036 R3: at build time the verdict is the pending placeholder;
+    # readiness can only arrive by injection of the committed artifact.
+    assert payload["validation"]["quality_governor_ready"] is False
+    assert payload["validation"]["required_fields_complete"] is True
+    assert payload["validation"]["required_field_problem_count"] == 0
+    assert payload["validation"]["surface_readiness"]["buys"] is False
+    assert "shadow-only" in payload["validation"]["blockers"][0]
+
+
+def test_snapshot_overlays_accepted_public_values_after_legacy_selection(monkeypatch):
+    previous_layer = {**_mlb_payload(value=45), "method_id": "a"}
+    previous = build_snapshot(
+        _rank_payload(), mlb_layer=previous_layer,
+        generated_at="2026-06-13T12:00:00+00:00",
+        mlb_value_history_archive_dir=None, prospect_value_history_archive_dir=None,
+    )
+    current_rank = {**_rank_payload(), "generated_at": "2026-06-14T12:00:00+00:00"}
+    current_layer = {**previous_layer, "generated_at": "2026-06-14T12:00:00+00:00"}
+    monkeypatch.setattr(snapshot_builder, "_mlb_value_histories_from_archives", lambda *_: (
+        {"99": [("2026-06-13", 3.0)]}, {"99": [("2026-06-13", 3.0)]},
+        {"dates": ["2026-06-13"], "latest_incompatible_date": None},
+    ))
+    kwargs = dict(mlb_layer=current_layer, generated_at=current_rank["generated_at"],
+                  mlb_value_history_archive_dir=None, prospect_value_history_archive_dir=None)
+    baseline = build_snapshot(current_rank, **kwargs)
+    repaired = build_snapshot(current_rank, previous_public_snapshot_bytes=json.dumps(previous).encode(), **kwargs)
+    row = next(row for row in repaired["players"] if row["mlbam_id"] == 99)
+    assert row["context"]["value_history"] == [("2026-06-13", 45.0), ("2026-06-14", 45.0)]
+    assert row["context"]["chart_value_history"] == row["context"]["value_history"]
+    fields = ("id", "rank", "value", "value_by_preset", "confidence")
+    assert [tuple(row.get(field) for field in fields) for row in repaired["players"]] == [
+        tuple(row.get(field) for field in fields) for row in baseline["players"]]
+
+
+def test_snapshot_preserves_universal_version_without_changing_rows_or_history():
+    def build(rank):
+        return build_snapshot(
+            rank, mlb_layer=_mlb_payload(), buy_signals=_buy_payload(),
+            generated_at="2026-06-13T12:00:00+00:00",
+            mlb_value_history_archive_dir=None,
+            prospect_value_history_archive_dir=None,
+        )
+
+    rank = _rank_payload()
+    rank["board"][0]["value_history"] = [54.0, 55.5]
+    legacy = build(rank)
+    assert legacy["input_artifacts"]["prospect_universal_model_version"] is None
+    rank["input_artifacts"] = {"universal_model_version": "synthetic-component-version"}
+
+    tagged = build(rank)
+
+    assert tagged["input_artifacts"]["prospect_universal_model_version"] == "synthetic-component-version"
+    assert tagged["players"] == legacy["players"]
+    tagged["input_artifacts"].pop("prospect_universal_model_version")
+    legacy["input_artifacts"].pop("prospect_universal_model_version")
+    assert tagged == legacy
+
+
+def test_build_snapshot_certifies_compatibility_without_claiming_calibrated_units():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    # Plan 036 R3: readiness arrives by evaluate-once + inject-apply — the
+    # same path the pipeline takes (fixtures omit the audit artifacts).
+    from quality.valucast_governor import evaluate_quality_governor
+
+    verdict = evaluate_quality_governor(
+        payload, prospect_rank=_rank_payload(), require_audit_inputs=False
+    )
+    payload["quality_governor"] = verdict
+    payload["validation"] = snapshot_builder.apply_quality_governor_validation(
+        payload["validation"], verdict
+    )
+    problems = validate_public_snapshot_payload(payload)
+
+    assert problems == []
+    assert payload["validation"]["ready_for_live_consumers"] is True
+    assert payload["validation"]["ready_for_all_public_surfaces"] is False
+    assert payload["validation"]["cross_universe_value_scale_calibrated"] is False
+    assert payload["validation"]["cross_universe_value_scale_compatibility_certified"] is True
+    assert payload["validation"]["quality_governor_ready"] is True
+    assert payload["validation"]["surface_readiness"] == {
+        "dynasty": True,
+        "prospects": True,
+        "buys": False,
+    }
+    assert payload["validation"]["blockers"] == []
+    assert payload["validation"]["buy_signal_blockers"] == [
+        "ValuCast buy signals are shadow-only.",
+        "ValuCast-owned Buy signals are not approved for public promotion.",
+    ]
+    assert {row["value_scale"] for row in payload["players"]} == {COMMON_VALUE_SCALE}
+    assert {row["status"] for row in payload["players"]} == {"candidate_ready"}
+
+    compatibility = payload["validation"]["cross_universe_calibration"]
+    assert compatibility["method"] == "raw_scale_compatibility_certification_v2"
+    assert compatibility["contract_kind"] == "compatibility_certification"
+    assert compatibility["compatibility_certified"] is True
+    assert compatibility["unit_mapping_applied"] is False
+    assert compatibility["value_units_calibrated"] is False
+    assert compatibility["value_mutation"] == "none"
+    assert compatibility["metrics"]["mlb_rows_at_or_above_top_prospect"] == 3
+    assert compatibility["metrics"]["top_prospect_mlb_equivalent_rank"] == 4
+
+    # Honesty metadata cannot perturb the served board.
+    assert [
+        (row["name"], row["value"], row["rank"])
+        for row in payload["players"]
+    ] == [
+        ("MLB Star", 90.0, 1),
+        ("MLB Anchor", 80.0, 2),
+        ("MLB Core", 70.0, 3),
+        ("Model Strong", 55.5, 4),
+        ("Fallback Good", 45.0, 5),
+    ]
+    for row in payload["players"]:
+        context = row["context"]["cross_universe_calibration"]
+        assert context["display_value"] == row["value"]
+        assert context["display_value_scale"] == COMMON_VALUE_SCALE
+        assert context["unit_mapping_applied"] is False
+        assert context["value_units_calibrated"] is False
+        assert "calibrated_value" not in context
+
+
+def test_build_snapshot_stamps_real_build_time_for_same_day_artifacts(monkeypatch):
+    class FrozenDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 6, 13, 17, 21, 33, tzinfo=timezone.utc)
+
+    monkeypatch.setattr(snapshot_builder, "datetime", FrozenDateTime)
+    rank = _rank_payload()
+    rank["generated_at"] = "2026-06-13T00:00:00+00:00"
+    mlb_layer = _ready_mlb_payload()
+    mlb_layer["generated_at"] = "2026-06-13T00:00:00+00:00"
+    buy_signals = _buy_payload()
+    buy_signals["generated_at"] = "2026-06-13T00:00:00+00:00"
+
+    payload = build_snapshot(rank, mlb_layer=mlb_layer, buy_signals=buy_signals)
+
+    assert payload["generated_at"] == "2026-06-13T17:21:33+00:00"
+    assert payload["validation"]["same_day_freshness"] is True
+    assert payload["validation"]["generated_dates"]["public_snapshot"] == "2026-06-13"
+    assert payload["validation"]["generated_dates"]["prospect_rank_v1"] == "2026-06-13"
+    assert payload["validation"]["generated_dates"]["mlb_dynasty_layer"] == "2026-06-13"
+
+
+def test_snapshot_decouples_dynasty_readiness_when_only_prospect_surface_blocked(
+    monkeypatch,
+    tmp_path,
+):
+    prospect_blocker = "Top prospect board is too pitcher-heavy for public promotion."
+
+    verdict = {
+        "governor_version": "test",
+        "ready_for_public_snapshot": False,
+        "ready_for_buys_promotion": False,
+        "blockers": [prospect_blocker],
+        "buy_blockers": [prospect_blocker],
+        "surface_readiness": {
+            "dynasty": True,
+            "prospects": False,
+            "buys": False,
+        },
+        "surface_blockers": {
+            "dynasty": [],
+            "prospects": [prospect_blocker],
+            "buys": [prospect_blocker],
+        },
+    }
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    # Plan 036 R3: the verdict arrives by injection, never by a second
+    # in-build evaluation.
+    payload["quality_governor"] = verdict
+    payload["validation"] = snapshot_builder.apply_quality_governor_validation(
+        payload["validation"], verdict
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["surface_readiness"]["dynasty"] is True
+    assert payload["validation"]["surface_blockers"]["dynasty"] == []
+    assert payload["validation"]["surface_readiness"]["prospects"] is False
+    assert payload["validation"]["surface_blockers"]["prospects"] == [prospect_blocker]
+
+    import app as app_module
+    from app import _select_dynasty_store
+
+    # Fixture dates are pinned to 2026-06-13; the staleness window is tested
+    # elsewhere (test_app TestBulletproofing) -- neutralize it here so this
+    # test keeps asserting readiness DECOUPLING, not age.
+    monkeypatch.setattr(app_module, "_within_stale_window", lambda *a, **k: True)
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+    selected, source = _select_dynasty_store(store, use_public_snapshot=True)
+
+    assert store.ready_for_live_consumers is False
+    assert store.dynasty_ready is True
+    assert selected is store
+    assert source == "valucast_public_snapshot"
+    top_prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
+    assert top_prospect["rank"] == 4
+    assert top_prospect["context"]["kind"] == "optional_display_context"
+    assert top_prospect["context"]["stat_line_source"] == "valucast_input_contract"
+    assert top_prospect["context"]["stat_line_source_kind"] == "current_season"
+    assert top_prospect["combined_season_stat_line"]["level_label"] == "AA+A+"
+    assert top_prospect["combined_season_stat_line"]["sample"] == 260
+    assert top_prospect["context"]["graduation_context"]["status"] == "near_graduation"
+    compatibility = top_prospect["context"]["cross_universe_calibration"]
+    assert compatibility["raw_value"] == 55.5
+    assert compatibility["display_value"] == 55.5
+    assert (
+        compatibility["display_value_scale"]
+        == COMMON_VALUE_SCALE
+    )
+    assert compatibility["value_units_calibrated"] is False
+
+
+def _ready_verdict(**overrides):
+    verdict = {
+        "governor_version": "test",
+        "ready_for_public_snapshot": True,
+        "ready_for_buys_promotion": True,
+        "ready_for_movers": True,
+        "blockers": [],
+        "buy_blockers": [],
+        "mover_blockers": [],
+        "surface_readiness": {"dynasty": True, "prospects": True, "buys": True},
+        "surface_blockers": {"dynasty": [], "prospects": [], "buys": []},
+    }
+    verdict.update(overrides)
+    return verdict
+
+
+def test_build_snapshot_embeds_pending_placeholder_and_holds_surfaces():
+    # Plan 036 R3: no in-build evaluation. Until injection, every surface is
+    # honestly not-ready with the pending blocker visible.
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["quality_governor"]["status"] == "pending_injection"
+    validation = payload["validation"]
+    assert validation["ready_for_live_consumers"] is False
+    assert validation["surface_readiness"] == {
+        "dynasty": False,
+        "prospects": False,
+        "buys": False,
+    }
+    assert snapshot_builder.PENDING_GOVERNOR_MESSAGE in validation["blockers"]
+    # The governor-independent inputs persist for injection-time recompute.
+    assert "local_blockers" in validation
+    assert "local_surface_blockers" in validation
+    assert "local_buy_blockers" in validation
+    assert isinstance(validation["graduated_prospect_ids"], list)
+
+
+def test_run_quality_governor_forwards_disk_inputs_once(tmp_path, monkeypatch):
+    import quality.valucast_governor as governor_module
+
+    movers = {
+        "generated_at": "2026-08-10T12:00:00+00:00",
+        "source_policy": {"mode": "native_daily_history"},
+        "validation": {"ready_for_live_consumers": True},
+    }
+    recent_signal = {"generated_at": "2026-08-10T12:00:00+00:00", "summary": {}}
+    snapshot = {"players": [], "validation": {}}
+    paths = {}
+    for name, content in (
+        ("snapshot", snapshot),
+        ("rank", {"generated_at": "2026-08-10T12:00:00+00:00", "board": []}),
+        ("movers", movers),
+        ("recent_signal", recent_signal),
+    ):
+        paths[name] = tmp_path / f"{name}.json"
+        paths[name].write_text(json.dumps(content), encoding="utf-8")
+
+    captured = {}
+
+    def fake_evaluate(snapshot_payload, **kwargs):
+        captured.update(kwargs)
+        captured["snapshot"] = snapshot_payload
+        captured["calls"] = captured.get("calls", 0) + 1
+        return _ready_verdict()
+
+    monkeypatch.setattr(governor_module, "evaluate_quality_governor", fake_evaluate)
+
+    artifact_path = tmp_path / "governor.json"
+    governor_module.run_quality_governor(
+        public_snapshot_path=paths["snapshot"],
+        prospect_rank_path=paths["rank"],
+        prospect_coverage_audit_path=tmp_path / "missing_coverage.json",
+        mlb_layer_path=tmp_path / "missing_mlb.json",
+        buy_signals_path=tmp_path / "missing_buys.json",
+        buy_review_path=tmp_path / "missing_review.json",
+        movers_path=paths["movers"],
+        milb_stat_freshness_audit_path=tmp_path / "missing_freshness.json",
+        prospect_card_data_audit_path=tmp_path / "missing_card.json",
+        recent_signal_report_path=paths["recent_signal"],
+        prospect_rank_archive_dir=tmp_path / "archive",
+        artifact_path=artifact_path,
+    )
+
+    assert captured["calls"] == 1
+    assert captured["movers"] == movers
+    assert captured["recent_signal_report"] == recent_signal
+    assert captured["snapshot"] == snapshot
+    assert json.loads(artifact_path.read_text(encoding="utf-8")) == _ready_verdict()
+
+
+def test_inject_quality_governor_is_exact_and_idempotent(tmp_path):
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    snapshot_path = _write_snapshot(tmp_path, payload)
+    verdict = _ready_verdict()
+    governor_path = tmp_path / "governor.json"
+    governor_path.write_text(
+        json.dumps(verdict, indent=2, sort_keys=True), encoding="utf-8"
+    )
+
+    injected = snapshot_builder.inject_quality_governor(snapshot_path, governor_path)
+
+    assert injected["quality_governor"] == verdict
+    assert injected["validation"]["quality_governor"] == verdict
+    assert injected["validation"]["surface_readiness"]["dynasty"] is True
+    assert injected["validation"]["quality_governor_ready"] is True
+
+    again = snapshot_builder.inject_quality_governor(snapshot_path, governor_path)
+    assert again == injected
+
+    from scripts.validate_public_dynasty_snapshot import (
+        governor_consistency_problems,
+    )
+
+    assert governor_consistency_problems(injected, governor_path) == []
+    # A never-injected snapshot fails the refresh-time consistency check.
+    assert governor_consistency_problems(payload, governor_path) == [
+        "quality governor verdict was never injected into the snapshot"
+    ]
+    # A verdict that drifts from the committed artifact fails hash equality.
+    drifted = json.loads(json.dumps(injected))
+    drifted["quality_governor"]["governor_version"] = "tampered"
+    drifted["validation"]["quality_governor"] = drifted["quality_governor"]
+    problems = governor_consistency_problems(drifted, governor_path)
+    assert problems and "hash-match" in problems[0]
+
+
+def test_public_snapshot_preserves_prospect_handedness_for_scouting():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+
+    pitcher_record = next(row for row in payload["players"] if row["name"] == "Fallback Good")
+    assert pitcher_record["bats"] == "L"
+    assert pitcher_record["throws"] == "L"
+
+    pitcher = PublicSnapshotRow.from_snapshot(pitcher_record)
+    assert pitcher.bats == "L"
+    assert pitcher.throws == "L"
+
+
+def test_build_snapshot_adds_mlb_value_history_from_archive(tmp_path):
+    for date_str, value in [
+        ("2026-06-11", 82.0),
+        ("2026-06-12", 85.5),
+        ("2026-06-13", 88.0),
+    ]:
+        (tmp_path / f"{date_str}.json").write_text(
+            json.dumps({"players": [{"mlbam_id": 99, "value": value}]}),
+            encoding="utf-8",
+        )
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+        generated_at="2026-06-13T12:00:00+00:00",
+        mlb_value_history_archive_dir=tmp_path,
+        prospect_value_history_archive_dir=None,
+    )
+
+    mlb = next(row for row in payload["players"] if row["mlbam_id"] == 99)
+    prospect = next(row for row in payload["players"] if row["player_type"] == "prospect")
+
+    assert mlb["context"]["value_history"] == [
+        ("2026-06-11", 82.0),
+        ("2026-06-12", 85.5),
+        ("2026-06-13", 90.0),
+    ]
+    assert mlb["context"]["chart_value_history"] == mlb["context"]["value_history"]
+    assert len(mlb["context"]["value_history"]) <= 30
+    assert "value_history" not in prospect["context"]
+    assert "chart_value_history" not in prospect["context"]
+
+
+def test_build_snapshot_restarts_only_mlb_chart_history_when_method_id_changes(tmp_path):
+    for date_str, value, method_id in [
+        ("2026-06-10", 80.0, "m1"),
+        ("2026-06-11", 85.5, "m2"),
+        ("2026-06-12", 88.0, "m2"),
+    ]:
+        (tmp_path / f"{date_str}.json").write_text(
+            json.dumps({"method_id": method_id, "players": [{"mlbam_id": 99, "value": value}]}),
+            encoding="utf-8",
+        )
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer={**_ready_mlb_payload(), "method_id": "m2"},
+        buy_signals=_buy_payload(),
+        generated_at="2026-06-13T12:00:00+00:00",
+        mlb_value_history_archive_dir=tmp_path,
+        prospect_value_history_archive_dir=None,
+    )
+
+    mlb = next(row for row in payload["players"] if row["mlbam_id"] == 99)
+
+    assert mlb["context"]["value_history"] == [
+        ("2026-06-10", 80.0),
+        ("2026-06-11", 85.5),
+        ("2026-06-12", 88.0),
+        ("2026-06-13", 90.0),
+    ]
+    assert mlb["context"]["chart_value_history"] == [
+        ("2026-06-11", 85.5),
+        ("2026-06-12", 88.0),
+        ("2026-06-13", 90.0),
+    ]
+    assert payload["input_artifacts"]["mlb_dynasty_method_id"] == "m2"
+
+
+def test_build_snapshot_adds_prospect_value_history_from_rank_archive(tmp_path):
+    # _pd(-1) sits just below the epoch floor and must be dropped; _pd(0) is the
+    # floor itself and survives; the current score at generated_at (_pd(2))
+    # overrides that day's archived value.
+    for date_str, score, dd_value in [
+        (_pd(-1), 10.0, 777.0),
+        (_pd(0), 51.25, 888.0),
+        (_pd(2), 52.0, 999.0),
+    ]:
+        (tmp_path / f"{date_str}.json").write_text(
+            json.dumps(
+                {
+                    "board": [
+                        {
+                            "mlbam_id": 1,
+                            "role": "hitter",
+                            "score": score,
+                            "context_only": {"dd_dynasty_value": dd_value},
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+        generated_at=f"{_pd(2)}T12:00:00+00:00",
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=tmp_path,
+    )
+
+    prospect = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+
+    assert prospect["context"]["value_history"] == [
+        (_pd(0), 51.25),
+        (_pd(2), 55.5),
+    ]
+    assert 888.0 not in [value for _, value in prospect["context"]["value_history"]]
+    assert 999.0 not in [value for _, value in prospect["context"]["value_history"]]
+
+
+def test_snapshot_carries_peak_projection_card_context(tmp_path):
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_ready_mlb_payload(),
+        prospect_peak_projection=_peak_payload(),
+        buy_signals=_buy_payload(),
+    )
+    problems = validate_public_snapshot_payload(payload)
+    path = _write_snapshot(tmp_path, payload)
+    store = PublicSnapshotStore(path)
+
+    assert problems == []
+    assert payload["input_artifacts"]["prospect_peak_projection_version"] == "1.0.0"
+    assert payload["input_artifacts"]["prospect_peak_projection_ready"] is True
+    prospect = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+    assert prospect["peak_projection"]["usage"] == "card_visual_context_not_live_rank_or_value"
+    assert prospect["peak_projection"]["peak_score"] == 61.2
+
+    row = store.get_by_id(prospect["id"])
+    assert row is not None
+    assert row.has_peak_projection is True
+    assert row.peak_score_label == "61.2"
+    assert row.peak_role_label == "Everyday Regular"
+    assert row.peak_risk_label == "Medium"
+    assert row.peak_projection_summary == "Projection: everyday regular with medium risk."
+    assert row.peak_projection_card_copy == "Ceiling is everyday regular; floor is reserve."
+    assert len(row.peak_shape_items) == 4
+    assert row.peak_shape_items[0]["label"] == "Hit"
+
+
+def _two_way_preset_rows(hitter_value=90.0, pitcher_value=80.0):
+    return [
+        {
+            "id": "invented_h", "mlbam_id": "invented_two_way",
+            "name": "Invented Two Way", "role": "hitter", "positions": ["DH"],
+            "value": hitter_value, "value_by_preset": {"points": 20.0},
+        },
+        {
+            "id": "invented_p", "mlbam_id": "invented_two_way",
+            "name": "Invented Two Way", "role": "pitcher", "positions": ["SP"],
+            "value": pitcher_value, "value_by_preset": {"points": 60.0},
+        },
+    ]
+
+
+def test_two_way_preset_matches_scalar_merge_for_same_league():
+    for hitter_points, pitcher_points in ((20, 60), (60, 20), (90, 60), (60, 60)):
+        rows = _two_way_preset_rows()
+        for row, points in zip(rows, (hitter_points, pitcher_points)):
+            row["value_by_preset"]["points"] = points
+        merged = snapshot_builder._merge_two_way_mlb_rows(rows)[0]
+        scalar_rows = [{**row, "value": row["value_by_preset"]["points"]} for row in rows]
+        scalar_value = snapshot_builder._merge_two_way_mlb_rows(scalar_rows)[0]["value"]
+        helper_value = snapshot_builder._combined_mlb_history_value([hitter_points, pitcher_points])
+        assert merged["value_by_preset"]["points"] == scalar_value == helper_value
+        assert merged["value_by_preset"]["points"] <= 100.0
+
+
+def test_two_way_preset_is_independent_of_default_primary_role():
+    hitter_primary = snapshot_builder._merge_two_way_mlb_rows(_two_way_preset_rows())[0]
+    pitcher_primary = snapshot_builder._merge_two_way_mlb_rows(_two_way_preset_rows(80, 90))[0]
+    assert hitter_primary["value_by_preset"] == pitcher_primary["value_by_preset"] == {"points": 73.0}
+    assert hitter_primary["context"]["primary_role"] == "hitter"
+    assert pitcher_primary["context"]["primary_role"] == "pitcher"
+    assert hitter_primary["value"] == pitcher_primary["value"] == 100.0
+    assert hitter_primary["value_source"] == "valucast_mlb_two_way_combined_v0_2"
+
+
+def test_two_way_preset_missing_leg_uses_zero_without_default_value():
+    rows = _two_way_preset_rows()
+    rows[0]["value_by_preset"]["points"] = None
+    merged = snapshot_builder._merge_two_way_mlb_rows(rows)[0]
+    assert merged["value_by_preset"] == {"points": 60.0}
+    rows[1]["value_by_preset"] = {}
+    assert snapshot_builder._merge_two_way_mlb_rows(rows)[0]["value_by_preset"] == {"points": 0.0}
+
+
+def test_two_way_preset_keeps_existing_primary_preset_menu():
+    rows = _two_way_preset_rows()
+    rows[0]["value_by_preset"] = {}
+    assert snapshot_builder._merge_two_way_mlb_rows(rows)[0]["value_by_preset"] == {}
+    rows[0]["value_by_preset"] = {"points": 20.0}
+    rows[1]["value_by_preset"] = {"obp": 80.0}
+    assert snapshot_builder._merge_two_way_mlb_rows(rows)[0]["value_by_preset"] == {"points": 20.0}
+
+
+def test_snapshot_merges_two_way_mlb_rows_into_one_public_row():
+    mlb_layer = _ready_mlb_payload()
+    hitter_presets = {
+        "5x5": 60.0,
+        "obp": 61.0,
+        "6x6": 70.0,
+        "sv_hld": 55.0,
+        "7x7": 65.0,
+        "7x7_ops": 66.0,
+        "points": 80.0,
+    }
+    pitcher_presets = {
+        "5x5": 40.0,
+        "obp": 30.0,
+        "6x6": 40.0,
+        "sv_hld": 50.0,
+        "7x7": 45.0,
+        "7x7_ops": 47.0,
+        "points": 50.0,
+    }
+    star_presets = {
+        "5x5": 90.0,
+        "obp": 88.0,
+        "6x6": 91.0,
+        "sv_hld": 87.0,
+        "7x7": 89.0,
+        "7x7_ops": 90.0,
+        "points": 92.0,
+    }
+    mlb_layer["players"] = [
+        {
+            **mlb_layer["players"][0],
+            "id": "vc_mlb_660271_hitter",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "hitter",
+            "positions": ["DH"],
+            "value": 60.0,
+            "value_by_preset": hitter_presets,
+            "rank": 1,
+        },
+        {
+            **mlb_layer["players"][1],
+            "id": "vc_mlb_660271_pitcher",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "pitcher",
+            "positions": ["SP"],
+            "value": 40.0,
+            "value_by_preset": pitcher_presets,
+            "rank": 2,
+        },
+        {
+            **mlb_layer["players"][2],
+            "id": "vc_mlb_99_hitter",
+            "name": "MLB Star",
+            "mlbam_id": 99,
+            "value": 90.0,
+            "value_by_preset": star_presets,
+            "rank": 3,
+        },
+    ]
+    mlb_layer["validation"]["row_count"] = len(mlb_layer["players"])
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=mlb_layer,
+        buy_signals=_buy_payload(),
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=None,
+    )
+
+    ohtani_rows = [
+        row for row in payload["players"] if str(row.get("mlbam_id")) == "660271"
+    ]
+    assert len(ohtani_rows) == 1
+    row = ohtani_rows[0]
+    assert row["id"] == "vc_mlb_660271_two_way"
+    assert row["role"] == "two_way"
+    assert row["positions"] == ["DH", "SP"]
+    assert row["value"] == 86.0
+    assert set(row["value_by_preset"]) == set(PRESET_IDS)
+    assert row["value_by_preset"] == {
+        preset: round(
+            min(
+                100.0,
+                hitter_presets[preset]
+                + TWO_WAY_SECONDARY_VALUE_WEIGHT * pitcher_presets[preset],
+            ),
+            2,
+        )
+        for preset in PRESET_IDS
+    }
+    assert row["context"]["kind"] == "valucast_mlb_two_way_context"
+    assert {item["role"] for item in row["context"]["role_components"]} == {
+        "hitter",
+        "pitcher",
+    }
+    assert all(
+        set(player["value_by_preset"]) == set(PRESET_IDS)
+        for player in payload["players"]
+        if player["player_type"] == "mlb"
+    )
+    assert all(
+        "value_by_preset" not in player or player["value_by_preset"] == {}
+        for player in payload["players"]
+        if player["player_type"] == "prospect"
+    )
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert not any("two-way" in blocker for blocker in payload["validation"]["blockers"])
+
+
+def test_quality_governor_blocks_public_snapshot_promotion():
+    mlb_layer = _ready_mlb_payload()
+    mlb_layer["players"] = [
+        {
+            **mlb_layer["players"][0],
+            "id": "vc_mlb_10_pitcher",
+            "name": "Spike Pitcher",
+            "mlbam_id": 10,
+            "role": "pitcher",
+            "positions": ["SP"],
+            "value": 99.0,
+            "rank": 1,
+        },
+        {
+            **mlb_layer["players"][1],
+            "id": "vc_mlb_11_hitter",
+            "name": "MLB Anchor",
+            "mlbam_id": 11,
+            "value": 77.0,
+            "rank": 2,
+        },
+        {
+            **mlb_layer["players"][2],
+            "id": "vc_mlb_660271_hitter",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "hitter",
+            "positions": ["DH"],
+            "value": 20.0,
+            "rank": 3,
+        },
+        {
+            **mlb_layer["players"][2],
+            "id": "vc_mlb_660271_pitcher",
+            "name": "Shohei Ohtani",
+            "mlbam_id": 660271,
+            "role": "pitcher",
+            "positions": ["SP"],
+            "value": 10.0,
+            "rank": 4,
+        },
+    ]
+    mlb_layer["validation"]["row_count"] = len(mlb_layer["players"])
+
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=mlb_layer,
+        buy_signals=_buy_payload(),
+        mlb_value_history_archive_dir=None,
+        prospect_value_history_archive_dir=None,
+    )
+    # Plan 036 R3: evaluate once on the built snapshot, then inject-apply —
+    # the same path the pipeline takes.
+    from quality.valucast_governor import evaluate_quality_governor
+
+    verdict = evaluate_quality_governor(
+        payload, prospect_rank=_rank_payload(), require_audit_inputs=False
+    )
+    payload["quality_governor"] = verdict
+    payload["validation"] = snapshot_builder.apply_quality_governor_validation(
+        payload["validation"], verdict
+    )
+
+    assert payload["validation"]["ready_for_live_consumers"] is False
+    assert payload["validation"]["quality_governor_ready"] is False
+    assert "Top MLB dynasty value is too far above the second row for public promotion." in payload["validation"]["blockers"]
+    assert "Top public rows split two-way identities without a combined-value policy." not in payload["validation"]["blockers"]
+
+
+def test_public_snapshot_store_loads_valid_shadow_snapshot(tmp_path):
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+        actuals=[
+            {"metadata": {"mlbam_id": "1"}, "pool": "hitter",
+             "stats": {"PA": 12, "OPS": 0.700}},
+        ],
+    )
+    path = _write_snapshot(tmp_path, payload)
+
+    store = PublicSnapshotStore(path)
+
+    assert store.is_available is True
+    assert store.ready_for_live_consumers is False
+    assert store.dynasty_ready is False
+    assert store.surface_readiness == payload["validation"]["surface_readiness"]
+    assert store.surface_blockers == payload["validation"]["surface_blockers"]
+    assert store.generated_at == payload["generated_at"]
+    assert len(store.get_all()) == 3
+    row = store.get_by_id("vc_prospect_1_hitter")
+    assert row is not None
+    assert row.dynasty_rank == 2
+    assert row.dynasty_value == 55.5
+    assert row.confidence == {"level": "medium"}
+    assert row.tier is None
+    assert row.z_scores is None
+    assert row.source_divergence is None
+    assert row.prospect_rank == 1
+    assert not hasattr(row, "breakout_label")
+    # A single external board ({"pipeline": 10}) is not a consensus (MIN_BOARDS floor).
+    assert row.public_source_ranks == {"pipeline": 10}
+    assert row.public_source_consensus is None
+    assert row.stat_line == {"ops": 0.900, "pa": 200}
+    assert row.stat_line_translated == {
+        "level_label": "AA+A+",
+        "sample": 260,
+        "sample_unit": "PA",
+        "season": 2026,
+        "stats": {"OPS": 0.760},
+    }
+    assert row.mlb_stat_line == {"pa": 12, "ops": 0.700}
+
+
+def test_public_snapshot_row_uses_preset_value_with_default_fallback():
+    record = {
+        "id": "vc_mlb_99_hitter",
+        "player_type": "mlb",
+        "name": "MLB Star",
+        "mlbam_id": 99,
+        "role": "hitter",
+        "positions": ["SS"],
+        "team": "BOS",
+        "age": 24,
+        "rank": 1,
+        "value": 90.0,
+        "value_by_preset": {"sv_hld": 83.5},
+        "value_scale": "0_100_valucast_dynasty_score",
+        "value_source": "valucast_mlb_dynasty_horizon_v0_2",
+        "confidence": "high",
+        "updated_at": "2026-06-13T12:00:00+00:00",
+    }
+
+    row = PublicSnapshotRow.from_snapshot(record)
+    empty_preset_row = PublicSnapshotRow.from_snapshot(
+        {**record, "id": "vc_mlb_98_hitter", "value_by_preset": {}}
+    )
+
+    assert row.value_for("sv_hld") == 83.5
+    assert row.value_for(None) == row.value
+    assert row.value_for("unknown") == row.value
+    assert empty_preset_row.value_for("sv_hld") == empty_preset_row.value
+    assert row.value_is_league_tuned("sv_hld") is True
+    assert empty_preset_row.value_is_league_tuned("sv_hld") is False
+    assert row.value_is_league_tuned(None) is False
+
+
+def test_public_snapshot_rows_expose_prospect_sample_context(tmp_path):
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["components"] = {
+        "availability_adjusted": True,
+        "availability_risk_discount": 0.06,
+        "availability": {
+            "status": "thin_current_sample",
+            "risk_level": "medium",
+            "note": "Thin sample.",
+            "sample": 260,
+            "sample_unit": "PA",
+        },
+        "bucket_calibration": {
+            "bucket": "lower_minors_pedigree_score_source",
+            "adjustment": -1.0,
+            "reason": "Lower-minors pedigree-only profile.",
+        },
+        "factual_current_context": {
+            "version": "0.1.0",
+            "role": "hitter",
+            "level": "AA",
+            "sample": 224,
+            "sample_unit": "PA",
+            "skill_band": "impact",
+            "ops": 0.976,
+            "iso": 0.261,
+            "k_pct": 12.9,
+            "bb_pct": 9.8,
+            "bb_minus_k_pct": -3.1,
+        },
+        "uncertainty": {
+            "version": "0.1.0",
+            "kind": "display_only_score_interval",
+            "band": "moderate",
+            "lower": 48.0,
+            "upper": 62.0,
+            "score_effect": "none",
+            "drivers": {
+                "score_source": "prospect_model_v0_6",
+                "confidence": "medium",
+                "sample_reliability": 63.0,
+                "skill_band": "impact",
+                "availability_risk_discount": 0.06,
+            },
+        },
+    }
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    path = _write_snapshot(tmp_path, payload)
+
+    store = PublicSnapshotStore(path)
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.prospect_components["availability_adjusted"] is True
+    assert row.availability_adjusted is True
+    assert row.availability_risk_discount == 0.06
+    assert row.availability_status_label == "Thin Current Sample"
+    assert row.availability_sample_label == "260 PA"
+    assert row.stat_line_sample_label == "200 PA"
+    assert row.current_level_sample_label == "Combined 2026 line - AA+A+ - 260 PA"
+    assert row.current_level_sample_badge == "AA 200 PA"
+    assert row.has_split_level_sample is True
+    assert row.season_total_sample_label == "Combined 2026 line - AA+A+ - 260 PA"
+    assert row.season_total_sample_badge == "2026 total 260 PA"
+    assert row.sample_context_label == "Combined 2026 line - AA+A+ - 260 PA"
+    assert row.availability_note == "Thin sample."
+    assert row.bucket_calibration_adjusted is True
+    assert row.bucket_calibration_label == "Lower-minors context"
+    assert row.factual_skill_label == "Impact bat"
+    assert row.factual_context_note == (
+        "Impact bat from the current 224 PA factual sample."
+    )
+    assert row.factual_context_stat_items == (
+        {"label": "Sample", "value": "224 PA"},
+        {"label": "OPS", "value": "0.976"},
+        {"label": "ISO", "value": "0.261"},
+        {"label": "BB-K", "value": "-3.1%"},
+    )
+    assert row.uncertainty_label == "Moderate band: 48.0-62.0"
+    assert row.uncertainty_note is not None
+    assert row.uncertainty_driver_items[0]["label"] == "Source"
+    assert row.why_rank_chips == (
+        {
+            "label": "Impact bat",
+            "kind": "positive",
+            "title": "Impact bat from the current 224 PA factual sample.",
+        },
+        {
+            "label": "Sample adjusted",
+            "kind": "caution",
+            "title": "Availability or sample risk is priced into the score.",
+        },
+        {
+            "label": "Bucket calibrated",
+            "kind": "neutral",
+            "title": "Lower-minors pedigree-only profile.",
+        },
+    )
+
+
+def test_thin_sample_chip_never_co_occurs_with_high_confidence():
+    """Plan 010 gap (a): a rendered board row must never show the "Thin sample"
+    why-rank chip beside a "high" confidence chip. Both chips derive from the SAME
+    factual_current_context.skill_band, so when that band is "thin", _confidence
+    (the source of the row's confidence field) must cap at "medium" and the
+    surfaces can't contradict each other on one line."""
+    thin_context = {
+        "version": "0.1.0",
+        "role": "hitter",
+        "level": "AA",
+        "sample": 19,
+        "sample_unit": "PA",
+        "skill_band": "thin",
+        "ops": 0.700,
+    }
+    # The confidence carried on the snapshot row is produced by _confidence for a
+    # model-strong profile; even fully gated, a thin current sample caps it.
+    confidence = _confidence(
+        "prospect_model_v0_6",
+        {"role_gate": "active", "impact_gate": "active"},
+        90.0,
+        thin_context,
+    )
+    assert confidence == "medium"
+
+    row = PublicSnapshotRow.from_snapshot(
+        {
+            "id": "vc_prospect_28_hitter",
+            "name": "Thin Sample Prospect",
+            "player_type": "prospect",
+            "positions": ["SS"],
+            "team": "BOS",
+            "age": 19,
+            "rank": 28,
+            "value": 40.0,
+            "value_scale": "0_100_valucast_dynasty_score",
+            "value_source": "prospect_model_v0_6",
+            "confidence": confidence,
+            "updated_at": "2026-06-13T12:00:00+00:00",
+            "mlbam_id": "28",
+            "role": "hitter",
+            "prospect_rank": 28,
+            "level": "AA",
+            "score_source": "prospect_model_v0_6",
+            "components": {"factual_current_context": thin_context},
+        }
+    )
+
+    chip_labels = {chip["label"] for chip in row.why_rank_chips}
+    assert "Thin sample" in chip_labels
+    # The invariant: the two surfaces derived from the shared thin band can't
+    # contradict — no "high" confidence sits beside the "Thin sample" chip.
+    assert (row.confidence or {}).get("level") != "high"
+
+
+def test_split_level_sample_ignores_rounding_noise(tmp_path):
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    prospect = next(row for row in payload["players"] if row["id"] == "vc_prospect_1_hitter")
+    prospect["context"]["stat_line_sample"] = 200.0
+    prospect["context"]["stat_line_sample_unit"] = "PA"
+    prospect["stat_line_translated"] = {
+        "level_label": "AA",
+        "sample": 200.2,
+        "sample_unit": "PA",
+        "season": 2026,
+        "stats": {"OPS": 0.760},
+    }
+    prospect["combined_season_stat_line"] = {
+        "role": "hitter",
+        "season": 2026,
+        "level": "AA",
+        "levels": ["AA"],
+        "level_label": "AA",
+        "sample": 200.2,
+        "sample_unit": "PA",
+        "pa": 200.2,
+        "avg": 0.300,
+        "obp": 0.380,
+        "slg": 0.500,
+        "ops": 0.880,
+        "iso": 0.200,
+        "babip": 0.330,
+        "k_pct": 18.0,
+        "bb_pct": 10.0,
+    }
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.has_split_level_sample is False
+    assert row.season_total_sample_label == "Combined 2026 line - AA - 200.2 PA"
+    assert row.sample_context_label == "Combined 2026 line - AA - 200.2 PA"
+
+
+def _cross_season_split_row(current_season, total_season):
+    return PublicSnapshotRow.from_snapshot(
+        {
+            "id": "vc_prospect_111_hitter",
+            "name": "Aidan Miller",
+            "player_type": "prospect",
+            "positions": ["SS"],
+            "team": "PHI",
+            "age": 21,
+            "rank": 5,
+            "value": 55.0,
+            "value_scale": "x",
+            "value_source": "prospect_model_v0_6",
+            "confidence": "medium",
+            "updated_at": "2026-06-24",
+            "mlbam_id": "111",
+            "role": "hitter",
+            "prospect_rank": 5,
+            "level": "AA",
+            "score_source": "prospect_model_v0_6",
+            "stat_line": {"pa": 489},
+            # No combined_season_stat_line: this is the fallback (translated) path where
+            # the cross-season split shows up, exactly like the audited rows.
+            "stat_line_translated": {
+                "level_label": "AA",
+                "sample": 526,
+                "sample_unit": "PA",
+                "season": total_season,
+                "stats": {"OPS": 0.760},
+            },
+            "context": {
+                "kind": "optional_display_context",
+                "stat_line_source": "valucast_input_contract",
+                "stat_line_source_kind": "current_season",
+                "stat_line_level": "AA",
+                "stat_line_sample": 489,
+                "stat_line_sample_unit": "PA",
+                "stat_line_sample_season": current_season,
+            },
+        }
+    )
+
+
+def test_cross_season_split_tags_current_half_with_its_season():
+    # Current 2026 sample next to a 2025 season total: both halves must carry a season
+    # tag so the prior-year total can't read as current.
+    row = _cross_season_split_row(2026, 2025)
+    assert row.has_split_level_sample is True
+    assert row.current_level_sample_label == "2026 AA sample: 489 PA"
+    assert row.current_level_sample_badge == "2026 AA 489 PA"
+    assert row.season_total_sample_label == "2025 total: 526 PA across AA"
+    assert (
+        row.sample_context_label
+        == "2026 AA sample: 489 PA | 2025 total: 526 PA across AA"
+    )
+
+
+def test_same_season_split_leaves_current_half_untagged():
+    # When both halves are the same season, the current half stays untagged (unchanged
+    # behavior) — only the genuine cross-season case gets the extra tag.
+    row = _cross_season_split_row(2026, 2026)
+    assert row.has_split_level_sample is True
+    assert row.current_level_sample_label == "AA sample: 489 PA"
+    assert row.current_level_sample_badge == "AA 489 PA"
+    assert (
+        row.sample_context_label
+        == "AA sample: 489 PA | 2026 total: 526 PA across AA"
+    )
+
+
+def test_card_level_label_prefers_fresh_promoted_level_over_stale_feed(tmp_path):
+    # Promoted prospect: current-season sample is at AA, but the feed snapshot
+    # still carries the pre-promotion level. Single source of truth: the bars rank
+    # the combined AA+A+ season line, so the sub-header names that same combined
+    # level — never the stale feed value (the header/profile-grid mismatch bug).
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["level"] = "A+"
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.level == "A+"  # raw feed value preserved for provenance
+    assert row.card_level_label == "AA & A+"  # matches the combined bars line
+
+
+def test_card_level_label_falls_back_to_feed_without_current_sample(tmp_path):
+    # No current-season stat line, but the combined season line still clears the
+    # pool floor and drives the bars, so the label names the combined bars level
+    # rather than the stale single feed level.
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["level"] = "A+"
+    rank_payload["board"][0]["context_only"]["stat_line_source_kind"] = "latest_milb_history"
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.card_level_label == "AA & A+"
+
+
+def test_card_level_label_matches_combined_bars_level_over_current_slice(tmp_path):
+    # Seth Hernandez regression: feed/current level is the single A+ slice, but the
+    # bars rank the combined AAA & AA season line. The sub-header MUST name the
+    # combined level so the label and the bars cannot contradict each other.
+    rank_payload = _rank_payload()
+    board = rank_payload["board"][0]
+    board["level"] = "A+"
+    board["context_only"]["stat_line_level"] = "A+"
+    board["context_only"]["combined_season_stat_line"].update(
+        {
+            "level": "AAA",
+            "levels": ["AAA", "AA"],
+            "level_label": "AAA+AA",
+        }
+    )
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.level == "A+"
+    assert row.card_level_label == "AAA & AA"
+
+
+def test_stat_strip_carries_its_own_level_when_badge_is_combined():
+    """Plan 010 gap (d): the mobile stat strip prints the single-level slice
+    (factual_current_context.level == "A"), while the Level badge names the combined
+    level ("A+ & A"). The strip must expose its OWN level so its OPS/ISO can never sit
+    unlabeled under the badge's combined label. Willits is the live example."""
+    row = PublicSnapshotRow.from_snapshot(
+        {
+            "id": "vc_prospect_1_hitter",
+            "name": "Eli Willits",
+            "player_type": "prospect",
+            "positions": ["SS"],
+            "team": "WSH",
+            "age": 18,
+            "rank": 1,
+            "value": 60.0,
+            "value_scale": "0_100_valucast_dynasty_score",
+            "value_source": "prospect_model_v0_6",
+            "confidence": "medium",
+            "updated_at": "2026-06-13",
+            "mlbam_id": "1",
+            "role": "hitter",
+            "prospect_rank": 1,
+            "level": "A+",
+            "score_source": "prospect_model_v0_6",
+            "components": {
+                "factual_current_context": {
+                    "role": "hitter",
+                    "level": "A",
+                    "sample": 232,
+                    "sample_unit": "PA",
+                    "skill_band": "impact",
+                    "ops": 0.918,
+                    "iso": 0.2,
+                }
+            },
+            "combined_season_stat_line": {
+                "role": "hitter",
+                "season": 2026,
+                "level": "A+",
+                "levels": ["A+", "A"],
+                "level_label": "A++A",
+                "sample": 300,
+                "sample_unit": "PA",
+                "pa": 300,
+                "ops": 0.900,
+                "iso": 0.2,
+                "k_pct": 15.0,
+                "bb_pct": 10.0,
+            },
+            "context": {
+                "stat_line_source_kind": "current_season",
+                "stat_line_level": "A",
+                "stat_line_sample": 232,
+                "stat_line_sample_unit": "PA",
+                "stat_line_sample_season": 2026,
+            },
+            "stat_line": {"pa": 232, "ops": 0.918},
+        }
+    )
+
+    # The badge names the combined level; the strip prints the single "A" slice.
+    assert row.card_level_label == "A+ & A"
+    # The strip now surfaces ITS level, sourced from the same line its numbers are.
+    assert row.factual_context_level == "A"
+    assert row.factual_context_level != row.card_level_label
+    # The numbers beside that level are the "A"-slice numbers, not a combined line.
+    assert {"label": "OPS", "value": "0.918"} in row.factual_context_stat_items
+
+
+def test_card_level_label_keeps_single_level_combined_label(tmp_path):
+    # A single-level combined line is not a contradiction with the current slice,
+    # so the fresh current/feed label stands (no spurious " & " join).
+    rank_payload = _rank_payload()
+    board = rank_payload["board"][0]
+    board["context_only"]["combined_season_stat_line"].update(
+        {
+            "level": "AA",
+            "levels": ["AA"],
+            "level_label": "AA",
+        }
+    )
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    row = store.get_by_id("vc_prospect_1_hitter")
+
+    assert row is not None
+    assert row.card_level_label == "AA"
+
+
+def test_public_snapshot_sp_filter_includes_generic_prospect_pitchers(tmp_path):
+    rank_payload = _rank_payload()
+    rank_payload["board"][1]["positions"] = ["P"]
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    store = PublicSnapshotStore(_write_snapshot(tmp_path, payload))
+
+    names = [row.name for row in store.filter(pool="prospect", position="SP")]
+
+    assert "Fallback Good" in names
+
+
+def test_snapshot_prefers_active_prospect_row_over_mlb_projection_collision():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1, value=8.0, rank=700),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 0
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 1
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert payload["validation"]["mlb_count"] == 0
+    assert payload["validation"]["prospect_count"] == 2
+    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_prospect_1_hitter"
+    ]
+    top_prospect = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+    assert top_prospect["prospect_rank"] == 1
+    assert top_prospect["context"]["valucast_rank_v1"] == 1
+
+
+def test_snapshot_promotes_current_active_mlb_roster_identity_even_when_mlb_row_is_low():
+    rank_payload = _rank_payload()
+    for _row in rank_payload["board"]:
+        if _row["mlbam_id"] == 1:
+            _row.setdefault("context_only", {})["graduation_context"] = {
+                "graduated": True, "status": "graduated"}
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(mlbam_id=1, value=8.0, rank=700),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 1
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_mlb_1_hitter"
+    ]
+    assert payload["input_artifacts"]["mlb_roster_status_ready"] is True
+
+
+def test_snapshot_bridges_active_mlb_roster_identity_without_mlb_layer_row():
+    rank_payload = _rank_payload()
+    for _row in rank_payload["board"]:
+        if _row["mlbam_id"] == 1:
+            _row.setdefault("context_only", {})["graduation_context"] = {
+                "graduated": True, "status": "graduated"}
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(mlbam_id=99),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 0
+    assert payload["validation"]["active_mlb_callup_bridge_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
+    # The graduated call-up is bridged onto the MLB surface, not kept as a ranked
+    # prospect: the MLB count gains the bridge row and the prospect count loses it.
+    assert payload["validation"]["mlb_count"] == 2
+    assert payload["validation"]["prospect_count"] == 1
+    bridged = next(row for row in payload["players"] if row["mlbam_id"] == 1)
+    assert bridged["id"] == "vc_prospect_1_hitter"
+    assert bridged["player_type"] == "mlb"
+    assert bridged["level"] == "MLB"
+    # No prospect_rank: a graduate must never read as a ranked prospect, and he is
+    # absent from the prospect board while still queryable on the MLB surface.
+    assert bridged["prospect_rank"] is None
+    assert bridged["active_mlb_callup_bridge"] is True
+    assert 1 not in {
+        row["mlbam_id"]
+        for row in payload["players"]
+        if row["player_type"] == "prospect"
+    }
+    assert bridged["context"]["graduation_context"] == {
+        "status": "active_mlb_callup",
+        "graduated": True,
+        "surface": "active_mlb_roster_bridge",
+        "previous_level": "AA",
+        "reason": "official_mlb_active_roster_without_mlb_projection_row",
+    }
+    assert payload["validation"]["active_mlb_callup_bridge_sample"][0] == {
+        "mlbam_id": 1,
+        "name": "Model Strong",
+        "role": "hitter",
+        "level": "MLB",
+        "previous_level": "AA",
+        "rank": None,
+        "reason": "active_mlb_callup_bridge",
+    }
+
+
+def test_snapshot_bridges_retained_active_roster_graduate_not_on_board():
+    # A known graduate the morning prospect build already evicted from the ranked board
+    # (active MLB roster) and who is NOT yet in the MLB layer (e.g. <40-IP call-up). He
+    # lives only in active_mlb_roster_board, so the in-board bridge can't see him; he must
+    # still be bridged onto the snapshot instead of vanishing from dynasty/backfields.
+    rank = _rank_payload()
+    board_ids = {row.get("mlbam_id") for row in rank["board"]}
+    assert 555 not in board_ids
+    graduate = {**rank["board"][0], "mlbam_id": 555, "name": "Retained Graduate"}
+    rank["active_mlb_roster_board"] = [graduate]
+
+    payload = build_snapshot(
+        rank,
+        mlb_layer=_mlb_payload(mlbam_id=99),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 555,
+                    "name": "Retained Graduate",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    bridged = next(row for row in payload["players"] if row["mlbam_id"] == 555)
+    # Bridged onto the MLB surface (not a ranked prospect) so he stays visible on
+    # dynasty/backfields without appearing on the prospect board.
+    assert bridged["player_type"] == "mlb"
+    assert bridged["level"] == "MLB"
+    assert bridged["prospect_rank"] is None
+    assert bridged["active_mlb_callup_bridge"] is True
+    assert 555 not in {
+        row["mlbam_id"]
+        for row in payload["players"]
+        if row["player_type"] == "prospect"
+    }
+    assert (
+        bridged["context"]["graduation_context"]["surface"]
+        == "active_mlb_roster_bridge"
+    )
+
+
+def test_graduated_callup_absent_from_prospect_board_but_queryable_on_mlb(tmp_path):
+    """Stranding check: a graduated call-up is excluded from the ranked prospect board
+    yet stays queryable on the MLB/dynasty surface (not stranded), and the remaining
+    prospect ranks stay contiguous."""
+    rank_payload = _rank_payload()
+    for _row in rank_payload["board"]:
+        if _row["mlbam_id"] == 1:
+            _row.setdefault("context_only", {})["graduation_context"] = {
+                "graduated": True, "status": "graduated"}
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(mlbam_id=99),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    # Visible prospect ranks stay contiguous once the graduate leaves the board.
+    assert payload["validation"]["visible_prospect_ranks_contiguous"] is True
+    prospect_ids = {
+        row["mlbam_id"] for row in payload["players"] if row["player_type"] == "prospect"
+    }
+    assert 1 not in prospect_ids  # graduate is off the prospect board
+
+    # The payload must still validate and load (no stranded/invalid rows), and the
+    # graduate must be queryable on the MLB pool but not the prospect pool.
+    path = tmp_path / "public_dynasty_snapshot.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    store = PublicSnapshotStore(path)
+    assert store.is_available
+    mlb_ids = {row.mlbam_id for row in store.filter(pool="mlb")}
+    board_ids = {row.mlbam_id for row in store.filter(pool="prospect")}
+    assert "1" in mlb_ids
+    assert "1" not in board_ids
+
+
+def test_snapshot_promotes_material_current_mlb_row_over_stale_prospect_context():
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1, value=90.0, rank=1),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 1
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_mlb_1_hitter"
+    ]
+
+
+def test_snapshot_allows_confirmed_mlb_level_prospect_to_graduate():
+    rank_payload = _rank_payload()
+    rank_payload["board"][0]["level"] = "MLB"
+
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_mlb_payload(mlbam_id=1),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["prospects_excluded_by_mlb_identity_count"] == 1
+    assert payload["validation"]["mlb_projection_rows_suppressed_by_prospect_count"] == 0
+    assert payload["validation"]["duplicate_identity_count"] == 0
+    assert payload["validation"]["mlb_count"] == 1
+    assert payload["validation"]["prospect_count"] == 1
+    assert [row["id"] for row in payload["players"] if row["mlbam_id"] == 1] == [
+        "vc_mlb_1_hitter"
+    ]
+    remaining_prospect = next(
+        row for row in payload["players"] if row["player_type"] == "prospect"
+    )
+    assert remaining_prospect["prospect_rank"] == 1
+    assert remaining_prospect["context"]["valucast_rank_v1"] == 2
+
+
+def test_rejects_bad_schema(tmp_path):
+    payload = build_snapshot(_rank_payload())
+    payload["schema_version"] = "9.9"
+
+    assert "unsupported schema_version 9.9" in validate_public_snapshot_payload(payload)
+    assert PublicSnapshotStore(_write_snapshot(tmp_path, payload)).is_available is False
+
+
+def test_rejects_duplicate_ids():
+    payload = build_snapshot(_rank_payload())
+    payload["players"][1]["id"] = payload["players"][0]["id"]
+
+    assert "duplicate row ids" in validate_public_snapshot_payload(payload)
+
+
+def test_rejects_duplicate_mlbam_role_identities():
+    payload = build_snapshot(_rank_payload())
+    payload["players"][1]["mlbam_id"] = payload["players"][0]["mlbam_id"]
+    payload["players"][1]["role"] = payload["players"][0]["role"]
+
+    assert "duplicate MLBAM+role identities" in validate_public_snapshot_payload(payload)
+
+
+def test_rejects_missing_required_fields():
+    payload = build_snapshot(_rank_payload())
+    del payload["players"][0]["value_source"]
+
+    assert "players[0].value_source is required" in validate_public_snapshot_payload(payload)
+
+
+def test_rejects_missing_prospect_stat_context():
+    payload = build_snapshot(_rank_payload())
+    prospect_index = next(
+        index
+        for index, row in enumerate(payload["players"])
+        if row["player_type"] == "prospect"
+    )
+    del payload["players"][prospect_index]["stat_line"]
+    del payload["players"][prospect_index]["context"]["stat_line_source"]
+
+    problems = validate_public_snapshot_payload(payload)
+
+    assert (
+        f"players[{prospect_index}].stat_line is required for prospects"
+        in problems
+    )
+    assert (
+        f"players[{prospect_index}].context.stat_line_source is required for prospects"
+        in problems
+    )
+
+
+def test_rejects_missing_valucast_prospect_stat_provenance():
+    payload = build_snapshot(_rank_payload())
+    prospect_index = next(
+        index
+        for index, row in enumerate(payload["players"])
+        if row["player_type"] == "prospect"
+    )
+    del payload["players"][prospect_index]["context"]["stat_line_source_kind"]
+
+    problems = validate_public_snapshot_payload(payload)
+
+    assert (
+        f"players[{prospect_index}].context.stat_line_source_kind is required "
+        "for ValuCast prospect stat context"
+        in problems
+    )
+
+
+def test_builder_computes_required_field_completeness():
+    rank_payload = _rank_payload()
+    del rank_payload["board"][0]["context_only"]["stat_line"]
+    del rank_payload["board"][0]["context_only"]["stat_line_source"]
+
+    payload = build_snapshot(
+        rank_payload,
+        mlb_layer=_ready_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+
+    assert payload["validation"]["required_fields_complete"] is False
+    assert payload["validation"]["required_field_problem_count"] >= 1
+    assert (
+        "Public snapshot has incomplete required fields."
+        in payload["validation"]["blockers"]
+    )
+
+
+def test_rejects_source_policy_that_uses_dd_values():
+    payload = build_snapshot(_rank_payload())
+    payload["source_policy"]["dd_values_used"] = True
+
+    assert "source_policy.dd_values_used must be false" in validate_public_snapshot_payload(
+        payload
+    )
+
+
+def test_rejects_row_score_source_that_is_dd_derived():
+    payload = build_snapshot(_rank_payload())
+    payload["players"][0]["score_source"] = "dd_dynasty_value"
+
+    problems = validate_public_snapshot_payload(payload)
+    assert any("is DD/external-derived" in problem for problem in problems)
+    assert (
+        "source_policy.dd_values_used is False but a row score is DD-derived"
+        in problems
+    )
+
+
+def test_accepts_valucast_owned_row_sources():
+    payload = build_snapshot(_rank_payload())
+
+    problems = validate_public_snapshot_payload(payload)
+    assert not any("DD/external-derived" in problem for problem in problems)
+
+
+def test_snapshot_context_drops_unused_dd_keys_keeps_source_ranks():
+    payload = build_snapshot(_rank_payload())
+    prospect = next(p for p in payload["players"] if p.get("player_type") == "prospect")
+    context = prospect["context"]
+
+    for key in (
+        "dd_dynasty_rank",
+        "dd_dynasty_value",
+        "dd_prospect_rank",
+        "has_dd_context",
+        "breakout_label",
+        "breakout_rank_change",
+        "value_history_points",
+    ):
+        assert key not in context
+        assert key not in prospect
+    # External-board comparison context is kept (feeds the labeled panel).
+    assert "source_ranks" in context
+
+
+def test_mlb_stat_line_by_id_maps_actuals_to_template_keys():
+    from scripts.build_public_dynasty_snapshot import _mlb_stat_line_by_id
+
+    actuals = [
+        {"metadata": {"mlbam_id": "100"}, "pool": "hitter",
+         "stats": {"PA": 26, "AVG": 0.083, "OPS": 0.487, "HR": 1, "RBI": 3, "R": 2, "SB": 0}},
+        # Real actuals use starter/reliever pools, never a "pitcher" pool — both
+        # must normalize to the pitcher role so call-up pitcher cards populate.
+        {"metadata": {"mlbam_id": "200"}, "pool": "starter",
+         "stats": {"IP": 12.0, "ERA": 3.75, "WHIP": 1.25, "SO": 14, "QS": 1, "SV": 0}},
+    ]
+    by_id = _mlb_stat_line_by_id(actuals)
+
+    assert by_id[("100", "hitter")] == {
+        "pa": 26, "avg": 0.083, "ops": 0.487, "hr": 1, "rbi": 3, "r": 2, "sb": 0
+    }
+    assert by_id[("200", "pitcher")]["k"] == 14  # SO -> k
+    assert by_id[("200", "pitcher")]["ip"] == 12.0
+
+
+def test_snapshot_attaches_mlb_stat_line_from_actuals_not_dd_feed():
+    # A called-up prospect's current MLB line now comes from ValuCast-owned actuals,
+    # keyed by (mlbam_id, role) — replacing the retired DD feed (which left it None).
+    actuals = [
+        {"metadata": {"mlbam_id": "1"}, "pool": "hitter",
+         "stats": {"PA": 26, "AVG": 0.083, "OPS": 0.487, "HR": 1}},
+    ]
+    payload = build_snapshot(_rank_payload(), actuals=actuals)
+    row = next(p for p in payload["players"] if str(p.get("mlbam_id")) == "1")
+
+    assert row["mlb_stat_line"] == {"pa": 26, "avg": 0.083, "ops": 0.487, "hr": 1}
+    # A prospect with no actuals row stays None (no fabricated MLB line).
+    other = next(p for p in payload["players"] if str(p.get("mlbam_id")) == "2")
+    assert other["mlb_stat_line"] is None
+
+
+def test_app_selector_goes_unavailable_when_snapshot_not_ready_and_old():
+    from app import _select_dynasty_store
+
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=False,
+        ready_for_live_consumers=False,
+        generated_at="2000-01-01",
+    )
+
+    selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
+
+    assert source == "unavailable"
+    assert selected.is_available is False  # never DD
+
+
+def test_app_selector_serves_stale_snapshot_when_recent():
+    from app import _select_dynasty_store
+
+    recent = (date.today() - timedelta(days=1)).isoformat()
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=False,
+        ready_for_live_consumers=False,
+        generated_at=recent,
+    )
+
+    selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
+
+    assert selected is snapshot
+    assert source == "valucast_public_snapshot_stale"
+
+
+def test_app_selector_can_use_ready_public_snapshot():
+    from datetime import date
+
+    from app import _select_dynasty_store
+
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=True,
+        ready_for_live_consumers=True,
+        # ready + FRESH serves normally; ready + aged wears the stale label (7/2)
+        generated_at=date.today().isoformat(),
+    )
+
+    selected, source = _select_dynasty_store(snapshot, use_public_snapshot=True)
+
+    assert selected is snapshot
+    assert source == "valucast_public_snapshot"
+
+
+def test_app_selector_uses_ready_public_snapshot_by_default(monkeypatch):
+    from datetime import date
+
+    from app import _select_dynasty_store
+
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=True,
+        ready_for_live_consumers=True,
+        generated_at=date.today().isoformat(),
+    )
+    monkeypatch.delenv("VALUCAST_USE_PUBLIC_SNAPSHOT", raising=False)
+
+    selected, source = _select_dynasty_store(snapshot)
+
+    assert selected is snapshot
+    assert source == "valucast_public_snapshot"
+
+
+def test_app_selector_disabled_rollout_never_serves_dd(monkeypatch):
+    from app import _select_dynasty_store
+
+    snapshot = SimpleNamespace(
+        is_available=True,
+        dynasty_ready=True,
+        ready_for_live_consumers=True,
+    )
+    monkeypatch.setenv("VALUCAST_USE_PUBLIC_SNAPSHOT", "0")
+
+    selected, source = _select_dynasty_store(snapshot)
+
+    assert source == "unavailable"
+    assert selected.is_available is False
+
+
+def test_snapshot_retains_rookie_eligible_active_roster_callup_as_ranked_prospect():
+    """Rookie-rule retention (7/2, the Hughes case): an active-roster call-up who
+    has NOT crossed the rookie line stays a ranked prospect; his thin MLB-layer
+    row is suppressed so the identity never serves twice."""
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(mlbam_id=1, value=8.0, rank=700),
+        mlb_roster_status={
+            "artifact": "valucast_mlb_roster_status",
+            "contract_version": "0.1.0",
+            "validation": {
+                "ready_for_public_snapshot": True,
+                "active_roster_profile_count": 1,
+            },
+            "profiles": [
+                {
+                    "mlbam_id": 1,
+                    "name": "Model Strong",
+                    "team_abbreviation": "BOS",
+                    "active_mlb_roster": True,
+                    "status_code": "A",
+                    "source": "official_mlb_statsapi_active_roster",
+                }
+            ],
+        },
+        buy_signals=_buy_payload(),
+    )
+
+    rows = [row for row in payload["players"] if row["mlbam_id"] == 1]
+    assert len(rows) == 1
+    retained = rows[0]
+    assert retained["player_type"] == "prospect"
+    assert retained["prospect_rank"] is not None
+    callup = (retained.get("context") or {}).get("active_mlb_callup") or {}
+    assert callup.get("graduated") is False
+    assert callup.get("surface") == "prospect_board_rookie_retention"
+    assert "Got the call — rookie-eligible" in (retained.get("drivers") or [])
+    assert payload["validation"]["active_mlb_callup_bridge_count"] == 0
+    assert payload["validation"]["prospect_count"] == 2
+
+
+def test_name_search_is_accent_insensitive():
+    # 7/7: searching "Hector" on the live board returned nothing for
+    # "Héctor Rodríguez" (P#36) — the filter compared raw .lower() strings, so
+    # accented board names never matched unaccented queries. Both sides fold now.
+    store = PublicSnapshotStore.__new__(PublicSnapshotStore)
+    store._rows = [
+        SimpleNamespace(
+            name="Héctor Rodríguez",
+            player_type="prospect",
+            is_prospect=True,
+            positions=("RF",),
+        )
+    ]
+    assert store.filter(search="hector") == store._rows
+    assert store.filter(search="Rodriguez") == store._rows
+    # accented QUERY against the accented name folds too
+    assert store.filter(search="Héctor") == store._rows
+    assert store.filter(search="hcetor") == []
+
+
+def test_prospect_rows_carry_no_uncalibrated_probability_numerics():
+    # Owner disposition 2026-07-29: dynasty_signal and peak role_probabilities
+    # are uncalibrated shadow evidence; the serving plane must not carry them.
+    payload = build_snapshot(
+        _rank_payload(),
+        mlb_layer=_mlb_payload(),
+        buy_signals=_buy_payload(),
+    )
+    for row in payload["players"]:
+        assert "dynasty_signal" not in row
+        peak = row.get("peak_projection")
+        if isinstance(peak, dict):
+            for block_key in ("peak_v2", "card_v2"):
+                block = peak.get(block_key)
+                if isinstance(block, dict):
+                    assert "role_probabilities" not in block
+
+
+def test_prospect_birth_dates_fill_gaps_without_replacing_identity(tmp_path):
+    import json
+
+    from scripts.build_public_dynasty_snapshot import _with_prospect_birth_dates
+
+    path = tmp_path / "orgs.json"
+    path.write_text(
+        json.dumps({"birth_dates": {"1": "2005-03-01", "2": "2006-04-02", "3": "2007-05-03"}}),
+        encoding="utf-8",
+    )
+    merged = _with_prospect_birth_dates(
+        {"1": {"birth_date": "2000-01-01", "name": "A"}, "2": {"birth_date": "", "name": "B"}},
+        path,
+    )
+    assert merged["1"] == {"birth_date": "2000-01-01", "name": "A"}
+    assert merged["2"] == {"birth_date": "2006-04-02", "name": "B"}
+    assert merged["3"] == {"birth_date": "2007-05-03"}
+    assert _with_prospect_birth_dates(None, tmp_path / "missing.json") == {}

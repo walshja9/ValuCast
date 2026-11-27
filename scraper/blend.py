@@ -1,0 +1,311 @@
+"""Blend Steamer and ZiPS projections into a single player set."""
+from __future__ import annotations
+
+import math
+import os
+
+
+HITTER_COUNTING = ("PA", "AB", "H", "HR", "R", "RBI", "SB", "SO", "BB",
+                    "1B", "2B", "3B", "HBP", "SF", "SH", "GDP", "CS", "IBB", "G")
+PITCHER_COUNTING = ("IP", "SO", "W", "L", "GS", "G", "SV", "HLD", "ER", "H",
+                     "BB", "QS", "HR", "R", "TBF", "IBB", "HBP", "BS")
+
+HITTER_RATE = ("AVG", "OBP", "SLG", "OPS")
+PITCHER_RATE = ("ERA", "WHIP")
+
+# Normal pool sizes run ~4693 hitters / ~5883 pitchers. Floors sit at roughly
+# 60-65% of that so legitimate early-season pool shrinkage does not false-fire.
+POOL_FLOOR_HITTERS = 3000
+POOL_FLOOR_PITCHERS = 3500
+
+
+def _safe_float(val, default: float = 0.0) -> float:
+    if val is None:
+        return default
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
+def _required_source_number(row: dict, field: str, source: str) -> float:
+    try:
+        raw = row.get(field)
+        if isinstance(raw, bool):
+            raise ValueError
+        value = float(raw)
+        if not math.isfinite(value):
+            raise ValueError
+    except (TypeError, ValueError, OverflowError):
+        raise RuntimeError(f"{source}: missing or invalid numeric field {field}") from None
+    return value
+
+
+def _validate_source_rows(
+    rows: list[dict], source: str, fields: tuple[str, ...], volume: str, optional: str,
+) -> None:
+    if not isinstance(rows, list):
+        raise RuntimeError(f"{source}: expected a projection list")
+    seen = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            raise RuntimeError(f"{source}: expected a projection object")
+        player_id = row.get("playerids")
+        if (
+            isinstance(player_id, bool) or not isinstance(player_id, (str, int, float))
+            or not player_id or not str(player_id).strip()
+            or isinstance(player_id, float) and not math.isfinite(player_id)
+        ):
+            raise RuntimeError(f"{source}: unusable playerids")
+        identity = str(player_id)
+        if identity in seen:
+            raise RuntimeError(f"{source}: duplicate playerids")
+        seen.add(identity)
+        source_volume = _required_source_number(row, volume, source)
+        if source_volume < 0:
+            raise RuntimeError(f"{source}: {volume} must not be negative")
+        for field in fields:
+            if (source_volume > 0 and field != optional) or row.get(field) is not None:
+                _required_source_number(row, field, source)
+
+
+def _avg(a: float, b: float) -> float:
+    return (a + b) / 2
+
+
+def _weighted_avg(val_a: float, vol_a: float, val_b: float, vol_b: float) -> float:
+    total_vol = vol_a + vol_b
+    if total_vol == 0:
+        return 0.0
+    return (val_a * vol_a + val_b * vol_b) / total_vol
+
+
+def blend_hitters(steamer: list[dict], zips: list[dict]) -> list[dict]:
+    steamer_by_id = {str(p.get("playerids", "")): p for p in steamer if p.get("playerids")}
+    zips_by_id = {str(p.get("playerids", "")): p for p in zips if p.get("playerids")}
+    all_ids = set(steamer_by_id) | set(zips_by_id)
+    result = []
+    for pid in all_ids:
+        s = steamer_by_id.get(pid)
+        z = zips_by_id.get(pid)
+        if s and z:
+            result.append(_blend_hitter(s, z, pid))
+        elif s:
+            result.append(_single_hitter(s, pid, "steamer"))
+        else:
+            result.append(_single_hitter(z, pid, "zips"))
+    return result
+
+
+def _parse_hitter_positions(p: dict) -> list[str]:
+    """Extract positions from FanGraphs 'minpos' field (e.g. 'SS/OF' → ['SS', 'OF'])."""
+    minpos = p.get("minpos", "")
+    if not minpos:
+        return ["DH"]
+    return [pos.strip() for pos in minpos.split("/") if pos.strip()]
+
+
+def _blend_hitter(s: dict, z: dict, pid: str) -> dict:
+    stats = {}
+    for stat in HITTER_COUNTING:
+        stats[stat] = _avg(_safe_float(s.get(stat)), _safe_float(z.get(stat)))
+    s_pa = _safe_float(s.get("PA", 0))
+    z_pa = _safe_float(z.get("PA", 0))
+    for stat in HITTER_RATE:
+        stats[stat] = _weighted_avg(_safe_float(s.get(stat)), s_pa, _safe_float(z.get(stat)), z_pa)
+    ab = stats.get("AB", 0)
+    if ab > 0:
+        stats["AVG"] = stats.get("H", 0) / ab
+    positions = _parse_hitter_positions(s)
+    return {
+        "id": pid, "name": s.get("PlayerName", ""), "pool": "hitter",
+        "positions": positions, "team": s.get("Team", ""),
+        "stats": {k: round(v, 3) if isinstance(v, float) else v for k, v in stats.items()},
+        "metadata": {"fangraphs_id": pid, "mlbam_id": str(s.get("xMLBAMID", "") or s.get("MLBAMID", ""))},
+        "sources": ["steamer", "zips"],
+    }
+
+
+def _single_hitter(p: dict, pid: str, source: str) -> dict:
+    stats = {}
+    for stat in HITTER_COUNTING:
+        stats[stat] = _safe_float(p.get(stat))
+    for stat in HITTER_RATE:
+        stats[stat] = _safe_float(p.get(stat))
+    positions = _parse_hitter_positions(p)
+    return {
+        "id": pid, "name": p.get("PlayerName", ""), "pool": "hitter",
+        "positions": positions, "team": p.get("Team", ""),
+        "stats": {k: round(v, 3) if isinstance(v, float) else v for k, v in stats.items()},
+        "metadata": {"fangraphs_id": pid, "mlbam_id": str(p.get("xMLBAMID", "") or p.get("MLBAMID", ""))},
+        "sources": [source],
+    }
+
+
+def _detect_pitcher_pool(stats: dict, has_gs: bool = True) -> str:
+    gs = _safe_float(stats.get("GS", 0))
+    sv = _safe_float(stats.get("SV", 0))
+    hld = _safe_float(stats.get("HLD", 0))
+    if gs > 0:
+        return "starter"
+    if sv > 0 or hld > 0 or (has_gs and "GS" in stats and gs == 0):
+        return "reliever"
+    return "starter"
+
+
+def _detect_pitcher_positions(stats: dict, has_gs: bool = True) -> list[str]:
+    gs = _safe_float(stats.get("GS", 0))
+    sv = _safe_float(stats.get("SV", 0))
+    hld = _safe_float(stats.get("HLD", 0))
+    positions = []
+    if gs > 0:
+        positions.append("SP")
+    if sv > 0 or hld > 0:
+        positions.append("RP")
+    if not positions:
+        positions.append("RP" if has_gs and "GS" in stats and gs == 0 else "SP")
+    return positions
+
+
+def _finalize_pitcher_stats(stats: dict) -> dict:
+    """Rename SO→K, H→H_ALLOWED and add derived stats."""
+    if "SO" in stats:
+        stats["K"] = stats.pop("SO")
+    if "H" in stats:
+        stats["H_ALLOWED"] = stats.pop("H")
+    stats["SV_HLD"] = _safe_float(stats.get("SV", 0)) + _safe_float(stats.get("HLD", 0))
+    bb = _safe_float(stats.get("BB", 0))
+    k = _safe_float(stats.get("K", 0))
+    stats["K_BB"] = round(k / bb, 2) if bb > 0 else 0.0
+    return stats
+
+
+def blend_pitchers(steamer: list[dict], zips: list[dict]) -> list[dict]:
+    steamer_by_id = {str(p.get("playerids", "")): p for p in steamer if p.get("playerids")}
+    zips_by_id = {str(p.get("playerids", "")): p for p in zips if p.get("playerids")}
+    all_ids = set(steamer_by_id) | set(zips_by_id)
+    result = []
+    for pid in all_ids:
+        s = steamer_by_id.get(pid)
+        z = zips_by_id.get(pid)
+        if s and z:
+            result.append(_blend_pitcher(s, z, pid))
+        elif s:
+            result.append(_single_pitcher(s, pid, "steamer"))
+        else:
+            result.append(_single_pitcher(z, pid, "zips"))
+    return result
+
+
+def _blend_pitcher(s: dict, z: dict, pid: str) -> dict:
+    stats = {}
+    for stat in PITCHER_COUNTING:
+        stats[stat] = _avg(_safe_float(s.get(stat)), _safe_float(z.get(stat)))
+    s_ip = _safe_float(s.get("IP", 0))
+    z_ip = _safe_float(z.get("IP", 0))
+    for stat in PITCHER_RATE:
+        stats[stat] = _weighted_avg(_safe_float(s.get(stat)), s_ip, _safe_float(z.get(stat)), z_ip)
+    stats = _finalize_pitcher_stats(stats)
+    has_gs = "GS" in s or "GS" in z
+    pool = _detect_pitcher_pool(stats, has_gs)
+    positions = _detect_pitcher_positions(stats, has_gs)
+    return {
+        "id": pid, "name": s.get("PlayerName", ""), "pool": pool,
+        "positions": positions, "team": s.get("Team", ""),
+        "stats": {k: round(v, 3) if isinstance(v, float) else v for k, v in stats.items()},
+        "metadata": {"fangraphs_id": pid, "mlbam_id": str(s.get("xMLBAMID", "") or s.get("MLBAMID", ""))},
+        "sources": ["steamer", "zips"],
+    }
+
+
+def _single_pitcher(p: dict, pid: str, source: str) -> dict:
+    stats = {}
+    for stat in PITCHER_COUNTING:
+        stats[stat] = _safe_float(p.get(stat))
+    for stat in PITCHER_RATE:
+        stats[stat] = _safe_float(p.get(stat))
+    stats = _finalize_pitcher_stats(stats)
+    has_gs = "GS" in p
+    pool = _detect_pitcher_pool(stats, has_gs)
+    positions = _detect_pitcher_positions(stats, has_gs)
+    return {
+        "id": pid, "name": p.get("PlayerName", ""), "pool": pool,
+        "positions": positions, "team": p.get("Team", ""),
+        "stats": {k: round(v, 3) if isinstance(v, float) else v for k, v in stats.items()},
+        "metadata": {"fangraphs_id": pid, "mlbam_id": str(p.get("xMLBAMID", "") or p.get("MLBAMID", ""))},
+        "sources": [source],
+    }
+
+
+def blend_projections(raw: dict[str, list[dict]]) -> list[dict]:
+    # GDP/BS may be omitted; supplied non-null numeric fields must always be finite.
+    hitter_fields = HITTER_COUNTING + HITTER_RATE
+    pitcher_fields = PITCHER_COUNTING + PITCHER_RATE
+    for source, fields, volume, optional in (
+        ("steamer_hitters", hitter_fields, "PA", "GDP"), ("zips_hitters", hitter_fields, "PA", "GDP"),
+        ("steamer_pitchers", pitcher_fields, "IP", "BS"), ("zips_pitchers", pitcher_fields, "IP", "BS"),
+    ):
+        _validate_source_rows(raw.get(source, []), source, fields, volume, optional)
+    hitters = blend_hitters(raw.get("steamer_hitters", []), raw.get("zips_hitters", []))
+    pitchers = blend_pitchers(raw.get("steamer_pitchers", []), raw.get("zips_pitchers", []))
+    _assert_not_all_zero(hitters, pitchers)
+    _assert_pool_floor(hitters, pitchers)
+    return hitters + pitchers
+
+
+def _assert_not_all_zero(hitters: list[dict], pitchers: list[dict]) -> None:
+    """Fail LOUD on an upstream schema drift. Every stat access here is
+    _safe_float(default=0.0), so a FanGraphs field rename (HR -> homeRuns)
+    ships a structurally-valid, dated, non-empty artifact where everyone
+    projects zero -- and it passes every downstream freshness gate (7/2
+    audit). IDs surviving while all core stats zero out is exactly that
+    signature, never a real projection set."""
+    if os.environ.get("VALUCAST_SKIP_BLEND_ZERO_GUARD") == "1":
+        return  # end-of-season ROS feeds can legitimately zero out; see below
+    live_hitters = sum(
+        1 for p in hitters
+        if _safe_float(p.get("stats", {}).get("PA") if isinstance(p.get("stats"), dict) else p.get("PA")) > 0
+        or _safe_float(p.get("stats", {}).get("HR") if isinstance(p.get("stats"), dict) else p.get("HR")) > 0
+    )
+    live_pitchers = sum(
+        1 for p in pitchers
+        if _safe_float(p.get("stats", {}).get("IP") if isinstance(p.get("stats"), dict) else p.get("IP")) > 0
+    )
+    # Only meaningful on feed-sized pools -- unit fixtures use a handful of rows.
+    if len(hitters) >= 50 and live_hitters < 50:
+        raise RuntimeError(
+            f"blend sanity: only {live_hitters}/{len(hitters)} hitters have nonzero "
+            "PA/HR -- upstream schema drift, refusing to ship all-zero projections "
+            "(legitimate end-of-season ROS zeroes? set VALUCAST_SKIP_BLEND_ZERO_GUARD=1)"
+        )
+    if len(pitchers) >= 50 and live_pitchers < 50:
+        raise RuntimeError(
+            f"blend sanity: only {live_pitchers}/{len(pitchers)} pitchers have nonzero "
+            "IP -- upstream schema drift, refusing to ship all-zero projections "
+            "(legitimate end-of-season ROS zeroes? set VALUCAST_SKIP_BLEND_ZERO_GUARD=1)"
+        )
+
+
+def _assert_pool_floor(hitters: list[dict], pitchers: list[dict]) -> None:
+    """Fail LOUD on a silently truncated feed. _assert_not_all_zero only checks
+    liveness (nonzero PA/IP) -- a feed that upstream truncated to a few hundred
+    real hitters passes that check cleanly since every row is still live. Normal
+    pool sizes run ~4693 hitters / ~5883 pitchers; dropping far below that means
+    the source feed was partially loaded, and shipping it overwrites a complete
+    ros.json with an incomplete one."""
+    if os.environ.get("VALUCAST_SKIP_BLEND_POOL_FLOOR") == "1":
+        return  # early-season pool shrinkage can legitimately dip low; see below
+    if len(hitters) < POOL_FLOOR_HITTERS:
+        raise RuntimeError(
+            f"blend sanity: only {len(hitters)} hitters, below floor of "
+            f"{POOL_FLOOR_HITTERS} -- feed likely truncated, refusing to ship a "
+            "partial pool (legitimate early-season shrinkage? set "
+            "VALUCAST_SKIP_BLEND_POOL_FLOOR=1)"
+        )
+    if len(pitchers) < POOL_FLOOR_PITCHERS:
+        raise RuntimeError(
+            f"blend sanity: only {len(pitchers)} pitchers, below floor of "
+            f"{POOL_FLOOR_PITCHERS} -- feed likely truncated, refusing to ship a "
+            "partial pool (legitimate early-season shrinkage? set "
+            "VALUCAST_SKIP_BLEND_POOL_FLOOR=1)"
+        )

@@ -1,0 +1,87 @@
+name: Prospect shadow tracking
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - data/prospects/prospect_model_inputs.json
+      - data/prospects/raw/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-public-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  build-shadow-artifacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ssh-key: ${{ secrets.REFRESH_DEPLOY_KEY }}
+          fetch-depth: 1  # no build step reads git history; .git is 1.6GB — full clones cost real minutes
+
+      - name: Sync to latest origin/master
+        run: |
+          git fetch origin
+          git checkout -B master origin/master
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -e . pytest
+
+      - name: Run fresh-input-gated shadow pipeline
+        run: python scripts/run_prospect_shadow_pipeline.py
+
+      - name: Build combined-level prospect shadow
+        run: |
+          python scripts/build_prospect_model.py
+          python scripts/build_pooled_shadow.py
+          python scripts/build_prospect_universe.py
+          python scripts/build_prospect_availability.py
+          python scripts/build_prospect_rank_v1.py
+          python scripts/build_combined_level_shadow.py
+
+      - name: Verify prospect shadow contracts
+        run: |
+          python -m pytest -q \
+            tests/test_universal_prospect_model.py \
+            tests/test_prospect_dynasty_backtest.py \
+            tests/test_prospect_dynasty_layer.py \
+            tests/test_universal_prospect_index.py \
+            tests/test_universal_prospect_index_backtest.py \
+            tests/test_prospect_forward_shadow.py \
+            tests/test_pooled_shadow.py \
+            tests/test_combined_level_shadow.py
+
+      - name: Commit changed shadow artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            data/models/valucast_universal_prospect_model.json \
+            data/models/valucast_prospect_dynasty_backtest.json \
+            data/models/valucast_prospect_dynasty_layer.json \
+            data/models/valucast_prospect_forward_shadow.json \
+            data/models/valucast_pooled_shadow.json \
+            data/models/valucast_combined_level_shadow.json \
+            data/models/valucast_universal_prospect_index.json \
+            data/models/valucast_universal_prospect_index_backtest.json \
+            data/prediction_archive/valucast_universal_prospect_model \
+            data/prediction_archive/valucast_prospect_dynasty_layer \
+            data/prediction_archive/valucast_universal_prospect_index \
+            data/prediction_archive/valucast_prospect_forward_shadow \
+            data/prediction_archive/valucast_pooled_shadow \
+            data/prediction_archive/valucast_combined_level_shadow
+          git diff --cached --quiet && exit 0
+          git commit -m "Archive prospect shadow observations"
+          git push origin master

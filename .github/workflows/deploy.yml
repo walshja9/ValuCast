@@ -1,0 +1,30 @@
+name: Deploy to Render
+
+# Render's dashboard auto-deploy toggle keeps disabling itself, leaving the live
+# app behind master. This is a lightweight, on-demand deploy: it fires the
+# service deploy hook directly with no data refresh, so you can ship the current
+# master in seconds instead of waiting on the ~25-30 min daily pipeline.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: render-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Trigger Render deploy
+        # Fail loudly if the secret is missing — a manual dispatch means deploy
+        # was intended, so a silent no-op would be worse than an error. -f turns
+        # a non-2xx response into a job failure.
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK_URL secret is not set." >&2
+            exit 1
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+          echo "Render deploy triggered."

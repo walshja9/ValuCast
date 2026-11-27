@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Prospect Movers | ValuCast{% endblock %}
+{% block og_title %}Prospect Movers | ValuCast{% endblock %}
+{% block og_description %}The biggest recent risers and fallers on the ValuCast prospect board.{% endblock %}
+{% block og_url %}https://valucast.app/movers{% endblock %}
+{% block og_image %}https://valucast.app/movers/share-card.png{% endblock %}
+{% block og_image_width %}1080{% endblock %}
+{% block og_image_height %}1350{% endblock %}
+{% block twitter_title %}Prospect Movers | ValuCast{% endblock %}
+{% block twitter_description %}The biggest recent risers and fallers on the ValuCast prospect board.{% endblock %}
+{% block twitter_image %}https://valucast.app/movers/share-card.png{% endblock %}
+
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+{% from "partials/_board_nav.html" import board_nav with context %}
+{{ board_nav(active='movers', aria='Movers board navigation') }}
+{% include "partials/_stale_notice.html" %}
+
+<section class="buys-heading movers-heading glass">
+    <svg class="buys-heading-arc" viewBox="0 0 330 150" aria-hidden="true">
+        <path d="M318 10 C220 2 126 34 14 140" />
+    </svg>
+    <div class="buys-heading-copy">
+        <span class="buys-heading-eyebrow">PROSPECT MOVERS</span>
+        <h1>PROSPECT MOVERS</h1>
+        <p class="buys-heading-sub">{{ mover_count }} movers{% if movers_generated_at %} &middot; {{ editorial_date(movers_generated_at) }}{% endif %}</p>
+        {# 7/14 declutter: the filter-methodology fineprint describes rows on the board —
+           with zero movers it's caveats about nothing, so it only renders when movers
+           exist. The empty states below carry their own honest drought/sparse copy. #}
+        {% if mover_count %}
+        <p class="buys-fineprint">The biggest risers and fallers on the prospect board over the last {% set _mv = ((rising or []) + (cooling or [])) | selectattr('window_days') | list %}{% set _mv_days = (_mv | map(attribute='window_days') | max) if _mv else 10 %}{{ _mv_days }} days. We filter out the model's nightly re-baselines so you only see real, sustained movement.{% if movers_window and _mv_days < movers_window %} The {{ movers_window }}d view currently clamps to the scoring epoch &mdash; comparable score history only goes back {{ _mv_days }} days.{% endif %}</p>
+        {% if movers_summary and movers_summary.current_ranked_count %}
+        <p class="buys-fineprint">{{ mover_count }} qualified of {{ '{:,}'.format(movers_summary.current_ranked_count) }} tracked prospects &middot; moves under &plusmn;{{ movers_summary.score_delta_threshold }} score don't qualify.</p>
+        <p class="buys-fineprint">Rank cap: Rising is capped at the current top-{{ movers_summary.current_rank_cap }}. Cooling qualifies on top-{{ movers_summary.current_rank_cap }} at the window start &mdash; a faller can drop past it and still show.</p>
+        {% endif %}
+        {% endif %}
+        {# Fixed windows only (no "All" — its span drifted with the epoch's
+           age); windows floor at the scoring epoch, and the fineprint above
+           derives its day count from the served rows. #}
+        <nav class="bf-filter-pills ledger-pills movers-window-pills" aria-label="Movement window">
+            {% for w in movers_window_choices %}
+            <a class="bf-pill{% if movers_window == w %} is-active{% endif %}"
+               href="{{ url_for('movers', window=w) }}">{{ w }}d</a>
+            {% endfor %}
+        </nav>
+    </div>
+    {# Export follows the window you're looking at; bare URLs (og:image) stay
+       on the canonical default board. #}
+    {% set _wq = ('?window=' ~ movers_window) if movers_window else '' %}
+    <div class="buys-actions">
+        <a class="export-btn" href="/movers/share-card{{ _wq }}" target="_blank" rel="noopener">Preview graphic</a>
+        <a class="export-btn secondary-action" data-metric="share_card" href="/movers/share-card.png{{ _wq }}" download="valucast-prospect-movers.png">Download PNG</a>
+    </div>
+</section>
+
+{% if not movers_available %}
+<section class="map-heading glass">
+    <h2>Movers artifact unavailable</h2>
+    <p>The board will populate after the next daily build.</p>
+</section>
+{% else %}
+<div class="movers-grid">
+    <section class="buys-list movers-section glass" aria-label="Rising prospect movers">
+        <h2>RISING 📈</h2>
+        {% if rising %}
+            {% for p in rising %}
+            <article class="movers-row">
+                <span class="buys-rank">#{{ p.current_rank }}</span>
+                <div class="buys-main">
+                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>{% include "partials/_prospect_tag.html" %}
+                    <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
+                    <span class="buys-tag">{{ p.why }}</span>
+                </div>
+                <span class="mover-delta up">{{ p.score_delta | round(1) }}</span>
+                <span class="trend-chip buys-chip">{{ p.movement_label }}</span>
+            </article>
+            {% endfor %}
+        {% elif movers_epoch_drought %}
+            <p class="buys-fineprint">Score history restarted {{ movers_epoch_label or "at the re-baseline" }}{{ " (re-baseline)" if movers_epoch_label else "" }}. The {{ movers_window or 14 }}d view needs about {{ movers_builds_needed or 'a few' }} more nightly build{{ 's' if movers_builds_needed != 1 else '' }} before risers can qualify &mdash; trend arrows return as history refills.</p>
+        {% else %}
+            <p class="buys-fineprint">Sparse board: no risers cleared the clean-tail and +2.0 score filters.</p>
+        {% endif %}
+    </section>
+
+    <section class="buys-list movers-section glass" aria-label="Cooling prospect movers">
+        <h2>COOLING ❄️</h2>
+        {% if cooling %}
+            {% for p in cooling %}
+            <article class="movers-row">
+                <span class="buys-rank">#{{ p.current_rank }}</span>
+                <div class="buys-main">
+                    <a href="/player/{{ p.player_id }}?mode=prospects">{{ p.name }}</a>{% include "partials/_prospect_tag.html" %}
+                    <span class="buys-tag">{{ p.team }} &middot; {{ p.pos }} &middot; {{ p.level }}{% if p.age is not none %} &middot; {{ p.age }}y{% endif %}</span>
+                    <span class="buys-tag">{{ p.why }}</span>
+                </div>
+                <span class="mover-delta down">{{ p.score_delta | round(1) }}</span>
+                <span class="trend-chip buys-chip">{{ p.movement_label }}</span>
+            </article>
+            {% endfor %}
+        {% elif movers_epoch_drought %}
+            <p class="buys-fineprint">Score history restarted {{ movers_epoch_label or "at the re-baseline" }}{{ " (re-baseline)" if movers_epoch_label else "" }}. The {{ movers_window or 14 }}d view needs about {{ movers_builds_needed or 'a few' }} more nightly build{{ 's' if movers_builds_needed != 1 else '' }} before fallers can qualify &mdash; trend arrows return as history refills.</p>
+        {% else %}
+            <p class="buys-fineprint">Sparse board: no fallers cleared the clean-tail and -2.0 score filters.</p>
+        {% endif %}
+    </section>
+</div>
+{% endif %}
+{% endblock %}

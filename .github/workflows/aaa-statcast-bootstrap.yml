@@ -1,0 +1,82 @@
+name: AAA-Statcast Cache Bootstrap
+
+# Owns the season-wide Baseball Savant day-CSV backfill so it never runs inside
+# the daily publish job's window (the same posture as the plate-discipline
+# bootstrap: the daily job runs ONLY the fast incremental, and
+# refresh_aaa_statcast.py refuses to fetch incrementally unless the readiness
+# marker written here is present — a partial checkpoint cache can never feed
+# build_aaa_statcast_features.py a deceptively fresh artifact). If recovery from
+# a cache eviction stalls, validate_aaa_statcast_features.py fails the publish
+# closed rather than serving silently stale data (F4, audit 2026-07-30).
+on:
+  schedule:
+    # Weekly warm-keep: a no-op while the marker is in the restored cache, a
+    # full rebuild after an eviction. Saturday 02:00 UTC — clear of the daily
+    # refresh crons (11:30/12:20/13:30 UTC), the 20:00 UTC roster pulse, AND the
+    # plate-discipline bootstrap's Sunday 02:00 slot, so the two bootstraps
+    # never queue on the shared concurrency group at the same hour.
+    - cron: "0 2 * * 6"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  # Serializes with the daily refresh (shared group, no cancellation) so the
+  # backfill and the publish pipeline never race on the shared cache keys.
+  group: daily-public-data-refresh
+  cancel-in-progress: false
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    # A cold season backfill is ONE Savant day-CSV per game_date (~190 requests
+    # for a full 3/20->late-Sept season at 0.15s rate-limit + fetch time), far
+    # cheaper than the plate-discipline bootstrap's per-game feed crawl (350
+    # min). Even at a pessimistic ~15s/day-CSV that is under 50 minutes; 60
+    # gives headroom, and the checkpointed cache (flushed every 25 days + saved
+    # on if:always) makes a timeout resumable on the next run rather than wasted.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 1  # no build step reads git history; nothing is pushed
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Restore AAA-Statcast pitch cache
+        id: aaa-statcast-cache
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: aaa-statcast-v1-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            aaa-statcast-v1-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt -e .
+
+      - name: Backfill AAA-Statcast pitch cache
+        run: |
+          if [ ! -f data/prospects/raw/.aaa_statcast_cache_ready ]; then
+            python scripts/refresh_aaa_statcast.py --backfill
+            touch data/prospects/raw/.aaa_statcast_cache_ready
+          else
+            echo "cache marked ready; nothing to bootstrap"
+          fi
+
+      - name: Save AAA-Statcast pitch cache
+        if: always()
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            data/prospects/raw/aaa_statcast_pitch_cache.json
+            data/prospects/raw/.aaa_statcast_cache_ready
+          key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}

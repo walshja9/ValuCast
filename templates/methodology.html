@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+{% block title %}How ValuCast Works{% endblock %}
+{% block content %}
+{% from "partials/_editorial_date.html" import editorial_date %}
+<article class="methodology">
+    <div class="topline">
+        <h2>How ValuCast Works</h2>
+        <a href="/" class="back">&larr; Back to board</a>
+    </div>
+    <p class="methodology-version">As of June 2026{% if scorecard %} · {{ scorecard.version }}{% endif %}</p>
+
+    <p class="methodology-principle"><strong>Our display rule:</strong> Missing data stays missing; estimates are labeled. <a href="/glossary">Resolve a metric in the glossary</a>.</p>
+
+    {% if scorecard and scorecard.generated_at %}
+    <p class="methodology-version">Scorecard generated {{ editorial_date(scorecard.generated_at) }}</p>
+    {% endif %}
+
+    <div class="ataglance">
+        <span class="label">At a glance — what's ours vs external</span>
+        <table class="provenance-table">
+            <tr><th>Component</th><th>Provenance</th></tr>
+            <tr><td>Hitting model</td><td>Built &amp; validated by ValuCast</td></tr>
+            <tr><td>Hitting inputs</td><td>Baseball Savant xBA/xSLG</td></tr>
+            <tr><td>Pitching model</td><td>Built &amp; validated by ValuCast — no third-party projections</td></tr>
+            <tr><td>Pitching inputs</td><td>Public MLB statistics</td></tr>
+            <tr><td>Steamer board</td><td>External comparison board; matching historical benchmark pending</td></tr>
+        </table>
+    </div>
+
+    <section>
+        <h3>What ValuCast is</h3>
+        <p>ValuCast is an independent baseball model, not a public-ranking average.
+        For prospects and ValuCast H+P, outside rankings, market values, and consensus
+        lists are comparison context only; they do not generate the score.</p>
+        <p>ValuCast turns player projections into values tuned to <em>your</em> league's
+        categories, weights, and roster rules. You can value players from two sources:
+        <strong>Steamer</strong> (an external comparison board, and the default) or
+        <strong>ValuCast H+P</strong>, our own in-house projection.{% if hp_paused %} ValuCast H+P is paused until ValuCast's {{ hp_season_context.target_season }} projections are built, so the main board currently shows Steamer only.{% endif %}</p>
+    </section>
+
+    <section>
+        <h3>The two boards</h3>
+        <p class="profile-note">{{ hp_season_context.season_note }}</p>
+        <p>{% if preseason %}Before the season starts, the default board values Steamer full-season projections for {{ target_season }}; adjustments that depend on current-season results are not applied.{% else %}The <strong>default board</strong> values current-season actuals + Steamer
+        rest-of-season.{% endif %} The <strong>ValuCast board</strong> values our own full-season
+        projection{% if hp_paused %} and is an option that returns when the new run is ready{% endif %}. {% if hp_paused %}A side-by-side look{% else %}Flipping the toggle{% endif %} is useful for eyeballing differences, but it is
+        <strong>not an apples-to-apples backtest</strong>; our real check is the held-out
+        validation below.</p>
+        <p><strong>Promotion posture:</strong> {% if hp_paused %}ValuCast H+P is paused until ValuCast's {{ hp_season_context.target_season }} projections are built; its last run covers {{ hp_season_context.in_house_season }}. The scorecard below does not control the pause: H+P returns as an option when the new run is ready.{% else %}ValuCast H+P is available as an opt-in
+        projection source so users can compare it directly.{% endif %} It will not become the default
+        board until its track record and live behavior clear the same honesty gates shown
+        here.</p>
+    </section>
+
+    <section id="dynasty-value-scale">
+        <h3>What the Dynasty Value number means</h3>
+        <p><strong>Dynasty Value is a 0-100 model score.</strong> Higher scores identify
+        stronger dynasty assets under ValuCast's current model. 100 is the top of the
+        display range and can be shared by multiple players. A ten-point gap is not
+        ten dollars or ten projected fantasy points.</p>
+        <ul>
+            <li><strong>MLB vs. prospects.</strong> The two groups use different models
+            and future-value targets. Their shared display range is not a single
+            calibrated unit of fantasy production. Comparisons between them are
+            approximate, including gaps between their scores.</li>
+            <li><strong>Age on the dynasty board.</strong> Age shown is the player's age on the board date. MLB dynasty values use age on April 1, {{ target_season if preseason else served_season }}.</li>
+            <li><strong>The $ column.</strong> The dollar figure is a
+            replacement-adjusted auction price: total payout equals teams &times; budget,
+            spread across the pool by value, and driven by your roster / teams / budget
+            settings. Change those knobs and the dollars re-scale; the 0-100 score does
+            not.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h3>Prospect Rank v1</h3>
+        <p>The <strong>Prospects board</strong> is ValuCast's own prospect ordering.
+        Top prospects are generated from a universal baseball profile first, then
+        translated into a public rank and value. The score is built from factual current
+        performance, age/level context, draft/signing investment, historical outcome
+        patterns, and availability/sample risk.</p>
+
+        <details>
+            <summary>How top prospects are generated</summary>
+            <ol>
+                <li>Start with the current eligible prospect universe and MLBAM identity.</li>
+                <li>Build each player's factual baseball profile: role, age, level,
+                    current MiLB stat line, sample size, draft/signing facts, ETA, and
+                    availability context.</li>
+                <li>Score the profile through ValuCast's prospect model and universal
+                    outcome index.</li>
+                <li>Apply sample, availability, and bucket calibration rules by group,
+                    not by name.</li>
+                <li>Rank the final scores into one universal prospect board.</li>
+            </ol>
+            <p><strong>Category Fit</strong> is a separate league-settings view. It can
+            help a user understand roster fit, but it does not generate the public
+            prospect rank.</p>
+        </details>
+
+        <details>
+            <summary>What can and cannot affect a prospect score</summary>
+            <ul>
+                <li><strong>Can affect score:</strong> Prospect Model v0.6, universal
+                    outcome context, MiLB performance rates and sample reliability,
+                    draft/signing facts, age/level context, and factual availability
+                    status.</li>
+                <li><strong>Cannot affect score:</strong> outside dynasty rankings,
+                    outside values, value history, public prospect rankings, and market
+                    signals. Those are comparison context only.</li>
+                <li><strong>Bucket calibration:</strong> applied by rule, not by name.
+                    Current rules cover lower-minors pedigree compression, thin upper-level
+                    pitcher samples, and upper-level hitters with full samples but limited
+                    game impact.</li>
+            </ul>
+        </details>
+
+        <details>
+            <summary>Shape comps (measured, not vibes)</summary>
+            <p>Hitter prospect cards show <strong>Closest MLB Shapes</strong>: the real
+            MLB seasons (2000&ndash;2025, age 26 or younger, 400+ PA) nearest the
+            prospect's MLB-translated K% / BB% / ISO. Rates are compared
+            <em>era-relative</em> &mdash; z-scored within each season's population of
+            regulars &mdash; so a strikeout rate means what it meant in that run
+            environment. Alongside the named matches we show how the nearest matches with
+            a complete five-season follow-up window actually aged (match seasons
+            2000&ndash;2020 &mdash; the ones with a complete five-season follow-up by
+            2025), deduped by player so no career votes twice. Outcome tiers are measured, with published cut points:
+            450+ PA/yr with a 110+ era-relative OPS ("regular with an above-average
+            bat"), 400+ PA/yr ("everyday regular"), 150+ ("limited playing time"), under
+            150 ("faded out") &mdash; playing time is the yardstick, so an injury year or
+            a light-workload position (catchers) counts against a player, and 2020 is
+            pro-rated to 162 games.</p>
+            <p>The same translated axes also produce three transparent component
+            matches: <strong>Power (ISO)</strong>, <strong>Contact (K%)</strong>, and
+            <strong>Approach (BB%)</strong>. Each card names the closest historical
+            season and its measured distance on that single era-normalized axis. We do
+            not turn distance into a match percentage.</p>
+            <p><strong>Pitcher shape comps</strong> use translated K-BB%, K/9, and BB/9.
+            Historical starter and reliever seasons are normalized and matched in
+            separate role pools; mixed historical seasons and prospects with ambiguous
+            current usage are suppressed. Pitcher cards show names, rates, and measured
+            distance only &mdash; no outcome odds or future-role claim.</p>
+            <p><strong>The bias we can't remove, named:</strong> comps can only be made
+            to players who actually earned a qualifying young-MLB season. Players who
+            reached that bar and then declined are counted (the "faded out" tier), but a
+            prospect with this exact shape who never got a real MLB look is absent from
+            the pool by construction. That structural survivorship is exactly why a shape
+            comp is a <em>descriptive</em> lens, never an outcome forecast. Comps never feed a ValuCast score,
+            know nothing about defense or speed, and only render for prospects whose
+            translation is high-confidence with a real sample.
+            Rebuilt nightly by the public data pipeline.</p>
+        </details>
+    </section>
+
+    <section>
+        <h3>How the model works</h3>
+        <p>For each player we weight recent seasons and regress toward the league average
+        (more for small samples). <strong>Hitters</strong> are then age-adjusted and
+        de-noised toward Statcast expected stats (Savant xBA/xSLG) before projecting.
+        <strong>Pitchers</strong> are projected per batter faced with a continuous
+        starting-vs-relieving usage blend (no hard starter/reliever cliff). <em>Age
+        adjustment applies to hitters only — the v1 pitching model has no aging curve, a
+        planned future improvement.</em></p>
+
+        <details>
+            <summary>Under the hood</summary>
+            <p>A Marcel-style method: recent seasons weighted {{ hit_weights }} (most recent
+            first), regressed to the league mean, with per-component rate (events ÷
+            opportunities) reconstructed into counts. Hitters are age-adjusted and add
+            <strong>Statcast input de-noising</strong> (blend actual contact/power toward
+            Savant xBA/xSLG, redistributing into 1B/2B/3B/HR by the player's own extra-base
+            mix). Pitchers use a continuous starter-probability blend so swingmen and
+            converted arms aren't miscategorized; the <strong>v1 pitching model has no age
+            curve</strong> (a planned improvement) and <strong>consumes no third-party
+            projection.</strong></p>
+        </details>
+
+        <details>
+            <summary>Model equations</summary>
+            <p><strong>Season weighting</strong> is done per component as <em>weighted
+            events ÷ weighted opportunities</em> (not a weighted rate). For a component with
+            event count E and opportunities PA, weights <code>{{ hit_weights }}</code>:
+            <code>rate = (5·E₋₁ + 4·E₋₂ + 3·E₋₃) / (5·PA₋₁ + 4·PA₋₂ + 3·PA₋₃)</code>.</p>
+            <p><strong>Regression to the mean</strong> over N opportunities with a regression
+            constant <code>n_reg</code> (hitters {{ hit_n_reg }}, pitchers {{ pit_n_reg }}):
+            <code>projected_rate = (rate·N + league_rate·n_reg) / (N + n_reg)</code>, then the
+            projected count is rebuilt as <code>projected_rate × projected_PA</code>.</p>
+            <p><strong>Age adjustment (hitters only)</strong> nudges hitter projections along
+            an empirical aging curve. The v1 pitching model applies no aging curve.</p>
+            <p><strong>Hitter de-noising</strong> (knobs α): blend the actual rate toward the
+            Savant expected rate, <code>rate* = (1−α)·rate + α·x</code> (x = xBA/xSLG), then
+            redistribute the extra hits/bases preserving the player's hit-type mix.</p>
+            <p><strong>Pitcher role blend</strong>: with p<sub>sp</sub> the starter
+            probability, each component is shifted continuously by
+            <code>f[c]^(h_sp − p_sp)</code> — no hard SP/RP split.</p>
+            <p><em>Worked example (HR rate).</em> An age-29 hitter (near peak, age factor
+            ≈ 1.0) with no Statcast movement: {{ worked.ex[0][0] }} HR / {{ worked.ex[0][1] }} PA,
+            {{ worked.ex[1][0] }} / {{ worked.ex[1][1] }}, {{ worked.ex[2][0] }} / {{ worked.ex[2][1] }}
+            over the last three seasons (weights {{ worked.weights|join('/') }}). Weighted
+            events ÷ weighted opportunities =
+            <code>({{ worked.weights[0] }}·{{ worked.ex[0][0] }} + {{ worked.weights[1] }}·{{ worked.ex[1][0] }} + {{ worked.weights[2] }}·{{ worked.ex[2][0] }}) / ({{ worked.weights[0] }}·{{ worked.ex[0][1] }} + {{ worked.weights[1] }}·{{ worked.ex[1][1] }} + {{ worked.weights[2] }}·{{ worked.ex[2][1] }}) = {{ worked.w_ev }} / {{ worked.w_pa }} ≈ {{ worked.rate }}</code>
+            HR per PA. Regressing toward a {{ worked.league }} league HR rate with
+            <code>n_reg = {{ worked.n_reg }}</code> gives
+            <code>({{ worked.w_ev }} + {{ worked.league }}·{{ worked.n_reg }}) / ({{ worked.w_pa }} + {{ worked.n_reg }}) ≈ {{ worked.reg }}</code>.
+            Projected PA = <code>{{ worked.pa_w1 }}·{{ worked.ex[0][1] }} + {{ worked.pa_w2 }}·{{ worked.ex[1][1] }} + {{ worked.pa_base }} = {{ worked.proj_pa }}</code>,
+            so projected HR ≈ <code>{{ worked.reg }} × {{ worked.proj_pa }}</code> ≈
+            <strong>{{ worked.proj_hr }} HR</strong>.</p>
+        </details>
+
+        {% if scorecard %}
+        <details>
+            <summary>Validation details</summary>
+            <p>We hold out future seasons (<strong>{{ scorecard.hitting.seasons[0] }}–{{ scorecard.hitting.seasons[-1] }}</strong>),
+            project forward from prior seasons only (no peeking), and score against simple
+            baselines. Reported as a mean-absolute-error (MAE) ratio — below 1.0 means lower
+            error than the baseline.</p>
+            <ul>
+                <li><strong>Hitting</strong> vs classic Marcel, n = {{ scorecard.hitting.sample_size }} qualified hitter-seasons,
+                    correlation-win rate {{ scorecard.hitting.correlation_win_rate }}
+                    — essentially even on ranking (a near coin-flip); the edge is in error magnitude on rate stats, not in re-ordering players.
+                    {{ scorecard.hitting.eligibility }}.</li>
+                <li><strong>Pitching</strong> vs persistence (last-year carry-forward),
+                    n = {{ scorecard.pitching.sample_size }} qualified pitcher-seasons,
+                    skill correlation-win rate {{ scorecard.pitching.correlation_win_rate }}
+                    — a modest ranking edge; most of the improvement is smaller error on the rate stats below, not re-ordering pitchers.
+                    {{ scorecard.pitching.eligibility }}.</li>
+            </ul>
+            <p>Per-stat MAE ratios:</p>
+            <p><em>Hitting (vs classic):</em>
+                {% for st in ["AVG","OBP","SLG","OPS"] %}{{ st }} {{ scorecard.hitting.per_stat_mae_ratio[st] }}{% if not loop.last %} · {% endif %}{% endfor %}
+                — counting stats ≈ 1.0 (de-noising doesn't touch them).</p>
+            <p><em>Pitching (vs persistence):</em>
+                {% for st in ["ERA","WHIP","K_9","BB_9","IP","K"] %}{{ st }} {{ scorecard.pitching.per_stat_mae_ratio[st] }}{% if not loop.last %} · {% endif %}{% endfor %}.</p>
+            <p><strong>W, SV and QS are reported separately</strong> and treated as
+            lower-confidence — they depend heavily on team decisions and opportunity, not
+            pitcher skill.</p>
+        </details>
+        {% endif %}
+    </section>
+
+    <section>
+        <h3>MLB Projection Track Record — held-out scorecard</h3>
+        {% if not scorecard %}
+        <p>The held-out validation scorecard is temporarily unavailable — it
+        republishes with the next daily refresh.</p>
+        {% else %}
+        {% if scorecard.pitching.aggregate_mae_ratio < 1.0 and scorecard.hitting.aggregate_mae_ratio < 1.0 %}
+        <p>On seasons the model never saw, ValuCast made smaller errors than the
+        standard baselines in the areas shown below. The gains are mostly in rate
+        stats; playing-time and opportunity stats remain harder and are labeled that way.</p>
+        {% else %}
+        <p>On seasons the model never saw, ValuCast's error vs the standard baselines
+        is shown below — including where it currently does <strong>not</strong> beat
+        them. The claim follows the data, not the other way around.</p>
+        {% endif %}
+        <table class="provenance-table ledger">
+            <tr><th>Step</th><th>Held-out result</th></tr>
+            <tr>
+                <td>Pitching vs persistence (skill)</td>
+                <td><strong>{{ scorecard.pitching.aggregate_mae_ratio }}</strong> MAE ratio
+                    ({% if scorecard.pitching.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.pitching.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.pitching.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}, n = {{ scorecard.pitching.sample_size }} pitcher-seasons) —
+                    IP and K roughly <strong>neutral</strong>; the signal is concentrated in ERA / WHIP / K-9 / BB-9.
+                    The pitching gain concentrates in ERA and BB-9 — the noisiest, most luck-driven stats — and the hold-out includes the 60-game 2020 season, so read the point estimate as directional, not precise.</td>
+            </tr>
+            <tr>
+                <td>Hitting vs classic Marcel</td>
+                <td><strong>{{ scorecard.hitting.aggregate_mae_ratio }}</strong> aggregate MAE ratio
+                    ({% if scorecard.hitting.aggregate_mae_ratio < 1.0 %}~{{ pct(scorecard.hitting.aggregate_mae_ratio) }}% lower error{% else %}~{{ -pct(scorecard.hitting.aggregate_mae_ratio) }}% HIGHER error — no current edge{% endif %}, n = {{ scorecard.hitting.sample_size }} hitter-seasons) — signal
+                    concentrated in <strong>AVG/OBP/SLG/OPS</strong>.
+                    Aggregate over {{ scorecard.hitting.sample_size }} seasons; the win comes from four correlated rate stats, so it is a narrow edge, not an across-the-board one.</td>
+            </tr>
+            {% for row in scorecard.not_shipped %}
+            <tr><td>{{ row.name }}</td><td>{{ row.verdict }} — <strong>not shipped</strong></td></tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </section>
+
+    <section>
+        <h3 id="aotc-rules">Ahead of the Curve — track-record rules (pre-registered 2026-07-02)</h3>
+        <p>Every prospect we flag as ranked meaningfully ahead of the public field is
+        tracked to one of exactly seven outcomes — including the ones where <strong>we
+        backed off our own call</strong>, which count against us. No call ever leaves
+        the ledger silently.</p>
+        <table class="provenance-table ledger">
+            <tr><th>Rule</th><th>Definition</th></tr>
+            <tr><td>Success rate</td><td>wins (field moved to us, or fully caught up) over
+                every <em>decided</em> call — field-moved-away and our own retreats sit in
+                the denominator; undecided calls are excluded, never hidden.</td></tr>
+            <tr><td>Noise floor</td><td>a board move only counts past <strong>10 spots or
+                15% of the call's initial gap</strong> — small jitter hits flagged and
+                unflagged players at identical rates, so it counts for nobody.</td></tr>
+            <tr><td>Matched controls</td><td>every call is compared against never-flagged
+                players at the same rank range, role, and date — the published lift is how
+                much more often the field comes toward our calls than toward theirs.</td></tr>
+            <tr><td>Maturity</td><td>headline cohort = calls at least 14 days old (one full
+                deep-board refresh cycle); the aggregate publishes only past a 30-day horizon
+                with 25+ decided calls.</td></tr>
+            <tr><td>Retreat attribution</td><td>when a divergence closes, whichever side
+                moved more gets the credit — <strong>ties count against ValuCast</strong>.</td></tr>
+            <tr><td>Targets</td><td>pre-registered: <strong>50% decided-rate</strong> and
+                <strong>1.5x control lift</strong>. Consensus ranks are never a model input, though some calibration settings were reviewed with consensus boards in view.</td></tr>
+        </table>
+        <p>These definitions are frozen ahead of the publish gate. The full ledger is
+        human-readable at <a href="/ledger">/ledger</a> — misses included —
+        and the raw artifact is public at <a href="/aotc-scorecard.json">/aotc-scorecard.json</a>
+        for anyone who wants to snapshot it themselves.</p>
+
+        {# 7/14 declutter: dated audit narratives collapsed — every word kept, just
+           behind a toggle. Pre-registration dates + forward-gate loss stay top-level. #}
+        <details>
+            <summary>Adversarial audit log — dated</summary>
+        <h4 id="aotc-scoring-notes">Scoring notes — 2026-07-12, the night before first publish</h4>
+        <p>Before the gate matured we ran an independent adversarial audit of the
+        scorecard math (a different AI model family from the ones that built and
+        reviewed it, then every finding re-verified against the raw archive).
+        Everything it found is disclosed here, dated, before the first number
+        published — including what cuts against us.</p>
+        <ul>
+            <li><strong>Compliance fix, disclosed:</strong> the headline decided-rate and
+            control lift had been computed on the <em>all-calls</em> cohort, contradicting
+            the registered maturity rule above ("headline cohort = calls at least 14 days
+            old"). Pinned to the matured cohort before first publish. On that day's data
+            the decided rate moved <strong>up</strong> (24.6% &rarr; 28.7%) and the lift
+            moved <strong>down</strong> (1.36x &rarr; 1.31x); both still miss our
+            pre-registered targets. Artifact version 0.2.0 &rarr; 0.2.1; decided calls
+            younger than 14 days now publish alongside as <code>immature_decided</code>,
+            never hidden.</li>
+            <li><strong>Known contaminant, published as registered:</strong> "we backed
+            off" is attributed mechanically — our rank moved more than the field's.
+            Model retraining nights move our whole board at once, and 50 of the current
+            65 retreats happened without the field moving away (in 20 of them the field
+            actually moved <em>toward</em> us). The registered rule counts every one
+            against us, so that is how we publish it. A re-baseline-aware retreat rule
+            will be pre-registered as a dated v0.3 and applied forward only — rewriting
+            the rule after seeing the score is exactly what pre-registration exists to
+            prevent.</li>
+            <li><strong>Statuses recompute; nothing is hand-frozen:</strong> every build
+            re-derives every call from the full archive, so a "caught up" call whose gap
+            re-opens later re-opens with it and the headline moves both ways. Ledger copy
+            that previously described those outcomes as "final" has been corrected.</li>
+            <li><strong>Conservative choices we are keeping:</strong> controls are drawn
+            from players never flagged as of the latest build (an as-of-call-date pool
+            would read ~1.40x on all calls instead of 1.36x), and controls are matched on
+            rank band, role, and date but <em>not</em> development level (a same-level-only
+            sensitivity reads ~1.65x matured instead of 1.31x — above target). Both
+            alternatives would raise our self-grade, so neither ships as a post-hoc
+            change; they live here as published sensitivities.</li>
+        </ul>
+
+        <h4 id="aotc-stabilized">Stabilized read — added 2026-07-13 (the day after first publish)</h4>
+        <p>The first day the headline went live it read one thing; the next build
+        it read another, off a single day of new board data. That is the metric
+        working as designed — it re-scores every open call against the newest
+        field snapshot each night — but it means a single build is a noisy
+        reading, not a track record. Trumpeting one good day would be
+        cherry-picking; trumpeting one bad day would be its own kind of
+        dishonesty. So from 2026-07-13 forward we also publish a <strong>trailing
+        14-build average</strong> of the exact same daily numbers, replayed from
+        the committed archive so anyone can reproduce it, alongside the min and
+        max so the day-to-day noise is visible rather than hidden. <strong>The
+        pre-registered daily number is unchanged</strong> — this is a summary laid
+        on top of it, not a rewrite of it. We report the average, we show the
+        range, and we let the number be as modest and as noisy as it honestly
+        is.</p>
+        </details>
+    </section>
+
+    <section>
+        <h3 id="sensitivity">Sensitivity Analysis — how much do our assumptions matter?</h3>
+        {% if sensitivity %}
+        {# 7/14 declutter: long-form study collapsed — no copy removed. #}
+        <details>
+            <summary>The full study — every dial, measured</summary>
+        <p>Our rankings depend on a bunch of judgment-call dials — how much to trust a hot
+        three-week stretch with no track record behind it, how much a bad current season
+        should outweigh a great last year, how much a prospect's odds of <em>reaching</em>
+        the majors count versus his fantasy ceiling once he's there. None of these has a
+        single right setting. So instead of handing you one ranking and asking you to trust
+        it, we grabbed each dial, nudged it to a reasonable alternative, re-ran all
+        {{ "{:,}".format(sensitivity.board_size) }} ranked prospects, and counted how many
+        actually changed spots. It's us showing our work — which assumptions move the board
+        a lot, and which barely matter. This is a real re-scoring of the live model, not a
+        simulation; every figure below regenerates nightly from the public data pipeline.</p>
+        <table class="provenance-table ledger">
+            <tr><th>Assumption changed</th><th>Measured effect</th></tr>
+            {% for lever in sensitivity.levers %}
+            <tr>
+                <td>{{ lever.label }}<br><span class="methodology-version">{{ lever.plain }} ({{ lever.live_value }} &rarr; {{ lever.variants | map(attribute='value') | join(' or ') }})</span></td>
+                <td>
+                {% for v in lever.variants %}
+                    {% if lever.variants | length > 1 %}<strong>{{ v.value }}:</strong> {% endif %}<strong>{{ "{:,}".format(v.moved_25plus) }}</strong> move {{ sensitivity.big_move_spots }}+ spots, {{ "{:,}".format(v.moved_10plus) }} move {{ sensitivity.notable_move_spots }}+, average {{ v.avg_abs_move }} spots{% if v.moved_25plus > 0 and v.top_100_moved_25plus == 0 %}; the top {{ sensitivity.top_band }} never moves {{ sensitivity.big_move_spots }}+{% elif v.top_100_moved_25plus > 0 %}; {{ v.top_100_moved_25plus }} of them from the top {{ sensitivity.top_band }}{% endif %}{% if v.moved_25plus > 0 and v.big_move_direction.down == v.moved_25plus %}, all moving down{% endif %}.{% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <p><strong>The pattern that holds across every dial: the top 100 barely moves.</strong>
+        Your blue-chip prospects are locked in no matter how we set things — almost all the
+        churn is deep in the board, where prospects are nearly tied and any nudge just
+        reshuffles a crowd.</p>
+        <p>Two things this analysis does <strong>not</strong> tell you: whether any of these
+        alternate settings would have predicted real outcomes better — that's a separate,
+        harder question we validate with held-out backtests before changing anything live —
+        and it isn't recomputed on every page load, since a full board rebuild takes real
+        compute. This is a dated study (run {{ sensitivity.generated_at[:10] }} against that
+        day's committed board) that we re-run and republish as the model changes.</p>
+        </details>
+        {% else %}
+        <p>The sensitivity scorecard is regenerating and will be back shortly.</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h3>What we have and haven't proven</h3>
+        <p class="profile-note">{{ hp_season_context.season_note }}</p>
+        <p>Our validation is against internal baselines (persistence and classic Marcel),
+        which it beats on held-out data. ValuCast has <strong>not yet proven</strong> it
+        beats Steamer or ZiPS: we lack matching archived preseason projections for a fair,
+        apples-to-apples historical backtest. So Steamer is an <strong>external comparison
+        board, with a matching historical benchmark pending</strong> — not a benchmark we've
+        beaten.</p>
+        {% if forward_gate and forward_gate.gate %}
+            {% if forward_gate.comparison_basis.rate_actuals_method == "post_freeze_component_deltas" %}
+                {% set hitter_ratio = forward_gate.role_scores.get("hitters", {}).get("marcel_mean_ratio_vs_steamer") %}
+                {% set pitcher_ratio = forward_gate.role_scores.get("pitchers", {}).get("marcel_mean_ratio_vs_steamer") %}
+                <p><strong>Forward rate check — advisory only.</strong> The evaluator now rebuilds
+                actual rates from post-freeze counting-stat deltas rather than comparing frozen
+                projections with cumulative season rates. As of {{ forward_gate.gate.validated_through }},
+                {% if hitter_ratio is not none and pitcher_ratio is not none %}
+                Hitter rate error: <strong>{{ hitter_ratio }}x Steamer</strong>.
+                Pitcher rate error: <strong>{{ pitcher_ratio }}x Steamer</strong>.
+                {% else %}the role-separated sample is still collecting.{% endif %}
+                The hitter and pitcher checks are separate: <strong>both roles must clear independently</strong>.
+                {% if forward_gate.publication_veto.status == "held" %}<strong>Publication remains held</strong>.
+                {% else %}The advisory veto is clear, but any source change remains manual and default-off.{% endif %}</p>
+            {% else %}
+                <p><strong>The stored forward rate readout is excluded from publication decisions.</strong>
+                It used cumulative season rates rather than post-freeze component deltas, so the stored
+                magnitude is <strong>not a valid post-freeze score</strong>. The evaluator is being repaired;
+                <strong>Steamer remains the live source</strong>.</p>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    <section id="plate-discipline">
+        <h3>Plate discipline: measured vs. estimated</h3>
+        <p>Prospect cards show <strong>plate-discipline rates counted directly from
+        MLB's own public play-by-play</strong> &mdash; the same feed the league uses
+        to score games. There are two kinds of number here, and we keep them
+        visibly separate.</p>
+        <ul>
+            <li><strong>Measured (exact): Swing%, Whiff%, SwStr%.</strong> These come
+            straight from each pitch's outcome description (swing, foul, swinging
+            strike, ball in play), so they are deterministic and reproducible. We
+            validated them against a public reference to the decimal &mdash; for one
+            Double-A hitter over 41 games our Swing% and SwStr% matched the outside
+            source exactly. No estimation is involved. One convention worth stating:
+            a caught foul tip counts as a whiff (the Savant rule &mdash; by rule a foul
+            tip is a swinging strike), and the same rule applies in the AAA Statcast
+            section below, so &ldquo;Whiff%&rdquo; means the same thing everywhere on
+            the site. We unified this on 2026-07-30; Whiff%, SwStr%, and Z-Contact%
+            display values shifted slightly on that date, with no effect on any
+            value, rank, or projection.</li>
+            <li><strong>Estimated: Chase%, Z-Swing%, Z-Contact%, Zone%.</strong> These
+            depend on <em>where</em> each pitch crossed the zone. Modern tracked
+            coordinates are common at Triple-A and rare below it &mdash; but coverage
+            varies game by game, not level by level, so we label each player's
+            level sample individually. Pitches without tracked coordinates get a
+            pixel-to-feet calibration (fit on Triple-A games that carry both) to
+            place them in or out of the zone. A sample's zone metrics are labeled
+            <span class="pd-est-inline">est.</span> whenever <em>any</em> of its
+            zone calls used that calibration &mdash; which is why some Triple-A
+            samples carry the tag and some lower-level samples measured on real
+            coordinates do not. The flag follows the data, not the level.</li>
+        </ul>
+        <p><strong>What the calibration's accuracy number does &mdash; and does not
+        &mdash; cover.</strong> The pixel calibration's held-out agreement can only be
+        <em>measured</em> where a pitch carries both coordinate systems at once,
+        which in practice means Triple-A. At the pixel-only levels the calibration
+        actually serves (Double-A and below) there is no tracked ground truth to
+        score it against, so the quoted agreement is an extrapolation there, not a
+        measurement &mdash; and agreement is weakest exactly where it matters most,
+        on borderline pitches near the zone edge. The build now records both the
+        measurement scope and edge-banded agreement (within 3 inches and 1 inch of
+        the zone boundary) in the artifact's calibration metadata, so that claim can
+        be checked rather than taken on faith. This is one more reason zone metrics
+        carry the <span class="pd-est-inline">est.</span> tag: treat them as
+        directional context, not measured fact.</p>
+        <p><strong>Why there is no exit velocity or contact-quality data.</strong>
+        Public minor-league play-by-play carries no batted-ball tracking, so ValuCast
+        does not show &mdash; and will not estimate &mdash; exit velocity, launch
+        angle, or hard-hit rate at these levels. We would rather leave a box empty
+        than fabricate a number.</p>
+        <p><strong>Cohorts and sample.</strong> Percentiles compare a player only to
+        others <em>at the same level</em>, and a bucket must clear a minimum
+        pitches-seen sample before any bar renders &mdash; below that floor we show no
+        percentile at all, the same small-sample discipline the skill bars use. A
+        player who changed levels shows a separate row set per level; we never blend a
+        percentile across two levels. These are observe-only card context: they never
+        feed a player's value, rank, or projection.</p>
+        <p><a href="/discipline-leaders">Discipline Leaders</a> ranks only hitters
+        who clear that minimum pitches-seen floor, within their current level.
+        Only Chase%, Whiff%, SwStr%, and Z-Contact% receive leader framing; Swing%,
+        Zone%, and Z-Swing% remain descriptive context. Estimated labels follow the
+        underlying sample exactly as they do on player cards, and the cohort can
+        change as players are promoted.</p>
+    </section>
+
+    <section id="aaa-statcast">
+        <h3>AAA Statcast: measured pitch shape and contact quality</h3>
+        <p>At Triple-A, MLB tracks pitches and batted balls with the same Statcast
+        system it uses in the majors, and Baseball Savant publishes the pitch-level
+        data. For Triple-A players we show a second, separate source built straight
+        from those tracked measurements: <strong>measured AAA Statcast (Savant), AAA
+        only, display context &mdash; not a model input.</strong></p>
+        <ul>
+            <li><strong>Pitch shape (pitchers): velocity, induced vertical break, horizontal
+            break, spin, extension, and usage per pitch type.</strong> These come directly
+            from the tracked release and movement measurements &mdash; not estimates.</li>
+            <li><strong>Contact quality (hitters): average and max exit velocity, hard-hit
+            rate, and launch angle.</strong> These are tracked batted-ball measurements,
+            shown for Triple-A only.</li>
+        </ul>
+        <p>Because these are <em>measured</em> values, they carry <strong>no
+        &ldquo;est.&rdquo; tag</strong>. This is a parallel source to the plate-discipline
+        section above, not a replacement: plate discipline <em>estimates</em> zone
+        metrics below Triple-A from a pixel calibration, whereas this AAA source
+        <em>measures</em> the zone from real tracked pitch locations. We do not restate
+        either source in terms of the other.</p>
+        <p><strong>Why exit velocity appears here but not on the plate-discipline
+        section.</strong> Public minor-league <em>play-by-play</em> carries no
+        batted-ball tracking, so the play-by-play plate-discipline layer will never
+        show or estimate exit velocity at any level &mdash; that limit stands. This
+        AAA source is different data: Statcast's own Triple-A batted-ball tracking,
+        which does measure exit velocity. It is shown for Triple-A only, and never for
+        Double-A or High-A. Like everything on this page, it is observe-only: it never
+        feeds a player's value, rank, or projection.</p>
+    </section>
+
+    <section id="model-verdicts">
+        <h3>Model verdicts: two layers of accountability</h3>
+        <p>We keep two accountability layers, not one. The <strong>call-level</strong>
+        layer is <a href="/ledger">The Ledger</a>{% if not receipts_hold %} and <a href="/receipts">Call-Up
+        Receipts</a>{% endif %} &mdash; every individual call we make, tracked to an outcome. The
+        <strong>model-level</strong> layer is the <a href="/models">Model Verdicts</a>
+        page: every ValuCast model and subsystem carries an honest four-way verdict
+        &mdash; VALIDATED, PROVISIONAL, DEPRECATED, or REJECTED &mdash; and every verdict
+        links the committed evidence behind it. The published failures (a forward
+        rate evaluator held for repair, a Wins target the labels can't train)
+        are first-class rows there, not hidden. We publish what we haven't proven rather
+        than wait for it to look better.</p>
+    </section>
+
+    <section id="methodology-changelog">
+        <h3>Methodology changelog</h3>
+        <p>Append-only changes to how ValuCast measures, validates, or explains the product.</p>
+        <ul>
+            {% for change in methodology_changelog %}
+            <li><strong>{{ change.date }} &mdash; {{ change.title }}.</strong> {{ change.detail }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section id="board-time-machine">
+        <h3>The Archives: committed boards, replayed</h3>
+        <p><a href="/board">The Archives</a> replays ValuCast's prospect board
+        exactly as it stood on any archived date. These are the <strong>exact daily board
+        snapshots</strong> the build commits every morning &mdash; the page is a replay of
+        the committed artifact as published that day (&ldquo;as-shown&rdquo;), never a
+        current-model re-scoring of the past (&ldquo;as-reconstructed&rdquo;). The as-of
+        date on the page is the snapshot date, and the archive runs from ValuCast's first
+        committed day to today: we do not reconstruct dates before the archive begins, and
+        a date with no readable snapshot says so plainly rather than showing a neighboring
+        date in its place.</p>
+        <p><strong>Comparability.</strong> Dates before the
+        {{ editorial_date(board_tm_epoch_date) }} scoring re-baseline are flagged
+        <em>pre-baseline</em>: they were scored on an older scale, comparable among
+        themselves but not directly to current numbers. The boundary follows the model's
+        re-baseline epoch, so it moves automatically whenever the scale is re-baselined.</p>
+        <p><strong>Consensus.</strong> The consensus column on a historical board is the
+        aggregate median rank + board count across outside boards (minimum 2 boards)
+        &mdash; never individual board ranks, the same rule the live board follows.</p>
+    </section>
+</article>
+{% endblock %}

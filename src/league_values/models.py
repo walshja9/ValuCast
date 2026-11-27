@@ -1,0 +1,271 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+from math import isfinite
+from typing import Any, Mapping
+
+
+class ScoringMode(str, Enum):
+    CATEGORIES = "categories"
+    POINTS = "points"
+    ROTO = "roto"
+
+
+class PlayerPool(str, Enum):
+    ALL = "all"
+    HITTER = "hitter"
+    PITCHER = "pitcher"
+    STARTER = "starter"
+    RELIEVER = "reliever"
+
+
+class Direction(str, Enum):
+    HIGHER_IS_BETTER = "higher"
+    LOWER_IS_BETTER = "lower"
+
+    @property
+    def sign(self) -> int:
+        return 1 if self is Direction.HIGHER_IS_BETTER else -1
+
+
+def _enum_value(enum_type: type[Enum], value: Any) -> Enum:
+    if isinstance(value, enum_type):
+        return value
+    return enum_type(value)
+
+
+def _tuple(value: Any) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if isinstance(value, str):
+        return (value,)
+    return tuple(value)
+
+
+def _require_finite(value: float, name: str) -> None:
+    if not isfinite(value):
+        raise ValueError(f"{name} must be finite.")
+
+
+@dataclass(frozen=True)
+class CategorySpec:
+    """One configurable league category.
+
+    Counting stats use `stat`.
+    Ratio/rate stats use `denominator_stats` plus either `numerator_stats` or `stat`.
+    """
+
+    id: str
+    label: str
+    pool: PlayerPool
+    stat: str | None = None
+    numerator_stats: tuple[str, ...] = ()
+    denominator_stats: tuple[str, ...] = ()
+    direction: Direction = Direction.HIGHER_IS_BETTER
+    weight: float = 1.0
+    ratio_multiplier: float = 1.0
+    min_denominator: float = 0.0
+    baseline: float | None = None
+    missing_value: float = 0.0
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "pool", _enum_value(PlayerPool, self.pool))
+        object.__setattr__(self, "direction", _enum_value(Direction, self.direction))
+        object.__setattr__(self, "numerator_stats", _tuple(self.numerator_stats))
+        object.__setattr__(self, "denominator_stats", _tuple(self.denominator_stats))
+        if not self.stat and not self.numerator_stats:
+            raise ValueError(f"Category '{self.id}' needs a stat or numerator_stats.")
+        if self.ratio_multiplier == 0:
+            raise ValueError(f"Category '{self.id}' ratio_multiplier cannot be 0.")
+        if self.weight < 0:
+            raise ValueError(f"Category '{self.id}' weight cannot be negative.")
+        for name in ("weight", "ratio_multiplier", "min_denominator", "missing_value"):
+            _require_finite(getattr(self, name), f"Category '{self.id}' {name}")
+        if self.baseline is not None:
+            _require_finite(self.baseline, f"Category '{self.id}' baseline")
+
+    @property
+    def is_ratio(self) -> bool:
+        return bool(self.denominator_stats)
+
+    def applies_to(self, player_pool: PlayerPool | str) -> bool:
+        player_pool = _enum_value(PlayerPool, player_pool)
+        if self.pool is PlayerPool.ALL:
+            return True
+        if self.pool is player_pool:
+            return True
+        # PITCHER categories apply to both STARTER and RELIEVER
+        if self.pool is PlayerPool.PITCHER and player_pool in (PlayerPool.STARTER, PlayerPool.RELIEVER):
+            return True
+        return False
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "CategorySpec":
+        return cls(
+            id=str(data["id"]),
+            label=str(data.get("label", data["id"])),
+            pool=data.get("pool", PlayerPool.ALL.value),
+            stat=data.get("stat"),
+            numerator_stats=_tuple(data.get("numerator_stats")),
+            denominator_stats=_tuple(data.get("denominator_stats")),
+            direction=data.get("direction", Direction.HIGHER_IS_BETTER.value),
+            weight=float(data.get("weight", 1.0)),
+            ratio_multiplier=float(data.get("ratio_multiplier", 1.0)),
+            min_denominator=float(data.get("min_denominator", 0.0)),
+            baseline=data.get("baseline"),
+            missing_value=float(data.get("missing_value", 0.0)),
+        )
+
+
+@dataclass(frozen=True)
+class PointRule:
+    stat: str
+    points: float
+    pool: PlayerPool = PlayerPool.ALL
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "pool", _enum_value(PlayerPool, self.pool))
+        _require_finite(self.points, "Point-rule coefficient")
+
+    def applies_to(self, player_pool: PlayerPool | str) -> bool:
+        player_pool = _enum_value(PlayerPool, player_pool)
+        if self.pool is PlayerPool.ALL:
+            return True
+        if self.pool is player_pool:
+            return True
+        if self.pool is PlayerPool.PITCHER and player_pool in (PlayerPool.STARTER, PlayerPool.RELIEVER):
+            return True
+        return False
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "PointRule":
+        return cls(
+            stat=str(data["stat"]),
+            points=float(data["points"]),
+            pool=data.get("pool", PlayerPool.ALL.value),
+        )
+
+
+@dataclass(frozen=True)
+class RosterSettings:
+    teams: int = 12
+    roster_size: int = 23
+    positions: Mapping[str, int] = field(default_factory=dict)
+    bench: int = 5
+
+    @property
+    def total_starters(self) -> int:
+        return sum(self.positions.values())
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "RosterSettings":
+        return cls(
+            teams=int(data.get("teams", 12)),
+            roster_size=int(data.get("roster_size", 23)),
+            positions={str(k): int(v) for k, v in data.get("positions", {}).items()},
+            bench=int(data.get("bench", 5)),
+        )
+
+
+@dataclass(frozen=True)
+class LeagueConfig:
+    name: str
+    scoring_mode: ScoringMode
+    categories: tuple[CategorySpec, ...] = ()
+    point_rules: tuple[PointRule, ...] = ()
+    league_baselines: Mapping[str, tuple[float, float]] = field(default_factory=dict)
+    """Optional fixed (mean, stddev) per category id. When provided, z-scores use these
+    instead of pool-derived statistics, making valuations stable across different input sets."""
+    roster: RosterSettings | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "scoring_mode", _enum_value(ScoringMode, self.scoring_mode))
+        object.__setattr__(
+            self,
+            "categories",
+            tuple(c if isinstance(c, CategorySpec) else CategorySpec.from_dict(c) for c in self.categories),
+        )
+        object.__setattr__(
+            self,
+            "point_rules",
+            tuple(r if isinstance(r, PointRule) else PointRule.from_dict(r) for r in self.point_rules),
+        )
+        if self.scoring_mode in (ScoringMode.CATEGORIES, ScoringMode.ROTO) and not self.categories:
+            raise ValueError("Category leagues need at least one category.")
+        if self.scoring_mode is ScoringMode.POINTS and not self.point_rules:
+            raise ValueError("Points leagues need at least one point rule.")
+        for category_id, pair in self.league_baselines.items():
+            for value in pair:
+                _require_finite(value, f"League baseline '{category_id}'")
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "LeagueConfig":
+        baselines = {}
+        for cat_id, pair in data.get("league_baselines", {}).items():
+            baselines[cat_id] = (float(pair[0]), float(pair[1]))
+        roster_data = data.get("roster")
+        roster = RosterSettings.from_dict(roster_data) if roster_data else None
+        return cls(
+            name=str(data["name"]),
+            scoring_mode=data["scoring_mode"],
+            categories=tuple(CategorySpec.from_dict(item) for item in data.get("categories", ())),
+            point_rules=tuple(PointRule.from_dict(item) for item in data.get("point_rules", ())),
+            league_baselines=baselines,
+            roster=roster,
+        )
+
+
+@dataclass(frozen=True)
+class PlayerProjection:
+    id: str
+    name: str
+    pool: PlayerPool
+    stats: Mapping[str, float]
+    positions: tuple[str, ...] = ()
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "pool", _enum_value(PlayerPool, self.pool))
+        object.__setattr__(self, "positions", _tuple(self.positions))
+        stats = {str(k): float(v) for k, v in self.stats.items()}
+        for name, value in stats.items():
+            _require_finite(value, f"Projection statistic '{name}'")
+        object.__setattr__(self, "stats", stats)
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, Any]) -> "PlayerProjection":
+        return cls(
+            id=str(data["id"]),
+            name=str(data["name"]),
+            pool=data["pool"],
+            positions=_tuple(data.get("positions")),
+            stats=data.get("stats", {}),
+            metadata=data.get("metadata", {}),
+        )
+
+
+@dataclass(frozen=True)
+class ValuationResult:
+    player: PlayerProjection
+    total_value: float
+    raw_values: Mapping[str, float | None]
+    z_scores: Mapping[str, float]
+    category_values: Mapping[str, float]
+    points: float | None = None
+
+    @property
+    def name(self) -> str:
+        return self.player.name
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.player.id,
+            "name": self.player.name,
+            "pool": self.player.pool.value,
+            "total_value": self.total_value,
+            "raw_values": dict(self.raw_values),
+            "z_scores": dict(self.z_scores),
+            "category_values": dict(self.category_values),
+            "points": self.points,
+        }

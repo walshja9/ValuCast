@@ -1,0 +1,50 @@
+data/projections/raw/*.json
+data/prospects/raw/milb_season_stats_*.json
+# Plate-discipline compact per-pitch cache: rebuildable from network, ~350MB at
+# full scale (past the commit ceiling), so it stays uncommitted. The daily-build
+# `git add data/prospects/raw` line must never sweep it in.
+data/prospects/raw/pitch_discipline_pitch_cache.json
+# Its bootstrap-completion marker travels with the Actions cache, never the repo.
+data/prospects/raw/.pitch_discipline_cache_ready
+# AAA-Statcast compact per-pitch cache: rebuildable from Baseball Savant, large at
+# full-season scale, so it stays uncommitted. Never commit raw pitch rows.
+data/prospects/raw/aaa_statcast_pitch_cache.json
+# Its bootstrap-completion marker travels with the Actions cache, never the repo.
+data/prospects/raw/.aaa_statcast_cache_ready
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+projections/data/batted_balls_cache/
+projections/data/pitching_statcast_cache/
+.superpowers/
+
+# Local agent/test scratch
+.codex-remote-attachments/
+.claude/worktrees/
+.coverage
+.tmp-tests/
+tmp*/
+# atomic-write staging files (e.g. aaa_statcast_archive) -- a job timeout mid-write
+# must not leave a stray .tmp for the next night's directory git-add to sweep up
+*.json.tmp
+_qa/
+_shots*.py
+_baseline.py
+_kbd.py
+_verify_repairs.py
+HANDOFF.md
+
+# Private competition evidence: named sources and row-level results never ship.
+data/private/competition/
+data/manual/competition_benchmark_sources.json
+data/manual/competition_benchmark_outcomes.json
+data/models/valucast_competition_benchmark.json
+data/manual/*historical_boards.json
+data/validation/competition_historical_replay.json
+scripts/build_competition_historical_replay.py
+tests/test_competition_benchmark.py

@@ -1,0 +1,163 @@
+{% set HIDDEN_STATS = ['TB','NSB','G','GDP','IBB','SH','SF','HBP','GS'] %}
+
+{% macro projection_grid(stats) -%}
+<div class="stat-grid">
+    {% for key, value in stats.items() %}
+    {% if key == 'K_BB' %}{% set value = strikeout_walk_ratio(stats) %}{% endif %}
+    {% if key not in HIDDEN_STATS %}
+    <div class="stat-item">
+        <span class="stat-label">{{ key }}</span>
+        <span class="stat-value">
+            {% if value is none %}&mdash;{% elif value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+        </span>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{%- endmacro %}
+
+{% if result %}
+<div class="player-detail">
+    <div class="detail-header">
+        <h3>{{ player.name }}</h3>
+        <span class="detail-meta">
+            {{ player.positions | join(', ') or 'DH' }}
+            {% if player.metadata.get('team') %} | {{ player.metadata.team }}{% endif %}
+        </span>
+        <span class="detail-value {{ 'val-pos' if result.total_value > 0 else 'val-neg' }}">
+            ValuCast Value: {{ "%.2f" | format(result.total_value) }}
+        </span>
+        <div class="profile-card-badges">
+            <a class="player-share-link" data-metric="share_card" href="/redraft/player-card/{{ player.id }}{% if request.query_string %}?{{ request.query_string.decode('utf-8') }}{% endif %}" target="_blank" rel="noopener">Share graphic</a>
+        </div>
+    </div>
+
+    <div class="detail-body">
+        {% set hold_note = offseason_hold_note(player) %}
+        {% if hold_note %}<p class="sample-context-note">{{ hold_note }} ValuCast applies no injury discount to this redraft value.</p>{% endif %}
+        <section class="detail-section card-reading-guide" aria-label="How to read this card">
+            <p><strong>Skill</strong> is what the performance evidence supports. <strong>Opportunity</strong> is projected playing time, role, and availability. <strong>ValuCast Value</strong> turns both into the fantasy decision for this format. <strong>Confidence</strong> shows how stable that read is; if it is absent, ValuCast has not rated it.</p>
+        </section>
+        {% set read = namespace(best_label=None, best_value=None, drag_label=None, drag_value=None) %}
+        {% for cat in active_categories %}
+            {% set cat_value = result.category_values.get(cat.id) %}
+            {% if category_applies(result, [cat]) and cat_value is number %}
+                {% if read.best_value is none or cat_value > read.best_value %}
+                    {% set read.best_label = cat.label %}
+                    {% set read.best_value = cat_value %}
+                {% endif %}
+                {% if read.drag_value is none or cat_value < read.drag_value %}
+                    {% set read.drag_label = cat.label %}
+                    {% set read.drag_value = cat_value %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        <div class="detail-section league-read-card">
+            <span class="profile-card-kicker">ValuCast Value</span>
+            <h4>What this means in your league</h4>
+            <p>
+                ValuCast reads this as a
+                {% if result.total_value >= 5 %}clear positive
+                {% elif result.total_value > 0 %}slight positive
+                {% elif result.total_value <= -5 %}clear negative
+                {% elif result.total_value < 0 %}slight negative
+                {% else %}neutral{% endif %}
+                fit for this setup{% if read.best_label %}, with the biggest lift from {{ read.best_label }}{% endif %}{% if read.drag_label and read.drag_value is not none and read.drag_value < 0 %} and the main drag from {{ read.drag_label }}{% endif %}.
+                The table below shows the category-by-category math.
+            </p>
+        </div>
+
+        <div class="detail-section">
+            <h4>Category Breakdown</h4>
+            <table class="detail-table">
+                <thead>
+                    <tr><th>Category</th><th>Raw</th><th>Z-Score</th><th></th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    {% for cat in active_categories %}
+                    {% set raw = result.raw_values.get(cat.id) %}
+                    {% if category_applies(result, [cat]) %}
+                    {% set z = result.z_scores.get(cat.id, 0) %}
+                    <tr>
+                        <td>{{ cat.label }}</td>
+                        <td>{% if raw is none %}&mdash;{% else %}{{ "%.2f" | format(raw) }}{% endif %}</td>
+                        <td class="{{ 'val-pos' if z > 0 else '' }}{{ 'val-neg' if z < 0 else '' }}">
+                            {{ "%.2f" | format(z) }}
+                        </td>
+                        <td class="zbar-cell" aria-hidden="true">
+                            <div class="zbar"><div class="zbar-fill {{ 'pos' if z >= 0 else 'neg' }}" style="width: {{ "%.1f" | format(([z | abs, 3.0] | min) / 3.0 * 50) }}%"></div></div>
+                        </td>
+                        <td class="{{ 'val-pos' if result.category_values.get(cat.id, 0) > 0 else '' }}{{ 'val-neg' if result.category_values.get(cat.id, 0) < 0 else '' }}">
+                            {{ "%.2f" | format(result.category_values.get(cat.id, 0)) }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include "partials/_statcast_bars.html" %}
+
+        <div class="detail-section">
+            <span class="profile-card-kicker">Skill</span>
+            <h4>Projected performance</h4>
+            <p class="profile-note"><strong>Opportunity:</strong> PA/IP show projected playing time. If role or availability is absent, ValuCast has not rated it.</p>
+            {% if projection_split and projection_split.hitting and projection_split.pitching %}
+            <div class="stat-group two-way-stats"><h5>Hitting</h5>{{ projection_grid(projection_split.hitting) }}</div>
+            <div class="stat-group two-way-stats"><h5>Pitching</h5>{{ projection_grid(projection_split.pitching) }}</div>
+            {% else %}
+            {{ projection_grid(player.stats) }}
+            {% endif %}
+        </div>
+
+        {% set stats_actual = player.metadata.get('stats_actual') %}
+        {% if stats_actual %}
+        <div class="detail-section">
+            <h4>{{ served_season }} Actual Stats{% if player.metadata.get('as_of') %} (through {{ player.metadata.get('as_of') }}){% endif %}</h4>
+            <div class="stat-grid">
+                {% for key, value in stats_actual.items() %}
+                {% if key == 'K_BB' %}{% set value = strikeout_walk_ratio(stats_actual) %}{% endif %}
+                {% if key not in HIDDEN_STATS %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key }}</span>
+                    <span class="stat-value">
+                        {% if value is none %}&mdash;{% elif value is number %}
+                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+                        {% else %}{{ value }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% set stats_ros = player.metadata.get('stats_ros') %}
+        {% if stats_ros %}
+        <div class="detail-section">
+            <h4>Rest-of-Season Projection (Steamer)</h4>
+            <div class="stat-grid">
+                {% for key, value in stats_ros.items() %}
+                {% if key == 'K_BB' %}{% set value = strikeout_walk_ratio(stats_ros) %}{% endif %}
+                {% if key not in HIDDEN_STATS %}
+                <div class="stat-item">
+                    <span class="stat-label">{{ key }}</span>
+                    <span class="stat-value">
+                        {% if value is none %}&mdash;{% elif value is number %}
+                            {% if value < 1 and value > 0 %}{{ "%.3f" | format(value) }}{% elif value == value | int %}{{ value | int }}{% else %}{{ "%.1f" | format(value) }}{% endif %}
+                        {% else %}{{ value }}{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="player-detail">
+    <p>Could not load player details.</p>
+</div>
+{% endif %}

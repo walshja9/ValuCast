@@ -1,0 +1,4 @@
+{
+  "_comment": "RETIRED 7/10 (Alex): hand-seeding is over -- every receipts row is now rule-generated. The auto lanes own the whole surface: scored hits/misses (>=2 boards, divergence >= 25), field-unranked AHEAD (VC <= 25, <2 boards), and field-unranked BEHIND (1 board <= 25, VC 25+ behind). The last three seeds were retired on a from-scratch rebuild: Watson converted to a SCORED hit (3 boards, consensus vs VC clears every guard), Kuroda-Grauer (#41) and Cauley (#61) dropped to the public no-claims list -- identical treatment to any other no-board call outside the top-25 cap. The seed mechanism (_seed_receipts) still reads this file for emergencies, but adding a row here should be treated as a failure of the auto lanes and fixed there instead.",
+  "receipts": []
+}
