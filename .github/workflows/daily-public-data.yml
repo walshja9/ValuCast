@@ -14,6 +14,11 @@ on:
     - cron: "30 11-19 * * *"
   workflow_dispatch:
     inputs:
+      dynasty_only_rehearsal:
+        description: "Qualify a staged Dynasty bundle without publishing"
+        required: false
+        default: false
+        type: boolean
       approve_valucast_buys:
         description: "Record explicit human approval for ValuCast-owned /buys promotion"
         required: false
@@ -82,14 +87,22 @@ jobs:
     # A step-level env is NOT visible to that same step's `if`, which silently
     # skipped the old deploy step and left the live app a day behind.
     env:
-      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      VALUCAST_DYNASTY_REHEARSAL: >-
+        ${{ ((github.event_name == 'schedule' && vars.VALUCAST_DYNASTY_REHEARSAL == 'true') ||
+        (github.event_name == 'workflow_dispatch' && inputs.dynasty_only_rehearsal)) && 'true' || 'false' }}
+      RENDER_DEPLOY_HOOK_URL: >-
+        ${{ (github.event_name != 'schedule' || vars.VALUCAST_DYNASTY_REHEARSAL != 'true') &&
+        (github.event_name != 'workflow_dispatch' || !inputs.dynasty_only_rehearsal) &&
+        secrets.RENDER_DEPLOY_HOOK_URL || '' }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          ssh-key: ${{ secrets.REFRESH_DEPLOY_KEY }}
+          ssh-key: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' && secrets.REFRESH_DEPLOY_KEY || '' }}
+          persist-credentials: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' }}
           fetch-depth: 0  # MUST stay full: load_steamer_ros_from_git (mlb/projection_source_comparison.py) reads ~20d of data/projections/ros.json history; depth 1 broke the 7/9 build
 
       - name: Sync to latest origin/master
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' }}
         # checkout pins the SHA that triggered this run, but a serialized earlier
         # run (concurrency only serializes execution, not the checkout ref) may have
         # pushed since. Build on the absolute latest so the post-build push is a
@@ -98,10 +111,18 @@ jobs:
           git fetch origin
           git checkout -B master origin/master
 
+      - name: Pin Dynasty rehearsal to current master
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL == 'true' }}
+        run: |
+          git fetch origin master
+          master=$(git rev-parse origin/master)
+          git merge-base --is-ancestor "$master" HEAD
+          echo "VALUCAST_REHEARSAL_MASTER=$master" >> "$GITHUB_ENV"
+
       - name: Capture immutable prior canonical public snapshot
         run: |
           prior="$RUNNER_TEMP/valucast-previous-public-dynasty-snapshot.json"
-          git show HEAD:data/public/public_dynasty_snapshot.json > "$prior"
+          git show "${VALUCAST_REHEARSAL_MASTER:-HEAD}:data/public/public_dynasty_snapshot.json" > "$prior"
           chmod a-w "$prior"
           echo "VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT=$prior" >> "$GITHUB_ENV"
 
@@ -113,7 +134,7 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
-          cache: pip
+          cache: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' && 'pip' || '' }}
 
       - name: Restore plate-discipline event cache
         id: plate-discipline-cache
@@ -175,6 +196,7 @@ jobs:
         run: python scripts/build_valucast_prospect_inputs.py --refresh-service-cache
 
       - name: Build ValuCast public snapshot gate
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' }}
         env:
           VALUCAST_BUYS_REVIEW_APPROVED: ${{ inputs.approve_valucast_buys && '1' || '0' }}
           # Scouting V2 shadow writer: generates `report_llm` only when the secret is
@@ -194,8 +216,18 @@ jobs:
           VALUCAST_SCOUTING_LLM_TIMEOUT_SECONDS: "10"
         run: python scripts/run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"
 
+      - name: Build Dynasty rehearsal candidate
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL == 'true' }}
+        env:
+          ANTHROPIC_API_KEY: ""
+          VALUCAST_SCOUTING_LLM: "1"
+          VALUCAST_SCOUTING_LLM_MAX_GENERATE: "0"
+        run: |
+          export VALUCAST_BUYS_REVIEW_APPROVED=0
+          python scripts/run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"
+
       - name: Save plate-discipline event cache
-        if: always()
+        if: always() && env.VALUCAST_DYNASTY_REHEARSAL != 'true'
         uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
         with:
           path: |
@@ -204,7 +236,7 @@ jobs:
           key: ${{ steps.plate-discipline-cache.outputs.cache-primary-key }}
 
       - name: Save AAA-Statcast pitch cache
-        if: always()
+        if: always() && env.VALUCAST_DYNASTY_REHEARSAL != 'true'
         uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
         with:
           path: |
@@ -213,7 +245,7 @@ jobs:
           key: ${{ steps.aaa-statcast-cache.outputs.cache-primary-key }}
 
       - name: Save LLM scouting cache
-        if: always()
+        if: always() && env.VALUCAST_DYNASTY_REHEARSAL != 'true'
         uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
         with:
           path: data/models/valucast_scouting_llm_cache.json
@@ -229,141 +261,41 @@ jobs:
       - name: Build prospect rank-history artifact
         run: python scripts/build_prospect_rank_history.py
 
+      - name: Qualify staged Dynasty bundle
+        id: dynasty_qualification
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/rehearse_dynasty_release.py qualify
+
+      - name: Verify would-publish Dynasty bundle fingerprint
+        id: dynasty_would_publish
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VALUCAST_QUALIFICATION_SHA256: ${{ steps.dynasty_qualification.outputs.qualification_sha256 }}
+        run: python scripts/rehearse_dynasty_release.py would-publish
+
+      - name: Retain only Dynasty rehearsal receipts
+        if: ${{ always() && env.VALUCAST_DYNASTY_REHEARSAL == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dynasty-release-rehearsal
+          path: |
+            ${{ runner.temp }}/dynasty-rehearsal/qualification.json
+            ${{ runner.temp }}/dynasty-rehearsal/receipt.json
+          retention-days: 7
+
       - name: Validate public artifacts
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' }}
         run: python scripts/run_daily_public_build.py --only validate
 
       - name: Commit and publish refreshed data
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            data/actuals/current.json \
-            data/prospects/prospect_model_inputs.json \
-            data/prospects/raw \
-            data/mlb/mlb_track_record_cache.json \
-            data/mlb/mlb_availability_transactions_cache.json \
-            data/mlb/mlb_roster_status_cache.json \
-            data/models/valucast_mlb_availability.json \
-            data/models/valucast_hp_promotion_sanity_report.json \
-            data/models/valucast_playing_time_role_tracker.json \
-            data/models/valucast_mlb_roster_status.json \
-            data/models/valucast_mlb_dynasty_layer.json \
-            data/models/valucast_mlb_dynasty_layer_marcel_shadow.json \
-            data/models/valucast_mlb_projection_source_comparison.json \
-            data/models/valucast_mlb_track_record.json \
-            data/models/valucast_quality_governor.json \
-            data/models/valucast_prospect_movers.json \
-            data/models/valucast_prospect_comps.json \
-            data/models/valucast_pooled_shadow.json \
-            data/models/valucast_call_up_receipts.json \
-            data/models/valucast_gaps_claim_ledger.json \
-            data/models/valucast_prospect_buys.json \
-            data/models/valucast_prospect_buys_monitor.json \
-            data/models/valucast_prospect_buys_review.json \
-            data/models/valucast_prospect_availability.json \
-            data/models/valucast_prospect_model.json \
-            data/prediction_archive/valucast_prospect_model \
-            data/models/valucast_prospect_coverage_audit.json \
-            data/models/valucast_prospect_calibration_report.json \
-            data/models/valucast_prospect_peak_projection_v1.json \
-            data/models/valucast_prospect_rank_history.json \
-            data/models/valucast_prospect_peak_projection_calibration.json \
-            data/models/valucast_prospect_forward_validation.json \
-            data/models/valucast_prospect_model_v0_7.json \
-            data/models/valucast_prospect_outcome_backtest.json \
-            data/models/valucast_prospect_cross_role_shadow.json \
-            data/models/valucast_prospect_shadow_promotion.json \
-            data/models/valucast_front_office_failures.json \
-            data/models/valucast_raw_data_independence_audit.json \
-            data/models/valucast_milb_stat_freshness_audit.json \
-            data/models/valucast_prospect_card_data_audit.json \
-            data/models/valucast_recent_signal_report.json \
-            data/models/valucast_recent_form_signal.json \
-            data/models/valucast_call_up_pulse.json \
-            data/fangraphs/fg_fv_snapshot.json \
-            data/sts/sts_consensus_snapshot.json \
-            data/prospectslive/prospectslive_consensus_snapshot.json \
-            data/hkb/hkb_source.csv \
-            data/hkb/hkb_consensus_snapshot.json \
-            data/models/valucast_ahead_of_consensus.json \
-            data/models/valucast_ahead_of_consensus_scorecard.json \
-            data/models/valucast_consensus_gap.json \
-            data/models/valucast_pipeline_observability.json \
-            data/models/valucast_front_office_report.json \
-            data/models/valucast_scouting_reports.json \
-            data/models/valucast_prospect_dynasty_backtest.json \
-            data/models/valucast_prospect_dynasty_layer.json \
-            data/models/valucast_prospect_forward_shadow.json \
-            data/models/valucast_prospect_universe.json \
-            data/models/valucast_prospect_rank_v1.json \
-            data/models/valucast_universal_prospect_index.json \
-            data/models/valucast_universal_prospect_index_backtest.json \
-            data/models/valucast_universal_prospect_model.json \
-            data/models/valucast_prospect_league_adapters.json \
-            data/prediction_archive/valucast_prospect_league_adapters \
-            data/prediction_archive/valucast_mlb_dynasty_layer \
-            data/prediction_archive/valucast_mlb_dynasty_layer_marcel_shadow \
-            data/prediction_archive/valucast_mlb_projection_source_freeze \
-            data/prediction_archive/valucast_mlb_projection_source_comparison \
-            data/prediction_archive/valucast_actuals_snapshot \
-            data/prediction_archive/valucast_mlb_availability \
-            data/prediction_archive/valucast_mlb_roster_status \
-            data/prediction_archive/valucast_mlb_track_record \
-            data/prediction_archive/valucast_playing_time_role_tracker \
-            data/prediction_archive/valucast_prospect_movers \
-            data/prediction_archive/valucast_call_up_receipts \
-            data/prediction_archive/valucast_gaps_claim_ledger \
-            data/prediction_archive/valucast_prospect_buys \
-            data/prediction_archive/valucast_prospect_dynasty_layer \
-            data/prediction_archive/valucast_prospect_peak_projection_v1 \
-            data/prediction_archive/valucast_prospect_shadow_promotion \
-            data/prediction_archive/valucast_prospect_forward_shadow \
-            data/prediction_archive/valucast_prospect_rank_v1 \
-            data/prediction_archive/valucast_projection_scorecard/ \
-            data/prediction_archive/valucast_universal_prospect_index \
-            data/prediction_archive/valucast_universal_prospect_model \
-            data/projections/current.json \
-            data/projections/metadata.json \
-            data/projections/ros.json \
-            data/public/public_dynasty_snapshot.json \
-            data/statcast/percentiles.json \
-            data/validation/methodology_scorecard.json \
-            projections/runs/valucast_hp_2026_v2/projections.json \
-            projections/runs/valucast_hp_2026_v2/run_manifest.json \
-            projections/runs/valucast_hp_2026_v2/metadata.json \
-            projections/data/identity.json
-          if [ -f data/models/valucast_scouting_llm_cache.json ]; then
-            git add data/models/valucast_scouting_llm_cache.json
-          fi
-          # Forward-ledger scoreboard (plan 030 S3): guarded add — the artifact is
-          # not yet tracked and a failed build aborts the job before this step, so an
-          # unconditional pathspec would fail the whole publish on any run where the
-          # scoreboard build produced nothing. Guard it like the other new artifacts.
-          if [ -f data/models/valucast_forward_scoreboard.json ]; then
-            git add data/models/valucast_forward_scoreboard.json
-          fi
-          # Plate-discipline artifact: guarded add — absent until the first full
-          # backfill lands (and on any cold-cache/no-op morning at HEAD without
-          # it), and an unconditional pathspec would fail the whole publish step.
-          if [ -f data/models/valucast_pitch_discipline.json ]; then
-            git add data/models/valucast_pitch_discipline.json
-          fi
-          # AAA-Statcast feature artifact: same guarded add — absent until the first
-          # backfill lands (the pitch cache is uncommitted, so a cold-cache CI morning
-          # produces no artifact) and an unconditional pathspec would fail the publish.
-          if [ -f data/models/valucast_aaa_statcast_features.json ]; then
-            git add data/models/valucast_aaa_statcast_features.json
-          fi
-          # Season-stamped AAA-Statcast vintage archive: append-only, hash-skipped, so
-          # most nights add nothing. Guarded add — the directory does not exist until the
-          # first vintage lands (cold-cache CI mornings never build the features artifact
-          # to archive), and an unconditional pathspec would fail the whole publish step.
-          if [ -d data/aaa_statcast_archive ]; then
-            git add data/aaa_statcast_archive/
-          fi
-          if [ -d data/milb_observation_archive ]; then
-            git add data/milb_observation_archive/*.json
-          fi
+          bash scripts/stage_daily_public_bundle.sh
           git diff --cached --quiet && exit 0
           git commit -m "data: daily public refresh $VALUCAST_REFRESH_DATE"
           # We synced to the latest origin/master right after checkout and built on
@@ -388,10 +320,11 @@ jobs:
         # non-2xx response fail the job instead of silently no-op'ing, and
         # --retry-all-errors rides out a transient Render 5xx (e.g. a deploy
         # already in progress) instead of failing the refresh on a blip.
-        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' && env.RENDER_DEPLOY_HOOK_URL != '' }}
         run: curl -fsS --retry 5 --retry-all-errors --retry-delay 10 -X POST "$RENDER_DEPLOY_HOOK_URL"
 
       - name: Post-drafts digest (Telegram)
+        if: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' }}
         # Scans the freshly built + committed artifacts, renders ready-to-paste
         # drafts, and relays them to Alex so posting is a 2-minute selection task.
         # Nothing auto-posts. success() default: runs only after the build steps
@@ -409,7 +342,7 @@ jobs:
     # open issue gets a comment instead of a duplicate.
     needs: refresh
     if: >-
-      always() && github.event_name == 'schedule' &&
+      always() && github.event_name == 'schedule' && vars.VALUCAST_DYNASTY_REHEARSAL != 'true' &&
       (needs.refresh.result == 'failure' || needs.refresh.result == 'cancelled')
     runs-on: ubuntu-latest
     permissions:

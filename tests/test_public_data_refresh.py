@@ -380,6 +380,8 @@ def test_daily_public_workflow_requires_manual_buy_approval_and_omits_retired_dd
     workflow = Path(".github/workflows/daily-public-data.yml").read_text(
         encoding="utf-8"
     )
+    stager = Path("scripts/stage_daily_public_bundle.sh").read_text(encoding="utf-8")
+    assert "bash scripts/stage_daily_public_bundle.sh" in workflow
     build_commands = [" ".join(step) for step in run_daily_public_build.BUILD_STEPS]
     validate_commands = [" ".join(step) for step in run_daily_public_build.VALIDATE_STEPS]
 
@@ -388,6 +390,7 @@ def test_daily_public_workflow_requires_manual_buy_approval_and_omits_retired_dd
     assert "python scripts/sync_dd_feed.py" not in workflow
     assert "python scripts/sync_dd_prospect_inputs.py" not in workflow
     assert "data/dd/dd_dynasty_feed.json" not in workflow
+    assert "data/dd/dd_dynasty_feed.json" not in stager
     assert "python scripts/refresh_milb_season_stats.py" in workflow
     assert "python scripts/build_valucast_prospect_inputs.py --refresh-service-cache" in workflow
     assert "python scripts/run_daily_public_build.py --only build" in workflow
@@ -396,8 +399,8 @@ def test_daily_public_workflow_requires_manual_buy_approval_and_omits_retired_dd
     # 7/1: league adapters joined the nightly chain (the artifact had frozen at a
     # June manual build) — step ordered after the shadow pipeline, artifact committed.
     assert build_commands.count("scripts/build_prospect_league_adapters.py") == 1
-    assert "data/models/valucast_prospect_league_adapters.json" in workflow
-    assert workflow.count(
+    assert "data/models/valucast_prospect_league_adapters.json" in stager
+    assert stager.count(
         "data/prediction_archive/valucast_prospect_league_adapters"
     ) == 1
     # 7/2: scheduled fallbacks skip when today's refresh already published.
@@ -450,15 +453,16 @@ def test_daily_public_workflow_requires_manual_buy_approval_and_omits_retired_dd
         "scripts/build_forward_scoreboard.py"
     )
     assert "scripts/validate_forward_scoreboard.py" in validate_commands
-    assert "data/models/valucast_forward_scoreboard.json" in workflow
+    assert "data/models/valucast_forward_scoreboard.json" in stager
     assert not any("build_forward_cohort_registry.py" in cmd for cmd in build_commands)
     assert "valucast_forward_cohort_registry.json" not in workflow
+    assert "valucast_forward_cohort_registry.json" not in stager
     # AAA-Statcast season-stamped vintage archive lands right after the feature build.
     assert "scripts/archive_aaa_statcast_features.py" in build_commands
     assert build_commands.index("scripts/build_aaa_statcast_features.py") < build_commands.index(
         "scripts/archive_aaa_statcast_features.py"
     )
-    assert "data/aaa_statcast_archive/" in workflow
+    assert "data/aaa_statcast_archive/" in stager
     assert "scripts/build_raw_data_independence_audit.py" in build_commands
     assert "scripts/build_front_office_failures.py" in build_commands
     assert "scripts/build_milb_stat_freshness_audit.py" in build_commands
@@ -480,36 +484,36 @@ def test_daily_public_workflow_requires_manual_buy_approval_and_omits_retired_dd
     assert "scripts/validate_valucast_movers.py" in validate_commands
     assert "scripts/validate_front_office_report.py" in validate_commands
     assert "scripts/validate_scouting_repository.py" in validate_commands
-    assert "data/models/valucast_mlb_track_record.json" in workflow
-    assert "data/models/valucast_mlb_availability.json" in workflow
-    assert "data/models/valucast_hp_promotion_sanity_report.json" in workflow
-    assert "data/models/valucast_playing_time_role_tracker.json" in workflow
-    assert "data/models/valucast_mlb_roster_status.json" in workflow
-    assert "data/mlb/mlb_availability_transactions_cache.json" in workflow
-    assert "data/mlb/mlb_roster_status_cache.json" in workflow
-    assert "data/mlb/mlb_track_record_cache.json" in workflow
-    assert "data/prospects/prospect_model_inputs.json" in workflow
-    assert "data/prospects/raw" in workflow
-    assert "data/models/valucast_universal_prospect_model.json" in workflow
-    assert "data/models/valucast_prospect_dynasty_layer.json" in workflow
-    assert "data/models/valucast_prospect_availability.json" in workflow
-    assert "data/models/valucast_prospect_model_v0_7.json" in workflow
-    assert "data/models/valucast_prospect_calibration_report.json" in workflow
-    assert "data/models/valucast_prospect_peak_projection_calibration.json" in workflow
-    assert "data/models/valucast_prospect_forward_validation.json" in workflow
-    assert "data/models/valucast_prospect_buys_monitor.json" in workflow
-    assert "data/models/valucast_prospect_movers.json" in workflow
-    assert "data/models/valucast_prospect_outcome_backtest.json" in workflow
-    assert "data/models/valucast_prospect_cross_role_shadow.json" in workflow
-    assert "data/models/valucast_front_office_failures.json" in workflow
-    assert "data/models/valucast_raw_data_independence_audit.json" in workflow
-    assert "data/models/valucast_front_office_report.json" in workflow
-    assert "data/models/valucast_scouting_reports.json" in workflow
-    assert "data/models/valucast_ahead_of_consensus.json" in workflow
-    assert "data/prediction_archive/valucast_actuals_snapshot" in workflow
-    assert "projections/runs/valucast_hp_2026_v2/projections.json" in workflow
-    assert "projections/runs/valucast_hp_2026_v2/run_manifest.json" in workflow
-    assert "projections/runs/valucast_hp_2026_v2/metadata.json" in workflow
+    assert "data/models/valucast_mlb_track_record.json" in stager
+    assert "data/models/valucast_mlb_availability.json" in stager
+    assert "data/models/valucast_hp_promotion_sanity_report.json" in stager
+    assert "data/models/valucast_playing_time_role_tracker.json" in stager
+    assert "data/models/valucast_mlb_roster_status.json" in stager
+    assert "data/mlb/mlb_availability_transactions_cache.json" in stager
+    assert "data/mlb/mlb_roster_status_cache.json" in stager
+    assert "data/mlb/mlb_track_record_cache.json" in stager
+    assert "data/prospects/prospect_model_inputs.json" in stager
+    assert "data/prospects/raw" in stager
+    assert "data/models/valucast_universal_prospect_model.json" in stager
+    assert "data/models/valucast_prospect_dynasty_layer.json" in stager
+    assert "data/models/valucast_prospect_availability.json" in stager
+    assert "data/models/valucast_prospect_model_v0_7.json" in stager
+    assert "data/models/valucast_prospect_calibration_report.json" in stager
+    assert "data/models/valucast_prospect_peak_projection_calibration.json" in stager
+    assert "data/models/valucast_prospect_forward_validation.json" in stager
+    assert "data/models/valucast_prospect_buys_monitor.json" in stager
+    assert "data/models/valucast_prospect_movers.json" in stager
+    assert "data/models/valucast_prospect_outcome_backtest.json" in stager
+    assert "data/models/valucast_prospect_cross_role_shadow.json" in stager
+    assert "data/models/valucast_front_office_failures.json" in stager
+    assert "data/models/valucast_raw_data_independence_audit.json" in stager
+    assert "data/models/valucast_front_office_report.json" in stager
+    assert "data/models/valucast_scouting_reports.json" in stager
+    assert "data/models/valucast_ahead_of_consensus.json" in stager
+    assert "data/prediction_archive/valucast_actuals_snapshot" in stager
+    assert "projections/runs/valucast_hp_2026_v2/projections.json" in stager
+    assert "projections/runs/valucast_hp_2026_v2/run_manifest.json" in stager
+    assert "projections/runs/valucast_hp_2026_v2/metadata.json" in stager
     approval_lines = [line.strip() for line in workflow.splitlines()
                       if line.strip().startswith("VALUCAST_BUYS_REVIEW_APPROVED:")]
     assert approval_lines == [
@@ -579,7 +583,7 @@ def test_daily_public_workflow_retries_and_preserves_scouting_progress():
     save = workflow.index(save_name)
     assert restore < build < save
     save_step = workflow[save : workflow.find("\n      - name:", save + 1)]
-    assert "if: always()" in save_step
+    assert "if: always() && env.VALUCAST_DYNASTY_REHEARSAL != 'true'" in save_step
 
 
 def test_daily_public_build_orchestrator_has_no_duplicate_steps():

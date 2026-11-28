@@ -1,0 +1,825 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_data_commit": "HEAD",
+  "runtime_source_commit": "HEAD",
+  "candidate_kind": "detached_staged_serving_checkout",
+  "fresh_run_candidate_reused": false,
+  "expected_committed_snapshot_sha256": null,
+  "source_bindings": {
+    "app.py": {
+      "sha256": "b9985447b31191681084ddaaf1c71b01bcb94311916bbcf20b0547e31a22aae8",
+      "git_blob": "6dde7fa8c4e7f0b3d35656a7868d0298486b8b37"
+    },
+    "web/projection_catalog.py": {
+      "sha256": "70efb9e7b7250d7fe6f76b0212e69cea16bae3b435d64a46533dd721f32dd089",
+      "git_blob": "171462b488846a5ccb41fe5d9f78f6d9198e07ad"
+    },
+    "web/projection_store.py": {
+      "sha256": "e5ec9634a906201779ce03488066cd95f9a6ff751c637ca12fdcb1d7eb9538e7",
+      "git_blob": "a408c003a81fbe85ef68e9f35ffcb2791230a753"
+    },
+    "web/public_snapshot_store.py": {
+      "sha256": "a7ffe005966a8eecd3b1cfb5830d7c334c3708f15285eec76da7772d35e7fc9a",
+      "git_blob": "19e73c326b1f8d90b84356394bb7b8f69836a0f3"
+    },
+    "web/valucast_buy_store.py": {
+      "sha256": "8980ea559e79f62336141f5936409cb184b60c143250b09c9473a98c002db64a",
+      "git_blob": "05589f58f4443eeba8f3b9ac745d81126954f548"
+    },
+    "web/site_metrics.py": {
+      "sha256": "efd11b008196ba0cee8786f6be986c17511051fbb4203d5c0343a906e108959c",
+      "git_blob": "2e526ecc02367fb73b946e83c4313e011d04e212"
+    },
+    "web/statcast_store.py": {
+      "sha256": "2a59565987812524416dd6120fb3f9aec9451d7240c0c7aa54bb88fd302235b5",
+      "git_blob": "fa152603776559653f0b264e286d88a8ecc307dc"
+    },
+    "web/pitch_discipline_store.py": {
+      "sha256": "dafbbdd207a57b56c190873cadf63b4c2ffd2a01ecfb9f13196fa1e31747fe11",
+      "git_blob": "d59d1e264c988c17db10162f706e77ebfc6e81e7"
+    },
+    "web/aaa_statcast_store.py": {
+      "sha256": "43adbeed9451cd9dec4aba09151425f5b2dfc15cfd8ad702872dbd57b501aebc",
+      "git_blob": "b57b54f2ea650488e37598e741b7d821641c3d27"
+    },
+    "web/rank_history_store.py": {
+      "sha256": "7cc8897e0a62cbcfdfb5b2fdd468effb6872606f76953f2315777bb209192858",
+      "git_blob": "7e5bb966521593396f46a692a090a808b292141e"
+    },
+    "web/board_time_machine_store.py": {
+      "sha256": "41737db3b03e4493459d1e29e9de42b8457b37a073f556912507645df3433c5a",
+      "git_blob": "c3f2a72a5f77af3d2a0ea23963374973d25945af"
+    },
+    "web/fg_fv_store.py": {
+      "sha256": "4a38303103c8f581ae4cd242dbd99db453aa44d9792c8d20588d2e8322c259ea",
+      "git_blob": "90f8962bf47ea239dab234e975d9cd5e34221fbd"
+    },
+    "web/season_outlook.py": {
+      "sha256": "7f42f5637f47ea99e25f3c7cba6264a112c2cccb2b9dbc82d052c1078b24b7bf",
+      "git_blob": "ad738d465117bef97550ba9b7c2f78c9967fa7df"
+    },
+    "web/value_spark.py": {
+      "sha256": "3abc41405a65617e6a27fb719122fee99bfb4f19de9084b090e4295392a4043b",
+      "git_blob": "bfd57af013a07f7b592599e171e57c3d828f4523"
+    },
+    "projections/export/valucast_hp_run.py": {
+      "sha256": "e3dc8cbd90a7a6ee99370e0d9a5eaa512bdec88a576702c6e1a38830194cfaf2",
+      "git_blob": "62dc43a059587733398cec4e569bbf78817d3fe1"
+    },
+    "scripts/validate_public_data_freshness.py": {
+      "sha256": "c2cbb3a4f0323abf73897a9c48d8c1a5bd51af10300c90fffe84f9fb84c95e07",
+      "git_blob": "4344798d87357a0b43c5ad3a77330a2b75348b7a"
+    },
+    "quality/valucast_governor.py": {
+      "sha256": "28b98b7f016408a59c66c57cd24ec2f35a4653f7fbf0c347f0d90d7688801542",
+      "git_blob": "034c954fc19386b52cc3d039c8fbccc2fa98816f"
+    },
+    "prospects/buys_monitor.py": {
+      "sha256": "f2e3b751f0f6cfd8ee1842ebcb7898034ab5fb9ed6c3bfbfe0e45c60c2c75c3e",
+      "git_blob": "1292c2a6323d8323eb0f17f6a64d6f71b825454a"
+    },
+    "projections/data/__init__.py": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    "projections/data/identity.py": {
+      "sha256": "f314345b74b44eeebe389b9c11dd25164715adcc447dd94ceb1226152b2f2f73",
+      "git_blob": "b5c6a6ccc46428da85e31c5cecf1a78a613dea9c"
+    },
+    "scripts/probe_dynasty_buy_suppression.py": {
+      "binding": "Require exact detached HEAD Git blob before app import"
+    },
+    "scripts/dynasty_rehearsal_access.py": {
+      "binding": "Require exact detached HEAD Git blob before app import"
+    },
+    "scripts/dynasty_rehearsal_access_contract.json": {
+      "binding": "Require exact detached HEAD Git blob before app import"
+    }
+  },
+  "read_files": [
+    {
+      "path": "data/actuals/current.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:23 (ACTUALS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/fangraphs/fg_fv_snapshot.json",
+      "reason": "Committed display-only FV/tool grades",
+      "source_locations": [
+        "web/fg_fv_store.py:16-18"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/manual/ineligible_players.json",
+      "reason": "Existing serving eligibility exclusions",
+      "source_locations": [
+        "app.py:775"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/manual/valucast_glossary.json",
+      "reason": "Public glossary/copy registry",
+      "source_locations": [
+        "app.py:5541-5543"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_aaa_statcast_features.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "web/aaa_statcast_store.py:25"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_ahead_of_consensus.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:6045",
+        "app.py:7130",
+        "app.py:8125"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_ahead_of_consensus_scorecard.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:9332",
+        "app.py:5295",
+        "app.py:7131",
+        "scripts/validate_public_data_freshness.py:53 (AHEAD_OF_CONSENSUS_SCORECARD)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_call_up_pulse.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:7753",
+        "app.py:1865",
+        "app.py:5283",
+        "app.py:7864",
+        "app.py:6317",
+        "scripts/validate_public_data_freshness.py:50 (CALL_UP_PULSE)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_call_up_receipts.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:878",
+        "app.py:5317",
+        "scripts/validate_public_data_freshness.py:32 (VALUCAST_RECEIPTS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_consensus_gap.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:884",
+        "scripts/validate_public_data_freshness.py:96 (VALUCAST_CONSENSUS_GAP)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_forward_scoreboard.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:9417"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_front_office_failures.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:70 (FRONT_OFFICE_FAILURES)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_front_office_report.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5628",
+        "app.py:5880",
+        "scripts/validate_public_data_freshness.py:69 (FRONT_OFFICE_REPORT)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_gaps_claim_ledger.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:887"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_hp_promotion_sanity_report.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5875",
+        "app.py:6369"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_milb_stat_freshness_audit.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:37 (MILB_STAT_FRESHNESS_AUDIT)",
+        "quality/valucast_governor.py:40"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_mlb_availability.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:639",
+        "scripts/validate_public_data_freshness.py:26 (MLB_AVAILABILITY)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_mlb_dynasty_layer.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:25 (MLB_DYNASTY_LAYER)",
+        "quality/valucast_governor.py:29"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_mlb_projection_source_comparison.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5572"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_mlb_roster_status.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:27 (MLB_ROSTER_STATUS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_mlb_track_record.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:28 (MLB_TRACK_RECORD)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_model_registry.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5637"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_pipeline_observability.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:56 (PIPELINE_OBSERVABILITY)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_pitch_discipline.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "web/pitch_discipline_store.py:23"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_playing_time_role_tracker.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:138",
+        "app.py:5874",
+        "app.py:6366",
+        "app.py:6323",
+        "scripts/validate_public_data_freshness.py:91 (PLAYING_TIME_ROLE_TRACKER)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_pooled_shadow.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:46 (POOLED_SHADOW)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_availability.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:73 (PROSPECT_AVAILABILITY)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_buys.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:869",
+        "scripts/validate_public_data_freshness.py:29 (VALUCAST_BUYS)",
+        "quality/valucast_governor.py:37"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_buys_monitor.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:33 (VALUCAST_BUYS_MONITOR)",
+        "prospects/buys_monitor.py:13"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_buys_review.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:871",
+        "quality/valucast_governor.py:38"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_calibration_report.json",
+      "reason": "Committed existing derived candidate model/rank, bound by bootstrap before normal rebuilding",
+      "source_locations": [
+        "retained bootstrap.json:containers_before.calibration",
+        "scripts/validate_public_data_freshness.py:76 (PROSPECT_CALIBRATION_REPORT)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_card_data_audit.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5873",
+        "app.py:6378",
+        "app.py:6320",
+        "scripts/validate_public_data_freshness.py:40 (PROSPECT_CARD_DATA_AUDIT)",
+        "quality/valucast_governor.py:43"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_comps.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:881",
+        "scripts/validate_public_data_freshness.py:95 (VALUCAST_PROSPECT_COMPS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_coverage_audit.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:88 (PROSPECT_COVERAGE_AUDIT)",
+        "quality/valucast_governor.py:34"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_cross_role_shadow.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:63 (PROSPECT_CROSS_ROLE_SHADOW)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_dynasty_layer.json",
+      "reason": "Committed existing derived candidate model/rank, bound by bootstrap before normal rebuilding",
+      "source_locations": [
+        "retained bootstrap.json:containers_before.layer"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_forward_validation.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:85 (PROSPECT_FORWARD_VALIDATION)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_league_adapters.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:30 (PROSPECT_LEAGUE_ADAPTERS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_model.json",
+      "reason": "Committed existing derived candidate model/rank, bound by bootstrap before normal rebuilding",
+      "source_locations": [
+        "retained bootstrap.json:containers_before.main_model"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_model_v0_7.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:59 (PROSPECT_MODEL_V07)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_movers.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:874",
+        "scripts/validate_public_data_freshness.py:31 (VALUCAST_MOVERS)",
+        "quality/valucast_governor.py:39"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_outcome_backtest.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:60 (PROSPECT_OUTCOME_BACKTEST)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_peak_projection_calibration.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5878",
+        "app.py:6372",
+        "scripts/validate_public_data_freshness.py:82 (PROSPECT_PEAK_CALIBRATION)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_peak_projection_v1.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:79 (PROSPECT_PEAK_PROJECTION)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_rank_history.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "web/rank_history_store.py:25"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_prospect_rank_v1.json",
+      "reason": "Committed existing derived candidate model/rank, bound by bootstrap before normal rebuilding",
+      "source_locations": [
+        "retained bootstrap.json:containers_before.rank",
+        "scripts/validate_public_data_freshness.py:97 (VALUCAST_PROSPECT_RANK_V1)",
+        "quality/valucast_governor.py:30"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_quality_governor.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5870",
+        "retained bootstrap.json:containers_before.governor",
+        "scripts/validate_public_data_freshness.py:36 (VALUCAST_QUALITY_GOVERNOR)",
+        "quality/valucast_governor.py:27"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_raw_data_independence_audit.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:66 (RAW_DATA_INDEPENDENCE_AUDIT)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_recent_form_signal.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:1850",
+        "app.py:8364",
+        "app.py:6314",
+        "scripts/validate_public_data_freshness.py:47 (RECENT_FORM_SIGNAL)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_recent_signal_report.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5872",
+        "app.py:6375",
+        "app.py:6703",
+        "app.py:7129",
+        "app.py:6307",
+        "scripts/validate_public_data_freshness.py:43 (RECENT_SIGNAL_REPORT)",
+        "quality/valucast_governor.py:46"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_scouting_reports.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:5871",
+        "app.py:6363",
+        "app.py:7058",
+        "app.py:7132",
+        "app.py:10616",
+        "app.py:6303",
+        "scripts/validate_public_data_freshness.py:94 (SCOUTING_REPORTS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/models/valucast_universal_prospect_model.json",
+      "reason": "Committed derived artifact explicitly named by serving source",
+      "source_locations": [
+        "app.py:926",
+        "retained bootstrap.json:containers_before.universal"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/projections/current.json",
+      "reason": "ProjectionCatalog default Steamer context; no model execution",
+      "source_locations": [
+        "app.py:635-642;web/projection_store.py:24-26",
+        "scripts/validate_public_data_freshness.py:21 (REDRAFT_CURRENT)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/projections/metadata.json",
+      "reason": "ProjectionStore current sidecar source/date/phase metadata",
+      "source_locations": [
+        "web/projection_store.py:29-38",
+        "scripts/validate_public_data_freshness.py:20 (REDRAFT_METADATA)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/projections/ros.json",
+      "reason": "Unchanged production freshness validator: exact current HEAD-derived input, including held Buys/Prospects",
+      "source_locations": [
+        "scripts/validate_public_data_freshness.py:22 (REDRAFT_ROS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/prospects/prospect_model_inputs.json",
+      "reason": "Exact current serving MLB service/debut fallback; not research access",
+      "source_locations": [
+        "app.py:7816;7835",
+        "scripts/validate_public_data_freshness.py:19 (VALUCAST_PROSPECT_INPUTS)"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/prospects/raw/fantrax/Fantrax-Players-Diamond Dynasties-OwnedHitters.csv",
+      "reason": "Exact current team-board organization lookup; no CSV export",
+      "source_locations": [
+        "app.py:6515-6517;6547-6557"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/prospects/raw/fantrax/Fantrax-Players-Diamond Dynasties-OwnedPitchers.csv",
+      "reason": "Exact current team-board organization lookup; no CSV export",
+      "source_locations": [
+        "app.py:6515-6517;6547-6557"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/prospects/raw/milb_season_stats.json",
+      "reason": "Exact current normal-serving MiLB context; import-time index and observed display-only strike rate",
+      "source_locations": [
+        "app.py:5798-5802;7133"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/prospects/raw/prospect_exposure_history.json",
+      "git_blob": null,
+      "optional": true,
+      "reason": "Exact optional current-serving prospect exposure-history notes; preserve genuine HEAD absence and normal FileNotFound, no producer or historical research",
+      "source_locations": [
+        "app.py:3213 _prospect_exposure_history"
+      ]
+    },
+    {
+      "path": "data/public/public_dynasty_snapshot.json",
+      "reason": "Committed existing candidate; primary public Dynasty/Prospects rows",
+      "source_locations": [
+        "app.py:863-865",
+        "scripts/validate_public_data_freshness.py:98 (PUBLIC_SNAPSHOT)",
+        "quality/valucast_governor.py:28"
+      ],
+      "git_blob": null
+    },
+    {
+      "path": "data/statcast/percentiles.json",
+      "reason": "Committed measured display-only percentile context",
+      "source_locations": [
+        "web/statcast_store.py:16",
+        "scripts/validate_public_data_freshness.py:24 (STATCAST)"
+      ],
+      "git_blob": null
+    }
+  ],
+  "required_files": [
+    "data/public/public_dynasty_snapshot.json",
+    "data/projections/current.json",
+    "data/projections/metadata.json",
+    "data/models/valucast_prospect_buys.json",
+    "data/models/valucast_prospect_buys_review.json",
+    "data/models/valucast_scouting_reports.json",
+    "data/models/valucast_recent_signal_report.json"
+  ],
+  "current_raw_context_paths": [
+    "data/prospects/prospect_model_inputs.json",
+    "data/prospects/raw/fantrax/Fantrax-Players-Diamond Dynasties-OwnedHitters.csv",
+    "data/prospects/raw/fantrax/Fantrax-Players-Diamond Dynasties-OwnedPitchers.csv",
+    "data/prospects/raw/milb_season_stats.json",
+    "data/prospects/raw/prospect_exposure_history.json"
+  ],
+  "denied_data_roots": [
+    "data/prediction_archive",
+    "data/milb_observation_archive",
+    "data/aaa_statcast_archive",
+    "projections/data",
+    "projections/runs"
+  ],
+  "directory_data_enumeration_allowed": false,
+  "network_after_guard_allowed": false,
+  "candidate_writes_allowed": false,
+  "raw_or_public_data_export_allowed": false,
+  "merge_allowed": false,
+  "publication_allowed": false,
+  "freshness_clock": "datetime.now(timezone.utc).date(); never candidate date or backdated override",
+  "read_scope_note": "Same 62 serving-context path names as the integrated rehearsal. Bind bytes to detached staged HEAD, including the three permanent probe sources. No freshness or promotion qualification follows from this access check.",
+  "limitations": [
+    "Python audit hook is a test boundary, not an OS sandbox or a proof about uninstrumented native-library IO.",
+    "Headshot decoration may be explicitly stubbed locally by the parent test controller; no actual serving/rank/scoring/context hook is replaced by this helper.",
+    "This serving probe does not qualify freshness, rankings, model performance or publication. Separate current-UTC production gates remain required."
+  ],
+  "production_freshness": {
+    "source": "scripts/validate_public_data_freshness.py",
+    "function": "validate_public_data",
+    "max_age_days": 0,
+    "held_artifacts_not_filtered": true,
+    "source_constant_paths": [
+      "data/actuals/current.json",
+      "data/models/valucast_ahead_of_consensus_scorecard.json",
+      "data/models/valucast_call_up_pulse.json",
+      "data/models/valucast_call_up_receipts.json",
+      "data/models/valucast_consensus_gap.json",
+      "data/models/valucast_front_office_failures.json",
+      "data/models/valucast_front_office_report.json",
+      "data/models/valucast_milb_stat_freshness_audit.json",
+      "data/models/valucast_mlb_availability.json",
+      "data/models/valucast_mlb_dynasty_layer.json",
+      "data/models/valucast_mlb_roster_status.json",
+      "data/models/valucast_mlb_track_record.json",
+      "data/models/valucast_pipeline_observability.json",
+      "data/models/valucast_playing_time_role_tracker.json",
+      "data/models/valucast_pooled_shadow.json",
+      "data/models/valucast_prospect_availability.json",
+      "data/models/valucast_prospect_buys.json",
+      "data/models/valucast_prospect_buys_monitor.json",
+      "data/models/valucast_prospect_calibration_report.json",
+      "data/models/valucast_prospect_card_data_audit.json",
+      "data/models/valucast_prospect_comps.json",
+      "data/models/valucast_prospect_coverage_audit.json",
+      "data/models/valucast_prospect_cross_role_shadow.json",
+      "data/models/valucast_prospect_forward_validation.json",
+      "data/models/valucast_prospect_league_adapters.json",
+      "data/models/valucast_prospect_model_v0_7.json",
+      "data/models/valucast_prospect_movers.json",
+      "data/models/valucast_prospect_outcome_backtest.json",
+      "data/models/valucast_prospect_peak_projection_calibration.json",
+      "data/models/valucast_prospect_peak_projection_v1.json",
+      "data/models/valucast_prospect_rank_v1.json",
+      "data/models/valucast_quality_governor.json",
+      "data/models/valucast_raw_data_independence_audit.json",
+      "data/models/valucast_recent_form_signal.json",
+      "data/models/valucast_recent_signal_report.json",
+      "data/models/valucast_scouting_reports.json",
+      "data/projections/current.json",
+      "data/projections/metadata.json",
+      "data/projections/ros.json",
+      "data/prospects/prospect_model_inputs.json",
+      "data/public/public_dynasty_snapshot.json",
+      "data/statcast/percentiles.json"
+    ],
+    "date_policy": "genuine current UTC date; no actuals-season override"
+  },
+  "public_rank_archive": {
+    "directory": "data/prediction_archive/valucast_prospect_rank_v1",
+    "source": "quality/valucast_governor.py:31-33,165-195",
+    "listing_pattern": "*.json",
+    "listing_scope": "Exactly this directory only; no other archive or nested directory",
+    "selection": "Unchanged production load_previous_prospect_rank chooses maximum valid filename date before current candidate generated_at; validates real payload date/board",
+    "files": [],
+    "payload_binding_policy": "Verify selected files lazily against their frozen HEAD Git blob before allowing the actual producer read; hash only touched files before/after; do not scan payloads",
+    "permission_basis": "Normal public rank-archive family admitted by recovered ordinary program/HEAD contract and explicit current qualification instruction; not a protected research replay",
+    "binding": "Regular daily JSON leaves selected from this detached HEAD in the exact normal directory; no added date replay"
+  },
+  "producer_evaluation": {
+    "source_defaults_preserved": true,
+    "governor_default_current_inputs": [
+      "data/models/valucast_milb_stat_freshness_audit.json",
+      "data/models/valucast_mlb_dynasty_layer.json",
+      "data/models/valucast_prospect_buys.json",
+      "data/models/valucast_prospect_buys_review.json",
+      "data/models/valucast_prospect_card_data_audit.json",
+      "data/models/valucast_prospect_coverage_audit.json",
+      "data/models/valucast_prospect_movers.json",
+      "data/models/valucast_prospect_rank_v1.json",
+      "data/models/valucast_recent_signal_report.json",
+      "data/public/public_dynasty_snapshot.json"
+    ],
+    "monitor_forward_validation": "data/models/valucast_prospect_forward_validation.json",
+    "previous_rank_replaced_with_none": false,
+    "date_restamping_allowed": false,
+    "writes": "Derived TEMP copies only; candidate outputs remain immutable"
+  },
+  "allowed_directory_listings": [
+    "data/prediction_archive/valucast_prospect_rank_v1"
+  ],
+  "protected_code_imports": {
+    "projections.data": {
+      "path": "projections/data/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "package": true
+    },
+    "projections.data.identity": {
+      "path": "projections/data/identity.py",
+      "sha256": "f314345b74b44eeebe389b9c11dd25164715adcc447dd94ceb1226152b2f2f73",
+      "package": false
+    }
+  },
+  "protected_code_import_policy": {
+    "purpose": "Load exactly the pinned package init and identity Python source without FileFinder enumerating projections/data",
+    "real_source_code_used": true,
+    "identity_json_allowed": false,
+    "protected_directory_listing_allowed": false,
+    "unknown_projections_data_modules_allowed": false,
+    "bytecode_cache_used": false,
+    "prior_code_import_exception_is_not_data_permission": true
+  },
+  "system_read_files": [
+    {
+      "path": "/usr/share/zoneinfo/America/New_York",
+      "reason": "Public OS ZoneInfo timezone data required by actual roster/debut display formatting; no fake timezone or clock",
+      "source_location": "web/roster_event_display.py:19",
+      "binding": "Record observed runtime SHA256 before/after; not a HEAD source/candidate file",
+      "directory_listing_allowed": false,
+      "writes_allowed": false
+    },
+    {
+      "path": "$RUNTIME_STDLIB_ZIP",
+      "optional": true,
+      "reason": "One exact current sysconfig-derived ZIP entry already present in sys.path; retain genuine missing-file fallback",
+      "binding": "Require match to current sys.path and sysconfig stdlib-derived ZIP path; observe state/SHA256/bytes before/after, not candidate HEAD data",
+      "directory_listing_allowed": "Only os.listdir on this exact ZIP path; no parent or sibling directory",
+      "writes_allowed": false,
+      "missing_file_behavior": "Let actual OS FileNotFoundError propagate normally; never create a ZIP or substitute a result"
+    }
+  ],
+  "system_read_policy": "One exact required New_York timezone file and one exact optional stdlib ZIP sys.path entry only; no surrounding-directory or sibling-file permission.",
+  "binding_mode": "detached_staged_HEAD"
+}
