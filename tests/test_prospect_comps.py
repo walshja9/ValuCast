@@ -527,12 +527,16 @@ def test_comps_wired_into_daily_build_after_snapshot():
     assert steps.index("scripts/build_prospect_comps.py") > steps.index(
         "scripts/build_public_dynasty_snapshot.py"
     )
-    # The nightly workflow enumerates commit paths explicitly — a rebuilt
+    # The shared stager enumerates commit paths explicitly — a rebuilt
     # artifact that never gets committed silently drifts from the snapshot.
     workflow = (
         Path(__file__).parent.parent / ".github" / "workflows" / "daily-public-data.yml"
     ).read_text(encoding="utf-8")
-    assert "data/models/valucast_prospect_comps.json" in workflow
+    assert "bash scripts/stage_daily_public_bundle.sh" in workflow
+    stager = (
+        Path(__file__).parent.parent / "scripts" / "stage_daily_public_bundle.sh"
+    ).read_text(encoding="utf-8")
+    assert "data/models/valucast_prospect_comps.json" in stager
 
 
 def test_2020_scaled_pa_does_not_leak_into_the_rel_ops_weight():

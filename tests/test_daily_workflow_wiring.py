@@ -2,7 +2,7 @@
 
 Two concerns:
   1. The nightly build/validate graph (scripts/run_daily_public_build.py) and the
-     workflow git-add allowlist (.github/workflows/daily-public-data.yml) actually wire
+     shared git-add allowlist (scripts/stage_daily_public_bundle.sh) actually wire
      the new steps in the right ORDER, publish the right artifacts, and NEVER add a
      nightly cohort-registry build (the registry is registered manually/quarterly).
   2. The AAA-Statcast vintage archival hash-skip logic is append-only and correctly
@@ -19,6 +19,7 @@ from scripts import run_daily_public_build
 
 
 WORKFLOW_PATH = Path(".github/workflows/daily-public-data.yml")
+STAGER_PATH = Path("scripts/stage_daily_public_bundle.sh")
 
 
 def _build_commands() -> list[str]:
@@ -66,21 +67,23 @@ def test_milb_observation_archive_runs_after_prospect_input_pipeline():
 
 def test_allowlist_publishes_only_completed_milb_observation_snapshots():
     workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    stager = STAGER_PATH.read_text(encoding="utf-8")
+    assert workflow.count("bash scripts/stage_daily_public_bundle.sh") == 1
     guard = (
         "if [ -d data/milb_observation_archive ]; then\n"
-        "            git add data/milb_observation_archive/*.json\n"
-        "          fi"
+        "  git add data/milb_observation_archive/*.json\n"
+        "fi"
     )
     after_aaa_guard = (
         "if [ -d data/aaa_statcast_archive ]; then\n"
-        "            git add data/aaa_statcast_archive/\n"
-        "          fi\n"
-        "          "
+        "  git add data/aaa_statcast_archive/\n"
+        "fi\n"
         + guard
     )
-    assert workflow.count(guard) == 1
-    assert after_aaa_guard in workflow
-    assert "git add data/milb_observation_archive/\n" not in workflow
+    assert stager.count(guard) == 1
+    assert after_aaa_guard in stager
+    assert "git add data/milb_observation_archive/\n" not in stager
+    assert "git add data/milb_observation_archive" not in workflow
 
 
 def test_no_nightly_step_builds_the_forward_cohort_registry():
@@ -93,12 +96,12 @@ def test_no_nightly_step_builds_the_forward_cohort_registry():
 
 
 def test_allowlist_publishes_scoreboard_and_aaa_vintage_archive():
-    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
-    assert "data/models/valucast_forward_scoreboard.json" in workflow
-    assert "data/aaa_statcast_archive/" in workflow
-    # The cohort registry artifact is committed manually — it must NOT be in the
-    # nightly git-add allowlist.
-    assert "valucast_forward_cohort_registry.json" not in workflow
+    stager = STAGER_PATH.read_text(encoding="utf-8")
+    assert "git add data/models/valucast_forward_scoreboard.json" in stager
+    assert "git add data/aaa_statcast_archive/" in stager
+    # The cohort registry artifact is committed manually.
+    assert "valucast_forward_cohort_registry.json" not in stager
+    assert "valucast_forward_cohort_registry.json" not in WORKFLOW_PATH.read_text(encoding="utf-8")
 
 
 def test_math_provability_validators_wired_nightly_but_not_their_builds():
@@ -132,27 +135,27 @@ def test_math_provability_artifacts_not_in_nightly_git_add_allowlist():
     # NOT be in the nightly git-add allowlist (a stray entry would let a manual
     # local edit be auto-committed by an unrelated refresh).
     workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    stager = STAGER_PATH.read_text(encoding="utf-8")
     for artifact in (
         "data/models/valucast_outcome_oof_scores.json",
         "data/models/valucast_probability_reliability.json",
         "data/models/valucast_universal_gate_multiplicity.json",
     ):
         assert artifact not in workflow
+        assert artifact not in stager
 
 
 def test_forward_scoreboard_git_add_is_guarded():
-    # FIX 5: the forward-scoreboard artifact is not yet tracked, so its git-add
-    # must be guarded by an existence check (matching the pitch-discipline /
-    # AAA-Statcast precedent) rather than an unconditional pathspec that only
-    # "works" because a failed build aborts the job first.
-    workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+    # A missing optional scoreboard cannot fail the shared stager.
+    stager = STAGER_PATH.read_text(encoding="utf-8")
     assert (
         "if [ -f data/models/valucast_forward_scoreboard.json ]; then\n"
-        "            git add data/models/valucast_forward_scoreboard.json\n"
-        "          fi" in workflow
+        "  git add data/models/valucast_forward_scoreboard.json\n"
+        "fi" in stager
     )
-    # And it is NOT still present as a bare backslash-continued pathspec.
-    assert "            data/models/valucast_forward_scoreboard.json \\\n" not in workflow
+    assert stager.count("git add data/models/valucast_forward_scoreboard.json") == 1
+    assert "  data/models/valucast_forward_scoreboard.json \\\n" not in stager
+    assert "git add data/models/valucast_forward_scoreboard.json" not in WORKFLOW_PATH.read_text(encoding="utf-8")
 
 
 def test_no_duplicate_steps_after_wiring():
@@ -359,11 +362,22 @@ def test_master_writers_use_only_the_refresh_deploy_key():
     assert writers == expected_writers
 
     key = "ssh-key: ${{ secrets.REFRESH_DEPLOY_KEY }}"
+    rehearsal_key = (
+        "ssh-key: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' "
+        "&& secrets.REFRESH_DEPLOY_KEY || '' }}"
+    )
     for name, workflow in workflows.items():
-        assert (key in workflow) == (name in expected_writers)
-        if name in expected_writers:
-            assert "permissions:\n  contents: read" in workflow
-            assert "permissions:\n  contents: write" not in workflow
+        if name not in expected_writers:
+            assert "secrets.REFRESH_DEPLOY_KEY" not in workflow
+            continue
+        expected_key = rehearsal_key if name == WORKFLOW_PATH.name else key
+        assert [line.strip() for line in workflow.splitlines()
+                if line.strip().startswith("ssh-key:")] == [expected_key]
+        assert workflow.count("secrets.REFRESH_DEPLOY_KEY") == 1
+        assert "permissions:\n  contents: read" in workflow
+        assert "permissions:\n  contents: write" not in workflow
+        if name == WORKFLOW_PATH.name:
+            assert "persist-credentials: ${{ env.VALUCAST_DYNASTY_REHEARSAL != 'true' }}" in workflow
 
 
 # ---------------------------------------------------------------------------

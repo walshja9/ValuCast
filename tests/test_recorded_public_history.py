@@ -421,12 +421,16 @@ class TestRecordedPublicHistoryWiring(unittest.TestCase):
         from pathlib import Path
         workflow = (Path(__file__).resolve().parents[1] / ".github/workflows/daily-public-data.yml").read_text(encoding="utf-8")
         sync = workflow.index("git checkout -B master origin/master")
-        capture = workflow.index("git show HEAD:data/public/public_dynasty_snapshot.json")
+        pin = workflow.index('echo "VALUCAST_REHEARSAL_MASTER=$master" >> "$GITHUB_ENV"')
+        capture = workflow.index('git show "${VALUCAST_REHEARSAL_MASTER:-HEAD}:data/public/public_dynasty_snapshot.json"')
         refresh = workflow.index("- name: Refresh MLB actuals and Steamer ROS")
-        build = workflow.index('run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"')
+        build_command = 'run_daily_public_build.py --only build --previous-public-snapshot "$VALUCAST_PREVIOUS_PUBLIC_SNAPSHOT"'
+        self.assertEqual(workflow.count(build_command), 2)
         self.assertLess(sync, capture)
+        self.assertLess(pin, capture)
         self.assertLess(capture, refresh)
-        self.assertLess(refresh, build)
+        self.assertLess(refresh, workflow.index(build_command))
+        self.assertIn('git merge-base --is-ancestor "$master" HEAD', workflow[:pin])
         self.assertIn('prior="$RUNNER_TEMP/valucast-previous-public-dynasty-snapshot.json"', workflow)
         self.assertIn('chmod a-w "$prior"', workflow)
 

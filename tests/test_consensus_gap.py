@@ -191,7 +191,9 @@ def test_gaps_wired_into_nav_llms_and_daily_build():
     validate = [" ".join(step) for step in run_daily_public_build.VALIDATE_STEPS]
     assert "scripts/validate_gaps_claim_ledger.py" in validate
     workflow = (ROOT / ".github" / "workflows" / "daily-public-data.yml").read_text(encoding="utf-8")
-    assert "data/models/valucast_consensus_gap.json" in workflow
+    assert "bash scripts/stage_daily_public_bundle.sh" in workflow
+    stager = (ROOT / "scripts/stage_daily_public_bundle.sh").read_text(encoding="utf-8")
+    assert "data/models/valucast_consensus_gap.json" in stager
     # Destination ownership stays in the primary nav; the horizon partial carries
     # only Redraft, Dynasty, and Prospects.
     nav = (ROOT / "templates" / "base.html").read_text(encoding="utf-8")

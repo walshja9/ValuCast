@@ -104,8 +104,10 @@ def test_movers_wired_into_daily_public_build_and_publish_workflow():
         "scripts/build_prospect_rank_v1.py"
     )
     assert "scripts/validate_valucast_movers.py" in validate_steps
-    assert "data/models/valucast_prospect_movers.json" in workflow
-    assert "data/prediction_archive/valucast_prospect_movers" in workflow
+    assert "bash scripts/stage_daily_public_bundle.sh" in workflow
+    stager = Path("scripts/stage_daily_public_bundle.sh").read_text(encoding="utf-8")
+    assert "data/models/valucast_prospect_movers.json" in stager
+    assert "data/prediction_archive/valucast_prospect_movers" in stager
     assert hasattr(freshness, "VALUCAST_MOVERS")
 
 

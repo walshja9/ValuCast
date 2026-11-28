@@ -82,8 +82,10 @@ def test_call_up_receipts_wired_into_daily_public_build_and_publish_workflow():
     )
     assert "scripts/validate_valucast_call_up_receipts.py" in validate_steps
     assert hasattr(freshness, "VALUCAST_RECEIPTS")
-    assert "data/models/valucast_call_up_receipts.json" in workflow
-    assert "data/prediction_archive/valucast_call_up_receipts" in workflow
+    assert "bash scripts/stage_daily_public_bundle.sh" in workflow
+    stager = Path("scripts/stage_daily_public_bundle.sh").read_text(encoding="utf-8")
+    assert "data/models/valucast_call_up_receipts.json" in stager
+    assert "data/prediction_archive/valucast_call_up_receipts" in stager
 
 
 def test_detect_receipts_recomputes_consensus_and_merges_idempotently():

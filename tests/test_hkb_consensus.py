@@ -135,5 +135,7 @@ def test_hkb_refresh_is_wired_before_rank_and_staged_for_publish():
     assert steps.index(refresh) < steps.index("scripts/build_prospect_rank_v1.py")
 
     workflow = (ROOT / ".github/workflows/daily-public-data.yml").read_text(encoding="utf-8")
-    assert "data/hkb/hkb_source.csv" in workflow
-    assert "data/hkb/hkb_consensus_snapshot.json" in workflow
+    assert "bash scripts/stage_daily_public_bundle.sh" in workflow
+    stager = (ROOT / "scripts/stage_daily_public_bundle.sh").read_text(encoding="utf-8")
+    assert "data/hkb/hkb_source.csv" in stager
+    assert "data/hkb/hkb_consensus_snapshot.json" in stager
